@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastermind Català</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Mastermind en Català</h1>
+
+    <div class="game-board">
+        <div class="guess-area">
+            <p id="current-guess">_____</p>
+        </div>
+
+        <div class="letter-grid">
+            <!-- Los botones de lletres es generaran dinàmicament -->
+        </div>
+
+        <div class="actions">
+            <button id="check">Comprovar</button>
+            <button id="reset">Reiniciar</button>
+        </div>
+
+        <div class="hints">
+            <p>Pista:</p>
+            <ul id="hints-list">
+                <!-- Les pistes apareixeran aquí -->
+            </ul>
+        </div>
+
+        <div class="attempts">
+            <p>Intentos: <span id="attempt-count">0</span></p>
+        </div>
+
+        <div class="timer" id="timer">Temps restant: 60</div>
+
+        <div class="result-message" id="result-message"></div>
+    </div>
+
+    <script src="words.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
