@@ -56,9 +56,10 @@ function checkAttempt() {
         }
     }
 
-    // Mostrar intento y feedback visual
+    // Mostrar intento del jugador y las pistas visuales
     const attemptDiv = document.createElement('div');
     attemptDiv.classList.add('attempt');
+    
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
         colorDiv.style.backgroundColor = color;
@@ -66,17 +67,30 @@ function checkAttempt() {
         attemptDiv.appendChild(colorDiv);
     });
 
-    // Mostrar pistas visuales
+    // Crear una sección para las pistas
     const feedbackDiv = document.createElement('div');
     feedbackDiv.classList.add('feedback');
+    
+    // Añadir pistas según los resultados
     for (let i = 0; i < correctPosition; i++) {
         const circle = document.createElement('div');
-        circle.classList.add('feedback-circle', 'correct-position');
+        circle.classList.add('feedback-circle');
+        circle.style.backgroundColor = 'black'; // Color y posición correcta
         feedbackDiv.appendChild(circle);
     }
     for (let i = 0; i < correctColor; i++) {
         const circle = document.createElement('div');
-        circle.classList.add('feedback-circle', 'correct-color');
+        circle.classList.add('feedback-circle');
+        circle.style.backgroundColor = 'red'; // Solo color correcto
+        feedbackDiv.appendChild(circle);
+    }
+    
+    // Rellenar con pistas incorrectas
+    const incorrectPicks = maxSelection - correctPosition - correctColor;
+    for (let i = 0; i < incorrectPicks; i++) {
+        const circle = document.createElement('div');
+        circle.classList.add('feedback-circle');
+        circle.style.backgroundColor = 'gray'; // Ni color ni posición correctos
         feedbackDiv.appendChild(circle);
     }
 
