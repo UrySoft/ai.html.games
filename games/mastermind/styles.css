@@ -35,6 +35,11 @@ h1 {
     transform: scale(1.1);
 }
 
+#current-attempt {
+    margin-top: 20px;
+    font-size: 1.2em;
+}
+
 #attempts {
     margin-top: 20px;
 }

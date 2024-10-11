@@ -1,5 +1,6 @@
 let secretCode = [];
 let currentAttempt = [];
+const maxSelection = 5; // Máximo de 5 colores por intento
 const colors = ["red", "green", "blue", "yellow", "orange", "purple"];
 let maxAttempts = 10;
 let timer;
@@ -14,8 +15,19 @@ function generateSecretCode() {
     }
 }
 
+// Mostrar selección del usuario
+function updateCurrentAttemptDisplay() {
+    const attemptDiv = document.getElementById('current-attempt');
+    attemptDiv.textContent = `Tu selección: ${currentAttempt.join(", ")}`;
+}
+
 // Comprobar intento del jugador
 function checkAttempt() {
+    if (currentAttempt.length !== maxSelection) {
+        alert(`Debes seleccionar exactamente ${maxSelection} colores`);
+        return;
+    }
+
     let correctPosition = 0;
     let correctColor = 0;
 
@@ -76,6 +88,17 @@ function checkAttempt() {
     }
 
     currentAttempt = [];
+    updateCurrentAttemptDisplay();
+}
+
+// Añadir color a la selección del usuario
+function addColorToAttempt(color) {
+    if (currentAttempt.length < maxSelection) {
+        currentAttempt.push(color);
+        updateCurrentAttemptDisplay();
+    } else {
+        alert(`Solo puedes seleccionar ${maxSelection} colores.`);
+    }
 }
 
 // Reiniciar el juego
@@ -87,6 +110,7 @@ function restartGame() {
     startTimer();
     currentAttempt = [];
     document.getElementById('attempts').innerHTML = "";
+    updateCurrentAttemptDisplay();
 }
 
 // Temporizador
@@ -105,6 +129,11 @@ function startTimer() {
 // Iniciar juego
 document.getElementById('check-guess').addEventListener('click', checkAttempt);
 document.getElementById('restart-game').addEventListener('click', restartGame);
+
+// Agregar eventos a los botones de selección de colores
+document.querySelectorAll('.color').forEach(button => {
+    button.addEventListener('click', () => addColorToAttempt(button.getAttribute('data-color')));
+});
 
 // Generar código secreto y temporizador al cargar la página
 generateSecretCode();
