@@ -16,6 +16,7 @@ const winningConditions = [
 const statusMessage = document.getElementById('status-message');
 const cells = document.querySelectorAll('.cell');
 const restartButton = document.getElementById('restart');
+const turnIndicator = document.getElementById('turn-indicator');
 
 function handleCellClick(event) {
     const cellIndex = event.target.getAttribute('data-index');
@@ -28,6 +29,7 @@ function handleCellClick(event) {
     event.target.textContent = currentPlayer;
 
     checkWinner();
+    updateTurnIndicator();
 }
 
 function checkWinner() {
@@ -45,6 +47,7 @@ function checkWinner() {
 
         if (a === b && b === c) {
             roundWon = true;
+            highlightWinningCells(winCondition);
             break;
         }
     }
@@ -64,13 +67,27 @@ function checkWinner() {
     currentPlayer = currentPlayer === "X" ? "O" : "X";
 }
 
+function highlightWinningCells(winCondition) {
+    winCondition.forEach(index => {
+        cells[index].classList.add('winning');
+    });
+}
+
+function updateTurnIndicator() {
+    if (isGameActive) {
+        turnIndicator.textContent = `Turno del jugador: ${currentPlayer}`;
+    }
+}
+
 function restartGame() {
     board = ["", "", "", "", "", "", "", "", ""];
     currentPlayer = "X";
     isGameActive = true;
     statusMessage.textContent = "";
+    turnIndicator.textContent = `Turno del jugador: X`;
     cells.forEach(cell => {
         cell.textContent = "";
+        cell.classList.remove('winning');
     });
 }
 
