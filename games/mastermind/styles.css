@@ -1,0 +1,84 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2em;
+    margin-top: 20px;
+}
+
+#game-board {
+    margin: 20px auto;
+    width: 400px;
+    text-align: center;
+}
+
+#color-options button {
+    width: 70px;
+    height: 70px;
+    margin: 10px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+#color-options .color[data-color="red"] { background-color: red; }
+#color-options .color[data-color="green"] { background-color: green; }
+#color-options .color[data-color="blue"] { background-color: blue; }
+#color-options .color[data-color="yellow"] { background-color: yellow; }
+#color-options .color[data-color="orange"] { background-color: orange; }
+#color-options .color[data-color="purple"] { background-color: purple; }
+
+#color-options button:hover {
+    transform: scale(1.1);
+}
+
+#attempts {
+    margin-top: 20px;
+}
+
+.attempt {
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feedback {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.feedback-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.feedback .correct-position {
+    background-color: red;
+}
+
+.feedback .correct-color {
+    background-color: white;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#timer-container {
+    margin-bottom: 20px;
+}
+
+#timer {
+    font-size: 18px;
+    color: #333;
+}
