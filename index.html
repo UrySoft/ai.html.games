@@ -3,17 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Principal</title>
+    <title>Mastermind</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Selecciona un juego</h1>
-    
-    <!-- Botones de selección de juegos -->
-    <div id="game-selection">
-        <button onclick="location.href='games/tresenralla/index.html'">Tres en Ratlla</button>
-        <button onclick="location.href='games/mastermind/index.html'">Mastermind</button>
+    <h1>Mastermind</h1>
+
+    <!-- Temporizador -->
+    <div id="timer-container">
+        <p id="timer">Tiempo restante: 60s</p>
     </div>
+
+    <!-- Tablero de juego -->
+    <div id="game-board">
+        <div id="color-options">
+            <!-- Botones de colores que el jugador seleccionará -->
+            <button class="color" data-color="red"></button>
+            <button class="color" data-color="green"></button>
+            <button class="color" data-color="blue"></button>
+            <button class="color" data-color="yellow"></button>
+            <button class="color" data-color="orange"></button>
+            <button class="color" data-color="purple"></button>
+        </div>
+
+        <!-- Mostrar intentos y pistas visuales -->
+        <div id="current-attempt">Tu selección: </div>
+        <div id="attempts"></div>
+    </div>
+
+    <button id="check-guess">Comprobar intento</button>
+    <button id="restart-game">Reiniciar juego</button>
 
     <script src="game.js"></script>
 </body>
