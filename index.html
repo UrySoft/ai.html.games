@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastermind en Català</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Mastermind en Català</h1>
+
+    <div class="game-board">
+        <div id="current-guess"></div>
+        <div class="letter-grid"></div>
+        <div class="controls">
+            <button id="checkGuess">Comprovar</button>
+            <button id="restartGame">Reiniciar</button>
+        </div>
+        <div class="status">
+            <p id="attempt-count">Intentos: 0</p>
+            <p id="timer">Temps: 60s</p>
+            <p id="hints-list">Pista: </p>
+            <p id="result-message"></p>
+        </div>
+    </div>
+
+    <audio id="correct-sound" src="audio/correct.mp3"></audio>
+    <audio id="incorrect-sound" src="audio/incorrect.mp3"></audio>
+
+    <script src="js/words.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
