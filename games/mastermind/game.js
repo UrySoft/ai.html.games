@@ -25,15 +25,15 @@ function updateCurrentAttemptDisplay() {
         colorDiv.style.backgroundColor = color;
         attemptDiv.appendChild(colorDiv);
     });
+
+    // Comprobar automáticamente cuando se seleccionan los 5 colores
+    if (currentAttempt.length === maxSelection) {
+        checkAttempt();
+    }
 }
 
-// Comprobar intento del jugador
+// Comprobar intento del jugador automáticamente
 function checkAttempt() {
-    if (currentAttempt.length !== maxSelection) {
-        alert(`Debes seleccionar exactamente ${maxSelection} colores`);
-        return;
-    }
-
     let correctPosition = 0;
     let correctColor = 0;
 
@@ -144,7 +144,6 @@ function startTimer() {
 }
 
 // Iniciar juego
-document.getElementById('check-guess').addEventListener('click', checkAttempt);
 document.getElementById('restart-game').addEventListener('click', restartGame);
 
 // Agregar eventos a los botones de selección de colores
