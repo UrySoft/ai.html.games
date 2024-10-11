@@ -27,8 +27,11 @@ function startGame() {
     timerDisplay.textContent = `Temps: 60s`;
     hintDisplay.textContent = 'Pista: ' + wordToGuess.hint;
     
+    // Mostrar el tablero
+    document.querySelector('.game-board').style.display = 'block';
+    
     generateLetterGrid();
-    startTimer();
+    startTimer();  // Iniciar el temporizador cuando comienza el juego
 }
 
 function getRandomWord() {
@@ -81,7 +84,7 @@ function resetLetterSelection() {
 }
 
 function startTimer() {
-    clearInterval(timer);
+    clearInterval(timer);  // Asegurarse de que no haya temporizadores previos corriendo
     timer = setInterval(() => {
         timeLeft--;
         timerDisplay.textContent = `Temps: ${timeLeft}s`;
