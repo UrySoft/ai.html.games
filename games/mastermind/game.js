@@ -1,7 +1,7 @@
 let secretCode = [];
 let currentAttempt = [];
 const maxSelection = 5; // Máximo de 5 colores por intento
-const colors = ["red", "green", "blue", "yellow", "orange", "purple"];
+const colors = ["red", "green", "blue", "yellow", "orange"];
 let maxAttempts = 10;
 let timer;
 let timeLeft = 60;
@@ -15,10 +15,16 @@ function generateSecretCode() {
     }
 }
 
-// Mostrar selección del usuario
+// Mostrar selección del usuario en colores
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
-    attemptDiv.textContent = `Tu selección: ${currentAttempt.join(", ")}`;
+    attemptDiv.innerHTML = ''; // Limpiar selección anterior
+    currentAttempt.forEach(color => {
+        const colorDiv = document.createElement('div');
+        colorDiv.classList.add('color-preview');
+        colorDiv.style.backgroundColor = color;
+        attemptDiv.appendChild(colorDiv);
+    });
 }
 
 // Comprobar intento del jugador
@@ -50,7 +56,7 @@ function checkAttempt() {
         }
     }
 
-    // Mostrar feedback visual
+    // Mostrar intento y feedback visual
     const attemptDiv = document.createElement('div');
     attemptDiv.classList.add('attempt');
     currentAttempt.forEach(color => {
