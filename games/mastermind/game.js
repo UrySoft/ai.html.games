@@ -74,14 +74,12 @@ function checkAttempt() {
     // Añadir pistas según los resultados
     for (let i = 0; i < correctPosition; i++) {
         const circle = document.createElement('div');
-        circle.classList.add('feedback-circle');
-        circle.style.backgroundColor = 'black'; // Color y posición correcta
+        circle.classList.add('feedback-circle', 'correct-position');
         feedbackDiv.appendChild(circle);
     }
     for (let i = 0; i < correctColor; i++) {
         const circle = document.createElement('div');
-        circle.classList.add('feedback-circle');
-        circle.style.backgroundColor = 'red'; // Solo color correcto
+        circle.classList.add('feedback-circle', 'correct-color');
         feedbackDiv.appendChild(circle);
     }
     
@@ -89,8 +87,7 @@ function checkAttempt() {
     const incorrectPicks = maxSelection - correctPosition - correctColor;
     for (let i = 0; i < incorrectPicks; i++) {
         const circle = document.createElement('div');
-        circle.classList.add('feedback-circle');
-        circle.style.backgroundColor = 'gray'; // Ni color ni posición correctos
+        circle.classList.add('feedback-circle', 'incorrect');
         feedbackDiv.appendChild(circle);
     }
 
@@ -102,7 +99,7 @@ function checkAttempt() {
         clearInterval(timer);
         restartGame();
     } else if (--maxAttempts <= 0 || timeLeft <= 0) {
-        alert("¡Se acabaron los intentos! El código era: " + secretCode.join(", "));
+        alert("¡Se acabaron los intentos! La combinación correcta era: " + secretCode.join(", "));
         clearInterval(timer);
         restartGame();
     }
@@ -140,7 +137,7 @@ function startTimer() {
         document.getElementById('timer').textContent = `Tiempo restante: ${timeLeft}s`;
         if (timeLeft <= 0) {
             clearInterval(timer);
-            alert("¡Tiempo agotado!");
+            alert("¡Tiempo agotado! La combinación correcta era: " + secretCode.join(", "));
             restartGame();
         }
     }, 1000);
