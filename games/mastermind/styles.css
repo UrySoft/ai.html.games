@@ -125,8 +125,7 @@ h2 {
 #color-options .color[data-color="red"] { background-color: #ff6b6b; }
 #color-options .color[data-color="green"] { background-color: #28a745; }
 #color-options .color[data-color="blue"] { background-color: #007bff; }
-#color-options .color[data-color="purple"] { background-color: #6f42c1; } /* Morado en lugar de amarillo */
-#color-options .color[data-color="orange"] { background-color: #fd7e14; }
+#color-options .color[data-color="purple"] { background-color: #6f42c1; } /* Morado */
 
 #color-options button:hover {
     transform: scale(1.1);

@@ -1,7 +1,7 @@
 let secretCode = [];
 let currentAttempt = [];
 const maxSelection = 4;
-const colors = ["red", "green", "blue", "purple", "orange"]; // Cambiar el color amarillo a morado
+const colors = ["red", "green", "blue", "purple"]; // Solo 4 colores posibles
 let maxAttempts = 10;
 let timer;
 let timeLeft = 60;
@@ -10,7 +10,7 @@ let attemptsHistory = [];
 // Generar código secreto
 function generateSecretCode() {
     secretCode = [];
-    for (let i = 0; i < 4; i++) { // Ahora solo 4 colores
+    for (let i = 0; i < maxSelection; i++) { // Ahora solo 4 colores
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         secretCode.push(randomColor);
     }
@@ -26,10 +26,6 @@ function updateCurrentAttemptDisplay() {
         colorDiv.style.backgroundColor = color;
         attemptDiv.appendChild(colorDiv);
     });
-
-    if (currentAttempt.length === maxSelection) {
-        checkAttempt();
-    }
 }
 
 // Comprobar intento del jugador automáticamente
@@ -97,7 +93,7 @@ function checkAttempt() {
     // Almacenar en el historial
     attemptsHistory.push({ colors: [...currentAttempt], feedback: { correctPosition, correctColor } });
 
-    if (correctPosition === 4) { // Ahora son 4 colores
+    if (correctPosition === maxSelection) { // Ahora son 4 colores
         alert("¡Has ganado!");
         clearInterval(timer);
     } else if (--maxAttempts <= 0 || timeLeft <= 0) {
