@@ -1,7 +1,7 @@
 let secretCode = [];
 let currentAttempt = [];
 const maxSelection = 5;
-const colors = ["red", "green", "blue", "yellow", "orange"];
+const colors = ["red", "green", "blue", "purple", "orange"]; // Cambiar el color amarillo a morado
 let maxAttempts = 10;
 let timer;
 let timeLeft = 60;
@@ -16,7 +16,7 @@ function generateSecretCode() {
     }
 }
 
-// Mostrar la selección actual del usuario en colores, por encima del historial de intentos
+// Mostrar la selección actual del usuario en colores
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
     attemptDiv.innerHTML = ''; // Limpiar selección anterior
@@ -104,19 +104,17 @@ function checkAttempt() {
     updateCurrentAttemptDisplay();
 }
 
-// Mostrar el código secreto al terminar el tiempo
+// Mostrar el código secreto utilizando la sección de selección actual
 function showSecretCode() {
-    const secretCodeDiv = document.getElementById('secret-code');
-    secretCodeDiv.innerHTML = ''; // Limpiar contenido anterior
+    const attemptDiv = document.getElementById('current-attempt');
+    attemptDiv.innerHTML = ''; // Limpiar contenido anterior
 
     secretCode.forEach(color => {
         const colorDiv = document.createElement('div');
         colorDiv.style.backgroundColor = color;
-        colorDiv.classList.add('color-circle');
-        secretCodeDiv.appendChild(colorDiv);
+        colorDiv.classList.add('color-preview');
+        attemptDiv.appendChild(colorDiv);
     });
-
-    document.body.appendChild(secretCodeDiv);
 }
 
 // Añadir color a la selección del usuario
