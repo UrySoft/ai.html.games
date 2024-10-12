@@ -132,7 +132,7 @@ button {
     padding: 15px 30px;
     font-size: 16px;
     border-radius: 5px;
-    background-color: #007bff;
+    background-color: #dc3545; /* Rojo */
     color: white;
     border: none;
     cursor: pointer;
@@ -140,6 +140,6 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #c82333; /* Rojo más oscuro */
     transform: scale(1.05);
 }

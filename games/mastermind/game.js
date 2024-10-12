@@ -27,6 +27,7 @@ function updateCurrentAttemptDisplay() {
         attemptDiv.appendChild(colorDiv);
     });
 
+    // Mostrar la lista de selecciones anteriores una vez completada la selección
     if (currentAttempt.length === maxSelection) {
         checkAttempt();
     }
@@ -104,9 +105,10 @@ function checkAttempt() {
     updateCurrentAttemptDisplay();
 }
 
+// Mostrar el código secreto al terminar el tiempo
 function showSecretCode() {
-    const secretCodeDiv = document.createElement('div');
-    secretCodeDiv.classList.add('secret-code');
+    const secretCodeDiv = document.getElementById('secret-code');
+    secretCodeDiv.innerHTML = ''; // Limpiar contenido anterior
 
     secretCode.forEach(color => {
         const colorDiv = document.createElement('div');
@@ -138,6 +140,7 @@ function restartGame() {
     currentAttempt = [];
     attemptsHistory = [];
     document.getElementById('attempts').innerHTML = "";
+    document.getElementById('secret-code').innerHTML = ""; // Limpiar código secreto
     updateCurrentAttemptDisplay();
 }
 
