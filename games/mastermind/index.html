@@ -8,14 +8,21 @@
 </head>
 <body>
     <h1>Mastermind</h1>
+    <p class="version">Versión 1.0</p>
+
+    <!-- Historial de intentos y pistas -->
+    <div id="attempts-history">
+        <h2>Historial de intentos</h2>
+        <div id="attempts"></div>
+    </div>
 
     <!-- Temporizador -->
     <div id="timer-container">
         <p id="timer">Tiempo restante: 60s</p>
     </div>
 
-    <!-- Tablero de juego -->
-    <div id="game-board">
+    <!-- Selección de colores en la parte inferior -->
+    <div id="color-selection">
         <div id="color-options">
             <!-- Botones de colores que el jugador seleccionará -->
             <button class="color" data-color="red"></button>
@@ -24,15 +31,8 @@
             <button class="color" data-color="yellow"></button>
             <button class="color" data-color="orange"></button>
         </div>
-
-        <!-- Mostrar selección visual del usuario -->
-        <div id="current-attempt">Tu selección:</div>
-
-        <!-- Mostrar intentos previos y pistas -->
-        <div id="attempts"></div>
     </div>
 
-    <button id="check-guess">Comprobar intento</button>
     <button id="restart-game">Reiniciar juego</button>
 
     <script src="game.js"></script>

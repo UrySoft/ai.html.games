@@ -1,28 +1,115 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
+    background-color: #f9f9f9;
+    color: #333;
 }
 
 h1 {
     font-size: 2em;
     margin-top: 20px;
+    color: #333;
 }
 
-#game-board {
+p.version {
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 5px;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+#attempts-history {
+    max-width: 600px;
     margin: 20px auto;
-    width: 400px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#attempts-history h2 {
     text-align: center;
+    color: #444;
+}
+
+#attempts {
+    margin-top: 10px;
+}
+
+.attempt {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    transition: transform 0.3s ease;
+}
+
+.attempt:hover {
+    transform: scale(1.05);
+}
+
+.feedback {
+    display: flex;
+    margin-left: 20px;
+}
+
+.color-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.feedback-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.feedback .correct-position {
+    background-color: black;
+}
+
+.feedback .correct-color {
+    background-color: red;
+}
+
+.feedback .incorrect {
+    background-color: gray;
+}
+
+#timer-container {
+    margin: 20px;
+}
+
+#timer {
+    font-size: 1.2em;
+    color: #333;
+}
+
+#color-selection {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #f0f0f0;
+    padding: 10px 0;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
 
 #color-options {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
 }
 
 #color-options button {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     margin: 5px;
     border-radius: 50%;
     border: none;
@@ -30,74 +117,29 @@ h1 {
     transition: transform 0.3s ease;
 }
 
-#color-options .color[data-color="red"] { background-color: red; }
-#color-options .color[data-color="green"] { background-color: green; }
-#color-options .color[data-color="blue"] { background-color: blue; }
-#color-options .color[data-color="yellow"] { background-color: yellow; }
-#color-options .color[data-color="orange"] { background-color: orange; }
+#color-options .color[data-color="red"] { background-color: #ff6b6b; }
+#color-options .color[data-color="green"] { background-color: #28a745; }
+#color-options .color[data-color="blue"] { background-color: #007bff; }
+#color-options .color[data-color="yellow"] { background-color: #ffc107; }
+#color-options .color[data-color="orange"] { background-color: #fd7e14; }
 
 #color-options button:hover {
     transform: scale(1.1);
 }
 
-#current-attempt {
-    margin-top: 20px;
-    font-size: 1.2em;
-    display: flex;
-    justify-content: center;
-}
-
-.color-preview {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-#attempts {
-    margin-top: 20px;
-}
-
-.attempt {
-    margin: 10px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.feedback {
-    display: inline-block;
-    margin-left: 10px;
-}
-
-.feedback-circle {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
-}
-
-.feedback .correct-position {
-    background-color: red;
-}
-
-.feedback .correct-color {
-    background-color: white;
-}
-
 button {
     margin: 10px;
-    padding: 10px 20px;
+    padding: 15px 30px;
     font-size: 16px;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
     cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-#timer-container {
-    margin-bottom: 20px;
-}
-
-#timer {
-    font-size: 18px;
-    color: #333;
+button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
 }
