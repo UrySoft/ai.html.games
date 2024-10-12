@@ -1,6 +1,6 @@
 let secretCode = [];
 let currentAttempt = [];
-const maxSelection = 5;
+const maxSelection = 4;
 const colors = ["red", "green", "blue", "purple", "orange"]; // Cambiar el color amarillo a morado
 let maxAttempts = 10;
 let timer;
@@ -10,7 +10,7 @@ let attemptsHistory = [];
 // Generar código secreto
 function generateSecretCode() {
     secretCode = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) { // Ahora solo 4 colores
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         secretCode.push(randomColor);
     }
@@ -69,6 +69,7 @@ function checkAttempt() {
     const feedbackDiv = document.createElement('div');
     feedbackDiv.classList.add('feedback');
 
+    // Pistas en formato 2x2
     for (let i = 0; i < correctPosition; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'correct-position');
@@ -87,13 +88,16 @@ function checkAttempt() {
         feedbackDiv.appendChild(circle);
     }
 
+    feedbackDiv.style.display = 'grid';
+    feedbackDiv.style.gridTemplateColumns = 'repeat(2, 1fr)'; // Configurar en formato 2x2
+
     attemptDiv.appendChild(feedbackDiv);
     document.getElementById('attempts').appendChild(attemptDiv);
 
     // Almacenar en el historial
     attemptsHistory.push({ colors: [...currentAttempt], feedback: { correctPosition, correctColor } });
 
-    if (correctPosition === 5) {
+    if (correctPosition === 4) { // Ahora son 4 colores
         alert("¡Has ganado!");
         clearInterval(timer);
     } else if (--maxAttempts <= 0 || timeLeft <= 0) {

@@ -58,7 +58,8 @@ h2 {
 }
 
 .feedback {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Pistas en formato 2x2 */
     margin-left: 20px;
 }
 
