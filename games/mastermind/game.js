@@ -27,7 +27,6 @@ function updateCurrentAttemptDisplay() {
         attemptDiv.appendChild(colorDiv);
     });
 
-    // Mostrar la lista de selecciones anteriores una vez completada la selección
     if (currentAttempt.length === maxSelection) {
         checkAttempt();
     }
@@ -75,14 +74,14 @@ function checkAttempt() {
         circle.classList.add('feedback-circle', 'correct-position');
         feedbackDiv.appendChild(circle);
     }
-    for (let i = 0; i < correctColor; i++) {
+    for (let i = 0; correctColor; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'correct-color');
         feedbackDiv.appendChild(circle);
     }
 
     const incorrectPicks = maxSelection - correctPosition - correctColor;
-    for (let i = 0; i < incorrectPicks; i++) {
+    for (let i = 0; incorrectPicks; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'incorrect');
         feedbackDiv.appendChild(circle);
@@ -130,6 +129,11 @@ function addColorToAttempt(color) {
     }
 }
 
+// Mostrar el patrón secreto al hacer clic en el botón de revelar patrón
+function revealPattern() {
+    showSecretCode();
+}
+
 // Reiniciar el juego
 function restartGame() {
     generateSecretCode();
@@ -158,6 +162,7 @@ function startTimer() {
 
 // Iniciar juego
 document.getElementById('restart-game').addEventListener('click', restartGame);
+document.getElementById('reveal-pattern').addEventListener('click', revealPattern);
 
 // Agregar eventos a los botones de selección de colores
 document.querySelectorAll('.color').forEach(button => {
