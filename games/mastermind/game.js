@@ -5,11 +5,12 @@ const colors = ["red", "green", "blue", "yellow", "orange"];
 let maxAttempts = 10;
 let timer;
 let timeLeft = 60;
+let attemptsHistory = [];
 
 // Generar código secreto
 function generateSecretCode() {
     secretCode = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 5; i++) {
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         secretCode.push(randomColor);
     }
@@ -18,7 +19,7 @@ function generateSecretCode() {
 // Mostrar selección del usuario en colores
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
-    attemptDiv.innerHTML = ''; 
+    attemptDiv.innerHTML = ''; // Limpiar selección anterior
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
         colorDiv.classList.add('color-preview');
@@ -39,6 +40,7 @@ function checkAttempt() {
     const tempSecret = [...secretCode];
     const tempAttempt = [...currentAttempt];
 
+    // Primero, comprobar colores en la posición correcta
     for (let i = 0; i < tempAttempt.length; i++) {
         if (tempAttempt[i] === tempSecret[i]) {
             correctPosition++;
@@ -46,6 +48,7 @@ function checkAttempt() {
         }
     }
 
+    // Después, comprobar colores correctos pero en la posición incorrecta
     for (let i = 0; i < tempAttempt.length; i++) {
         if (tempAttempt[i] && tempSecret.includes(tempAttempt[i])) {
             correctColor++;
@@ -87,7 +90,10 @@ function checkAttempt() {
     attemptDiv.appendChild(feedbackDiv);
     document.getElementById('attempts').appendChild(attemptDiv);
 
-    if (correctPosition === 7) {
+    // Almacenar en el historial
+    attemptsHistory.push({ colors: [...currentAttempt], feedback: { correctPosition, correctColor } });
+
+    if (correctPosition === 5) {
         alert("¡Has ganado!");
         clearInterval(timer);
     } else if (--maxAttempts <= 0 || timeLeft <= 0) {
@@ -130,6 +136,7 @@ function restartGame() {
     clearInterval(timer);
     startTimer();
     currentAttempt = [];
+    attemptsHistory = [];
     document.getElementById('attempts').innerHTML = "";
     updateCurrentAttemptDisplay();
 }
