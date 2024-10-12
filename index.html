@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Principal</title>
+    <title>Selector de Juegos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Selecciona un juego</h1>
-    
-    <!-- Botones de selección de juegos -->
-    <div id="game-selection">
-        <button onclick="location.href='games/tresenralla/index.html'">Tres en Ratlla</button>
-        <button onclick="location.href='games/mastermind/index.html'">Mastermind</button>
-    </div>
+    <h1>Selecciona un Juego</h1>
+    <div class="game-buttons">
+        <!-- Botón del juego Tres en Raya -->
+        <div class="game-button">
+            <a href="games/tresenraya/index.html">
+                <img src="games/tresenraya/icono.webp" alt="Tres en Raya">
+                <span>Tres en Raya</span>
+            </a>
+        </div>
 
-    <script src="game.js"></script>
+        <!-- Más juegos se pueden agregar aquí con el mismo formato -->
+    </div>
 </body>
 </html>
