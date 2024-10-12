@@ -16,7 +16,7 @@ function generateSecretCode() {
     }
 }
 
-// Mostrar selección del usuario en colores
+// Mostrar la selección actual del usuario en colores, por encima del historial de intentos
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
     attemptDiv.innerHTML = ''; // Limpiar selección anterior
@@ -74,14 +74,14 @@ function checkAttempt() {
         circle.classList.add('feedback-circle', 'correct-position');
         feedbackDiv.appendChild(circle);
     }
-    for (let i = 0; correctColor; i++) {
+    for (let i = 0; i < correctColor; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'correct-color');
         feedbackDiv.appendChild(circle);
     }
 
     const incorrectPicks = maxSelection - correctPosition - correctColor;
-    for (let i = 0; incorrectPicks; i++) {
+    for (let i = 0; i < incorrectPicks; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'incorrect');
         feedbackDiv.appendChild(circle);

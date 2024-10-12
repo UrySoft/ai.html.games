@@ -8,7 +8,13 @@
 </head>
 <body>
     <h1>Mastermind</h1>
-    <p class="version">Versión 1.1</p>
+    <p class="version">Versión 1.2</p>
+
+    <!-- Sección para mostrar la selección actual del usuario -->
+    <div id="current-attempt-section">
+        <h2>Tu selección actual</h2>
+        <div id="current-attempt"></div>
+    </div>
 
     <!-- Historial de intentos y pistas -->
     <div id="attempts-history">
@@ -35,9 +41,6 @@
 
     <button id="restart-game">Reiniciar juego</button>
     <button id="reveal-pattern">Revelar Patrón</button>
-
-    <!-- Espacio para la selección actual -->
-    <div id="current-attempt"></div>
 
     <!-- Mostrar código secreto cuando se termine el tiempo -->
     <div id="secret-code"></div>

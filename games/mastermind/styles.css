@@ -23,6 +23,10 @@ h2 {
     color: #555;
 }
 
+#current-attempt-section {
+    margin-top: 20px;
+}
+
 #attempts-history {
     max-width: 600px;
     margin: 20px auto;
