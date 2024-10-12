@@ -101,7 +101,7 @@ function checkAttempt() {
     }
 
     currentAttempt = [];
-    updateCurrentAttemptDisplay();
+    updateCurrentAttemptDisplay(); // Llamada para mostrar la nueva selección después de verificar
 }
 
 // Mostrar el código secreto utilizando la sección de selección actual
@@ -121,7 +121,7 @@ function showSecretCode() {
 function addColorToAttempt(color) {
     if (currentAttempt.length < maxSelection) {
         currentAttempt.push(color);
-        updateCurrentAttemptDisplay();
+        updateCurrentAttemptDisplay(); // Actualizar la visualización cada vez que se seleccione un color
     } else {
         alert(`Solo puedes seleccionar ${maxSelection} colores.`);
     }
