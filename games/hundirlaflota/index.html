@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hundir la Flota</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Hundir la Flota</h1>
+
+    <div id="tableros">
+        <!-- Tablero 1: Colocación de barcos y disparos recibidos -->
+        <div>
+            <h2>Tablero 1: Tus barcos y disparos recibidos</h2>
+            <div id="tablero-barcos" class="tablero"></div>
+        </div>
+
+        <!-- Tablero 2: Disparos al oponente -->
+        <div>
+            <h2>Tablero 2: Disparos al oponente</h2>
+            <div id="tablero-disparos" class="tablero"></div>
+        </div>
+    </div>
+
+    <!-- Contenedor de los barcos disponibles para arrastrar -->
+    <div id="barcos-disponibles">
+        <div id="portaaviones" class="barco" data-tamaño="5">Portaaviones</div>
+        <div id="buque" class="barco" data-tamaño="4">Buque</div>
+        <div id="submarino" class="barco" data-tamaño="3">Submarino</div>
+        <div id="destructor" class="barco" data-tamaño="3">Destructor</div>
+        <div id="patrullero" class="barco" data-tamaño="2">Patrullero</div>
+    </div>
+
+    <button id="cambiar-orientacion">Cambiar orientación</button>
+    <button id="listo">Listo</button>
+
+    <script src="game.js"></script>
+</body>
+</html>

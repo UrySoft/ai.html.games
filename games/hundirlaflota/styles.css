@@ -1,0 +1,59 @@
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f9;
+}
+
+h1, h2 {
+    margin: 20px;
+}
+
+#tableros {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.tablero {
+    display: grid;
+    grid-template-columns: repeat(10, 40px);
+    grid-template-rows: repeat(10, 40px);
+    margin: 20px auto;
+}
+
+.tablero button {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    background-color: #87CEFA;
+    cursor: pointer;
+}
+
+.barco {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px;
+    background-color: #f4b400;
+    cursor: move;
+}
+
+#barcos-disponibles {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
