@@ -10,7 +10,7 @@
     <!-- Nueva sección superior que agrupa título, versión, botones y tiempo restante -->
     <div id="top-section">
         <h1>Mastermind</h1>
-        <p class="version">Versión 1.9</p>
+        <p class="version">Versión 2.0</p>
         <div id="controls">
             <button id="restart-game">Reiniciar juego</button>
             <button id="reveal-pattern">Revelar Patrón</button>
@@ -29,18 +29,18 @@
         </div>
     </div>
 
-    <!-- Mostrar la selección actual del usuario antes del historial -->
-    <div id="current-attempt-section">
+    <!-- Mostrar la selección actual del usuario antes del historial, con el mismo estilo sombreado -->
+    <div id="current-attempt-section" class="shaded-box">
         <div id="current-attempt"></div>
     </div>
 
     <!-- Historial de intentos y pistas -->
-    <div id="attempts-history">
-        <!-- Leyenda de los colores de las pistas -->
-        <div id="legend">
-            <p><span class="legend-circle correct-position"></span> Correcto en posición y color</p>
-            <p><span class="legend-circle correct-color"></span> Correcto solo en color</p>
-            <p><span class="legend-circle incorrect"></span> Incorrecto</p>
+    <div id="attempts-history" class="shaded-box">
+        <!-- Leyenda compacta de los colores de las pistas -->
+        <div id="legend" class="compact-legend">
+            <span class="legend-circle correct-position"></span> Correcto en posición y color
+            <span class="legend-circle correct-color"></span> Correcto solo en color
+            <span class="legend-circle incorrect"></span> Incorrecto
         </div>
         <div id="attempts"></div>
     </div>

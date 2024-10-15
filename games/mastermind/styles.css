@@ -30,11 +30,7 @@ p.version {
     color: #333;
 }
 
-#current-attempt-section {
-    margin-top: 20px;
-}
-
-#attempts-history {
+#current-attempt-section, #attempts-history {
     max-width: 600px;
     margin: 20px auto;
     padding: 20px;
@@ -62,6 +58,12 @@ p.version {
 #legend {
     text-align: left;
     margin-bottom: 10px;
+}
+
+.compact-legend {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Más compacto */
 }
 
 .legend-circle {
