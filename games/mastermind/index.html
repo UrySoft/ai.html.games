@@ -10,8 +10,8 @@
     <!-- Nueva sección superior que agrupa título, versión, botones y tiempo restante -->
     <div id="top-section">
         <h1>Mastermind</h1>
-        <p class="version">Versión 2.1</p>
-        <div id="controls">
+        <p class="version">Versión 2.2</p>
+        <div id="controls" class="horizontal-buttons">
             <button id="restart-game">Reiniciar juego</button>
             <button id="reveal-pattern">Revelar Patrón</button>
         </div>
@@ -29,9 +29,14 @@
         </div>
     </div>
 
-    <!-- Mostrar la selección actual del usuario antes del historial, con el mismo estilo sombreado -->
+    <!-- Mostrar la selección actual del usuario antes del historial, con 4 espacios grises -->
     <div id="current-attempt-section" class="shaded-box">
-        <div id="current-attempt"></div>
+        <div id="current-attempt">
+            <div class="empty-slot"></div>
+            <div class="empty-slot"></div>
+            <div class="empty-slot"></div>
+            <div class="empty-slot"></div>
+        </div>
     </div>
 
     <!-- Historial de intentos y pistas -->
