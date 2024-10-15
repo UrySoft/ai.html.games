@@ -71,10 +71,9 @@ function checkAttempt() {
 
     const attemptDiv = document.createElement('div');
     attemptDiv.classList.add('attempt');
-    attemptDiv.style.display = 'flex'; // Mostrar en horizontal
-    attemptDiv.style.justifyContent = 'flex-start'; // Alinear hacia la izquierda
+    attemptDiv.style.display = 'flex';
+    attemptDiv.style.justifyContent = 'center'; // Centrar contenido
 
-    // Añadir el número del intento
     const attemptNumber = document.createElement('span');
     attemptNumber.textContent = `${attemptCounter}. `;
     attemptDiv.appendChild(attemptNumber);
@@ -83,7 +82,7 @@ function checkAttempt() {
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
         colorDiv.style.backgroundColor = color;
-        colorDiv.style.width = '30px'; // Reducir tamaño de los círculos para ajustarlo en línea
+        colorDiv.style.width = '30px'; 
         colorDiv.style.height = '30px';
         colorDiv.style.borderRadius = '50%';
         colorDiv.style.display = 'inline-block';
@@ -92,21 +91,29 @@ function checkAttempt() {
         attemptDiv.appendChild(colorDiv);
     });
 
-    // Crear una pequeña sección para las pistas en formato 2x2
+    // Crear la sección de pistas en formato 2x2
     const feedbackDiv = document.createElement('div');
     feedbackDiv.style.display = 'grid';
     feedbackDiv.style.gridTemplateColumns = 'repeat(2, 1fr)';
-    feedbackDiv.style.gridGap = '3px'; // Añadir un pequeño espacio entre las pistas
-    feedbackDiv.style.marginLeft = '15px'; // Añadir espacio entre colores y pistas
+    feedbackDiv.style.gridGap = '3px'; 
+    feedbackDiv.style.marginLeft = '15px'; 
 
     for (let i = 0; i < correctPosition; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'correct-position');
+        circle.style.width = '15px'; 
+        circle.style.height = '15px';
+        circle.style.borderRadius = '50%';
+        circle.style.backgroundColor = 'black';
         feedbackDiv.appendChild(circle);
     }
     for (let i = 0; i < correctColor; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'correct-color');
+        circle.style.width = '15px'; 
+        circle.style.height = '15px';
+        circle.style.borderRadius = '50%';
+        circle.style.backgroundColor = 'red';
         feedbackDiv.appendChild(circle);
     }
 
@@ -114,13 +121,17 @@ function checkAttempt() {
     for (let i = 0; i < incorrectPicks; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'incorrect');
+        circle.style.width = '15px'; 
+        circle.style.height = '15px';
+        circle.style.borderRadius = '50%';
+        circle.style.backgroundColor = 'gray';
         feedbackDiv.appendChild(circle);
     }
 
     attemptDiv.appendChild(feedbackDiv);
 
     const attemptsSection = document.getElementById('attempts');
-    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild); // Insertar el intento más nuevo al principio
+    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild);
 
     attemptCounter++;
 
