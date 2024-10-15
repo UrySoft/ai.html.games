@@ -16,18 +16,11 @@ function generateSecretCode() {
     }
 }
 
-// Mostrar la selección actual del usuario en colores debajo de los colores seleccionables
+// Mostrar la selección actual del usuario en colores de izquierda a derecha
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
     attemptDiv.innerHTML = ''; // Limpiar selección anterior
     const emptySlots = maxSelection - currentAttempt.length;
-
-    // Mostrar espacios vacíos según lo que falte por seleccionar
-    for (let i = 0; i < emptySlots; i++) {
-        const emptySlot = document.createElement('div');
-        emptySlot.classList.add('empty-slot');
-        attemptDiv.appendChild(emptySlot);
-    }
 
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
@@ -38,8 +31,16 @@ function updateCurrentAttemptDisplay() {
         colorDiv.style.display = 'inline-block';
         colorDiv.style.marginRight = '10px';
         colorDiv.style.borderRadius = '50%';
+        colorDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Sombreado
         attemptDiv.appendChild(colorDiv);
     });
+
+    // Mostrar espacios vacíos después de las selecciones hechas
+    for (let i = 0; i < emptySlots; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.classList.add('empty-slot');
+        attemptDiv.appendChild(emptySlot);
+    }
 
     // Validar automáticamente si se han seleccionado 4 colores
     if (currentAttempt.length === maxSelection) {
@@ -137,6 +138,7 @@ function showSecretCode() {
         colorDiv.style.display = 'inline-block';
         colorDiv.style.marginRight = '10px';
         colorDiv.style.borderRadius = '50%';
+        colorDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
         attemptDiv.appendChild(colorDiv);
     });
 }
