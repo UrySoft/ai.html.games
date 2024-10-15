@@ -4,7 +4,7 @@ const maxSelection = 4;
 const colors = ["red", "green", "blue", "purple"]; // Solo 4 colores posibles
 let maxAttempts = 10;
 let timer;
-let timeLeft = 300; // Aumentar a 5 minutos (300 segundos)
+let timeLeft = 300; // Asegurar que el tiempo sea de 5 minutos (300 segundos)
 let attemptsHistory = [];
 let attemptCounter = 1; // Contador para numerar los intentos
 
@@ -108,7 +108,7 @@ function checkAttempt() {
     
     // Insertar el intento más nuevo al inicio de la lista
     const attemptsSection = document.getElementById('attempts');
-    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild);
+    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild); // Asegurarse que los intentos aparezcan de más nuevo a más antiguo
 
     // Incrementar el contador de intentos
     attemptCounter++;
@@ -169,7 +169,7 @@ function revealPattern() {
 function restartGame() {
     generateSecretCode();
     maxAttempts = 10;
-    timeLeft = 300; // Reiniciar a 5 minutos
+    timeLeft = 300; // Asegurar que el tiempo sea de 5 minutos
     clearInterval(timer);
     startTimer();
     currentAttempt = [];
