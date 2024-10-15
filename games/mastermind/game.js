@@ -143,6 +143,11 @@ function showSecretCode() {
     });
 }
 
+// Abrir el archivo de ayuda en una ventana emergente
+function openHelpPopup() {
+    window.open('help.html', 'Ayuda', 'width=500,height=600');
+}
+
 // Añadir color a la selección del usuario
 function addColorToAttempt(color) {
     if (currentAttempt.length < maxSelection) {
@@ -187,6 +192,7 @@ function startTimer() {
 // Iniciar juego
 document.getElementById('restart-game').addEventListener('click', restartGame);
 document.getElementById('reveal-pattern').addEventListener('click', revealPattern);
+document.getElementById('help-button').addEventListener('click', openHelpPopup);
 
 // Agregar eventos a los botones de selección de colores
 document.querySelectorAll('.color').forEach(button => {

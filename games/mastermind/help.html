@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda de Mastermind</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .legend-section {
+            margin-top: 20px;
+        }
+        .legend-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .legend-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .correct-position {
+            background-color: black;
+        }
+        .correct-color {
+            background-color: red;
+        }
+        .incorrect {
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cómo jugar al Mastermind</h1>
+    <p>El objetivo del juego es adivinar una secuencia de 4 colores en el menor número de intentos posible.</p>
+    <p>Selecciona los colores y cuando completes tu selección, el intento será validado automáticamente.</p>
+    <p>Las pistas que recibirás te ayudarán a saber si has acertado el color y su posición o solo el color.</p>
+    
+    <div class="legend-section">
+        <h2>Significado de las pistas:</h2>
+        <div class="legend-item">
+            <div class="legend-circle correct-position"></div>
+            <span>Correcto en posición y color</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle correct-color"></div>
+            <span>Correcto solo en color</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle incorrect"></div>
+            <span>Incorrecto</span>
+        </div>
+    </div>
+</body>
+</html>

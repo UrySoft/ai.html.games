@@ -6,12 +6,12 @@ body {
 }
 
 #top-section {
-    margin-bottom: 20px;
+    margin-bottom: 5px; /* Reducir espacio entre título y versión */
 }
 
 h1 {
     font-size: 2em;
-    margin-top: 20px;
+    margin-top: 10px; /* Reducir margen superior del título */
     color: #333;
 }
 
@@ -40,6 +40,11 @@ p.version {
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#attempts-history {
+    max-height: 300px; /* Añadir un límite de altura */
+    overflow-y: auto; /* Activar scroll cuando haya muchos intentos */
 }
 
 #attempts {
@@ -72,64 +77,6 @@ p.version {
     transform: scale(1.05);
 }
 
-#legend {
-    text-align: left;
-    margin-bottom: 10px;
-}
-
-.compact-legend {
-    display: flex;
-    flex-direction: column; /* Listado vertical */
-    gap: 5px; /* Menos espacio entre líneas */
-    font-size: 0.75em; /* Tamaño de la fuente más pequeño */
-}
-
-.legend-circle {
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%; /* Asegurar que los puntos sean circulares */
-    margin-right: 5px;
-    vertical-align: middle;
-}
-
-.feedback-circle, .legend-circle {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombras a los círculos */
-}
-
-.feedback {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Pistas en formato 2x2 */
-    margin-left: 20px;
-}
-
-.color-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombras a los círculos */
-}
-
-.feedback-circle {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    margin-right: 5px;
-}
-
-.feedback .correct-position, .legend-circle.correct-position {
-    background-color: black;
-}
-
-.feedback .correct-color, .legend-circle.correct-color {
-    background-color: red;
-}
-
-.feedback .incorrect, .legend-circle.incorrect {
-    background-color: gray;
-}
-
 #color-selection {
     position: fixed;
     bottom: 0;
@@ -157,7 +104,7 @@ p.version {
 #color-options .color[data-color="red"] { background-color: #ff6b6b; }
 #color-options .color[data-color="green"] { background-color: #28a745; }
 #color-options .color[data-color="blue"] { background-color: #007bff; }
-#color-options .color[data-color="purple"] { background-color: #6f42c1; } /* Morado */
+#color-options .color[data-color="purple"] { background-color: #6f42c1; }
 
 #color-options button:hover {
     transform: scale(1.1);
@@ -176,6 +123,6 @@ button {
 }
 
 button:hover {
-    background-color: #c82333; /* Rojo más oscuro */
+    background-color: #c82333;
     transform: scale(1.05);
 }
