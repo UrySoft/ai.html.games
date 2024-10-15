@@ -76,6 +76,7 @@ function checkAttempt() {
 
     const attemptNumber = document.createElement('span');
     attemptNumber.textContent = `${attemptCounter}. `;
+    attemptNumber.style.minWidth = '30px'; // Reservar espacio para dos dígitos
     attemptDiv.appendChild(attemptNumber);
 
     // Mostrar los colores seleccionados en horizontal
