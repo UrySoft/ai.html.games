@@ -11,6 +11,18 @@
     <p class="version">Versión 1.6</p>
 
     <!-- Sección para mostrar la selección actual del usuario -->
+    <div id="color-selection">
+        <h2>Selecciona tus colores</h2>
+        <div id="color-options">
+            <!-- Botones de colores que el jugador seleccionará -->
+            <button class="color" data-color="red"></button>
+            <button class="color" data-color="green"></button>
+            <button class="color" data-color="blue"></button>
+            <button class="color" data-color="purple"></button>
+        </div>
+    </div>
+
+    <!-- Mostrar la selección actual del usuario debajo de los colores seleccionables -->
     <div id="current-attempt-section">
         <h2>Tu selección actual</h2>
         <div id="current-attempt"></div>
@@ -25,17 +37,6 @@
     <!-- Temporizador -->
     <div id="timer-container">
         <p id="timer">Tiempo restante: 60s</p>
-    </div>
-
-    <!-- Selección de colores en la parte inferior -->
-    <div id="color-selection">
-        <div id="color-options">
-            <!-- Botones de colores que el jugador seleccionará -->
-            <button class="color" data-color="red"></button>
-            <button class="color" data-color="green"></button>
-            <button class="color" data-color="blue"></button>
-            <button class="color" data-color="purple"></button>
-        </div>
     </div>
 
     <button id="restart-game">Reiniciar juego</button>

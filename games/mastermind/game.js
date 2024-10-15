@@ -16,7 +16,7 @@ function generateSecretCode() {
     }
 }
 
-// Mostrar la selección actual del usuario en colores
+// Mostrar la selección actual del usuario en colores debajo de los colores seleccionables
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
     attemptDiv.innerHTML = ''; // Limpiar selección anterior
@@ -24,6 +24,11 @@ function updateCurrentAttemptDisplay() {
         const colorDiv = document.createElement('div');
         colorDiv.classList.add('color-preview');
         colorDiv.style.backgroundColor = color;
+        colorDiv.style.width = '40px';
+        colorDiv.style.height = '40px';
+        colorDiv.style.display = 'inline-block';
+        colorDiv.style.marginRight = '10px';
+        colorDiv.style.borderRadius = '50%';
         attemptDiv.appendChild(colorDiv);
     });
 }
@@ -113,6 +118,11 @@ function showSecretCode() {
         const colorDiv = document.createElement('div');
         colorDiv.style.backgroundColor = color;
         colorDiv.classList.add('color-preview');
+        colorDiv.style.width = '40px';
+        colorDiv.style.height = '40px';
+        colorDiv.style.display = 'inline-block';
+        colorDiv.style.marginRight = '10px';
+        colorDiv.style.borderRadius = '50%';
         attemptDiv.appendChild(colorDiv);
     });
 }
