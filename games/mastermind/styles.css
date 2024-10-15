@@ -63,7 +63,7 @@ p.version {
 .compact-legend {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Más compacto */
+    gap: 20px; /* Ajuste compacto */
 }
 
 .legend-circle {
@@ -72,6 +72,7 @@ p.version {
     height: 20px;
     border-radius: 50%;
     margin-right: 5px;
+    vertical-align: middle;
 }
 
 .feedback-circle, .legend-circle {
