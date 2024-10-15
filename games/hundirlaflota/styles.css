@@ -24,12 +24,14 @@ p {
 
 .tablero-container {
     margin: 10px 0;
+    position: relative;
+    display: inline-block;
 }
 
 .tablero {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
+    grid-template-columns: 20px repeat(10, 1fr);
+    grid-template-rows: 20px repeat(10, 1fr);
     max-width: 90vw;
     gap: 2px;
 }
@@ -41,6 +43,14 @@ p {
     border: 1px solid #ccc;
     background-color: #87CEFA;
     cursor: pointer;
+}
+
+.tablero .coord {
+    background-color: transparent;
+    border: none;
+    pointer-events: none;
+    font-weight: bold;
+    color: #333;
 }
 
 #barcos-disponibles {
