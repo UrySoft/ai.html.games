@@ -20,6 +20,15 @@ function generateSecretCode() {
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
     attemptDiv.innerHTML = ''; // Limpiar selección anterior
+    const emptySlots = maxSelection - currentAttempt.length;
+
+    // Mostrar espacios vacíos según lo que falte por seleccionar
+    for (let i = 0; i < emptySlots; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.classList.add('empty-slot');
+        attemptDiv.appendChild(emptySlot);
+    }
+
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
         colorDiv.classList.add('color-preview');

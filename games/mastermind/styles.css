@@ -81,13 +81,14 @@ p.version {
     display: flex;
     justify-content: center;
     gap: 20px; /* Ajuste compacto */
+    font-size: 0.9em; /* Reducir el tamaño de la fuente */
 }
 
 .legend-circle {
     display: inline-block;
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border-radius: 50%; /* Asegurar que los puntos sean circulares */
     margin-right: 5px;
     vertical-align: middle;
 }
