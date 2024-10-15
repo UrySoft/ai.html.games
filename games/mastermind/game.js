@@ -4,13 +4,14 @@ const maxSelection = 4;
 const colors = ["red", "green", "blue", "purple"]; // Solo 4 colores posibles
 let maxAttempts = 10;
 let timer;
-let timeLeft = 60;
+let timeLeft = 300; // Aumentar a 5 minutos (300 segundos)
 let attemptsHistory = [];
+let attemptCounter = 1; // Contador para numerar los intentos
 
 // Generar código secreto
 function generateSecretCode() {
     secretCode = [];
-    for (let i = 0; i < maxSelection; i++) { // Ahora solo 4 colores
+    for (let i = 0; i < maxSelection; i++) { 
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         secretCode.push(randomColor);
     }
@@ -19,7 +20,7 @@ function generateSecretCode() {
 // Mostrar la selección actual del usuario en colores de izquierda a derecha
 function updateCurrentAttemptDisplay() {
     const attemptDiv = document.getElementById('current-attempt');
-    attemptDiv.innerHTML = ''; // Limpiar selección anterior
+    attemptDiv.innerHTML = ''; 
     const emptySlots = maxSelection - currentAttempt.length;
 
     currentAttempt.forEach(color => {
@@ -35,14 +36,12 @@ function updateCurrentAttemptDisplay() {
         attemptDiv.appendChild(colorDiv);
     });
 
-    // Mostrar espacios vacíos después de las selecciones hechas
     for (let i = 0; i < emptySlots; i++) {
         const emptySlot = document.createElement('div');
         emptySlot.classList.add('empty-slot');
         attemptDiv.appendChild(emptySlot);
     }
 
-    // Validar automáticamente si se han seleccionado 4 colores
     if (currentAttempt.length === maxSelection) {
         checkAttempt();
     }
@@ -56,7 +55,6 @@ function checkAttempt() {
     const tempSecret = [...secretCode];
     const tempAttempt = [...currentAttempt];
 
-    // Primero, comprobar colores en la posición correcta
     for (let i = 0; i < tempAttempt.length; i++) {
         if (tempAttempt[i] === tempSecret[i]) {
             correctPosition++;
@@ -64,7 +62,6 @@ function checkAttempt() {
         }
     }
 
-    // Después, comprobar colores correctos pero en la posición incorrecta
     for (let i = 0; i < tempAttempt.length; i++) {
         if (tempAttempt[i] && tempSecret.includes(tempAttempt[i])) {
             correctColor++;
@@ -74,6 +71,7 @@ function checkAttempt() {
 
     const attemptDiv = document.createElement('div');
     attemptDiv.classList.add('attempt');
+    attemptDiv.innerHTML = `<strong>Intento #${attemptCounter}</strong>`; // Numerar el intento
     
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
@@ -85,7 +83,6 @@ function checkAttempt() {
     const feedbackDiv = document.createElement('div');
     feedbackDiv.classList.add('feedback');
 
-    // Pistas en formato 2x2
     for (let i = 0; i < correctPosition; i++) {
         const circle = document.createElement('div');
         circle.classList.add('feedback-circle', 'correct-position');
@@ -105,15 +102,20 @@ function checkAttempt() {
     }
 
     feedbackDiv.style.display = 'grid';
-    feedbackDiv.style.gridTemplateColumns = 'repeat(2, 1fr)'; // Configurar en formato 2x2
+    feedbackDiv.style.gridTemplateColumns = 'repeat(2, 1fr)'; 
 
     attemptDiv.appendChild(feedbackDiv);
-    document.getElementById('attempts').appendChild(attemptDiv);
+    
+    // Insertar el intento más nuevo al inicio de la lista
+    const attemptsSection = document.getElementById('attempts');
+    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild);
 
-    // Almacenar en el historial
+    // Incrementar el contador de intentos
+    attemptCounter++;
+
     attemptsHistory.push({ colors: [...currentAttempt], feedback: { correctPosition, correctColor } });
 
-    if (correctPosition === maxSelection) { // Ahora son 4 colores
+    if (correctPosition === maxSelection) { 
         alert("¡Has ganado!");
         clearInterval(timer);
     } else if (--maxAttempts <= 0 || timeLeft <= 0) {
@@ -121,13 +123,13 @@ function checkAttempt() {
     }
 
     currentAttempt = [];
-    updateCurrentAttemptDisplay(); // Llamada para mostrar la nueva selección después de verificar
+    updateCurrentAttemptDisplay(); 
 }
 
 // Mostrar el código secreto utilizando la sección de selección actual
 function showSecretCode() {
     const attemptDiv = document.getElementById('current-attempt');
-    attemptDiv.innerHTML = ''; // Limpiar contenido anterior
+    attemptDiv.innerHTML = ''; 
 
     secretCode.forEach(color => {
         const colorDiv = document.createElement('div');
@@ -152,7 +154,7 @@ function openHelpPopup() {
 function addColorToAttempt(color) {
     if (currentAttempt.length < maxSelection) {
         currentAttempt.push(color);
-        updateCurrentAttemptDisplay(); // Actualizar la visualización cada vez que se seleccione un color
+        updateCurrentAttemptDisplay(); 
     } else {
         alert(`Solo puedes seleccionar ${maxSelection} colores.`);
     }
@@ -167,21 +169,22 @@ function revealPattern() {
 function restartGame() {
     generateSecretCode();
     maxAttempts = 10;
-    timeLeft = 60;
+    timeLeft = 300; // Reiniciar a 5 minutos
     clearInterval(timer);
     startTimer();
     currentAttempt = [];
     attemptsHistory = [];
     document.getElementById('attempts').innerHTML = "";
-    document.getElementById('secret-code').innerHTML = ""; // Limpiar código secreto
+    document.getElementById('secret-code').innerHTML = ""; 
     updateCurrentAttemptDisplay();
+    attemptCounter = 1; // Reiniciar el contador de intentos
 }
 
 // Temporizador
 function startTimer() {
     timer = setInterval(() => {
         timeLeft--;
-        document.getElementById('timer').textContent = `Tiempo restante: ${timeLeft}s`;
+        document.getElementById('timer').textContent = `Tiempo restante: ${Math.floor(timeLeft / 60)}m ${timeLeft % 60}s`;
         if (timeLeft <= 0) {
             clearInterval(timer);
             showSecretCode();

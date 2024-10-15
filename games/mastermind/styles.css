@@ -6,12 +6,12 @@ body {
 }
 
 #top-section {
-    margin-bottom: 5px; /* Reducir espacio entre título y versión */
+    margin-bottom: 5px;
 }
 
 h1 {
     font-size: 2em;
-    margin-top: 10px; /* Reducir margen superior del título */
+    margin-top: 10px;
     color: #333;
 }
 
@@ -24,8 +24,9 @@ p.version {
 #controls.horizontal-buttons {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 10px; /* Reducir espacio entre los botones */
+    margin: 0 auto;
+    max-width: 90%; /* Asegurar que los botones no queden pegados al borde */
 }
 
 #timer {
@@ -43,8 +44,8 @@ p.version {
 }
 
 #attempts-history {
-    max-height: 300px; /* Añadir un límite de altura */
-    overflow-y: auto; /* Activar scroll cuando haya muchos intentos */
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 #attempts {
@@ -115,7 +116,7 @@ button {
     padding: 15px 30px;
     font-size: 16px;
     border-radius: 5px;
-    background-color: #dc3545; /* Rojo */
+    background-color: #dc3545;
     color: white;
     border: none;
     cursor: pointer;
