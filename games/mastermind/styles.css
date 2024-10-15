@@ -5,6 +5,10 @@ body {
     color: #333;
 }
 
+#top-section {
+    margin-bottom: 20px;
+}
+
 h1 {
     font-size: 2em;
     margin-top: 20px;
@@ -17,10 +21,13 @@ p.version {
     margin-top: 5px;
 }
 
-h2 {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-    color: #555;
+#controls {
+    margin: 20px;
+}
+
+#timer {
+    font-size: 1.2em;
+    color: #333;
 }
 
 #current-attempt-section {
@@ -34,11 +41,6 @@ h2 {
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#attempts-history h2 {
-    text-align: center;
-    color: #444;
 }
 
 #attempts {
@@ -57,6 +59,23 @@ h2 {
     transform: scale(1.05);
 }
 
+#legend {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.legend-circle {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.feedback-circle, .legend-circle {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombras a los círculos */
+}
+
 .feedback {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Pistas en formato 2x2 */
@@ -68,6 +87,7 @@ h2 {
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombras a los círculos */
 }
 
 .feedback-circle {
@@ -77,25 +97,16 @@ h2 {
     margin-right: 5px;
 }
 
-.feedback .correct-position {
+.feedback .correct-position, .legend-circle.correct-position {
     background-color: black;
 }
 
-.feedback .correct-color {
+.feedback .correct-color, .legend-circle.correct-color {
     background-color: red;
 }
 
-.feedback .incorrect {
+.feedback .incorrect, .legend-circle.incorrect {
     background-color: gray;
-}
-
-#timer-container {
-    margin: 20px;
-}
-
-#timer {
-    font-size: 1.2em;
-    color: #333;
 }
 
 #color-selection {

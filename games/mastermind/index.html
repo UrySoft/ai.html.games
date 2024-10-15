@@ -7,12 +7,19 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Mastermind</h1>
-    <p class="version">Versión 1.8</p>
+    <!-- Nueva sección superior que agrupa título, versión, botones y tiempo restante -->
+    <div id="top-section">
+        <h1>Mastermind</h1>
+        <p class="version">Versión 1.9</p>
+        <div id="controls">
+            <button id="restart-game">Reiniciar juego</button>
+            <button id="reveal-pattern">Revelar Patrón</button>
+        </div>
+        <p id="timer">Tiempo restante: 60s</p>
+    </div>
 
-    <!-- Sección para mostrar la selección actual del usuario debajo de los colores seleccionables -->
+    <!-- Sección para los colores seleccionables -->
     <div id="color-selection">
-        <h2>Selecciona tus colores</h2>
         <div id="color-options">
             <!-- Botones de colores que el jugador seleccionará -->
             <button class="color" data-color="red"></button>
@@ -24,23 +31,19 @@
 
     <!-- Mostrar la selección actual del usuario antes del historial -->
     <div id="current-attempt-section">
-        <h2>Tu selección actual</h2>
         <div id="current-attempt"></div>
     </div>
 
     <!-- Historial de intentos y pistas -->
     <div id="attempts-history">
-        <h2>Historial de intentos</h2>
+        <!-- Leyenda de los colores de las pistas -->
+        <div id="legend">
+            <p><span class="legend-circle correct-position"></span> Correcto en posición y color</p>
+            <p><span class="legend-circle correct-color"></span> Correcto solo en color</p>
+            <p><span class="legend-circle incorrect"></span> Incorrecto</p>
+        </div>
         <div id="attempts"></div>
     </div>
-
-    <!-- Temporizador -->
-    <div id="timer-container">
-        <p id="timer">Tiempo restante: 60s</p>
-    </div>
-
-    <button id="restart-game">Reiniciar juego</button>
-    <button id="reveal-pattern">Revelar Patrón</button>
 
     <!-- Mostrar código secreto cuando se termine el tiempo -->
     <div id="secret-code"></div>
