@@ -39,11 +39,28 @@ document.querySelectorAll('.barco').forEach(barco => {
     });
 });
 
-// Cambiar la orientación del barco
+// Cambiar la orientación del barco y actualizar el indicador de orientación
 document.getElementById('cambiar-orientacion').addEventListener('click', () => {
     orientacion = orientacion === 'horizontal' ? 'vertical' : 'horizontal';
-    alert(`Nueva orientación: ${orientacion}`);
+    document.getElementById('orientacion-indicador').textContent = `Orientación: ${orientacion.charAt(0).toUpperCase() + orientacion.slice(1)}`;
 });
+
+// Verificar si el barco cabe en la posición seleccionada y si está rodeado por agua
+function verificarColocacion(fila, columna) {
+    for (let i = -1; i <= tamañoBarco; i++) {
+        for (let j = -1; j <= 1; j++) {
+            let checkFila = orientacion === 'horizontal' ? fila + j : fila + i;
+            let checkColumna = orientacion === 'horizontal' ? columna + i : columna + j;
+            if (checkFila >= 0 && checkFila < 10 && checkColumna >= 0 && checkColumna < 10) {
+                const celda = document.querySelector(`[data-fila='${checkFila}'][data-columna='${checkColumna}']`);
+                if (celda && celda.style.backgroundColor === '#f4b400') {
+                    return false;  // Hay otro barco cerca o en la posición
+                }
+            }
+        }
+    }
+    return true;  // Está rodeado por agua
+}
 
 // Colocar barco en el tablero
 function colocarBarco(event) {
@@ -55,22 +72,25 @@ function colocarBarco(event) {
     const fila = parseInt(event.target.dataset.fila);
     const columna = parseInt(event.target.dataset.columna);
 
-    if (orientacion === 'horizontal') {
-        if (columna + tamañoBarco > 10) {
-            alert('El barco no cabe horizontalmente en esta posición.');
+    // Verificar si el barco cabe en la posición seleccionada y está rodeado por agua
+    if ((orientacion === 'horizontal' && columna + tamañoBarco <= 10) ||
+        (orientacion === 'vertical' && fila + tamañoBarco <= 10)) {
+        
+        if (!verificarColocacion(fila, columna)) {
+            alert('No puedes colocar el barco aquí. Debe estar rodeado por agua y no tocar otros barcos.');
             return;
         }
+
+        // Colocar el barco en el tablero
         for (let i = 0; i < tamañoBarco; i++) {
-            document.querySelector(`[data-fila='${fila}'][data-columna='${columna + i}']`).style.backgroundColor = '#f4b400';
+            if (orientacion === 'horizontal') {
+                document.querySelector(`[data-fila='${fila}'][data-columna='${columna + i}']`).style.backgroundColor = '#f4b400';
+            } else {
+                document.querySelector(`[data-fila='${fila + i}'][data-columna='${columna}']`).style.backgroundColor = '#f4b400';
+            }
         }
     } else {
-        if (fila + tamañoBarco > 10) {
-            alert('El barco no cabe verticalmente en esta posición.');
-            return;
-        }
-        for (let i = 0; i < tamañoBarco; i++) {
-            document.querySelector(`[data-fila='${fila + i}'][data-columna='${columna}']`).style.backgroundColor = '#f4b400';
-        }
+        alert('El barco no cabe en esta posición.');
     }
 
     barcoSeleccionado = null; // Resetea la selección del barco después de colocarlo
