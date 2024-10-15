@@ -31,6 +31,11 @@ function updateCurrentAttemptDisplay() {
         colorDiv.style.borderRadius = '50%';
         attemptDiv.appendChild(colorDiv);
     });
+
+    // Validar automáticamente si se han seleccionado 4 colores
+    if (currentAttempt.length === maxSelection) {
+        checkAttempt();
+    }
 }
 
 // Comprobar intento del jugador automáticamente
