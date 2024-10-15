@@ -1,25 +1,25 @@
 
 body {
     font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
     text-align: center;
-    background-color: #f4f4f9;
 }
 
-h1, h2 {
+h1 {
+    font-size: 2.5em;
+    margin: 20px 0;
+}
+
+.tablero-container {
+    display: inline-block;
     margin: 20px;
-}
-
-#tableros {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
 }
 
 .tablero {
     display: grid;
     grid-template-columns: repeat(10, 40px);
     grid-template-rows: repeat(10, 40px);
-    margin: 20px auto;
+    gap: 2px;
 }
 
 .tablero button {
@@ -30,18 +30,16 @@ h1, h2 {
     cursor: pointer;
 }
 
+#barcos-disponibles {
+    margin-top: 30px;
+}
+
 .barco {
     display: inline-block;
     margin: 10px;
     padding: 10px;
     background-color: #f4b400;
-    cursor: move;
-}
-
-#barcos-disponibles {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+    cursor: pointer;
 }
 
 button {

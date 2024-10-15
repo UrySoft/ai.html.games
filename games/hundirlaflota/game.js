@@ -1,10 +1,9 @@
 
 let orientacion = 'horizontal'; // Inicialmente horizontal
-let barcosColocados = [];
-let barcosDisponibles = ['portaaviones', 'buque', 'submarino', 'destructor', 'patrullero'];
-let fase = 'colocacion'; // Fase actual
+let barcoSeleccionado = null;
+let tamañoBarco = 0;
 
-// Crear tableros
+// Crear el tablero de 10x10
 function crearTablero(tableroID) {
     const tablero = document.getElementById(tableroID);
     for (let i = 0; i < 10; i++) {
@@ -12,47 +11,58 @@ function crearTablero(tableroID) {
             const celda = document.createElement('button');
             celda.dataset.fila = i;
             celda.dataset.columna = j;
-            celda.addEventListener('click', manejarCelda);
+            celda.addEventListener('click', colocarBarco);
             tablero.appendChild(celda);
         }
     }
 }
 
-// Manejar los clics en los tableros
-function manejarCelda(event) {
-    const fila = event.target.dataset.fila;
-    const columna = event.target.dataset.columna;
+// Selección del barco
+document.querySelectorAll('.barco').forEach(barco => {
+    barco.addEventListener('click', (event) => {
+        barcoSeleccionado = event.target.id;
+        tamañoBarco = parseInt(event.target.dataset.tamaño);
+        alert(`Has seleccionado ${barcoSeleccionado} con tamaño ${tamañoBarco}`);
+    });
+});
 
-    if (fase === 'colocacion') {
-        // Colocar los barcos en el Tablero 1
-        alert(`Colocando barco en fila ${fila}, columna ${columna}`);
-        // Implementar la lógica de colocación de barcos aquí
-    } else if (fase === 'juego') {
-        if (event.currentTarget.id === 'tablero-barcos') {
-            // Marcar los disparos recibidos del oponente en Tablero 1
-            alert(`Disparo recibido en fila ${fila}, columna ${columna}`);
-            // Implementar lógica de disparos recibidos
-        } else if (event.currentTarget.id === 'tablero-disparos') {
-            // Registrar los disparos hechos al oponente en Tablero 2
-            alert(`Disparo realizado en fila ${fila}, columna ${columna}`);
-            // Implementar lógica de disparos al oponente
-        }
-    }
-}
-
-// Cambiar orientación de los barcos
+// Cambiar la orientación del barco
 document.getElementById('cambiar-orientacion').addEventListener('click', () => {
     orientacion = orientacion === 'horizontal' ? 'vertical' : 'horizontal';
     alert(`Nueva orientación: ${orientacion}`);
 });
 
-// Cambiar a la fase de juego
-document.getElementById('listo').addEventListener('click', () => {
-    fase = 'juego';
-    document.getElementById('barcos-disponibles').style.display = 'none'; // Ocultar los barcos
-    document.getElementById('fase-titulo').textContent = 'Marcar disparos recibidos y realizar disparos al oponente';
-});
+// Colocar barco en el tablero
+function colocarBarco(event) {
+    if (barcoSeleccionado === null) {
+        alert('Selecciona un barco primero.');
+        return;
+    }
 
-// Iniciar el juego
-crearTablero('tablero-barcos'); // Tablero 1
-crearTablero('tablero-disparos'); // Tablero 2
+    const fila = parseInt(event.target.dataset.fila);
+    const columna = parseInt(event.target.dataset.columna);
+
+    if (orientacion === 'horizontal') {
+        if (columna + tamañoBarco > 10) {
+            alert('El barco no cabe horizontalmente en esta posición.');
+            return;
+        }
+        for (let i = 0; i < tamañoBarco; i++) {
+            document.querySelector(`[data-fila='${fila}'][data-columna='${columna + i}']`).style.backgroundColor = '#f4b400';
+        }
+    } else {
+        if (fila + tamañoBarco > 10) {
+            alert('El barco no cabe verticalmente en esta posición.');
+            return;
+        }
+        for (let i = 0; i < tamañoBarco; i++) {
+            document.querySelector(`[data-fila='${fila + i}'][data-columna='${columna}']`).style.backgroundColor = '#f4b400';
+        }
+    }
+
+    barcoSeleccionado = null; // Resetea la selección del barco después de colocarlo
+}
+
+// Crear tableros al cargar la página
+crearTablero('mis-barcos');
+crearTablero('sus-barcos');
