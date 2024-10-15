@@ -1,10 +1,10 @@
 let secretCode = [];
 let currentAttempt = [];
 const maxSelection = 4;
-const colors = ["red", "green", "blue", "purple"]; // Solo 4 colores posibles
+const colors = ["red", "green", "blue", "purple"];
 let maxAttempts = 10;
 let timer;
-let timeLeft = 300; // Asegurar que el tiempo sea de 5 minutos (300 segundos)
+let timeLeft = 300; // 5 minutos
 let attemptsHistory = [];
 let attemptCounter = 1; // Contador para numerar los intentos
 
@@ -32,7 +32,7 @@ function updateCurrentAttemptDisplay() {
         colorDiv.style.display = 'inline-block';
         colorDiv.style.marginRight = '10px';
         colorDiv.style.borderRadius = '50%';
-        colorDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Sombreado
+        colorDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
         attemptDiv.appendChild(colorDiv);
     });
 
@@ -71,17 +71,33 @@ function checkAttempt() {
 
     const attemptDiv = document.createElement('div');
     attemptDiv.classList.add('attempt');
-    attemptDiv.innerHTML = `<strong>Intento #${attemptCounter}</strong>`; // Numerar el intento
-    
+    attemptDiv.style.display = 'flex'; // Mostrar en horizontal
+    attemptDiv.style.justifyContent = 'flex-start'; // Alinear hacia la izquierda
+
+    // Añadir el número del intento
+    const attemptNumber = document.createElement('span');
+    attemptNumber.textContent = `${attemptCounter}. `;
+    attemptDiv.appendChild(attemptNumber);
+
+    // Mostrar los colores seleccionados en horizontal
     currentAttempt.forEach(color => {
         const colorDiv = document.createElement('div');
         colorDiv.style.backgroundColor = color;
+        colorDiv.style.width = '30px'; // Reducir tamaño de los círculos para ajustarlo en línea
+        colorDiv.style.height = '30px';
+        colorDiv.style.borderRadius = '50%';
+        colorDiv.style.display = 'inline-block';
+        colorDiv.style.marginRight = '5px';
         colorDiv.classList.add('color-circle');
         attemptDiv.appendChild(colorDiv);
     });
 
+    // Crear una pequeña sección para las pistas en formato 2x2
     const feedbackDiv = document.createElement('div');
-    feedbackDiv.classList.add('feedback');
+    feedbackDiv.style.display = 'grid';
+    feedbackDiv.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    feedbackDiv.style.gridGap = '3px'; // Añadir un pequeño espacio entre las pistas
+    feedbackDiv.style.marginLeft = '15px'; // Añadir espacio entre colores y pistas
 
     for (let i = 0; i < correctPosition; i++) {
         const circle = document.createElement('div');
@@ -101,16 +117,11 @@ function checkAttempt() {
         feedbackDiv.appendChild(circle);
     }
 
-    feedbackDiv.style.display = 'grid';
-    feedbackDiv.style.gridTemplateColumns = 'repeat(2, 1fr)'; 
-
     attemptDiv.appendChild(feedbackDiv);
-    
-    // Insertar el intento más nuevo al inicio de la lista
-    const attemptsSection = document.getElementById('attempts');
-    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild); // Asegurarse que los intentos aparezcan de más nuevo a más antiguo
 
-    // Incrementar el contador de intentos
+    const attemptsSection = document.getElementById('attempts');
+    attemptsSection.insertBefore(attemptDiv, attemptsSection.firstChild); // Insertar el intento más nuevo al principio
+
     attemptCounter++;
 
     attemptsHistory.push({ colors: [...currentAttempt], feedback: { correctPosition, correctColor } });
@@ -169,7 +180,7 @@ function revealPattern() {
 function restartGame() {
     generateSecretCode();
     maxAttempts = 10;
-    timeLeft = 300; // Asegurar que el tiempo sea de 5 minutos
+    timeLeft = 300;
     clearInterval(timer);
     startTimer();
     currentAttempt = [];
@@ -177,7 +188,7 @@ function restartGame() {
     document.getElementById('attempts').innerHTML = "";
     document.getElementById('secret-code').innerHTML = ""; 
     updateCurrentAttemptDisplay();
-    attemptCounter = 1; // Reiniciar el contador de intentos
+    attemptCounter = 1;
 }
 
 // Temporizador
