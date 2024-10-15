@@ -30,9 +30,9 @@ p {
 
 .tablero {
     display: grid;
-    grid-template-columns: 20px repeat(10, 1fr);
-    grid-template-rows: 20px repeat(10, 1fr);
-    max-width: 400px;  /* For a square appearance */
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    max-width: 400px;  /* Para asegurar que sea cuadrado */
     max-height: 400px;
     gap: 2px;
     background-color: #b0e0e6; /* Light water background */
@@ -43,7 +43,7 @@ p {
 .tablero button {
     width: 100%;
     height: 0;
-    padding-bottom: 100%; /* For square cells */
+    padding-bottom: 100%; /* Para cuadrar las celdas */
     border: 1px solid #ccc;
     background-color: #87CEFA;
     cursor: pointer;
@@ -62,19 +62,31 @@ p {
     color: #333;
 }
 
+/* Selección de barcos en columnas */
 #barcos-disponibles {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     margin-bottom: 20px;
 }
 
 .barco {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 10px;
     background-color: #f4b400;
     border-radius: 10px;
     cursor: pointer;
+    gap: 10px;
+}
+
+/* Cuadrados que representan el barco en la selección */
+.barco-square {
+    width: 25px;
+    height: 25px;
+    background-color: #87CEFA;
+    border: 1px solid #ccc;
 }
 
 button {

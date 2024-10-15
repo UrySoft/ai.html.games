@@ -4,6 +4,33 @@ let barcoSeleccionado = null;
 let tamañoBarco = 0;
 const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
+// Crear visualización de barcos en la selección y manejo del cambio de orientación
+function actualizarSeleccionVisual() {
+    const barcos = [
+        { id: 'portaaviones', tamaño: 5 },
+        { id: 'buque', tamaño: 4 },
+        { id: 'submarino', tamaño: 3 },
+        { id: 'destructor', tamaño: 3 },
+        { id: 'patrullero', tamaño: 2 }
+    ];
+
+    barcos.forEach(barco => {
+        const squaresContainer = document.getElementById(`${barco.id}-squares`);
+        squaresContainer.innerHTML = '';  // Limpiar el contenido antes de actualizar
+
+        for (let i = 0; i < barco.tamaño; i++) {
+            const square = document.createElement('div');
+            square.classList.add('barco-square');
+            if (orientacion === 'horizontal') {
+                square.style.display = 'inline-block';
+            } else {
+                square.style.display = 'block';
+            }
+            squaresContainer.appendChild(square);
+        }
+    });
+}
+
 // Crear el tablero de 10x10 con coordenadas
 function crearTablero(tableroID) {
     const tablero = document.getElementById(tableroID);
@@ -39,63 +66,16 @@ document.querySelectorAll('.barco').forEach(barco => {
     });
 });
 
-// Cambiar la orientación del barco y actualizar el indicador de orientación
+// Cambiar la orientación del barco y actualizar el indicador de orientación y la visualización de los barcos.
 document.getElementById('cambiar-orientacion').addEventListener('click', () => {
     orientacion = orientacion === 'horizontal' ? 'vertical' : 'horizontal';
     document.getElementById('orientacion-indicador').textContent = `Orientación: ${orientacion.charAt(0).toUpperCase() + orientacion.slice(1)}`;
+    actualizarSeleccionVisual();  // Actualizar la visualización de la selección
 });
-
-// Verificar si el barco cabe en la posición seleccionada y si está rodeado por agua
-function verificarColocacion(fila, columna) {
-    for (let i = -1; i <= tamañoBarco; i++) {
-        for (let j = -1; j <= 1; j++) {
-            let checkFila = orientacion === 'horizontal' ? fila + j : fila + i;
-            let checkColumna = orientacion === 'horizontal' ? columna + i : columna + j;
-            if (checkFila >= 0 && checkFila < 10 && checkColumna >= 0 && checkColumna < 10) {
-                const celda = document.querySelector(`[data-fila='${checkFila}'][data-columna='${checkColumna}']`);
-                if (celda && celda.style.backgroundColor === '#f4b400') {
-                    return false;  // Hay otro barco cerca o en la posición
-                }
-            }
-        }
-    }
-    return true;  // Está rodeado por agua
-}
-
-// Colocar barco en el tablero
-function colocarBarco(event) {
-    if (barcoSeleccionado === null) {
-        alert('Selecciona un barco primero.');
-        return;
-    }
-
-    const fila = parseInt(event.target.dataset.fila);
-    const columna = parseInt(event.target.dataset.columna);
-
-    // Verificar si el barco cabe en la posición seleccionada y está rodeado por agua
-    if ((orientacion === 'horizontal' && columna + tamañoBarco <= 10) ||
-        (orientacion === 'vertical' && fila + tamañoBarco <= 10)) {
-        
-        if (!verificarColocacion(fila, columna)) {
-            alert('No puedes colocar el barco aquí. Debe estar rodeado por agua y no tocar otros barcos.');
-            return;
-        }
-
-        // Colocar el barco en el tablero
-        for (let i = 0; i < tamañoBarco; i++) {
-            if (orientacion === 'horizontal') {
-                document.querySelector(`[data-fila='${fila}'][data-columna='${columna + i}']`).style.backgroundColor = '#f4b400';
-            } else {
-                document.querySelector(`[data-fila='${fila + i}'][data-columna='${columna}']`).style.backgroundColor = '#f4b400';
-            }
-        }
-    } else {
-        alert('El barco no cabe en esta posición.');
-    }
-
-    barcoSeleccionado = null; // Resetea la selección del barco después de colocarlo
-}
 
 // Crear tableros al cargar la página
 crearTablero('mis-barcos');
 crearTablero('sus-barcos');
+
+// Iniciar la visualización inicial de los barcos
+actualizarSeleccionVisual();

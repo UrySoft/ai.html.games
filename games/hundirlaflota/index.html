@@ -11,14 +11,28 @@
     <h1>Hundir la Flota</h1>
     <p>Versión 1.3</p>
 
-    <!-- Contenedor de los barcos disponibles para arrastrar -->
+    <!-- Contenedor de los barcos disponibles para arrastrar, en 2 columnas con visualización de casillas -->
     <div id="barcos-disponibles">
-        <h2>Selecciona tu barco:</h2>
-        <div id="portaaviones" class="barco" data-tamaño="5">Portaaviones</div>
-        <div id="buque" class="barco" data-tamaño="4">Buque</div>
-        <div id="submarino" class="barco" data-tamaño="3">Submarino</div>
-        <div id="destructor" class="barco" data-tamaño="3">Destructor</div>
-        <div id="patrullero" class="barco" data-tamaño="2">Patrullero</div>
+        <div id="portaaviones" class="barco" data-tamaño="5">
+            <div class="barco-squares" id="portaaviones-squares"></div>
+            <p>Portaaviones (5 casillas)</p>
+        </div>
+        <div id="buque" class="barco" data-tamaño="4">
+            <div class="barco-squares" id="buque-squares"></div>
+            <p>Buque (4 casillas)</p>
+        </div>
+        <div id="submarino" class="barco" data-tamaño="3">
+            <div class="barco-squares" id="submarino-squares"></div>
+            <p>Submarino (3 casillas)</p>
+        </div>
+        <div id="destructor" class="barco" data-tamaño="3">
+            <div class="barco-squares" id="destructor-squares"></div>
+            <p>Destructor (3 casillas)</p>
+        </div>
+        <div id="patrullero" class="barco" data-tamaño="2">
+            <div class="barco-squares" id="patrullero-squares"></div>
+            <p>Patrullero (2 casillas)</p>
+        </div>
     </div>
 
     <!-- Botón para cambiar la orientación y visualización de la orientación seleccionada -->
