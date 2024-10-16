@@ -47,12 +47,14 @@ p {
     justify-content: center;
     align-items: center;
     gap: 5px;
-    padding: 0;
+    width: 100px;
+    height: 100px;
     border: 2px solid transparent;
     border-radius: 8px;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    background-color: #cccccc;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: box-shadow 0.3s ease, border 0.3s ease;
@@ -72,6 +74,8 @@ p {
     text-shadow: 1px 1px 3px black;
     width: 100%;
     text-align: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente detrás del texto */
+    padding: 5px;
 }
 
 /* Botón de orientación colocado en la posición del sexto barco */
