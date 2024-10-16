@@ -51,13 +51,13 @@ p {
     height: 100px;
     border: 2px solid transparent;
     border-radius: 8px;
-    background-size: cover;
+    background-size: contain;  /* Escalar la imagen para que se vea completa */
     background-position: center;
     background-repeat: no-repeat;
-    background-color: #cccccc;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: box-shadow 0.3s ease, border 0.3s ease;
+    background-color: transparent;  /* Fondo transparente */
 }
 
 /* Aura de selección cuando se selecciona un barco */
@@ -66,7 +66,7 @@ p {
     box-shadow: 0 0 10px 3px rgba(0, 123, 255, 0.8);
 }
 
-/* Ajuste para el texto y las casillas */
+/* Ajuste para el texto y las casillas, primero el nombre, luego las casillas */
 .barco-grid p, .barco-squares {
     margin: 0;
     font-weight: bold;
@@ -74,8 +74,7 @@ p {
     text-shadow: 1px 1px 3px black;
     width: 100%;
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente detrás del texto */
-    padding: 5px;
+    padding: 2px;
 }
 
 /* Botón de orientación colocado en la posición del sexto barco */
