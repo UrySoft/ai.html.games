@@ -52,6 +52,7 @@ p {
     border-radius: 8px;
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: box-shadow 0.3s ease;
@@ -59,21 +60,18 @@ p {
     text-shadow: 1px 1px 3px black;
 }
 
-/* Ajustamos la imagen de fondo para los botones */
-.barco-grid img {
-    display: none; /* Ocultamos la imagen directa, ahora es un fondo */
-}
-
-/* Nombre en negrita del tipo de barco */
-.barco-grid p {
-    font-weight: bold;
+/* Nombre del barco y casillas en la parte superior del botón */
+.barco-grid p, .barco-squares {
     margin: 0;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente detrás del texto */
+    width: 100%;
+    text-align: center;
 }
 
-/* Casillas de barco visualizadas como texto simple debajo */
-.barco-squares {
-    display: flex;
-    gap: 2px;
+/* Ocultamos la imagen directa del barco para usarla como fondo */
+.barco-grid img {
+    display: none;
 }
 
 /* Aura de selección cuando se selecciona un barco */
