@@ -4,7 +4,7 @@ let barcoSeleccionado = null;
 let tamañoBarco = 0;
 const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-// Crear visualización de barcos en la selección y manejo del cambio de orientación
+// Actualizar visualización de los barcos con cambio de orientación
 function actualizarSeleccionVisual() {
     const barcos = [
         { id: 'portaaviones', tamaño: 5 },
@@ -60,6 +60,11 @@ function crearTablero(tableroID) {
 // Selección del barco
 document.querySelectorAll('.barco').forEach(barco => {
     barco.addEventListener('click', (event) => {
+        // Eliminar selección anterior
+        document.querySelectorAll('.barco').forEach(btn => btn.classList.remove('barco-seleccionado'));
+        
+        // Cambiar color del barco seleccionado
+        barco.classList.add('barco-seleccionado');
         barcoSeleccionado = event.target.id;
         tamañoBarco = parseInt(event.target.dataset.tamaño);
         alert(`Has seleccionado ${barcoSeleccionado} con tamaño ${tamañoBarco}`);
