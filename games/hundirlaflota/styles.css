@@ -50,18 +50,18 @@ p {
     padding: 10px;
     border: 2px solid #007bff;
     border-radius: 8px;
-    background-color: #fff;
+    background-size: cover;
+    background-position: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: box-shadow 0.3s ease;
+    color: white;
+    text-shadow: 1px 1px 3px black;
 }
 
-/* Fondo de imagen del barco */
+/* Ajustamos la imagen de fondo para los botones */
 .barco-grid img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 10px;
+    display: none; /* Ocultamos la imagen directa, ahora es un fondo */
 }
 
 /* Nombre en negrita del tipo de barco */
