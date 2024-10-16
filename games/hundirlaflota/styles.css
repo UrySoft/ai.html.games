@@ -40,17 +40,22 @@ p {
     font-size: 0.9em;
 }
 
-/* Botones de selección de barco */
+/* Botones de selección de barco con icono en la izquierda y listado en la derecha */
 .barco {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     padding: 10px;
     background-color: #f4b400;
     border-radius: 10px;
     cursor: pointer;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    gap: 5px;
+    gap: 10px;
+}
+
+.barco img {
+    width: 30px;
+    height: 30px;
 }
 
 /* Cambiar color del barco seleccionado */
@@ -67,8 +72,13 @@ p {
     border: 1px solid #ccc;
 }
 
+/* Botón de orientación colocado en la posición del sexto barco */
+#orientacion-btn {
+    grid-column: span 2;
+    margin-top: 10px;
+}
+
 button {
-    margin-top: 20px;
     padding: 10px;
     background-color: #007bff;
     color: white;
@@ -81,7 +91,7 @@ button:hover {
     background-color: #0056b3;
 }
 
-/* Botones de acción (terminar colocación y quitar último barco) */
+/* Botones de acción (quitar último barco y finalizar posicionamiento) */
 #quitar-barco, #posicion-terminada {
     margin: 5px;
     padding: 10px;

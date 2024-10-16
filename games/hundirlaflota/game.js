@@ -65,16 +65,14 @@ document.querySelectorAll('.barco').forEach(barco => {
         
         // Cambiar color del barco seleccionado
         barco.classList.add('barco-seleccionado');
-        barcoSeleccionado = event.target.id;
-        tamañoBarco = parseInt(event.target.dataset.tamaño);
-        alert(`Has seleccionado ${barcoSeleccionado} con tamaño ${tamañoBarco}`);
+        barcoSeleccionado = event.currentTarget.id;
+        tamañoBarco = parseInt(event.currentTarget.dataset.tamaño);
     });
 });
 
 // Cambiar la orientación del barco y actualizar el indicador de orientación y la visualización de los barcos.
-document.getElementById('cambiar-orientacion').addEventListener('click', () => {
+document.getElementById('orientacion-btn').addEventListener('click', () => {
     orientacion = orientacion === 'horizontal' ? 'vertical' : 'horizontal';
-    document.getElementById('orientacion-indicador').textContent = `Orientación: ${orientacion.charAt(0).toUpperCase() + orientacion.slice(1)}`;
     actualizarSeleccionVisual();  // Actualizar la visualización de la selección
 });
 
