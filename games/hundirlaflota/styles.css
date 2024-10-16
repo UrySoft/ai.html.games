@@ -40,7 +40,7 @@ p {
     font-size: 0.9em;
 }
 
-/* Estilo para los botones de selección de barcos con imagen de fondo */
+/* Estilo para los botones de selección de barcos con imagen de fondo escalada y centrada */
 .barco-grid {
     display: flex;
     flex-direction: column;
@@ -51,13 +51,14 @@ p {
     height: 100px;
     border: 2px solid transparent;
     border-radius: 8px;
-    background-size: contain;  /* Escalar la imagen para que se vea completa */
+    background-size: contain;  /* Imagen escalada para ocupar todo el div */
     background-position: center;
     background-repeat: no-repeat;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: box-shadow 0.3s ease, border 0.3s ease;
     background-color: transparent;  /* Fondo transparente */
+    text-align: center;
 }
 
 /* Aura de selección cuando se selecciona un barco */
@@ -66,15 +67,26 @@ p {
     box-shadow: 0 0 10px 3px rgba(0, 123, 255, 0.8);
 }
 
-/* Ajuste para el texto y las casillas, primero el nombre, luego las casillas */
-.barco-grid p, .barco-squares {
+/* Ajuste para el texto (nombre del barco) y las casillas. Primero el nombre, luego las casillas. */
+.barco-grid p {
     margin: 0;
     font-weight: bold;
     color: white;
     text-shadow: 1px 1px 3px black;
-    width: 100%;
-    text-align: center;
     padding: 2px;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100%;
+}
+
+/* Casillas debajo del nombre del barco, visualización horizontal por defecto */
+.barco-squares {
+    margin: 0;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px black;
+    padding: 2px;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100%;
 }
 
 /* Botón de orientación colocado en la posición del sexto barco */
