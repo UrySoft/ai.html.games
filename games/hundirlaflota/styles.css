@@ -40,22 +40,16 @@ p {
     font-size: 0.9em;
 }
 
-/* Botones de selección de barco con icono en la izquierda y listado en la derecha */
-.barco {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    background-color: #f4b400;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+/* Botones de selección de barco con icono en la izquierda y casillas en la derecha */
+.barco-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
 .barco img {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
 }
 
 /* Cambiar color del barco seleccionado */

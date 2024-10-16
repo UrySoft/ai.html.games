@@ -9,44 +9,51 @@
 </head>
 <body>
     <h1>Hundir la Flota</h1>
-    <p>Versión 1.5</p>
+    <p>Versión 1.6</p>
 
     <!-- Sección sombreada para la selección de barcos y los botones de acción -->
     <div id="barcos-seleccion">
         <div id="barcos-disponibles">
             <div id="portaaviones" class="barco" data-tamaño="5">
-                <img src="imagenes/portaaviones.webp" alt="Portaaviones">
-                <div>
+                <p>Portaaviones</p>
+                <div class="barco-grid">
+                    <img src="imagenes/portaaviones.png" alt="Portaaviones">
                     <div class="barco-squares" id="portaaviones-squares"></div>
-                    <p>Portaaviones</p>
                 </div>
             </div>
             <div id="buque" class="barco" data-tamaño="4">
-                <img src="imagenes/buque.webp" alt="Buque">
-                <div>
+                <p>Buque</p>
+                <div class="barco-grid">
+                    <img src="imagenes/buque.png" alt="Buque">
                     <div class="barco-squares" id="buque-squares"></div>
-                    <p>Buque</p>
                 </div>
             </div>
             <div id="submarino" class="barco" data-tamaño="3">
-                <img src="imagenes/submarino.webp" alt="Submarino">
-                <div>
+                <p>Submarino</p>
+                <div class="barco-grid">
+                    <img src="imagenes/submarino.png" alt="Submarino">
                     <div class="barco-squares" id="submarino-squares"></div>
-                    <p>Submarino</p>
                 </div>
             </div>
             <div id="destructor" class="barco" data-tamaño="3">
-                <img src="imagenes/destructor.webp" alt="Destructor">
-                <div>
+                <p>Destructor</p>
+                <div class="barco-grid">
+                    <img src="imagenes/destructor.png" alt="Destructor">
                     <div class="barco-squares" id="destructor-squares"></div>
-                    <p>Destructor</p>
                 </div>
             </div>
             <div id="patrullero" class="barco" data-tamaño="2">
-                <img src="imagenes/patrullero.webp" alt="Patrullero">
-                <div>
+                <p>Patrullero</p>
+                <div class="barco-grid">
+                    <img src="imagenes/patrullero.png" alt="Patrullero">
                     <div class="barco-squares" id="patrullero-squares"></div>
-                    <p>Patrullero</p>
+                </div>
+            </div>
+            <div id="lancha" class="barco" data-tamaño="1">
+                <p>Lancha</p>
+                <div class="barco-grid">
+                    <img src="imagenes/lancha.png" alt="Lancha">
+                    <div class="barco-squares" id="lancha-squares"></div>
                 </div>
             </div>
         </div>
@@ -74,5 +81,7 @@
     </div>
 
     <script src="game.js"></script>
+    <script src="tablero.js"></script>
+    <script src="seleccion-barco.js"></script>
 </body>
 </html>
