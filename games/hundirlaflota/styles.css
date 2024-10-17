@@ -32,11 +32,17 @@ p {
     max-width: 90%;
 }
 
-/* Contenedor de los botones de selección de barcos en 2 columnas */
+/* Texto pequeño para la orientación de barcos */
+.orientacion-info {
+    font-size: 0.8em;
+    color: gray;
+}
+
+/* Contenedor de los botones de selección de barcos en 3 columnas y 2 filas */
 #barcos-disponibles {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;  /* Reducimos el margen entre los botones */
     font-size: 0.9em;
 }
 
@@ -47,8 +53,8 @@ p {
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    width: 40vw;  /* Botones un poco más pequeños */
-    height: 40vw;
+    width: 30vw;  /* Botones más pequeños para que quepan 3x2 en pantalla */
+    height: 30vw;
     border: 2px solid transparent;
     border-radius: 8px;
     background-size: cover;
@@ -87,10 +93,11 @@ p {
     text-align: center;
 }
 
-/* Representación gráfica de las casillas centradas */
+/* Representación gráfica de las casillas alineadas a la izquierda */
 .barco-squares {
     display: grid;
     grid-gap: 3px;
+    justify-items: start; /* Alinear casillas a la izquierda */
     background-color: rgba(0, 0, 0, 0.3);
     margin-bottom: 30px; /* Añadir espacio para que el texto no lo sobreponga */
 }
@@ -102,25 +109,6 @@ p {
     background-color: white;
     border: 1px solid black;
     display: inline-block;
-}
-
-/* Botón de orientación colocado en la posición del sexto barco */
-#orientacion-btn {
-    grid-column: span 2;
-    margin-top: 10px;
-}
-
-button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
 }
 
 /* Botones de acción (quitar último barco y finalizar posicionamiento) */
