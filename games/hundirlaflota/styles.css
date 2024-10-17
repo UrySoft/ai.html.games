@@ -6,7 +6,7 @@ body {
 }
 
 h1 {
-    font-size: 2.5em;
+    font-size: 2em; /* Fuente más pequeña para el título */
     margin: 20px 0;
 }
 
@@ -24,12 +24,12 @@ p {
 
 /* Sección delimitada y sombreada para la selección de barcos con márgenes reducidos */
 #barcos-seleccion {
-    padding: 10px;  /* Reducimos el margen interno */
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    margin-bottom: 10px;  /* Reducimos la separación inferior */
-    max-width: 95%;  /* Aumentamos el ancho máximo */
+    margin-bottom: 10px;
+    max-width: 95%;
 }
 
 /* Texto pequeño para la orientación de barcos */
@@ -42,18 +42,18 @@ p {
 #barcos-disponibles {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 3px;  /* Reducimos aún más el margen entre los botones */
+    gap: 3px;
     font-size: 0.9em;
 }
 
 /* Estilo para los botones de selección de barcos con imagen de fondo escalada y centrada */
 .barco-grid {
-    position: relative;  /* Para anclar el texto dentro del botón */
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    width: 28vw;  /* Botones más pequeños */
+    width: 28vw;
     height: 28vw;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -67,11 +67,6 @@ p {
     text-align: center;
 }
 
-/* Efecto hover para resaltar el botón */
-.barco-grid:hover {
-    box-shadow: 0 0 12px rgba(0, 123, 255, 0.8);
-}
-
 /* Aura de selección cuando se selecciona un barco */
 .barco-seleccionado {
     border: 2px solid #007bff;
@@ -83,48 +78,65 @@ p {
     margin: 0;
     color: white;
     padding: 2px;
-    background-color: transparent; /* Eliminar fondo gris */
+    background-color: transparent; /* Sin fondo */
     width: 100%;
-    font-weight: normal; /* Sin negrita ni sombreado */
-    text-shadow: none;   /* Sin sombra */
+    font-weight: normal;
+    text-shadow: none;
     position: absolute;
-    bottom: 0;  /* Anclar al fondo del botón */
+    bottom: 0;
     left: 0;
     text-align: center;
 }
 
-/* Representación gráfica de las casillas alineadas a la izquierda */
-.barco-squares {
-    display: grid;
-    grid-gap: 3px;
-    justify-items: start; /* Alinear casillas a la izquierda */
-    background-color: rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px; /* Reducimos el margen inferior */
+/* Botones "Quitar barco" y "Posicionamiento terminado" centrados y del mismo tamaño */
+.botones-accion {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
 }
 
-/* Casillas simuladas, ajustadas según orientación */
-.casilla {
-    width: 10px;
-    height: 10px;
-    background-color: white;
-    border: 1px solid black;
-    display: inline-block;
-}
-
-/* Botones de acción (quitar último barco y finalizar posicionamiento) */
-#quitar-barco, #posicion-terminada {
-    margin: 5px;
+.boton-azul {
+    background-color: #007bff;
     padding: 10px;
-    background-color: #ff6347; /* Botón de quitar último barco en rojo */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    width: 120px; /* Mismo tamaño para ambos botones */
+    cursor: pointer;
 }
 
-#posicion-terminada {
-    background-color: #32CD32; /* Botón de terminar colocación en verde */
+.boton-azul:hover {
+    background-color: #0056b3;
 }
 
-/* Estilo de botón deshabilitado (después de colocar el barco) */
-.barco-grid.disabled {
-    background-color: gray;
-    cursor: not-allowed;
-    opacity: 0.6;
+/* Sombreado de la sección "Mi Flota" */
+.sombreado {
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+}
+
+/* Grid de 10x10 botones en "Mi Flota" */
+.tablero-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0; /* Sin márgenes entre los botones */
+}
+
+.boton-grid {
+    width: 100%;
+    padding: 20px;
+    background-color: #1e90ff; /* Azul océano */
+    border: 1px solid #004080;
+    color: white;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.boton-grid:hover {
+    background-color: #0066cc;
 }
