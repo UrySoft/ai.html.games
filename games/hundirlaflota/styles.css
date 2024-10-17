@@ -120,21 +120,21 @@ p {
     margin-bottom: 10px;
 }
 
-/* Grid de 10x10 botones en "Mi Flota" */
+/* Grid de 10x10 botones en "Mi Flota", tamaño reducido */
 .tablero-grid {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
-    gap: 0; /* Sin márgenes entre los botones */
+    gap: 0;
 }
 
 .boton-grid {
     width: 100%;
-    padding: 20px;
+    padding: 10px; /* Reducimos el tamaño de los botones */
     background-color: #1e90ff; /* Azul océano */
     border: 1px solid #004080;
     color: white;
     text-align: center;
-    font-size: 0.9em;
+    font-size: 0.7em; /* Reducimos el tamaño de la fuente */
 }
 
 .boton-grid:hover {
