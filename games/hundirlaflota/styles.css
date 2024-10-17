@@ -29,7 +29,7 @@ p {
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     margin-bottom: 20px;
-    max-width: 400px;
+    max-width: 90%; /* Ampliamos el ancho disponible */
 }
 
 /* Contenedor de los botones de selección de barcos en 2 columnas */
@@ -46,18 +46,18 @@ p {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 5px;
-    width: 100px;
-    height: 100px;
+    gap: 10px;
+    width: 45vw;  /* Botones grandes que ocupan casi la mitad de la pantalla */
+    height: 45vw;
     border: 2px solid transparent;
     border-radius: 8px;
-    background-size: contain;  /* Imagen escalada para ocupar todo el div */
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease; /* Transición suave */
-    background-color: transparent;  /* Fondo transparente */
+    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
+    background-color: transparent;
     text-align: center;
 }
 
@@ -72,46 +72,30 @@ p {
     box-shadow: 0 0 15px 5px rgba(0, 123, 255, 0.8);
 }
 
-/* Ajuste para el texto (nombre del barco) y las casillas. Primero el nombre, luego las casillas. */
+/* Ajuste para el texto (nombre del barco). Solo el nombre, sin sombra ni negrita */
 .barco-grid p {
     margin: 0;
-    font-weight: bold;
     color: white;
-    text-shadow: 1px 1px 3px black;
     padding: 2px;
     background-color: rgba(0, 0, 0, 0.5);
     width: 100%;
+    font-weight: normal; /* Sin negrita */
+    text-shadow: none;   /* Sin sombra */
 }
 
-/* Casillas debajo del nombre del barco, visualización horizontal por defecto con efecto 3D/sombra */
+/* Representación gráfica de las casillas */
 .barco-squares {
-    margin: 0;
-    font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 3px black;
-    padding: 2px;
-    background-color: rgba(0, 0, 0, 0.5);
-    width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra ligera para un efecto 3D */
+    display: grid;
+    grid-gap: 3px;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
-/* Tooltip con la descripción completa del barco */
-.barco-grid[title] {
-    position: relative;
-}
-
-.barco-grid[title]:hover:after {
-    content: attr(title);
-    position: absolute;
-    bottom: 120%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.8em;
-    white-space: nowrap;
+/* Casillas simuladas, ajustadas según orientación */
+.casilla {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border: 1px solid black;
 }
 
 /* Botón de orientación colocado en la posición del sexto barco */
@@ -150,3 +134,4 @@ button:hover {
     cursor: not-allowed;
     opacity: 0.6;
 }
+

@@ -13,12 +13,26 @@ function actualizarOrientacionEnBotones() {
     const barcos = document.querySelectorAll('.barco-grid');
 
     barcos.forEach(barco => {
-        const tamaño = barco.getAttribute('data-tamaño');
+        const tamaño = parseInt(barco.getAttribute('data-tamaño'));
         const squares = barco.querySelector('.barco-squares');
+
+        // Limpiar las casillas previas
+        squares.innerHTML = '';
+
+        // Generar casillas en la orientación correcta
+        for (let i = 0; i < tamaño; i++) {
+            const casilla = document.createElement('div');
+            casilla.classList.add('casilla');
+            squares.appendChild(casilla);
+        }
+
+        // Ajustar las casillas en fila (horizontal) o columna (vertical)
         if (orientacionHorizontal) {
-            squares.textContent = `${tamaño} casillas (horizontal)`;
+            squares.style.gridTemplateColumns = `repeat(${tamaño}, 1fr)`;
+            squares.style.gridTemplateRows = '1fr';
         } else {
-            squares.textContent = `${tamaño} casillas (vertical)`;
+            squares.style.gridTemplateColumns = '1fr';
+            squares.style.gridTemplateRows = `repeat(${tamaño}, 1fr)`;
         }
     });
 }

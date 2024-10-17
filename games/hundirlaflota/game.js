@@ -46,4 +46,3 @@ document.querySelectorAll('.celda-tablero').forEach(celda => {
         colocarBarcoEnTablero(fila, columna);
     });
 });
-
