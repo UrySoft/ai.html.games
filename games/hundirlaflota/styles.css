@@ -56,15 +56,20 @@ p {
     background-repeat: no-repeat;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: box-shadow 0.3s ease, border 0.3s ease;
+    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease; /* Transición suave */
     background-color: transparent;  /* Fondo transparente */
     text-align: center;
+}
+
+/* Efecto hover para resaltar el botón */
+.barco-grid:hover {
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.8);
 }
 
 /* Aura de selección cuando se selecciona un barco */
 .barco-seleccionado {
     border: 2px solid #007bff;
-    box-shadow: 0 0 10px 3px rgba(0, 123, 255, 0.8);
+    box-shadow: 0 0 15px 5px rgba(0, 123, 255, 0.8);
 }
 
 /* Ajuste para el texto (nombre del barco) y las casillas. Primero el nombre, luego las casillas. */
@@ -78,7 +83,7 @@ p {
     width: 100%;
 }
 
-/* Casillas debajo del nombre del barco, visualización horizontal por defecto */
+/* Casillas debajo del nombre del barco, visualización horizontal por defecto con efecto 3D/sombra */
 .barco-squares {
     margin: 0;
     font-weight: bold;
@@ -87,6 +92,26 @@ p {
     padding: 2px;
     background-color: rgba(0, 0, 0, 0.5);
     width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra ligera para un efecto 3D */
+}
+
+/* Tooltip con la descripción completa del barco */
+.barco-grid[title] {
+    position: relative;
+}
+
+.barco-grid[title]:hover:after {
+    content: attr(title);
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
 }
 
 /* Botón de orientación colocado en la posición del sexto barco */
@@ -117,4 +142,11 @@ button:hover {
 
 #posicion-terminada {
     background-color: #32CD32; /* Botón de terminar colocación en verde */
+}
+
+/* Estilo de botón deshabilitado (después de colocar el barco) */
+.barco-grid.disabled {
+    background-color: gray;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
