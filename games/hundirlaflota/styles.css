@@ -79,7 +79,7 @@ p {
     padding: 2px;
     background-color: rgba(0, 0, 0, 0.5);
     width: 100%;
-    font-weight: normal; /* Sin negrita */
+    font-weight: normal; /* Sin negrita ni sombreado */
     text-shadow: none;   /* Sin sombra */
     position: absolute;
     bottom: 0;  /* Anclar al fondo del botón */

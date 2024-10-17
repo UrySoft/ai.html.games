@@ -39,14 +39,19 @@ function actualizarOrientacionEnBotones() {
 
 // Función para seleccionar un barco
 function seleccionarBarco(event) {
-    const barcos = document.querySelectorAll('.barco-grid');
-    
-    // Eliminar la selección previa
-    barcos.forEach(barco => barco.classList.remove('barco-seleccionado'));
-
-    // Añadir la clase de selección al barco clicado
     const barcoSeleccionado = event.currentTarget;
-    barcoSeleccionado.classList.add('barco-seleccionado');
+
+    // Si el barco seleccionado ya estaba seleccionado, se cambia la orientación
+    if (barcoSeleccionado.classList.contains('barco-seleccionado')) {
+        cambiarOrientacion();
+    } else {
+        // Si es un nuevo barco, se selecciona y se actualizan las casillas
+        const barcos = document.querySelectorAll('.barco-grid');
+        barcos.forEach(barco => barco.classList.remove('barco-seleccionado'));
+
+        // Añadir la clase de selección al barco clicado
+        barcoSeleccionado.classList.add('barco-seleccionado');
+    }
 }
 
 // Función para deshabilitar el botón después de colocar el barco
@@ -63,12 +68,6 @@ function deshabilitarBarcoSeleccionado() {
 document.querySelectorAll('.barco-grid').forEach(barco => {
     barco.addEventListener('click', seleccionarBarco);
 });
-
-// Asignar evento al botón de orientación
-document.getElementById('orientacion-btn').addEventListener('click', cambiarOrientacion);
-
-// Asignar evento al botón de quitar último barco
-document.getElementById('quitar-barco').addEventListener('click', deshabilitarBarcoSeleccionado);
 
 // Inicialización
 actualizarOrientacionEnBotones();
