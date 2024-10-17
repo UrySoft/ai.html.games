@@ -7,7 +7,7 @@ body {
 
 h1 {
     font-size: 2em; /* Fuente más pequeña para el título */
-    margin: 20px 0;
+    margin: 10px 0; /* Menos margen en blanco */
 }
 
 p {
@@ -32,10 +32,11 @@ p {
     max-width: 95%;
 }
 
-/* Texto pequeño para la orientación de barcos */
+/* Texto pequeño para la orientación de barcos, con menos margen en blanco */
 .orientacion-info {
     font-size: 0.8em;
     color: gray;
+    margin: 5px 0; /* Menos margen en blanco */
 }
 
 /* Contenedor de los botones de selección de barcos en 3 columnas y 2 filas */
@@ -76,6 +77,7 @@ p {
 /* Ajuste para el texto (nombre del barco) anclado al fondo del botón */
 .barco-grid p {
     margin: 0;
+    font-size: 0.8em; /* Texto más pequeño */
     color: white;
     padding: 2px;
     background-color: transparent; /* Sin fondo */
@@ -88,14 +90,15 @@ p {
     text-align: center;
 }
 
-/* Representación gráfica de las casillas alineadas a la izquierda en los botones de selección de barcos */
+/* Representación gráfica de las casillas centradas en los botones de selección de barcos */
 .barco-squares {
     display: grid;
     grid-gap: 3px;
     grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
-    justify-items: start; /* Alinear casillas a la izquierda */
+    justify-content: center; /* Centramos horizontalmente */
+    align-items: center;     /* Centramos verticalmente */
     background-color: rgba(0, 0, 0, 0.3);
-    margin-bottom: 5px; /* Ajustamos el margen para evitar que el texto lo sobreponga */
+    margin-bottom: 5px;
 }
 
 /* Casillas simuladas ajustadas según la orientación del barco */
@@ -130,13 +133,18 @@ p {
     background-color: #0056b3;
 }
 
-/* Sombreado de la sección "Mi Flota" */
+/* Sombreado de la sección "Mi Flota" con texto y márgenes más pequeños */
 .sombreado {
-    padding: 15px;
+    padding: 10px; /* Menos margen interno */
     border-radius: 10px;
     border: 1px solid #ccc;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    margin-bottom: 10px;
+    margin-bottom: 5px; /* Menos margen externo */
+}
+
+.sombreado h2 {
+    font-size: 1.2em; /* Texto más pequeño para el título "Mi Flota" */
+    margin-bottom: 5px;
 }
 
 /* Grid de 10x10 botones en "Mi Flota", tamaño reducido */
@@ -148,12 +156,12 @@ p {
 
 .boton-grid {
     width: 100%;
-    padding: 10px; /* Reducimos el tamaño de los botones */
+    padding: 8px; /* Reducimos aún más el tamaño de los botones */
     background-color: #1e90ff; /* Azul océano */
     border: 1px solid #004080;
     color: white;
     text-align: center;
-    font-size: 0.7em; /* Reducimos el tamaño de la fuente */
+    font-size: 0.65em; /* Reducimos el tamaño de la fuente */
 }
 
 .boton-grid:hover {
