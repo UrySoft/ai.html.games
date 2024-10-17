@@ -6,8 +6,8 @@ body {
 }
 
 h1 {
-    font-size: 2em; /* Fuente más pequeña para el título */
-    margin: 10px 0; /* Menos margen en blanco */
+    font-size: 2em;
+    margin: 10px 0 5px; /* Reducción del margen entre el título y la versión */
 }
 
 p {
@@ -90,15 +90,17 @@ p {
     text-align: center;
 }
 
-/* Representación gráfica de las casillas centradas en los botones de selección de barcos */
+/* Corrección de la visualización de las casillas, ajustando tamaño y centrado */
 .barco-squares {
     display: grid;
     grid-gap: 3px;
-    grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+    grid-template-columns: repeat(auto-fit, 10px); /* Ajuste del tamaño de las casillas */
     justify-content: center; /* Centramos horizontalmente */
     align-items: center;     /* Centramos verticalmente */
-    background-color: rgba(0, 0, 0, 0.3);
+    margin-top: auto;
     margin-bottom: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    height: 20px; /* Tamaño del área de casillas */
 }
 
 /* Casillas simuladas ajustadas según la orientación del barco */
@@ -107,7 +109,6 @@ p {
     height: 10px;
     background-color: white;
     border: 1px solid black;
-    display: inline-block;
 }
 
 /* Botones "Quitar barco" y "Posicionamiento terminado" centrados y del mismo tamaño */
@@ -143,11 +144,11 @@ p {
 }
 
 .sombreado h2 {
-    font-size: 1.2em; /* Texto más pequeño para el título "Mi Flota" */
-    margin-bottom: 5px;
+    font-size: 1.1em; /* Texto más pequeño para el título "Mi Flota" */
+    margin-bottom: 0; /* Sin margen en la parte superior */
 }
 
-/* Grid de 10x10 botones en "Mi Flota", tamaño reducido */
+/* Grid de 10x10 botones en "Mi Flota", tamaño cuadrado */
 .tablero-grid {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -156,7 +157,7 @@ p {
 
 .boton-grid {
     width: 100%;
-    padding: 8px; /* Reducimos aún más el tamaño de los botones */
+    padding: 100%; /* Ajustamos el padding para que sean completamente cuadrados */
     background-color: #1e90ff; /* Azul océano */
     border: 1px solid #004080;
     color: white;
