@@ -2,89 +2,135 @@
 /* Estilos generales */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #f4f4f9;
+    text-align: center;
     margin: 0;
     padding: 0;
-    text-align: center;
 }
 
 h1 {
-    font-size: 2.5rem;
-    margin-top: 20px;
+    font-size: 2em;
+    margin: 0.5em 0;
 }
 
 h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+    font-size: 1.5em;
 }
 
-/* Estilos para centrar las casillas de barco dentro del botón del selector */
-.barco-squares {
+.container {
     display: flex;
-    justify-content: center; /* Centrado horizontal */
-    align-items: center; /* Centrado vertical */
-    gap: 5px; /* Espacio entre casillas */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
-.casilla {
+.version {
+    font-size: 1em;
+    margin-bottom: 1em;
+}
+
+/* Estilo para los botones de seleccionar barcos */
+.seleccion-barco {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.barco-grid {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.barco-grid.seleccionado {
+    outline: 3px solid #4CAF50; /* Aura azul cuando el barco está seleccionado */
+}
+
+.barco-grid .nombre-barco {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    text-align: center;
+    font-size: 0.9em;
+    padding: 5px 0;
+}
+
+.barco-grid .barco-squares {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+}
+
+.barco-grid .barco-squares .casilla {
     width: 15px;
     height: 15px;
-    background-color: white; /* Color de las casillas */
-    border: 1px solid black;
+    background-color: white;
+    border: 1px solid #333;
 }
 
-/* Ajustes para la sección Mi Flota */
-.tablero-grid {
+/* Estilos del tablero */
+.grid-container {
     display: grid;
-    grid-template-columns: repeat(10, 1fr); /* Crear una cuadrícula 10x10 */
-    grid-gap: 5px; /* Espacio entre botones */
-    width: 100%; /* Que ocupe el 100% del ancho de la pantalla */
-    max-width: 600px; /* Para evitar que sea demasiado grande en pantallas grandes */
-    margin: 0 auto; /* Centrar el tablero */
+    grid-template-columns: repeat(10, 1fr);
+    grid-gap: 5px;
+    width: 100%;
+    max-width: 350px;
+    margin: 10px auto;
 }
 
 .boton-grid {
-    display: inline-block;
-    margin: 0;
-    padding: 0;
-    width: 100%; /* Que los botones se adapten al tamaño de la celda */
-    height: 32px;
-    border: 1px solid #000;
-    background-color: #007BFF;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ccc;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.boton-grid.barco-colocado {
+    background-color: #28a745;
     color: white;
 }
 
-.boton-grid p {
-    text-align: center;
-    font-size: 12px;
-}
-
-/* Ajuste para la sección de "Mi Flota" */
-.tablero-container {
-    text-align: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Asegurar que ocupe todo el ancho */
-    max-width: 600px; /* Controlar el tamaño en pantallas más grandes */
-    margin-left: auto;
-    margin-right: auto;
-}
-
 /* Botones de acción */
-.botones-accion button {
-    margin: 10px;
+.boton-accion {
     padding: 10px 20px;
-    font-size: 1rem;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 5px;
 }
 
-.botones-accion button:hover {
+.boton-accion:hover {
     background-color: #0056b3;
+}
+
+/* Ajustar tamaño del botón de acción */
+.boton-accion.quitar,
+.boton-accion.terminar {
+    width: 150px;
+}
+
+/* Ocultar scroll horizontal */
+html, body {
+    overflow-x: hidden;
 }
