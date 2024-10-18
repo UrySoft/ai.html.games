@@ -1,125 +1,110 @@
 
-document.addEventListener("DOMContentLoaded", () => {
-    let barcoSeleccionado = null;
-    let orientacionHorizontal = true;
+let tablero = [];
+let barcosColocados = {};
 
-    // Obtener todos los botones de barcos
-    const botonesBarco = document.querySelectorAll(".barco-grid");
-    const tableroMisBarcos = document.getElementById("mis-barcos");
+// Inicialización del tablero como un array 10x10 lleno de ceros
+function inicializarTablero() {
+    tablero = Array.from({ length: 10 }, () => Array(10).fill(0));
+    actualizarTablero();
+}
 
-    // Al hacer clic en un botón de barco, seleccionarlo y cambiar orientación si ya estaba seleccionado
-    botonesBarco.forEach((boton) => {
-        boton.addEventListener("click", () => {
-            if (barcoSeleccionado === boton) {
-                // Si ya estaba seleccionado, cambiar la orientación
-                orientacionHorizontal = !orientacionHorizontal;
-                actualizarCasillasBarco(boton, orientacionHorizontal);
+// Actualizar visualmente el tablero con las celdas
+function actualizarTablero() {
+    const misBarcosContainer = document.getElementById('mis-barcos');
+    misBarcosContainer.innerHTML = '';
+    for (let fila = 0; fila < 10; fila++) {
+        for (let col = 0; col < 10; col++) {
+            const celda = document.createElement('button');
+            celda.classList.add('boton-grid');
+            celda.dataset.fila = fila;
+            celda.dataset.col = col;
+            celda.textContent = String.fromCharCode(65 + col) + (fila + 1);
+            if (tablero[fila][col] === 1) {
+                celda.classList.add('barco-colocado');
+            }
+            celda.addEventListener('click', () => colocarBarco(fila, col));
+            misBarcosContainer.appendChild(celda);
+        }
+    }
+}
+
+// Colocar barco en el tablero si es posible
+function colocarBarco(fila, col) {
+    const barcoSeleccionado = document.querySelector('.barco-seleccionado');
+    if (!barcoSeleccionado) {
+        alert('Primero selecciona un barco.');
+        return;
+    }
+
+    const tamano = parseInt(barcoSeleccionado.dataset.tamaño);
+    const orientacion = barcoSeleccionado.dataset.orientacion || 'horizontal';
+    
+    if (!esPosicionValida(fila, col, tamano, orientacion)) {
+        alert('Posición inválida para el barco.');
+        return;
+    }
+
+    // Marcar las posiciones del barco en el tablero
+    for (let i = 0; i < tamano; i++) {
+        if (orientacion === 'horizontal') {
+            tablero[fila][col + i] = 1;
+        } else {
+            tablero[fila + i][col] = 1;
+        }
+    }
+
+    // Añadir barco a la lista de colocados
+    barcosColocados[barcoSeleccionado.id] = { fila, col, tamano, orientacion };
+    barcoSeleccionado.classList.add('desactivado');
+    barcoSeleccionado.classList.remove('barco-seleccionado');
+    actualizarTablero();
+}
+
+// Verificar si la posición del barco es válida
+function esPosicionValida(fila, col, tamano, orientacion) {
+    if (orientacion === 'horizontal') {
+        if (col + tamano > 10) return false;
+        for (let i = 0; i < tamano; i++) {
+            if (tablero[fila][col + i] === 1) return false;
+        }
+    } else {
+        if (fila + tamano > 10) return false;
+        for (let i = 0; i < tamano; i++) {
+            if (tablero[fila + i][col] === 1) return false;
+        }
+    }
+    return true;
+}
+
+// Inicializar tablero al cargar el juego
+document.addEventListener('DOMContentLoaded', () => {
+    inicializarTablero();
+    
+    // Seleccionar barco y cambiar orientación
+    document.querySelectorAll('.barco-grid').forEach(barco => {
+        barco.addEventListener('click', () => {
+            if (barco.classList.contains('desactivado')) return;
+            if (barco.classList.contains('barco-seleccionado')) {
+                // Cambiar orientación
+                barco.dataset.orientacion = barco.dataset.orientacion === 'horizontal' ? 'vertical' : 'horizontal';
+                actualizarBarcoVisual(barco);
             } else {
-                // Seleccionar el barco
-                barcoSeleccionado?.classList.remove("barco-seleccionado");
-                barcoSeleccionado = boton;
-                barcoSeleccionado.classList.add("barco-seleccionado");
+                document.querySelectorAll('.barco-grid').forEach(b => b.classList.remove('barco-seleccionado'));
+                barco.classList.add('barco-seleccionado');
             }
         });
     });
-
-    // Pintar el barco en el tablero si es una posición válida
-    tableroMisBarcos.addEventListener("click", (event) => {
-        if (barcoSeleccionado) {
-            const celda = event.target;
-            const coordenadas = obtenerCoordenadas(celda.innerText);
-            if (esPosicionValida(coordenadas, barcoSeleccionado)) {
-                colocarBarco(coordenadas, barcoSeleccionado);
-                barcoSeleccionado.classList.remove("barco-seleccionado");
-                barcoSeleccionado.disabled = true;
-                barcoSeleccionado = null;
-            }
-        }
-    });
-
-    // Actualizar la orientación de las casillas visuales del barco
-    function actualizarCasillasBarco(boton, esHorizontal) {
-        const casillas = boton.querySelectorAll(".casilla");
-        casillas.forEach((casilla, index) => {
-            if (esHorizontal) {
-                casilla.style.display = "inline-block";
-            } else {
-                casilla.style.display = "block";
-            }
-        });
-    }
-
-    // Validar si la posición es válida para colocar el barco
-    function esPosicionValida(coordenadas, barco) {
-        const tamanoBarco = parseInt(barco.dataset.tamaño);
-        const [columna, fila] = coordenadas;
-
-        for (let i = 0; i < tamanoBarco; i++) {
-            const nuevaColumna = orientacionHorizontal ? columna + i : columna;
-            const nuevaFila = orientacionHorizontal ? fila : fila + i;
-
-            // Comprobar si la posición está libre y no hay agua ni barcos cerca
-            if (!esCeldaLibre(nuevaColumna, nuevaFila)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Comprobar si una celda está libre (no tiene barco ni agua)
-    function esCeldaLibre(columna, fila) {
-        const celda = document.querySelector(`[data-coordenada='${columna}${fila}']`);
-        return !celda.classList.contains("ocupada") && !celda.classList.contains("agua");
-    }
-
-    // Colocar el barco en el tablero
-    function colocarBarco(coordenadas, barco) {
-        const tamanoBarco = parseInt(barco.dataset.tamaño);
-        const [columna, fila] = coordenadas;
-
-        for (let i = 0; i < tamanoBarco; i++) {
-            const nuevaColumna = orientacionHorizontal ? columna + i : columna;
-            const nuevaFila = orientacionHorizontal ? fila : fila + i;
-
-            const celda = document.querySelector(`[data-coordenada='${nuevaColumna}${nuevaFila}']`);
-            celda.classList.add("ocupada");
-            celda.style.backgroundColor = "orange"; // Color para indicar que hay un barco
-        }
-
-        // Marcar el área alrededor del barco como agua
-        marcarAguaAlrededor(coordenadas, tamanoBarco);
-    }
-
-    // Marcar el área alrededor del barco como "agua"
-    function marcarAguaAlrededor(coordenadas, tamanoBarco) {
-        const [columna, fila] = coordenadas;
-
-        for (let i = -1; i <= tamanoBarco; i++) {
-            for (let j = -1; j <= 1; j++) {
-                const nuevaColumna = orientacionHorizontal ? columna + i : columna + j;
-                const nuevaFila = orientacionHorizontal ? fila + j : fila + i;
-
-                if (esCoordenadaValida(nuevaColumna, nuevaFila)) {
-                    const celda = document.querySelector(`[data-coordenada='${nuevaColumna}${nuevaFila}']`);
-                    if (!celda.classList.contains("ocupada")) {
-                        celda.classList.add("agua");
-                        celda.style.backgroundColor = "lightblue"; // Color para indicar agua
-                    }
-                }
-            }
-        }
-    }
-
-    // Validar que la coordenada esté dentro del tablero
-    function esCoordenadaValida(columna, fila) {
-        return columna >= 0 && columna < 10 && fila >= 1 && fila <= 10;
-    }
-
-    // Obtener las coordenadas de una celda en formato [columna, fila]
-    function obtenerCoordenadas(textoCelda) {
-        const letra = textoCelda.charAt(0);
-        const numero = parseInt(textoCelda.slice(1));
-        const columna = letra.charCodeAt(0) - "A".charCodeAt(0);
-        return [columna, numero];
-    }
 });
+
+function actualizarBarcoVisual(barco) {
+    const casillas = barco.querySelector('.barco-squares');
+    const tamano = parseInt(barco.dataset.tamaño);
+    const orientacion = barco.dataset.orientacion;
+    casillas.innerHTML = '';
+    for (let i = 0; i < tamano; i++) {
+        const casilla = document.createElement('div');
+        casilla.classList.add('casilla');
+        casillas.appendChild(casilla);
+    }
+    casillas.style.flexDirection = orientacion === 'horizontal' ? 'row' : 'column';
+}
