@@ -1,170 +1,90 @@
 
+/* Estilos generales */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
     text-align: center;
 }
 
 h1 {
-    font-size: 2em;
-    margin: 10px 0 5px; /* Reducción del margen entre el título y la versión */
+    font-size: 2.5rem;
+    margin-top: 20px;
 }
 
-p {
-    font-size: 1.2em;
-}
-
-.game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
-/* Sección delimitada y sombreada para la selección de barcos con márgenes reducidos */
-#barcos-seleccion {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+h2 {
+    font-size: 1.5rem;
     margin-bottom: 10px;
-    max-width: 95%;
 }
 
-/* Texto pequeño para la orientación de barcos, con menos margen en blanco */
-.orientacion-info {
-    font-size: 0.8em;
-    color: gray;
-    margin: 5px 0; /* Menos margen en blanco */
-}
-
-/* Contenedor de los botones de selección de barcos en 3 columnas y 2 filas */
-#barcos-disponibles {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-    font-size: 0.9em;
-}
-
-/* Estilo para los botones de selección de barcos con imagen de fondo escalada y centrada */
-.barco-grid {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    width: 28vw;
-    height: 28vw;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
-    background-color: transparent;
-    text-align: center;
-}
-
-/* Aura de selección cuando se selecciona un barco */
-.barco-seleccionado {
-    border: 2px solid #007bff;
-    box-shadow: 0 0 15px 5px rgba(0, 123, 255, 0.8);
-}
-
-/* Ajuste para el texto (nombre del barco) anclado al fondo del botón */
-.barco-grid p {
-    margin: 0;
-    font-size: 0.8em; /* Texto más pequeño */
-    color: white;
-    padding: 2px;
-    background-color: transparent; /* Sin fondo */
-    width: 100%;
-    font-weight: normal;
-    text-shadow: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    text-align: center;
-}
-
-/* Corrección de la visualización de las casillas, ajustando tamaño y centrado */
+/* Estilos para centrar las casillas de barco dentro del botón del selector */
 .barco-squares {
-    display: grid;
-    grid-gap: 3px;
-    grid-template-columns: repeat(auto-fit, 10px); /* Ajuste del tamaño de las casillas */
-    justify-content: center; /* Centramos horizontalmente */
-    align-items: center;     /* Centramos verticalmente */
-    margin-top: auto;
-    margin-bottom: 5px;
-    background-color: rgba(0, 0, 0, 0.3);
-    height: 20px; /* Tamaño del área de casillas */
+    display: flex;
+    justify-content: center; /* Centrado horizontal */
+    align-items: center; /* Centrado vertical */
+    gap: 5px; /* Espacio entre casillas */
 }
 
-/* Casillas simuladas ajustadas según la orientación del barco */
 .casilla {
-    width: 10px;
-    height: 10px;
-    background-color: white;
+    width: 15px;
+    height: 15px;
+    background-color: white; /* Color de las casillas */
     border: 1px solid black;
 }
 
-/* Botones "Quitar barco" y "Posicionamiento terminado" centrados y del mismo tamaño */
-.botones-accion {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.boton-azul {
-    background-color: #007bff;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
-    width: 120px; /* Mismo tamaño para ambos botones */
-    cursor: pointer;
-}
-
-.boton-azul:hover {
-    background-color: #0056b3;
-}
-
-/* Sombreado de la sección "Mi Flota" con texto y márgenes más pequeños */
-.sombreado {
-    padding: 10px; /* Menos margen interno */
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    margin-bottom: 5px; /* Menos margen externo */
-}
-
-.sombreado h2 {
-    font-size: 1.1em; /* Texto más pequeño para el título "Mi Flota" */
-    margin-bottom: 0; /* Sin margen en la parte superior */
-}
-
-/* Grid de 10x10 botones en "Mi Flota", tamaño cuadrado */
+/* Ajustes para la sección Mi Flota */
 .tablero-grid {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 0;
+    grid-template-columns: repeat(10, 1fr); /* Crear una cuadrícula 10x10 */
+    grid-gap: 5px; /* Espacio entre botones */
+    width: 100%; /* Que ocupe el 100% del ancho de la pantalla */
+    max-width: 600px; /* Para evitar que sea demasiado grande en pantallas grandes */
+    margin: 0 auto; /* Centrar el tablero */
 }
 
 .boton-grid {
-    width: 100%;
-    padding: 100%; /* Ajustamos el padding para que sean completamente cuadrados */
-    background-color: #1e90ff; /* Azul océano */
-    border: 1px solid #004080;
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    width: 100%; /* Que los botones se adapten al tamaño de la celda */
+    height: 32px;
+    border: 1px solid #000;
+    background-color: #007BFF;
     color: white;
-    text-align: center;
-    font-size: 0.65em; /* Reducimos el tamaño de la fuente */
 }
 
-.boton-grid:hover {
-    background-color: #0066cc;
+.boton-grid p {
+    text-align: center;
+    font-size: 12px;
+}
+
+/* Ajuste para la sección de "Mi Flota" */
+.tablero-container {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Asegurar que ocupe todo el ancho */
+    max-width: 600px; /* Controlar el tamaño en pantallas más grandes */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Botones de acción */
+.botones-accion button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.botones-accion button:hover {
+    background-color: #0056b3;
 }

@@ -8,98 +8,52 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1 style="font-size: 2em;">Hundir la Flota</h1>
-    <p style="font-size: 0.8em;">Versión 3.3</p>
+    <div class="contenedor">
+        <h1>Hundir la Flota</h1>
+        <h2>Versión 3.3</h2>
 
-    <!-- Sección sombreada para la selección de barcos y los botones de acción -->
-    <div id="barcos-seleccion">
-        <div id="barcos-disponibles" class="botones-barco-grid">
-            <div id="portaaviones" class="barco barco-grid" data-tamaño="5" style="background-image: url('imagenes/portaaviones.png');" title="Portaaviones">
+        <!-- Sección de selección de barcos -->
+        <div class="selector-barcos">
+            <div class="barco-grid" id="portaaviones" data-tamaño="5">
+                <div class="barco-squares"></div>
                 <p>Portaaviones</p>
-                <div class="barco-squares" id="portaaviones-squares">
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                </div>
             </div>
-            <div id="buque" class="barco barco-grid" data-tamaño="4" style="background-image: url('imagenes/buque.png');" title="Buque">
+            <div class="barco-grid" id="buque" data-tamaño="4">
+                <div class="barco-squares"></div>
                 <p>Buque</p>
-                <div class="barco-squares" id="buque-squares">
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                </div>
             </div>
-            <div id="submarino" class="barco barco-grid" data-tamaño="3" style="background-image: url('imagenes/submarino.png');" title="Submarino">
+            <div class="barco-grid" id="submarino" data-tamaño="3">
+                <div class="barco-squares"></div>
                 <p>Submarino</p>
-                <div class="barco-squares" id="submarino-squares">
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                </div>
             </div>
-            <div id="destructor" class="barco barco-grid" data-tamaño="3" style="background-image: url('imagenes/destructor.png');" title="Destructor">
+            <div class="barco-grid" id="destructor" data-tamaño="3">
+                <div class="barco-squares"></div>
                 <p>Destructor</p>
-                <div class="barco-squares" id="destructor-squares">
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                </div>
             </div>
-            <div id="patrullero" class="barco barco-grid" data-tamaño="2" style="background-image: url('imagenes/patrullero.png');" title="Patrullero">
+            <div class="barco-grid" id="patrullero" data-tamaño="2">
+                <div class="barco-squares"></div>
                 <p>Patrullero</p>
-                <div class="barco-squares" id="patrullero-squares">
-                    <div class="casilla"></div>
-                    <div class="casilla"></div>
-                </div>
             </div>
-            <div id="lancha" class="barco barco-grid" data-tamaño="1" style="background-image: url('imagenes/lancha.png');" title="Lancha">
+            <div class="barco-grid" id="lancha" data-tamaño="1">
+                <div class="barco-squares"></div>
                 <p>Lancha</p>
-                <div class="barco-squares" id="lancha-squares">
-                    <div class="casilla"></div>
-                </div>
             </div>
         </div>
-        <!-- Texto pequeño para indicar cómo cambiar la orientación -->
-        <p class="orientacion-info">Pulsa el barco seleccionado para cambiar su orientación.</p>
-        
-        <!-- Botones de "Quitar barco" y "Posicionamiento terminado" en la parte inferior, centrados y del mismo tamaño -->
+
+        <p>Pulsa el barco seleccionado para cambiar su orientación.</p>
+
         <div class="botones-accion">
-            <button id="quitar-barco" class="boton-azul">Quitar último barco</button>
-            <button id="posicion-terminada" class="boton-azul" disabled>Posicionamiento terminado</button>
-        </div>
-    </div>
-
-    <div class="game-container">
-        <!-- Tablero de Mi Flota con estilo y grid 10x10 botones -->
-        <div class="tablero-container sombreado">
-            <h2 style="font-size: 1.1em;">Mi Flota</h2>
-            <div id="mis-barcos" class="tablero-grid">
-                <!-- Grid 10x10 con posiciones A1-J10 -->
-                <!-- Generar 100 botones con posiciones -->
-                <script>
-                    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-                    for (let fila = 1; fila <= 10; fila++) {
-                        for (let col = 0; col < letras.length; col++) {
-                            document.write(`<button class="boton-grid">${letras[col]}${fila}</button>`);
-                        }
-                    }
-                </script>
-            </div>
+            <button id="quitar-barco">Quitar último barco</button>
+            <button id="posicionar-barco" disabled>Posicionamiento terminado</button>
         </div>
 
-        <!-- Tablero de Sus Barcos -->
-        <div class="tablero-container sombreado">
-            <h2 style="font-size: 1.1em;">Sus Barcos</h2>
-            <div id="sus-barcos" class="tablero"></div>
+        <!-- Sección Mi Flota -->
+        <div class="tablero-container">
+            <h2>Mi Flota</h2>
+            <div id="mis-barcos" class="tablero-grid"></div>
         </div>
     </div>
 
     <script src="game.js"></script>
-    <script src="tablero.js"></script>
-    <script src="seleccion-barco.js"></script>
 </body>
 </html>
