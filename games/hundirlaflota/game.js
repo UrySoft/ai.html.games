@@ -18,7 +18,8 @@ function actualizarTablero() {
             celda.classList.add('boton-grid');
             celda.dataset.fila = fila;
             celda.dataset.col = col;
-            celda.textContent = String.fromCharCode(65 + col) + (fila + 1);
+            // Colocar la fila con letras (A-J) y las columnas con números (1-10)
+            celda.textContent = String.fromCharCode(65 + fila) + (col + 1);
             if (tablero[fila][col] === 1) {
                 celda.classList.add('barco-colocado');
             }
