@@ -1,48 +1,52 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    background-color: #f4f4f9;
     text-align: center;
-    color: #333;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
-    margin: 20px 0;
     font-size: 2.5em;
+    margin: 20px 0;
 }
 
-p {
-    margin-top: 10px;
-    font-size: 1.2em;
+.contenedor {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-.game-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+.selector-juegos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
     gap: 20px;
-    margin-top: 40px;
 }
 
-.game-button {
+.boton-juego {
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
-}
-
-.game-button img {
-    width: 120px;
-    height: 120px;
-    border-radius: 15px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
-}
-
-.game-button img:hover {
-    transform: scale(1.1);
-}
-
-.game-button p {
-    margin-top: 10px;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
     font-size: 1.2em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 150px;
+    height: 150px;
+}
+
+.boton-juego img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.boton-juego:hover {
+    background-color: #0056b3;
 }
