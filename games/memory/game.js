@@ -7,18 +7,14 @@ let tiempo = 0;
 let parejasEncontradas = 0;
 let tiempoInterval;
 
-// Imágenes para el juego (15 parejas)
-const imagenes = [
-    'img1.png', 'img2.png', 'img3.png', 'img4.png', 'img5.png',
-    'img6.png', 'img7.png', 'img8.png', 'img9.png', 'img10.png',
-    'img11.png', 'img12.png', 'img13.png', 'img14.png', 'img15.png'
-];
+// Numeros para el juego (15 parejas de números)
+const numeros = Array.from({ length: 15 }, (_, i) => i + 1);
 
-// Duplicar las imágenes y mezclar
+// Duplicar los números y mezclar
 function generarTablero() {
-    let imagenesDoble = imagenes.concat(imagenes); // Duplicamos las imágenes
-    imagenesDoble.sort(() => Math.random() - 0.5); // Mezclamos las imágenes
-    tablero = imagenesDoble;
+    let numerosDoble = numeros.concat(numeros); // Duplicamos los números
+    numerosDoble.sort(() => Math.random() - 0.5); // Mezclamos los números
+    tablero = numerosDoble;
     actualizarTablero();
 }
 
@@ -26,7 +22,7 @@ function generarTablero() {
 function actualizarTablero() {
     const tableroDiv = document.getElementById('tablero');
     tableroDiv.innerHTML = ''; // Limpiar el tablero
-    tablero.forEach((imagen, index) => {
+    tablero.forEach((numero, index) => {
         const carta = document.createElement('div');
         carta.classList.add('carta');
         carta.dataset.index = index;
@@ -40,18 +36,18 @@ function seleccionarCarta(event) {
     const index = event.target.dataset.index;
     if (primeraSeleccion === null) {
         primeraSeleccion = index;
-        mostrarImagen(index);
+        mostrarNumero(index);
     } else if (segundaSeleccion === null && index !== primeraSeleccion) {
         segundaSeleccion = index;
-        mostrarImagen(index);
+        mostrarNumero(index);
         verificarPareja();
     }
 }
 
-// Mostrar la imagen de la carta seleccionada
-function mostrarImagen(index) {
+// Mostrar el número de la carta seleccionada
+function mostrarNumero(index) {
     const carta = document.querySelector(`.carta[data-index="${index}"]`);
-    carta.style.backgroundImage = `url('${tablero[index]}')`;
+    carta.textContent = tablero[index];
 }
 
 // Verificar si las cartas seleccionadas son pareja
@@ -59,14 +55,14 @@ function verificarPareja() {
     if (tablero[primeraSeleccion] === tablero[segundaSeleccion]) {
         parejasEncontradas++;
         resetSeleccion();
-        if (parejasEncontradas === imagenes.length) {
+        if (parejasEncontradas === numeros.length) {
             clearInterval(tiempoInterval);
             alert('¡Ganaste!');
         }
     } else {
         setTimeout(() => {
-            ocultarImagen(primeraSeleccion);
-            ocultarImagen(segundaSeleccion);
+            ocultarNumero(primeraSeleccion);
+            ocultarNumero(segundaSeleccion);
             resetSeleccion();
         }, 1000);
     }
@@ -74,10 +70,10 @@ function verificarPareja() {
     document.getElementById('turns').textContent = turnos;
 }
 
-// Ocultar la imagen de la carta
-function ocultarImagen(index) {
+// Ocultar el número de la carta
+function ocultarNumero(index) {
     const carta = document.querySelector(`.carta[data-index="${index}"]`);
-    carta.style.backgroundImage = 'none';
+    carta.textContent = '';
 }
 
 // Resetear la selección de cartas

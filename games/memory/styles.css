@@ -14,7 +14,7 @@ h1 {
 
 .container {
     width: 100%;
-    max-width: 800px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -33,9 +33,14 @@ h1 {
 }
 
 .carta {
-    width: 100px;
-    height: 100px;
+    width: 100%;
+    padding-top: 100%; /* Mantener aspecto cuadrado */
     background-color: #007bff;
+    color: white;
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 10px;
     cursor: pointer;
     transition: transform 0.3s ease;
