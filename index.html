@@ -8,36 +8,16 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Juegos Reunidos</h1>
+    <div class="contenedor">
+        <h1>Juegos Reunidos</h1>
+        <p>Juegos realizados completamente con IA desde el móvil por <a href="https://www.linkedin.com/in/oriol-badia">Oriol Badia Campanera</a></p>
+        <h2>Versión 1.0</h2>
 
-    <p>Juegos realizados completamente con IA desde el móvil por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank">Oriol Badia Campanera</a></p>
-    <p>Versión: 1.0</p>
-
-    <div class="game-buttons">
-        <!-- Botón para Tres en Raya -->
-        <div class="game-button">
-            <a href="games/tresenralla/index.html">
-                <img src="games/tresenralla/icono.webp" alt="Tres en Raya">
-                <p>Tres en Raya</p>
-            </a>
-        </div>
-
-        <!-- Botón para Mastermind -->
-        <div class="game-button">
-            <a href="games/mastermind/index.html">
-                <img src="games/mastermind/icono.webp" alt="Mastermind">
-                <p>Mastermind</p>
-            </a>
-        </div>
-
-        <!-- Nuevo botón para Hundir la Flota (en desarrollo) -->
-        <div class="game-button">
-            <a href="games/hundirlaflota/index.html">
-                <img src="games/hundirlaflota/icono.webp" alt="Hundir la Flota">
-                <p>Hundir la Flota (en desarrollo)</p>
-            </a>
+        <!-- Botones de selección de juegos -->
+        <div class="selector-juegos">
+            <button class="boton-juego" onclick="location.href='games/tresenralla/index.html'">Tres en Raya</button>
+            <button class="boton-juego" onclick="location.href='games/memory/index.html'">Memory</button>
         </div>
     </div>
-
 </body>
 </html>
