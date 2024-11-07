@@ -1,1 +1,153 @@
+/* styles.css */
+
+/* Definir variables CSS para facilitar el mantenimiento */
+:root {
+    --background-gradient: linear-gradient(to bottom, #000000 0%, #000000 70%, #000000 80%, #87CEEB 100%);
+    --primary-color: #ffffff;
+    --secondary-color: #444;
+    --hover-color: #555;
+    --button-color: #4caf50;
+    --button-hover-color: #66bb6a;
+    /* Añade más variables según sea necesario */
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    background: var(--background-gradient);
+    color: var(--primary-color);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    height: 100%;
+}
+
+#gameCanvas {
+    background-color: transparent;
+    display: block;
+    margin: 0 auto;
+    box-sizing: border-box;
+    width: 100%;
+    height: calc(100% - 40px); /* Restar espacio para el botón de mejoras */
+}
+
+#scoreBoard {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+#scoreBoard span {
+    margin-right: 15px;
+}
+
+#upgradeMenu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #333;
+    padding: 20px;
+    border: 2px solid #fff;
+    display: none;
+    text-align: center;
+    width: 80%;
+    max-width: 500px;
+    box-sizing: border-box;
+    z-index: 3;
+}
+
+#upgradeMenu h2, #upgradeMenu p {
+    margin: 10px 0;
+}
+
+.upgrade-section {
+    margin-bottom: 20px;
+}
+
+.upgrade-section h3 {
+    margin-bottom: 10px;
+}
+
+.upgrade-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.upgrade-buttons button {
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 14px;
+    width: 48%;
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.upgrade-buttons button:hover {
+    background-color: var(--hover-color);
+}
+
+#continueButton {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: var(--button-color);
+    color: var(--primary-color);
+    border: none;
+    cursor: pointer;
+}
+
+#continueButton:hover {
+    background-color: var(--button-hover-color);
+}
+
+/* Estilo para el título del juego */
+#gameTitle {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    color: var(--primary-color);
+    text-align: center;
+    z-index: 2;
+    font-weight: bold;
+}
+
+#gameSubtitle {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--primary-color);
+    text-align: center;
+    z-index: 2;
+}
+
+/* Botón de mejoras */
+#upgradeButton {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+    font-size: 16px;
+}
+
+#upgradeButton:hover {
+    background-color: var(--hover-color);
+}
 
