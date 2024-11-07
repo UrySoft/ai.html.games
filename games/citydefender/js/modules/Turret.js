@@ -1,5 +1,6 @@
-// modules/Turret.js
-import { EnergyBullet } from './EnemyHangar.js'; // Asegúrate de exportar EnergyBullet
+// js/modules/Turret.js
+import { EnergyBullet } from './EnergyBullet.js';
+import { Explosion } from './Explosion.js';
 
 export class Turret {
     constructor(offsetX, offsetY, baseShip, Utils) {
@@ -9,7 +10,7 @@ export class Turret {
         this.lastShotTime = 0;
         this.range = Utils.turretRange;
         this.damage = Utils.turretDamage;
-        this.fireRate = Utils.turretFireRate;
+        this.fireRate = Utils.turretFireRate; // ms
     }
 
     update(deltaTime, enemyShips, enemyMissiles, enemyHangars, enemyFighters, energyBullets, Utils) {
@@ -19,11 +20,11 @@ export class Turret {
             const targets = enemyMissiles.concat(enemyShips, enemyHangars, enemyFighters).filter(obj => !obj.destroyed);
             let closestTarget = null;
             let minDistance = this.range;
-            targets.forEach(target => {
-                const distance = Utils.calculateDistance(this.baseShip.x + this.offsetX, this.baseShip.y + this.offsetY, target.x, target.y);
+            targets.forEach(obj => {
+                const distance = Utils.calculateDistance(this.baseShip.x + this.offsetX, this.baseShip.y + this.offsetY, obj.x, obj.y);
                 if (distance < minDistance) {
                     minDistance = distance;
-                    closestTarget = target;
+                    closestTarget = obj;
                 }
             });
 
@@ -39,5 +40,16 @@ export class Turret {
         ctx.fillStyle = 'darkgray';
         ctx.fillRect(this.baseShip.x + this.offsetX - 5, this.baseShip.y + this.offsetY - 5, 10, 10);
     }
-}
 
+    upgradeRange(multiplier) {
+        this.range *= multiplier;
+    }
+
+    upgradeDamage(amount) {
+        this.damage += amount;
+    }
+
+    upgradeFireRate(amount) {
+        this.fireRate = Math.max(this.fireRate - amount, 100); // Mínimo tiempo de recarga
+    }
+}
