@@ -1,4 +1,5 @@
-// modules/BaseShip.js
+// js/modules/BaseShip.js
+
 export class BaseShip {
     constructor(x, y, canvasWidth, canvasHeight) {
         this.x = x;
@@ -8,7 +9,7 @@ export class BaseShip {
         this.destroyed = false;
         this.speed = canvasWidth * 0.0015;
         this.direction = 1;
-        this.shield = new Shield(this.x, this.y, this.width);
+        this.shield = new Shield(this.x, this.y, this.width / 2);
         this.canShoot = true;
         this.missiles = 10;
         this.maxMissiles = 50;
@@ -17,9 +18,9 @@ export class BaseShip {
     }
 
     update(deltaTime, canvas) {
-        // Lógica de movimiento automático
-        // Interceptar misiles enemigos o movimiento aleatorio
-        // Implementar según la lógica original
+        // Implementar lógica de movimiento automático si es necesario
+        // Por ejemplo, interceptar misiles enemigos o moverse aleatoriamente
+        this.shield.update(deltaTime);
     }
 
     draw(ctx) {
@@ -34,20 +35,42 @@ export class BaseShip {
             // Dibujar escudo
             this.shield.draw(ctx);
             // Dibujar ametralladoras
-            // Implementar si es necesario
+            // Las ametralladoras se dibujan desde main.js
         }
     }
 
     shoot(targetX, targetY, playerMissiles, Utils) {
-        if (this.missiles > 0) {
-            const dx = targetX - this.x;
-            const dy = targetY - this.y;
-            const angle = Math.atan2(dy, dx);
+        if (this.missiles > 0 && this.canShoot) {
+            const angle = Utils.calculateAngle(this.x, this.y, targetX, targetY);
             playerMissiles.push(new Missile(this.x, this.y, targetX, targetY, this, Utils));
             this.missiles--;
-            document.getElementById('baseShipMissiles').innerText = this.missiles;
-            // Actualizar menú de mejoras si es necesario
+            // main.js actualizará el display de misiles
         }
+    }
+
+    takeDamage(amount) {
+        if (this.shield.energy > 0) {
+            this.shield.takeDamage(amount);
+        } else {
+            this.health -= amount;
+            if (this.health <= 0) {
+                this.destroyed = true;
+            }
+        }
+    }
+
+    upgradeMissileCapacity(amount) {
+        this.maxMissiles += amount;
+        this.missiles = this.maxMissiles;
+    }
+
+    upgradeHealth(amount) {
+        this.maxHealth += amount;
+        this.health = this.maxHealth;
+    }
+
+    addMissiles(amount) {
+        this.missiles = Math.min(this.missiles + amount, this.maxMissiles);
     }
 }
 
@@ -92,8 +115,7 @@ class Shield {
             }
         } else {
             // Reducir la salud de la nave base
-            // Implementar en BaseShip
+            // Esto ya se maneja en BaseShip.js
         }
     }
 }
-
