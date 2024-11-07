@@ -49,7 +49,7 @@ function initGame() {
     // Reiniciar ametralladoras
     turretCount = 0;
     turrets = [];
-    turretRange = 200; // Alcance duplicado
+    turretRange = 400; // Alcance duplicado
     turretDamage = 1;
     turretFireRate = 1000;
     costTurret = 100;
@@ -112,4 +112,4 @@ function initGame() {
     lastUpdateTime = Date.now(); // Reiniciar lastUpdateTime
 
     startWave();
-          }
+}
