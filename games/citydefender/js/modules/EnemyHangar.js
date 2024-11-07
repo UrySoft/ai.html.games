@@ -1,10 +1,10 @@
-// modules/EnemyHangar.js
+// js/modules/EnemyHangar.js
 import { EnemyFighter } from './EnemyFighter.js';
-import { EnemyMissile } from './EnemyMissile.js';
+import { EnergyBullet } from './EnergyBullet.js';
 import { Explosion } from './Explosion.js';
 
 export class EnemyHangar {
-    constructor(x, y, canvasWidth, canvasHeight) {
+    constructor(x, y, canvasWidth, canvasHeight, Utils) {
         this.x = x;
         this.y = y;
         this.width = canvasWidth * 0.06;
@@ -21,13 +21,13 @@ export class EnemyHangar {
         this.reloadTime = 4000; // ms
         this.cazasLaunched = 0;
         this.maxCazas = 4;
-        this.lastCazaLaunchTime = Date.now();
+        this.lastCazaLaunchTime = Utils.currentTime();
         this.cazas = [];
         this.destroyed = false;
         this.hasEscaped = false;
     }
 
-    update(deltaTime, enemyFighters, energyBullets, Utils) {
+    update(deltaTime, enemyFighters, energyBullets, explosions, Utils) {
         this.x += this.speed * this.direction;
         if (this.x < 0 || this.x > Utils.canvasWidth) {
             this.direction *= -1;
@@ -36,25 +36,32 @@ export class EnemyHangar {
         // Disparar ráfagas de ametralladora de energía
         if (!this.isBursting && (!this.lastBurstTime || Utils.currentTime() - this.lastBurstTime >= this.reloadTime)) {
             // Verificar si hay objetivos cercanos
-            const targets = Utils.playerMissiles.concat([Utils.baseShip]).filter(obj => obj && !obj.destroyed);
+            const targets = [...Utils.playerMissiles];
+            if (Utils.baseShip && !Utils.baseShip.destroyed) {
+                targets.push(Utils.baseShip);
+            }
             const inRange = targets.some(obj => Utils.calculateDistance(obj.x, obj.y, this.x, this.y) < Utils.canvasHeight * 0.3);
             if (inRange) {
                 this.isBursting = true;
                 this.lastBurstTime = Utils.currentTime();
                 this.burstShotsFired = 0;
+                this.burstShotsTotal = 3;
             }
         }
 
         if (this.isBursting) {
-            if (this.burstShotsFired < this.burstShotsTotal && Utils.currentTime() - this.lastShotTime >= this.burstShotInterval) {
-                this.lastShotTime = Utils.currentTime();
+            if (this.burstShotsFired < this.burstShotsTotal && Utils.currentTime() - this.lastBurstTime >= this.burstShotInterval) {
+                this.lastBurstTime = Utils.currentTime();
                 this.burstShotsFired++;
                 // Crear proyectiles hacia el objetivo más cercano
-                const targets = Utils.playerMissiles.concat([Utils.baseShip]).filter(obj => obj && !obj.destroyed);
+                const targets = [...Utils.playerMissiles];
+                if (Utils.baseShip && !Utils.baseShip.destroyed) {
+                    targets.push(Utils.baseShip);
+                }
                 let closestTarget = null;
-                let minDistance = Infinity;
+                let minDistance = Utils.canvasWidth * 0.3;
                 targets.forEach(obj => {
-                    const distance = Utils.calculateDistance(obj.x, obj.y, this.x, this.y);
+                    const distance = Utils.calculateDistance(this.x, this.y, obj.x, obj.y);
                     if (distance < minDistance) {
                         minDistance = distance;
                         closestTarget = obj;
@@ -93,10 +100,9 @@ export class EnemyHangar {
         // Actualizar salud y estado
         if (this.health <= 0) {
             this.destroyed = true;
-            Utils.createExplosion(this.x, this.y, false);
-            Utils.incrementScore(100);
-            Utils.incrementCoins(50);
-            Utils.removeEnemyHangar(this);
+            Utils.createExplosion(this.x, this.y, false, explosions);
+            Utils.incrementScore(100, document.getElementById('score'));
+            Utils.incrementCoins(50, document.getElementById('availableCoins'));
         }
     }
 
@@ -115,89 +121,13 @@ export class EnemyHangar {
     takeDamage(amount) {
         this.health -= amount;
     }
-}
 
-class EnergyBullet {
-    constructor(x, y, angle, owner, Utils) {
-        this.x = x;
-        this.y = y;
-        this.vx = Math.cos(angle) * Utils.canvasWidth * 0.005;
-        this.vy = Math.sin(angle) * Utils.canvasHeight * 0.005;
-        this.size = owner === 'hangar' ? 3 : 2;
-        this.damage = 1;
-        this.owner = owner;
-        this.lifeTime = 500; // ms
-    }
-
-    update(deltaTime, baseShip, playerMissiles, enemyShips, enemyHangars, enemyFighters, explosions, Utils) {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.lifeTime -= deltaTime * 1000;
-
-        // Verificar colisiones según el propietario
-        if (this.owner === 'hangar' || this.owner === 'caza') {
-            // Colisión con la nave defensora
-            if (baseShip && !baseShip.destroyed && Utils.checkCollision(baseShip, this)) {
-                baseShip.shield.takeDamage(this.damage * 10);
-                Utils.removeEnergyBullet(this);
-            }
-            // Colisión con misiles del jugador
-            playerMissiles.forEach(missile => {
-                if (Utils.checkCollision(missile, this)) {
-                    Utils.createExplosion(missile.x, missile.y, false);
-                    missile.destroy();
-                    Utils.removeEnergyBullet(this);
-                }
-            });
-        } else if (this.owner === 'playerTurret') {
-            // Colisión con enemigos
-            const targets = enemyMissiles.concat(enemyShips, enemyHangars, enemyFighters);
-            targets.forEach(target => {
-                if (!target.destroyed && Utils.checkCollision(target, this)) {
-                    target.takeDamage(this.damage);
-                    if (target.health <= 0) {
-                        target.destroyed = true;
-                        Utils.createExplosion(target.x, target.y, false);
-                        Utils.incrementScore(this.getScore(target));
-                        Utils.incrementCoins(this.getCoins(target));
-                        Utils.removeTarget(target);
-                    }
-                    Utils.removeEnergyBullet(this);
-                }
-            });
+    static spawnWave(wave, canvas, enemyHangars, enemyFighters, Utils) {
+        const MAX_ENEMY_HANGARS = 3; // Máximo de hangars por oleada
+        const enemyHangarsPerWave = Math.min(Math.floor(wave / 3) + 1, MAX_ENEMY_HANGARS);
+        for (let i = 0; i < enemyHangarsPerWave; i++) {
+            const hangar = new EnemyHangar(Math.random() * canvas.width, canvas.height * 0.1, canvas.width, canvas.height, Utils);
+            enemyHangars.push(hangar);
         }
-
-        // Eliminar si sale de la pantalla o si su vida útil termina
-        if (this.x < 0 || this.x > Utils.canvasWidth || this.y < 0 || this.y > Utils.canvasHeight || this.lifeTime <= 0) {
-            Utils.removeEnergyBullet(this);
-        }
-    }
-
-    draw(ctx) {
-        if (this.owner === 'playerTurret') {
-            ctx.fillStyle = 'lightgreen';
-        } else {
-            ctx.fillStyle = 'yellow';
-        }
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-        ctx.fill();
-    }
-
-    getScore(target) {
-        if (target instanceof EnemyShip) return 15;
-        if (target instanceof EnemyHangar) return 100;
-        if (target instanceof EnemyFighter) return 20;
-        if (target instanceof EnemyMissile) return 5;
-        return 0;
-    }
-
-    getCoins(target) {
-        if (target instanceof EnemyShip) return 10;
-        if (target instanceof EnemyHangar) return 50;
-        if (target instanceof EnemyFighter) return 15;
-        if (target instanceof EnemyMissile) return 3;
-        return 0;
     }
 }
-
