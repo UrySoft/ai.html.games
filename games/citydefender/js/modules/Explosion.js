@@ -1,73 +1,71 @@
-// modules/Explosion.js
+// js/modules/Explosion.js
 import { Particle } from './Particle.js';
 
 export class Explosion {
-    constructor(x, y, size, Utils) {
+    constructor(x, y, size) {
         this.x = x;
         this.y = y;
         this.size = size;
         this.opacity = 1;
         this.fadeRate = 1 / 60; // Duración de 60 frames
-        this.affectedShips = [];
-        this.affectedHangars = [];
-        this.affectedFighters = [];
-        this.affectedMissiles = [];
+        this.destroyed = false;
     }
 
-    update(deltaTime, enemyShips, enemyHangars, enemyFighters, enemyMissiles, playerMissiles, Utils) {
+    update(deltaTime, enemyShips, enemyHangars, enemyFighters, enemyMissiles, playerMissiles, explosions, Utils, particles) {
         this.opacity -= this.fadeRate;
         if (this.opacity <= 0) {
-            Utils.removeExplosion(this);
+            this.destroyed = true;
         } else {
             // Verificar colisiones con enemigos
             enemyMissiles.forEach(missile => {
-                if (!this.affectedMissiles.includes(missile) && Utils.checkCollision(this, missile)) {
-                    Utils.createExplosion(missile.x, missile.y, false);
-                    Utils.removeEnemyMissile(missile);
-                    Utils.incrementScore(5);
-                    Utils.incrementCoins(3);
-                    this.affectedMissiles.push(missile);
+                if (!missile.destroyed && Utils.checkCollision({x: this.x, y: this.y, width: this.size*2, height: this.size*2}, missile)) {
+                    Utils.createExplosion(missile.x, missile.y, false, explosions);
+                    missile.destroyed = true;
+                    Utils.incrementScore(5, document.getElementById('score'));
+                    Utils.incrementCoins(3, document.getElementById('availableCoins'));
                 }
             });
 
             enemyShips.forEach(ship => {
-                if (!this.affectedShips.includes(ship) && Utils.checkCollision(ship, this)) {
+                if (!ship.destroyed && Utils.checkCollision({x: this.x, y: this.y, width: this.size*2, height: this.size*2}, ship)) {
                     ship.takeDamage(Utils.missileDamage);
-                    this.affectedShips.push(ship);
                     if (ship.health <= 0) {
-                        Utils.createExplosion(ship.x, ship.y, false);
+                        Utils.createExplosion(ship.x, ship.y, false, explosions);
                         Utils.removeEnemyShip(ship);
-                        Utils.incrementScore(15);
-                        Utils.incrementCoins(10);
+                        Utils.incrementScore(15, document.getElementById('score'));
+                        Utils.incrementCoins(10, document.getElementById('availableCoins'));
                     }
                 }
             });
 
             enemyHangars.forEach(hangar => {
-                if (!this.affectedHangars.includes(hangar) && Utils.checkCollision(hangar, this)) {
+                if (!hangar.destroyed && Utils.checkCollision({x: this.x, y: this.y, width: this.size*2, height: this.size*2}, hangar)) {
                     hangar.takeDamage(Utils.missileDamage);
-                    this.affectedHangars.push(hangar);
                     if (hangar.health <= 0) {
-                        Utils.createExplosion(hangar.x, hangar.y, false);
+                        Utils.createExplosion(hangar.x, hangar.y, false, explosions);
                         Utils.removeEnemyHangar(hangar);
-                        Utils.incrementScore(100);
-                        Utils.incrementCoins(50);
+                        Utils.incrementScore(100, document.getElementById('score'));
+                        Utils.incrementCoins(50, document.getElementById('availableCoins'));
                     }
                 }
             });
 
             enemyFighters.forEach(fighter => {
-                if (!this.affectedFighters.includes(fighter) && Utils.checkCollision(fighter, this)) {
+                if (!fighter.destroyed && Utils.checkCollision({x: this.x, y: this.y, width: this.size*2, height: this.size*2}, fighter)) {
                     fighter.takeDamage(Utils.missileDamage);
-                    this.affectedFighters.push(fighter);
                     if (fighter.health <= 0) {
-                        Utils.createExplosion(fighter.x, fighter.y, false);
+                        Utils.createExplosion(fighter.x, fighter.y, false, explosions);
                         Utils.removeEnemyFighter(fighter);
-                        Utils.incrementScore(20);
-                        Utils.incrementCoins(15);
+                        Utils.incrementScore(20, document.getElementById('score'));
+                        Utils.incrementCoins(15, document.getElementById('availableCoins'));
                     }
                 }
             });
+        }
+
+        // Generar partículas de explosión
+        for (let i = 0; i < 10; i++) {
+            Utils.createParticle(this.x, this.y, Math.random() * 2 * Math.PI, 'explosion', particles);
         }
     }
 
@@ -84,4 +82,3 @@ export class Explosion {
         ctx.globalAlpha = 1;
     }
 }
-
