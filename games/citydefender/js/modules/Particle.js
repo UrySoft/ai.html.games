@@ -1,4 +1,5 @@
-// modules/Particle.js
+// js/modules/Particle.js
+
 export class Particle {
     constructor(x, y, vx, vy, size, life, opacity, type) {
         this.x = x;
@@ -15,7 +16,7 @@ export class Particle {
     update(deltaTime) {
         this.x += this.vx;
         this.y += this.vy;
-        this.life -= deltaTime * 60; // Suponiendo 60 FPS
+        this.life -= deltaTime * 60; // Asumiendo 60 FPS
         this.opacity = this.life / this.maxLife;
     }
 
@@ -41,4 +42,3 @@ export class Particle {
         }
     }
 }
-
