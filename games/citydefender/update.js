@@ -76,8 +76,8 @@ function update() {
             var stepX = (dx / distance) * missile.speed;
             var stepY = (dy / distance) * missile.speed;
 
-            missile.x += stepX;
-            missile.y += stepY;
+            missile.x += stepX * deltaTime * 60;
+            missile.y += stepY * deltaTime * 60;
 
             if (distance < missile.speed || missile.y < 0) {
                 missile.exploded = true;
@@ -86,7 +86,7 @@ function update() {
                     y: missile.y,
                     radius: canvas.width * 0.05 * explosionSizeMultiplier,
                     startTime: currentTime,
-                    duration: 500 * explosionDurationMultiplier
+                    duration: 300 * explosionDurationMultiplier // Duración reducida
                 });
             }
         } else {
@@ -96,9 +96,36 @@ function update() {
 
     // Actualizar misiles enemigos
     enemyMissiles.forEach(function(missile, index) {
-        missile.y += missile.speed * deltaTime;
+        missile.y += missile.speed * deltaTime * 60;
         if (missile.y > canvas.height) {
             enemyMissiles.splice(index, 1);
+        }
+
+        // Colisión con escudo de la nave base
+        if (shieldActive) {
+            var dx = missile.x - baseShip.x;
+            var dy = missile.y - baseShip.y;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < baseShip.width) {
+                enemyMissiles.splice(index, 1);
+                shieldEnergy -= 10;
+                if (shieldEnergy <= 0) {
+                    shieldEnergy = 0;
+                    shieldActive = false;
+                }
+            }
+        } else {
+            // Colisión con nave base
+            if (missile.x > baseShip.x - baseShip.width / 2 && missile.x < baseShip.x + baseShip.width / 2 &&
+                missile.y > baseShip.y - baseShip.height / 2 && missile.y < baseShip.y + baseShip.height / 2) {
+                enemyMissiles.splice(index, 1);
+                baseShipHealth -= 1;
+                if (baseShipHealth <= 0) {
+                    baseShipHealth = 0;
+                    baseShip.destroyed = true;
+                    gameOver();
+                }
+            }
         }
     });
 
@@ -161,12 +188,31 @@ function update() {
                 }
             }
         });
+
+        // Colisión con cazas enemigos
+        enemyFighters.forEach(function(fighter) {
+            if (!fighter.destroyed) {
+                var dx = fighter.x - explosion.x;
+                var dy = fighter.y - explosion.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < explosion.radius) {
+                    fighter.health -= missileDamage;
+                    if (fighter.health <= 0) {
+                        fighter.destroyed = true;
+                        score += 25;
+                        coinsToSpend += 10;
+                        document.getElementById('score').innerText = score;
+                        document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
+                    }
+                }
+            }
+        });
     });
 
     // Actualizar naves enemigas
     enemyShips.forEach(function(ship) {
         if (!ship.destroyed) {
-            ship.x += ship.speed * ship.direction * deltaTime;
+            ship.x += ship.speed * ship.direction * deltaTime * 60;
             if (ship.x < 0 || ship.x > canvas.width) {
                 ship.direction *= -1;
             }
@@ -186,7 +232,7 @@ function update() {
     // Actualizar hangars enemigos
     enemyHangars.forEach(function(hangar) {
         if (!hangar.destroyed) {
-            hangar.x += hangar.speed * hangar.direction * deltaTime;
+            hangar.x += hangar.speed * hangar.direction * deltaTime * 60;
             if (hangar.x < 0 || hangar.x > canvas.width) {
                 hangar.direction *= -1;
             }
@@ -202,7 +248,11 @@ function update() {
                     height: canvas.height * 0.015,
                     speed: canvas.height * 0.001,
                     health: 2,
-                    destroyed: false
+                    maxHealth: 2,
+                    destroyed: false,
+                    attackPhase: 'approach',
+                    lastShotTime: 0,
+                    shotInterval: 1000
                 });
             }
         }
@@ -211,20 +261,90 @@ function update() {
     // Actualizar cazas enemigos
     enemyFighters.forEach(function(fighter) {
         if (!fighter.destroyed) {
-            // Mover hacia la nave base
-            var dx = baseShip.x - fighter.x;
-            var dy = baseShip.y - fighter.y;
-            var distance = Math.sqrt(dx * dx + dy * dy);
-            fighter.x += (dx / distance) * fighter.speed;
-            fighter.y += (dy / distance) * fighter.speed;
+            if (fighter.attackPhase === 'approach') {
+                // Mover hacia la nave base
+                var dx = baseShip.x - fighter.x;
+                var dy = baseShip.y - fighter.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                fighter.x += (dx / distance) * fighter.speed * deltaTime * 60;
+                fighter.y += (dy / distance) * fighter.speed * deltaTime * 60;
 
-            // Atacar si está cerca
-            if (distance < canvas.width * 0.05) {
-                baseShipHealth -= 0.1 * deltaTime;
-                if (baseShipHealth <= 0) {
-                    baseShipHealth = 0;
-                    baseShip.destroyed = true;
-                    gameOver();
+                // Atacar si está cerca
+                if (distance < canvas.width * 0.2) {
+                    if (currentTime - fighter.lastShotTime >= fighter.shotInterval) {
+                        fighter.lastShotTime = currentTime;
+                        let angle = Math.atan2(dy, dx);
+                        energyBullets.push({
+                            x: fighter.x,
+                            y: fighter.y,
+                            vx: Math.cos(angle) * canvas.width * 0.005,
+                            vy: Math.sin(angle) * canvas.height * 0.005,
+                            size: 2,
+                            damage: 1,
+                            owner: 'enemyFighter',
+                            lifeTime: 500
+                        });
+                    }
+                    fighter.attackPhase = 'retreat';
+                }
+            } else if (fighter.attackPhase === 'retreat') {
+                // Retirarse fuera del alcance de la nave base
+                var dx = fighter.x - baseShip.x;
+                var dy = fighter.y - baseShip.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                fighter.x += (dx / distance) * fighter.speed * deltaTime * 60;
+                fighter.y += (dy / distance) * fighter.speed * deltaTime * 60;
+
+                if (distance > canvas.width * 0.4) {
+                    fighter.attackPhase = 'approach';
+                }
+            }
+
+            // Atacar misiles del jugador
+            playerMissiles.forEach(function(missile, index) {
+                var dx = missile.x - fighter.x;
+                var dy = missile.y - fighter.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < canvas.width * 0.1) {
+                    if (currentTime - fighter.lastShotTime >= fighter.shotInterval) {
+                        fighter.lastShotTime = currentTime;
+                        let angle = Math.atan2(dy, dx);
+                        energyBullets.push({
+                            x: fighter.x,
+                            y: fighter.y,
+                            vx: Math.cos(angle) * canvas.width * 0.005,
+                            vy: Math.sin(angle) * canvas.height * 0.005,
+                            size: 2,
+                            damage: 1,
+                            owner: 'enemyFighter',
+                            lifeTime: 500
+                        });
+                    }
+                }
+            });
+
+            // Colisión con escudo de la nave base
+            if (shieldActive) {
+                var dx = fighter.x - baseShip.x;
+                var dy = fighter.y - baseShip.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < baseShip.width) {
+                    shieldEnergy -= 5 * deltaTime;
+                    if (shieldEnergy <= 0) {
+                        shieldEnergy = 0;
+                        shieldActive = false;
+                    }
+                }
+            } else {
+                // Colisión con nave base
+                if (fighter.x > baseShip.x - baseShip.width / 2 && fighter.x < baseShip.x + baseShip.width / 2 &&
+                    fighter.y > baseShip.y - baseShip.height / 2 && fighter.y < baseShip.y + baseShip.height / 2) {
+                    baseShipHealth -= 0.1 * deltaTime;
+                    if (baseShipHealth <= 0) {
+                        baseShipHealth = 0;
+                        baseShip.destroyed = true;
+                        gameOver();
+                    }
                 }
             }
         }
@@ -241,59 +361,118 @@ function update() {
         }
 
         // Colisión con misiles enemigos
-        enemyMissiles.forEach(function(missile, mIndex) {
-            var dx = missile.x - bullet.x;
-            var dy = missile.y - bullet.y;
-            var distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < bullet.size + 3) {
-                enemyMissiles.splice(mIndex, 1);
-                energyBullets.splice(index, 1);
-                score += 5;
-                coinsToSpend += 1;
-                document.getElementById('score').innerText = score;
-                document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
-            }
-        });
-
-        // Colisión con naves enemigas
-        enemyShips.forEach(function(ship) {
-            if (!ship.destroyed) {
-                var dx = ship.x - bullet.x;
-                var dy = ship.y - bullet.y;
+        if (bullet.owner === 'playerTurret' || bullet.owner === 'fighter') {
+            enemyMissiles.forEach(function(missile, mIndex) {
+                var dx = missile.x - bullet.x;
+                var dy = missile.y - bullet.y;
                 var distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < bullet.size + ship.width / 2) {
-                    ship.health -= bullet.damage;
+                if (distance < bullet.size + 3) {
+                    enemyMissiles.splice(mIndex, 1);
                     energyBullets.splice(index, 1);
-                    if (ship.health <= 0) {
-                        ship.destroyed = true;
-                        score += 50;
-                        coinsToSpend += 20;
-                        document.getElementById('score').innerText = score;
-                        document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
+                    score += 5;
+                    coinsToSpend += 1;
+                    document.getElementById('score').innerText = score;
+                    document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
+                }
+            });
+
+            // Colisión con naves enemigas
+            enemyShips.forEach(function(ship) {
+                if (!ship.destroyed) {
+                    var dx = ship.x - bullet.x;
+                    var dy = ship.y - bullet.y;
+                    var distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < bullet.size + ship.width / 2) {
+                        ship.health -= bullet.damage;
+                        energyBullets.splice(index, 1);
+                        if (ship.health <= 0) {
+                            ship.destroyed = true;
+                            score += 50;
+                            coinsToSpend += 20;
+                            document.getElementById('score').innerText = score;
+                            document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
+                        }
+                    }
+                }
+            });
+
+            // Colisión con hangars enemigos
+            enemyHangars.forEach(function(hangar) {
+                if (!hangar.destroyed) {
+                    var dx = hangar.x - bullet.x;
+                    var dy = hangar.y - bullet.y;
+                    var distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < bullet.size + hangar.width / 2) {
+                        hangar.health -= bullet.damage;
+                        energyBullets.splice(index, 1);
+                        if (hangar.health <= 0) {
+                            hangar.destroyed = true;
+                            score += 100;
+                            coinsToSpend += 40;
+                            document.getElementById('score').innerText = score;
+                            document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
+                        }
+                    }
+                }
+            });
+
+            // Colisión con cazas enemigos
+            enemyFighters.forEach(function(fighter) {
+                if (!fighter.destroyed) {
+                    var dx = fighter.x - bullet.x;
+                    var dy = fighter.y - bullet.y;
+                    var distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < bullet.size + fighter.width / 2) {
+                        fighter.health -= bullet.damage;
+                        energyBullets.splice(index, 1);
+                        if (fighter.health <= 0) {
+                            fighter.destroyed = true;
+                            score += 25;
+                            coinsToSpend += 10;
+                            document.getElementById('score').innerText = score;
+                            document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
+                        }
+                    }
+                }
+            });
+        } else if (bullet.owner === 'enemyFighter') {
+            // Colisión con misiles del jugador
+            playerMissiles.forEach(function(missile, mIndex) {
+                var dx = missile.x - bullet.x;
+                var dy = missile.y - bullet.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < bullet.size + 3) {
+                    playerMissiles.splice(mIndex, 1);
+                    energyBullets.splice(index, 1);
+                }
+            });
+
+            // Colisión con nave base
+            if (shieldActive) {
+                var dx = bullet.x - baseShip.x;
+                var dy = bullet.y - baseShip.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < baseShip.width) {
+                    energyBullets.splice(index, 1);
+                    shieldEnergy -= 5;
+                    if (shieldEnergy <= 0) {
+                        shieldEnergy = 0;
+                        shieldActive = false;
+                    }
+                }
+            } else {
+                if (bullet.x > baseShip.x - baseShip.width / 2 && bullet.x < baseShip.x + baseShip.width / 2 &&
+                    bullet.y > baseShip.y - baseShip.height / 2 && bullet.y < baseShip.y + baseShip.height / 2) {
+                    energyBullets.splice(index, 1);
+                    baseShipHealth -= 1;
+                    if (baseShipHealth <= 0) {
+                        baseShipHealth = 0;
+                        baseShip.destroyed = true;
+                        gameOver();
                     }
                 }
             }
-        });
-
-        // Colisión con hangars enemigos
-        enemyHangars.forEach(function(hangar) {
-            if (!hangar.destroyed) {
-                var dx = hangar.x - bullet.x;
-                var dy = hangar.y - bullet.y;
-                var distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < bullet.size + hangar.width / 2) {
-                    hangar.health -= bullet.damage;
-                    energyBullets.splice(index, 1);
-                    if (hangar.health <= 0) {
-                        hangar.destroyed = true;
-                        score += 100;
-                        coinsToSpend += 40;
-                        document.getElementById('score').innerText = score;
-                        document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
-                    }
-                }
-            }
-        });
+        }
     });
 
     // Actualizar cazas amigos
@@ -312,8 +491,8 @@ function update() {
             let distance = Math.sqrt(dx * dx + dy * dy);
             let speed = fighter.speed * fighterSpeedMultiplier;
 
-            fighter.x += (dx / distance) * speed;
-            fighter.y += (dy / distance) * speed;
+            fighter.x += (dx / distance) * speed * deltaTime * 60;
+            fighter.y += (dy / distance) * speed * deltaTime * 60;
 
             // Disparar si está en rango
             if (distance < canvas.width * 0.2) {
@@ -334,8 +513,8 @@ function update() {
             }
         } else {
             // Patrullar alrededor de la nave base
-            fighter.x += (Math.random() - 0.5) * fighter.speed;
-            fighter.y += (Math.random() - 0.5) * fighter.speed;
+            fighter.x += (Math.random() - 0.5) * fighter.speed * deltaTime * 60;
+            fighter.y += (Math.random() - 0.5) * fighter.speed * deltaTime * 60;
         }
     });
 
@@ -345,4 +524,12 @@ function update() {
         document.getElementById('wave').innerText = wave;
         showUpgradeMenu();
     }
-                                }
+}
+
+// Función para terminar el juego
+function gameOver() {
+    gamePaused = true;
+    canShoot = false;
+    alert('¡Has sido derrotado! Puntuación final: ' + score);
+    initGame();
+}
