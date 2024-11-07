@@ -45,7 +45,9 @@ function startWave() {
     canShoot = true;
     var MAX_ENEMY_SHIPS = 5; // Máximo de naves enemigas por oleada
     enemyShipsPerWave = Math.min(Math.floor(wave / 2) + 1, MAX_ENEMY_SHIPS);
-    enemyHangarsPerWave = Math.floor(wave / 3); // Cada 3 oleadas, una naveHangar más
+    if (wave % 3 === 0) {
+        enemyHangarsPerWave++;
+    }
     generateEnemyShips();
     gamePaused = false; // Asegurarse de que el juego no esté en pausa
     requestAnimationFrame(gameLoop);
@@ -329,6 +331,3 @@ function updateUpgradeMenu() {
     // Actualizar coins disponibles
     document.getElementById('availableCoins').innerText = Math.floor(coinsToSpend);
 }
-
-// Iniciar el juego al cargar la página
-initGame();
