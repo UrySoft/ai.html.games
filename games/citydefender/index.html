@@ -1,1 +1,165 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>City Defender - Beta 2.0</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Título del juego -->
+    <div id="gameTitle">
+        City Defender
+    </div>
+    <!-- Subtítulo con autor y versión actualizada -->
+    <div id="gameSubtitle">
+        by UrySoft Beta 2.0
+    </div>
+    <!-- Marcador actualizado -->
+    <div id="scoreBoard">
+        <span>Puntos: <span id="score">0</span></span>
+        <span>Oleada: <span id="wave">1</span></span>
+        <span>Coins: <span id="availableCoins">9999</span></span>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <!-- Botones inferiores -->
+    <div id="bottomButtons">
+        <button id="upgradeButton">Mejoras</button>
+        <button id="launchFightersButton">Lanzar Cazas (<span id="fightersInHangar">0</span>)</button>
+        <button id="tacticsButton">Tácticas</button>
+    </div>
+    <!-- Menú de mejoras con pestañas -->
+    <div id="upgradeMenu">
+        <h2>Mejoras Disponibles</h2>
+        <p>Coins disponibles: <span id="coinsToSpend">9999</span></p>
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="tab1">Nave</button>
+            <button class="tab-button" data-tab="tab2">Escudo</button>
+            <button class="tab-button" data-tab="tab3">Misiles</button>
+            <button class="tab-button" data-tab="tab4">Ametralladoras</button>
+            <button class="tab-button" data-tab="tab5">Cazas</button>
+        </div>
+        <!-- Pestañas de mejoras -->
+        <!-- Pestaña Nave -->
+        <div id="tab1" class="tab active">
+            <div class="upgrade-buttons">
+                <button id="repairBaseShip">
+                    Reparar Nave (+1 vida)<br>
+                    Vida actual: <span id="currentBaseShipHealth">6</span>/<span id="maxBaseShipHealth">6</span><br>
+                    Costo: 5 coins
+                </button>
+                <button id="upgradeBaseShipHealth">
+                    Aumentar vida máxima (+1)<br>
+                    Vida máxima: <span id="maxBaseShipHealthDisplay">6</span><br>
+                    Costo: <span id="costUpgradeBaseShipHealth">20</span> coins
+                </button>
+            </div>
+        </div>
+        <!-- Pestaña Escudo -->
+        <div id="tab2" class="tab">
+            <div class="upgrade-buttons">
+                <button id="upgradeShieldCapacity">
+                    Aumentar Capacidad (+20%)<br>
+                    Capacidad actual: <span id="currentShieldCapacity">100%</span><br>
+                    Costo: <span id="costShieldCapacity">100</span> coins
+                </button>
+                <button id="upgradeShieldRegen">
+                    Mejorar Regeneración (+10%)<br>
+                    Regeneración actual: <span id="currentShieldRegen">100%</span><br>
+                    Costo: <span id="costShieldRegen">80</span> coins
+                </button>
+            </div>
+        </div>
+        <!-- Pestaña Misiles -->
+        <div id="tab3" class="tab">
+            <div class="upgrade-buttons">
+                <button id="upgradeMissileLimit">
+                    Misiles simultáneos (+1)<br>
+                    Actual: <span id="currentMissileLimit">2</span><br>
+                    Costo: <span id="costMissileLimit">10</span> coins
+                </button>
+                <button id="upgradeMissileSpeed">
+                    Velocidad misiles (+10%)<br>
+                    Actual: <span id="currentMissileSpeed">100%</span><br>
+                    Costo: <span id="costMissileSpeed">10</span> coins
+                </button>
+                <button id="upgradeExplosionSize">
+                    Tamaño explosión (+10%)<br>
+                    Actual: <span id="currentExplosionSize">100%</span><br>
+                    Costo: <span id="costExplosionSize">20</span> coins
+                </button>
+                <button id="upgradeMissileDamage">
+                    Daño de misiles (+1)<br>
+                    Actual: <span id="currentMissileDamage">1</span><br>
+                    Costo: <span id="costMissileDamage">25</span> coins
+                </button>
+            </div>
+        </div>
+        <!-- Pestaña Ametralladoras -->
+        <div id="tab4" class="tab">
+            <div class="upgrade-buttons">
+                <button id="buyTurret">
+                    Añadir Ametralladora (+1)<br>
+                    Ametralladoras: <span id="currentTurretCount">0</span>/5<br>
+                    Costo: <span id="costTurret">100</span> coins
+                </button>
+                <button id="upgradeTurretRange">
+                    Mejorar Alcance (+10%)<br>
+                    Alcance actual: <span id="currentTurretRange">200%</span><br>
+                    Costo: <span id="costTurretRange">50</span> coins
+                </button>
+                <button id="upgradeTurretDamage">
+                    Mejorar Potencia (+1)<br>
+                    Daño actual: <span id="currentTurretDamage">1</span><br>
+                    Costo: <span id="costTurretDamage">75</span> coins
+                </button>
+            </div>
+        </div>
+        <!-- Pestaña Cazas -->
+        <div id="tab5" class="tab">
+            <div class="upgrade-buttons">
+                <button id="upgradeFighterCapacity">
+                    Aumentar capacidad de cazas (+1)<br>
+                    Capacidad actual: <span id="currentFighterCapacity">0</span>/10<br>
+                    Costo: <span id="costFighterCapacity">50</span> coins
+                </button>
+                <button id="buyFighter">
+                    Fabricar Caza (+1)<br>
+                    Cazas en hangar: <span id="fightersInHangarMenu">0</span>/<span id="currentFighterCapacityMenu">0</span><br>
+                    Costo: <span id="costFighter">30</span> coins
+                </button>
+                <button id="upgradeFighterSpeed">
+                    Mejorar Velocidad (+10%)<br>
+                    Velocidad actual: <span id="currentFighterSpeed">100%</span><br>
+                    Costo: <span id="costFighterSpeed">40</span> coins
+                </button>
+                <button id="upgradeFighterHealth">
+                    Mejorar Vida (+1)<br>
+                    Vida actual: <span id="currentFighterHealth">2</span><br>
+                    Costo: <span id="costFighterHealth">35</span> coins
+                </button>
+                <button id="upgradeFighterShield">
+                    Añadir Escudo a Cazas<br>
+                    Estado: <span id="fighterShieldStatus">Desactivado</span><br>
+                    Costo: <span id="costFighterShield">50</span> coins
+                </button>
+            </div>
+        </div>
+        <button id="continueButton">Continuar</button>
+    </div>
+    <!-- Menú de tácticas -->
+    <div id="tacticsMenu">
+        <h2>Seleccionar Tácticas</h2>
+        <div id="tacticsList">
+            <!-- Lista dinámica de cazas y sus tácticas -->
+        </div>
+        <button id="closeTacticsButton">Cerrar</button>
+    </div>
+    <!-- Cargar los scripts JavaScript -->
+    <script src="variables.js"></script>
+    <script src="init.js"></script>
+    <script src="update.js"></script>
+    <script src="draw.js"></script>
+    <script src="events.js"></script>
+    <script src="game.js"></script>
+</body>
+                                                                        </html>
