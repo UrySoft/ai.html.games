@@ -15,7 +15,7 @@ var shieldActive = true;
 var turretCount = 0; // Número de ametralladoras
 var maxTurrets = 5;
 var turrets = []; // Array de ametralladoras
-var turretRange = 200; // Alcance de las ametralladoras (duplicado)
+var turretRange = 400; // Alcance de las ametralladoras (duplicado)
 var turretDamage = 1; // Daño de las ametralladoras
 var turretFireRate = 1000; // Milisegundos entre disparos
 
