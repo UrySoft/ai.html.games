@@ -1,6 +1,5 @@
 // js/modules/Turret.js
 import { EnergyBullet } from './EnergyBullet.js';
-import { Explosion } from './Explosion.js';
 
 export class Turret {
     constructor(offsetX, offsetY, baseShip, Utils) {
