@@ -31,7 +31,11 @@ function draw() {
 
     // Dibujar proyectiles de energía
     energyBullets.forEach(function(bullet) {
-        ctx.fillStyle = 'yellow';
+        if (bullet.owner === 'playerTurret' || bullet.owner === 'fighter') {
+            ctx.fillStyle = 'yellow';
+        } else if (bullet.owner === 'enemyFighter') {
+            ctx.fillStyle = 'purple';
+        }
         ctx.beginPath();
         ctx.arc(bullet.x, bullet.y, bullet.size, 0, 2 * Math.PI);
         ctx.fill();
