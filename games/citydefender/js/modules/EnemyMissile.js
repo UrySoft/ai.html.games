@@ -1,4 +1,6 @@
-// modules/EnemyMissile.js
+// js/modules/EnemyMissile.js
+import { Explosion } from './Explosion.js';
+
 export class EnemyMissile {
     constructor(x, y, targetX, targetY, Utils) {
         this.x = x;
@@ -18,25 +20,22 @@ export class EnemyMissile {
 
         // Verificar colisión con la nave de defensa
         if (baseShip && !baseShip.destroyed && Utils.checkCollision(baseShip, this)) {
-            Utils.createExplosion(this.x, this.y, false);
-            Utils.removeEnemyMissile(this);
-            baseShip.shield.takeDamage(20);
-            if (baseShip.health <= 0) {
-                baseShip.destroyed = true;
-            }
+            Utils.createExplosion(this.x, this.y, false, explosions);
+            this.destroyed = true;
+            baseShip.takeDamage(20);
         }
 
         // Verificar si llega al destino
         const distance = Utils.calculateDistance(this.x, this.y, this.targetX, this.targetY);
         if (distance < this.speed) {
-            Utils.createExplosion(this.x, this.y, false);
-            Utils.removeEnemyMissile(this);
+            Utils.createExplosion(this.x, this.y, false, explosions);
+            this.destroyed = true;
             // Destruir ciudad si corresponde
-            Utils.destroyCityAt(this.x, this.y);
+            Utils.destroyCityAt(this.x, this.y, Utils.cities);
         }
 
         // Generar partículas para la estela
-        Utils.createParticle(this.x, this.y, this.angle, 'enemy');
+        Utils.createParticle(this.x, this.y, this.angle, 'enemy', Utils.particles);
     }
 
     draw(ctx) {
