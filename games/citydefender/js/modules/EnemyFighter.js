@@ -1,5 +1,6 @@
-// modules/EnemyFighter.js
-import { EnergyBullet } from './EnemyHangar.js'; // Asegúrate de exportar EnergyBullet si está en EnemyHangar.js
+// js/modules/EnemyFighter.js
+import { EnergyBullet } from './EnergyBullet.js';
+import { Explosion } from './Explosion.js';
 
 export class EnemyFighter {
     constructor(x, y, canvasWidth, canvasHeight, hangar, Utils) {
@@ -18,15 +19,22 @@ export class EnemyFighter {
         this.state = 'approaching'; // 'approaching', 'attacking', 'escaping'
         this.burstShotsFired = 0;
         this.burstShotsTotal = 3;
+        this.isBursting = false;
     }
 
-    update(deltaTime, playerMissiles, energyBullets, baseShip, Utils) {
+    update(deltaTime, playerMissiles, energyBullets, baseShip, explosions, particles, Utils) {
         if (this.escaping) {
             // Huye hacia arriba
             this.y -= this.speed;
             if (this.y + this.height < 0) {
-                Utils.removeEnemyFighter(this);
+                this.destroyed = true;
             }
+            return;
+        }
+
+        // Verificar si el hangar está destruido o ha huido
+        if (this.hangar.destroyed || this.hangar.hasEscaped) {
+            this.escaping = true;
             return;
         }
 
@@ -88,14 +96,13 @@ export class EnemyFighter {
         // Actualizar salud y estado
         if (this.health <= 0) {
             this.destroyed = true;
-            Utils.createExplosion(this.x, this.y, false);
-            Utils.incrementScore(20);
-            Utils.incrementCoins(15);
-            Utils.removeEnemyFighter(this);
+            Utils.createExplosion(this.x, this.y, false, explosions);
+            Utils.incrementScore(20, document.getElementById('score'));
+            Utils.incrementCoins(15, document.getElementById('availableCoins'));
         }
     }
 
-    draw(ctx) {
+    draw(ctx, particles, Utils) {
         if (!this.destroyed) {
             ctx.fillStyle = 'orange';
             ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
@@ -109,8 +116,8 @@ export class EnemyFighter {
             const leftEngineX = this.x - this.width / 4;
             const rightEngineX = this.x + this.width / 4;
             const engineY = this.y + this.height / 2;
-            Utils.createParticle(leftEngineX, engineY, Math.PI / 2, 'enemy');
-            Utils.createParticle(rightEngineX, engineY, Math.PI / 2, 'enemy');
+            Utils.createParticle(leftEngineX, engineY, Math.PI / 2, 'enemy', particles);
+            Utils.createParticle(rightEngineX, engineY, Math.PI / 2, 'enemy', particles);
         }
     }
 
@@ -118,4 +125,3 @@ export class EnemyFighter {
         this.health -= amount;
     }
 }
-
