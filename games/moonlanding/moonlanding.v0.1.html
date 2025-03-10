@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moon Landing – Juego Actualizado</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Moon Landing – Juego con Sonido</title>
   <style>
     html, body {
       margin: 0;
@@ -19,26 +19,14 @@
       background: #000;
       touch-action: none;
     }
-    /* Botones fijos en las esquinas */
-    #btnLeft {
+    /* Botones fijos */
+    #btnLeft, #btnRight, #btnMenu {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
       z-index: 100;
     }
-    #btnRight {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 100;
-    }
-    /* Botón para volver al menú (posicionado en la esquina superior izquierda) */
-    #btnMenu {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 100;
-    }
+    #btnLeft { bottom: 20px; left: 20px; }
+    #btnRight { bottom: 20px; right: 20px; }
+    #btnMenu { top: 20px; left: 20px; }
     .btn {
       width: 150px;
       height: 70px;
@@ -51,9 +39,7 @@
       transition: background-color 0.3s;
       touch-action: none;
     }
-    .btn:active {
-      background-color: #666;
-    }
+    .btn:active { background-color: #666; }
     #message, #restart {
       position: fixed;
       left: 50%;
@@ -61,10 +47,7 @@
       text-align: center;
       z-index: 100;
     }
-    #message {
-      top: 20px;
-      font-size: 24px;
-    }
+    #message { top: 20px; font-size: 24px; }
     #restart {
       top: 60px;
       font-size: 20px;
@@ -72,21 +55,20 @@
       display: none;
       cursor: pointer;
     }
-    /* Indicador de astronautas rescatados */
     #astronautIndicator {
       position: fixed;
       top: 10px;
       right: 10px;
       font-size: 20px;
       color: #0ff;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0,0,0,0.7);
       padding: 8px 12px;
       border: 2px solid #0ff;
       border-radius: 8px;
       text-shadow: 1px 1px 2px #000;
       z-index: 100;
     }
-    /* Menú de entrada y selección de dificultad */
+    /* Overlay de menú */
     #difficultyOverlay {
       position: fixed;
       top: 0;
@@ -105,18 +87,9 @@
       border-radius: 10px;
       text-align: center;
     }
-    #menuContainer h1 {
-      font-size: 48px;
-      margin-bottom: 10px;
-    }
-    #menuContainer p {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-    #menuContainer h2 {
-      font-size: 32px;
-      margin-bottom: 20px;
-    }
+    #menuContainer h1 { font-size: 48px; margin-bottom: 10px; }
+    #menuContainer p { font-size: 20px; margin-bottom: 20px; }
+    #menuContainer h2 { font-size: 32px; margin-bottom: 20px; }
     #menuContainer button {
       margin: 10px;
       padding: 10px 20px;
@@ -129,9 +102,7 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
       transition: background-color 0.3s;
     }
-    #menuContainer button:active {
-      background-color: #666;
-    }
+    #menuContainer button:active { background-color: #666; }
   </style>
 </head>
 <body>
@@ -149,741 +120,774 @@
   <canvas id="gameCanvas"></canvas>
   <div id="message"></div>
   <button id="restart">Reiniciar</button>
-  <!-- Indicador de astronautas rescatados -->
   <div id="astronautIndicator"></div>
-  <!-- Botones de jet, posicionados en las esquinas -->
   <button id="btnLeft" class="btn">Jet Izquierdo</button>
   <button id="btnRight" class="btn">Jet Derecho</button>
-  
-  <!-- Botón para volver al menú de selección de modos -->
   <button id="btnMenu" class="btn">Menú</button>
   
   <script>
     (function(){
       let animationId;
-      // Variable para guardar la imagen del fondo en el momento de la explosión
       let explosionBgImage = null;
       
-      window.onload = function() {
-        let difficulty = "";
-        const engineGravity = 0.012;
-        const engineLateralThrust = 0.008;
-        const engineVerticalThrust = 0.02;
-        const torqueIncrement = 0.0005;
-        let safeLandingThreshold = 0.3;
-        const collisionSpeedThreshold = 0.3;
-        const damageMultiplier = 150;
-        const reboundFactor = 0.5;
-        // Se duplica la velocidad de recarga del fuel: antes 0.12, ahora 0.24
-        const fuelRecoveryRate = 0.24;
-        
-        const caveMapWidth = 6000;
-        const caveMapHeight = 1000;
-        const cellSize = 10;
-        const gridWidth = Math.floor(caveMapWidth / cellSize);
-        const gridHeight = Math.floor(caveMapHeight / cellSize);
-        
-        const platformWidth = 150;
-        const platformHeight = 10;
-        let startingPlatform, targetPlatform;
-        function updatePlatforms() {
-          if (Math.random() < 0.5) {
-            startingPlatform = {
-              x: Math.floor(Math.random() * (0.2 * caveMapWidth - 20)) + 10,
-              y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
-              width: platformWidth,
-              height: platformHeight
-            };
-            targetPlatform = {
-              x: Math.floor(Math.random() * (caveMapWidth - 0.8 * caveMapWidth)) + Math.floor(0.8 * caveMapWidth),
-              y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
-              width: platformWidth,
-              height: platformHeight
-            };
-          } else {
-            startingPlatform = {
-              x: Math.floor(Math.random() * (caveMapWidth - 0.8 * caveMapWidth)) + Math.floor(0.8 * caveMapWidth),
-              y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
-              width: platformWidth,
-              height: platformHeight
-            };
-            targetPlatform = {
-              x: Math.floor(Math.random() * (0.2 * caveMapWidth - 20)) + 10,
-              y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
-              width: platformWidth,
-              height: platformHeight
-            };
-          }
+      // Cargar sonidos
+      const jetSound = new Audio('jet-engine.mp3');
+      jetSound.loop = true;
+      jetSound.volume = 0.5;
+      
+      const explosionSound = new Audio('explosion.mp3');
+      
+      // Preinicialización del sonido (acción del usuario) para evitar error NotAllowedError.
+      document.getElementById('difficultyOverlay').addEventListener('click', function() {
+        jetSound.play().then(() => {
+          jetSound.pause();
+          jetSound.currentTime = 0;
+        }).catch(err => console.log(err));
+      }, {once: true});
+      
+      let difficulty = "";
+      const engineGravity = 0.012;
+      const engineLateralThrust = 0.008;
+      const engineVerticalThrust = 0.02;
+      const torqueIncrement = 0.0005;
+      let safeLandingThreshold = 0.3;
+      const collisionSpeedThreshold = 0.3;
+      const damageMultiplier = 150;
+      const reboundFactor = 0.5;
+      // Fuel se recarga el doble de rápido
+      const fuelRecoveryRate = 0.24;
+      
+      const caveMapWidth = 6000;
+      const caveMapHeight = 1000;
+      const cellSize = 10;
+      const gridWidth = Math.floor(caveMapWidth / cellSize);
+      const gridHeight = Math.floor(caveMapHeight / cellSize);
+      
+      const platformWidth = 150;
+      const platformHeight = 10;
+      let startingPlatform, targetPlatform;
+      
+      function updatePlatforms() {
+        if (Math.random() < 0.5) {
+          startingPlatform = {
+            x: Math.floor(Math.random() * (0.2 * caveMapWidth - 20)) + 10,
+            y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
+            width: platformWidth,
+            height: platformHeight
+          };
+          targetPlatform = {
+            x: Math.floor(Math.random() * (caveMapWidth - 0.8 * caveMapWidth)) + Math.floor(0.8 * caveMapWidth),
+            y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
+            width: platformWidth,
+            height: platformHeight
+          };
+        } else {
+          startingPlatform = {
+            x: Math.floor(Math.random() * (caveMapWidth - 0.8 * caveMapWidth)) + Math.floor(0.8 * caveMapWidth),
+            y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
+            width: platformWidth,
+            height: platformHeight
+          };
+          targetPlatform = {
+            x: Math.floor(Math.random() * (0.2 * caveMapWidth - 20)) + 10,
+            y: Math.floor(Math.random() * 100) + (caveMapHeight / 2 - 50),
+            width: platformWidth,
+            height: platformHeight
+          };
         }
-        
-        // Astronautas: se requieren al menos 10
-        let astronauts = [];
-        const totalAstronauts = 10;
-        // Se generan en posiciones sobre "suelo": celda vacía con muro justo debajo.
-        function generateAstronauts() {
-          let candidates = [];
-          for (let y = 0; y < gridHeight - 1; y++) {
-            for (let x = 1; x < gridWidth - 1; x++) {
-              if (!caveMap[y][x] && caveMap[y+1][x]) {
-                candidates.push({ x: x * cellSize + cellSize/2, y: y * cellSize + cellSize/2 });
-              }
-            }
-          }
-          astronauts = [];
-          for (let i = 0; i < totalAstronauts; i++) {
-            if (candidates.length === 0) break;
-            let index = Math.floor(Math.random() * candidates.length);
-            let pos = candidates.splice(index, 1)[0];
-            astronauts.push({
-              x: pos.x,
-              y: pos.y,
-              rescued: false,
-              size: 10 // Cuadrado de 10x10
-            });
-          }
-        }
-        function drawAstronauts(offsetX, offsetY) {
-          for (let a of astronauts) {
-            if (!a.rescued) {
-              ctx.fillStyle = "#0ff";
-              ctx.fillRect(a.x - offsetX - a.size/2, a.y - offsetY - a.size/2, a.size, a.size);
+      }
+      
+      let astronauts = [];
+      const totalAstronauts = 10;
+      function generateAstronauts() {
+        let candidates = [];
+        for (let y = 0; y < gridHeight - 1; y++) {
+          for (let x = 1; x < gridWidth - 1; x++) {
+            if (!caveMap[y][x] && caveMap[y+1][x]) {
+              candidates.push({ x: x * cellSize + cellSize/2, y: y * cellSize + cellSize/2 });
             }
           }
         }
-        function checkAstronautRescue() {
-          for (let a of astronauts) {
-            if (!a.rescued) {
-              let dx = ship.x - a.x;
-              let dy = ship.y - a.y;
-              let distance = Math.sqrt(dx * dx + dy * dy);
-              if (distance < a.size + Math.max(ship.width, ship.height) / 2) {
-                a.rescued = true;
-              }
+        astronauts = [];
+        for (let i = 0; i < totalAstronauts; i++) {
+          if (candidates.length === 0) break;
+          let index = Math.floor(Math.random() * candidates.length);
+          let pos = candidates.splice(index, 1)[0];
+          astronauts.push({
+            x: pos.x,
+            y: pos.y,
+            rescued: false,
+            size: 10
+          });
+        }
+      }
+      
+      function drawAstronauts(offsetX, offsetY) {
+        for (let a of astronauts) {
+          if (!a.rescued) {
+            ctx.fillStyle = "#0ff";
+            ctx.fillRect(a.x - offsetX - a.size/2, a.y - offsetY - a.size/2, a.size, a.size);
+          }
+        }
+      }
+      
+      function checkAstronautRescue() {
+        for (let a of astronauts) {
+          if (!a.rescued) {
+            let dx = ship.x - a.x;
+            let dy = ship.y - a.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < a.size + Math.max(ship.width, ship.height) / 2) {
+              a.rescued = true;
             }
           }
         }
-        function checkAllRescued() {
-          if (astronauts.every(a => a.rescued)) {
-            messageEl.textContent = "¡Todos los astronautas rescatados!";
-            setTimeout(restartGame, 2000);
+      }
+      
+      function checkAllRescued() {
+        if (astronauts.every(a => a.rescued)) {
+          messageEl.textContent = "¡Todos los astronautas rescatados!";
+          setTimeout(restartGame, 2000);
+        }
+      }
+      
+      function drawOffscreenIndicator(worldX, worldY, offsetX, offsetY, color) {
+        let screenX = worldX - offsetX;
+        let screenY = worldY - offsetY;
+        if (screenX >= 0 && screenX <= canvas.width && screenY >= 0 && screenY <= canvas.height) return;
+        let cx = canvas.width / 2;
+        let cy = canvas.height / 2;
+        let dx = screenX - cx;
+        let dy = screenY - cy;
+        let angle = Math.atan2(dy, dx);
+        let t = Infinity;
+        if (Math.cos(angle) > 0) t = Math.min(t, (canvas.width - cx) / Math.cos(angle));
+        else if (Math.cos(angle) < 0) t = Math.min(t, -cx / Math.cos(angle));
+        if (Math.sin(angle) > 0) t = Math.min(t, (canvas.height - cy) / Math.sin(angle));
+        else if (Math.sin(angle) < 0) t = Math.min(t, -cy / Math.sin(angle));
+        let arrowX = cx + Math.cos(angle) * t * 0.9;
+        let arrowY = cy + Math.sin(angle) * t * 0.9;
+        ctx.fillStyle = color;
+        ctx.save();
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-10, -5);
+        ctx.lineTo(-10, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      
+      let camX = 0, camY = 0;
+      function updateCamera() {
+        let desiredX = ship.x - canvas.width / 2;
+        let desiredY = ship.y - canvas.height / 2;
+        camX += 0.1 * (desiredX - camX);
+        camY += 0.1 * (desiredY - camY);
+      }
+      
+      let caveMap = [];
+      function generateCaveMap() {
+        caveMap = new Array(gridHeight);
+        const fillProbability = 0.35;
+        for (let y = 0; y < gridHeight; y++) {
+          caveMap[y] = new Array(gridWidth);
+          for (let x = 0; x < gridWidth; x++) {
+            if (y === 0 || y === gridHeight - 1 || x === 0 || x === gridWidth - 1) {
+              caveMap[y][x] = true;
+            } else {
+              caveMap[y][x] = Math.random() < fillProbability;
+            }
           }
         }
-        // Dibuja una flecha indicadora si el objeto está fuera de pantalla
-        function drawOffscreenIndicator(worldX, worldY, offsetX, offsetY, color) {
-          let screenX = worldX - offsetX;
-          let screenY = worldY - offsetY;
-          if (screenX >= 0 && screenX <= canvas.width && screenY >= 0 && screenY <= canvas.height) return;
-          let cx = canvas.width / 2;
-          let cy = canvas.height / 2;
-          let dx = screenX - cx;
-          let dy = screenY - cy;
-          let angle = Math.atan2(dy, dx);
-          let t = Infinity;
-          if (Math.cos(angle) > 0) t = Math.min(t, (canvas.width - cx) / Math.cos(angle));
-          else if (Math.cos(angle) < 0) t = Math.min(t, -cx / Math.cos(angle));
-          if (Math.sin(angle) > 0) t = Math.min(t, (canvas.height - cy) / Math.sin(angle));
-          else if (Math.sin(angle) < 0) t = Math.min(t, -cy / Math.sin(angle));
-          let arrowX = cx + Math.cos(angle) * t * 0.9;
-          let arrowY = cy + Math.sin(angle) * t * 0.9;
-          ctx.fillStyle = color;
-          ctx.save();
-          ctx.translate(arrowX, arrowY);
-          ctx.rotate(angle);
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(-10, -5);
-          ctx.lineTo(-10, 5);
-          ctx.closePath();
-          ctx.fill();
-          ctx.restore();
-        }
-        
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        function resizeCanvas() {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        
-        let camX = 0, camY = 0;
-        function updateCamera() {
-          let desiredX = ship.x - canvas.width / 2;
-          let desiredY = ship.y - canvas.height / 2;
-          camX += 0.1 * (desiredX - camX);
-          camY += 0.1 * (desiredY - camY);
-        }
-        
-        let caveMap = [];
-        function generateCaveMap() {
-          caveMap = new Array(gridHeight);
-          const fillProbability = 0.35;
+        const iterations = 6;
+        for (let i = 0; i < iterations; i++) {
+          let newMap = [];
           for (let y = 0; y < gridHeight; y++) {
-            caveMap[y] = new Array(gridWidth);
+            newMap[y] = [];
             for (let x = 0; x < gridWidth; x++) {
-              if (y === 0 || y === gridHeight - 1 || x === 0 || x === gridWidth - 1) {
-                caveMap[y][x] = true;
-              } else {
-                caveMap[y][x] = Math.random() < fillProbability;
-              }
-            }
-          }
-          const iterations = 6;
-          for (let i = 0; i < iterations; i++) {
-            let newMap = [];
-            for (let y = 0; y < gridHeight; y++) {
-              newMap[y] = [];
-              for (let x = 0; x < gridWidth; x++) {
-                let wallCount = 0;
-                for (let yy = -1; yy <= 1; yy++) {
-                  for (let xx = -1; xx <= 1; xx++) {
-                    let nx = x + xx, ny = y + yy;
-                    if (nx < 0 || ny < 0 || nx >= gridWidth || ny >= gridHeight) {
-                      wallCount++;
-                    } else if (caveMap[ny][nx]) {
-                      wallCount++;
-                    }
+              let wallCount = 0;
+              for (let yy = -1; yy <= 1; yy++) {
+                for (let xx = -1; xx <= 1; xx++) {
+                  let nx = x + xx, ny = y + yy;
+                  if (nx < 0 || ny < 0 || nx >= gridWidth || ny >= gridHeight) {
+                    wallCount++;
+                  } else if (caveMap[ny][nx]) {
+                    wallCount++;
                   }
                 }
-                newMap[y][x] = wallCount >= 5;
               }
-            }
-            caveMap = newMap;
-          }
-          // Hacer transitables las áreas de las plataformas:
-          for (let py = startingPlatform.y; py < startingPlatform.y + startingPlatform.height; py++) {
-            for (let px = startingPlatform.x; px < startingPlatform.x + startingPlatform.width; px++) {
-              let gx = Math.floor(px / cellSize);
-              let gy = Math.floor(py / cellSize);
-              if (gx >= 0 && gx < gridWidth && gy >= 0 && gy < gridHeight) {
-                caveMap[gy][gx] = false;
-              }
+              newMap[y][x] = wallCount >= 5;
             }
           }
-          for (let py = targetPlatform.y; py < targetPlatform.y + targetPlatform.height; py++) {
-            for (let px = targetPlatform.x; px < targetPlatform.x + targetPlatform.width; px++) {
-              let gx = Math.floor(px / cellSize);
-              let gy = Math.floor(py / cellSize);
-              if (gx >= 0 && gx < gridWidth && gy >= 0 && gy < gridHeight) {
-                caveMap[gy][gx] = false;
+          caveMap = newMap;
+        }
+        // Marcar áreas de las plataformas como transitables
+        for (let py = startingPlatform.y; py < startingPlatform.y + startingPlatform.height; py++) {
+          for (let px = startingPlatform.x; px < startingPlatform.x + startingPlatform.width; px++) {
+            let gx = Math.floor(px / cellSize);
+            let gy = Math.floor(py / cellSize);
+            if (gx >= 0 && gx < gridWidth && gy >= 0 && gy < gridHeight) {
+              caveMap[gy][gx] = false;
+            }
+          }
+        }
+        for (let py = targetPlatform.y; py < targetPlatform.y + targetPlatform.height; py++) {
+          for (let px = targetPlatform.x; px < targetPlatform.x + targetPlatform.width; px++) {
+            let gx = Math.floor(px / cellSize);
+            let gy = Math.floor(py / cellSize);
+            if (gx >= 0 && gx < gridWidth && gy >= 0 && gy < gridHeight) {
+              caveMap[gy][gx] = false;
+            }
+          }
+        }
+      }
+      
+      function recoverFuel() {
+        let speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+        if (!leftThrustActive && !rightThrustActive && (ship.landed || speed < 0.01)) {
+          ship.fuel = Math.min(100, ship.fuel + fuelRecoveryRate);
+        }
+      }
+      
+      let ship = {
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        width: Math.round(20 * 4/3),
+        height: Math.round(10 * 4/3),
+        health: 100,
+        fuel: 100,
+        landed: true,
+        onPlatform: 'start',
+        angle: 0,
+        angularVelocity: 0
+      };
+      
+      updatePlatforms();
+      ship.x = startingPlatform.x + platformWidth / 2;
+      ship.y = startingPlatform.y - 20;
+      generateCaveMap();
+      
+      function clearSpawnArea() {
+        let spawnX = Math.floor(ship.x / cellSize);
+        let spawnY = Math.floor(ship.y / cellSize);
+        let margin = 10;
+        for (let y = spawnY - margin; y <= spawnY + margin; y++) {
+          for (let x = spawnX - margin; x <= spawnX + margin; x++) {
+            if (y >= 0 && y < gridHeight && x >= 0 && x < gridWidth) {
+              caveMap[y][x] = false;
+            }
+          }
+        }
+      }
+      clearSpawnArea();
+      
+      let exploding = false;
+      let explosionParticles = [];
+      let explosionFlash = false;
+      let explosionFlashTime = 0;
+      
+      const messageEl = document.getElementById('message');
+      const restartBtn = document.getElementById('restart');
+      const astronautIndicator = document.getElementById('astronautIndicator');
+      const btnMenu = document.getElementById('btnMenu');
+      
+      let leftThrustActive = false;
+      let rightThrustActive = false;
+      let gameOver = false;
+      
+      function isWallAtPoint(x, y) {
+        let gx = Math.floor(x / cellSize);
+        let gy = Math.floor(y / cellSize);
+        if (gx < 0 || gy < 0 || gx >= gridWidth || gy >= gridHeight) return false;
+        return caveMap[gy][gx];
+      }
+      
+      function checkShipCollision() {
+        const cosA = Math.cos(ship.angle);
+        const sinA = Math.sin(ship.angle);
+        const halfW = ship.width / 2, halfH = ship.height / 2;
+        const localCorners = [
+          { x: -halfW, y: -halfH },
+          { x: halfW, y: -halfH },
+          { x: halfW, y: halfH },
+          { x: -halfW, y: halfH }
+        ];
+        let globalPoints = [];
+        for (let pt of localCorners) {
+          globalPoints.push({
+            x: ship.x + pt.x * cosA - pt.y * sinA,
+            y: ship.y + pt.x * sinA + pt.y * cosA
+          });
+        }
+        // Añadir puntos intermedios
+        for (let i = 0; i < 4; i++) {
+          let next = (i + 1) % 4;
+          globalPoints.push({
+            x: (globalPoints[i].x + globalPoints[next].x) / 2,
+            y: (globalPoints[i].y + globalPoints[next].y) / 2
+          });
+        }
+        let bottomLeft = globalPoints[2];
+        let bottomRight = globalPoints[3];
+        if (isWallAtPoint(bottomLeft.x, bottomLeft.y) && isWallAtPoint(bottomRight.x, bottomRight.y)) {
+          return true;
+        }
+        return globalPoints.some(pt => isWallAtPoint(pt.x, pt.y));
+      }
+      
+      function createParticle(x, y, vx, vy) {
+        return { x: x, y: y, vx: vx, vy: vy, life: 2 };
+      }
+      
+      let particles = [];
+      function updateParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          let p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.015;
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+      }
+      
+      function drawParticles(offsetX, offsetY) {
+        for (let p of particles) {
+          ctx.fillStyle = "rgba(255,255,255," + p.life + ")";
+          ctx.beginPath();
+          ctx.arc(p.x - offsetX, p.y - offsetY, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      function emitExhaust(side) {
+        if (ship.fuel <= 0) return;
+        const thrusterOffsetX = (side === 'left' ? -ship.width/2 - 2 : ship.width/2 + 2);
+        const thrusterOffsetY = 0;
+        let emissionX = ship.x + thrusterOffsetX * Math.cos(ship.angle) - thrusterOffsetY * Math.sin(ship.angle);
+        let emissionY = ship.y + thrusterOffsetX * Math.sin(ship.angle) + thrusterOffsetY * Math.cos(ship.angle);
+        let dirX = -Math.sin(ship.angle);
+        let dirY = Math.cos(ship.angle);
+        let vx = dirX * (1.5 + Math.random() * 0.2) + (Math.random() - 0.5) * 0.2;
+        let vy = dirY * (1.5 + Math.random() * 0.2);
+        particles.push(createParticle(emissionX, emissionY, vx, vy));
+      }
+      
+      function explodeShip() {
+        explosionSound.play().catch(err => console.log("Error de audio:", err));
+        for (let i = 0; i < 300; i++) {
+          let angle = Math.random() * 2 * Math.PI;
+          let speed = Math.random() * 7;
+          explosionParticles.push({
+            x: ship.x,
+            y: ship.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 3
+          });
+        }
+        explosionFlash = false;
+        explosionFlashTime = Date.now();
+      }
+      
+      function updateExplosionParticles() {
+        for (let i = explosionParticles.length - 1; i >= 0; i--) {
+          let p = explosionParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.03;
+          if (p.life <= 0) explosionParticles.splice(i, 1);
+        }
+      }
+      
+      function drawExplosionParticles() {
+        for (let p of explosionParticles) {
+          ctx.fillStyle = "rgba(255,255,255," + p.life + ")";
+          ctx.beginPath();
+          ctx.arc(p.x - camX, p.y - camY, 3, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+      
+      function drawTargetIndicator(offsetX, offsetY) {
+        let tx = targetPlatform.x + targetPlatform.width/2 - offsetX;
+        let ty = targetPlatform.y + targetPlatform.height/2 - offsetY;
+        if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height) return;
+        let cx = canvas.width / 2;
+        let cy = canvas.height / 2;
+        let dx = tx - cx;
+        let dy = ty - cy;
+        let angle = Math.atan2(dy, dx);
+        let t = Infinity;
+        if (Math.cos(angle) > 0) t = Math.min(t, (canvas.width - cx) / Math.cos(angle));
+        else if (Math.cos(angle) < 0) t = Math.min(t, -cx / Math.cos(angle));
+        if (Math.sin(angle) > 0) t = Math.min(t, (canvas.height - cy) / Math.sin(angle));
+        else if (Math.sin(angle) < 0) t = Math.min(t, -cy / Math.sin(angle));
+        let arrowX = cx + Math.cos(angle) * t * 0.9;
+        let arrowY = cy + Math.sin(angle) * t * 0.9;
+        ctx.fillStyle = "#ff0";
+        ctx.save();
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-10, -5);
+        ctx.lineTo(-10, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      function drawCaveMap(offsetX, offsetY) {
+        for (let y = 0; y < gridHeight; y++) {
+          for (let x = 0; x < gridWidth; x++) {
+            if (caveMap[y][x]) {
+              let drawX = x * cellSize - offsetX;
+              let drawY = y * cellSize - offsetY;
+              if (drawX + cellSize > 0 && drawX < canvas.width && drawY + cellSize > 0 && drawY < canvas.height) {
+                ctx.fillStyle = "#555";
+                ctx.fillRect(drawX, drawY, cellSize, cellSize);
               }
             }
           }
         }
+      }
+      
+      function drawPlatform(platform, offsetX, offsetY) {
+        ctx.fillStyle = "#ccc";
+        ctx.fillRect(platform.x - offsetX, platform.y - offsetY, platform.width, platform.height);
+      }
+      
+      function drawShip(s, offsetX, offsetY) {
+        ctx.save();
+        ctx.translate(s.x - offsetX, s.y - offsetY);
+        ctx.rotate(s.angle);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(-s.width/2, -s.height/2, s.width, s.height);
+        const thrusterWidth = 3, thrusterHeight = 8, thrusterMargin = 2;
+        ctx.fillRect(-s.width/2 - thrusterMargin - thrusterWidth, -thrusterHeight/2, thrusterWidth, thrusterHeight);
+        ctx.fillRect(s.width/2 + thrusterMargin, -thrusterHeight/2, thrusterWidth, thrusterHeight);
+        ctx.restore();
+      }
+      
+      function drawHealthBarOverShip(s, offsetX, offsetY) {
+        const barWidth = 30, barHeight = 5;
+        const healthPercent = s.health / 100;
+        const barX = (s.x - offsetX) - barWidth/2;
+        const barY = (s.y - offsetY) - s.height/2 - 10;
+        ctx.fillStyle = "#444";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = (s.health > 60) ? "#0f0" : (s.health > 30 ? "#ff0" : "#f00");
+        ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+      }
+      
+      function drawFuelBarOverShip(s, offsetX, offsetY) {
+        const barWidth = 30, barHeight = 5;
+        const fuelPercent = s.fuel / 100;
+        const barX = (s.x - offsetX) - barWidth/2;
+        const barY = (s.y - offsetY) - s.height/2 - 18;
+        ctx.fillStyle = "#222";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = "#ffa500";
+        ctx.fillRect(barX, barY, barWidth * fuelPercent, barHeight);
+      }
+      
+      function checkPlatformLanding(platform) {
+        let shipBottom = ship.y + ship.height/2;
+        if (shipBottom >= platform.y && shipBottom <= platform.y + platform.height) {
+          if (ship.x > platform.x && ship.x < platform.x + platform.width) return true;
+        }
+        return false;
+      }
+      
+      function isBottomLandingPossible() {
+        const bottomLeft = { x: ship.x - ship.width/2, y: ship.y + ship.height/2 };
+        const bottomRight = { x: ship.x + ship.width/2, y: ship.y + ship.height/2 };
+        let gx1 = Math.floor(bottomLeft.x / cellSize),
+            gy1 = Math.floor(bottomLeft.y / cellSize),
+            gx2 = Math.floor(bottomRight.x / cellSize),
+            gy2 = Math.floor(bottomRight.y / cellSize);
+        if (gx1 < 0 || gy1 < 0 || gx1 >= gridWidth || gy1 >= gridHeight ||
+            gx2 < 0 || gy2 < 0 || gx2 >= gridWidth || gy2 >= gridHeight) return false;
+        return caveMap[gy1][gx1] && caveMap[gy2][gx2];
+      }
+      
+      function gameLoop() {
+        if (gameOver) return;
+        // Si el fuel se agota, se detiene el sonido del jet
+        if (ship.fuel <= 0) {
+          jetSound.pause();
+          jetSound.currentTime = 0;
+        }
+        if (exploding) {
+          if (!explosionBgImage) {
+            setTimeout(function() {
+              explosionBgImage = new Image();
+              explosionBgImage.src = canvas.toDataURL();
+            }, 50);
+          }
+          if (explosionBgImage) {
+            ctx.drawImage(explosionBgImage, 0, 0, canvas.width, canvas.height);
+          }
+          drawExplosionParticles();
+          updateExplosionParticles();
+          animationId = requestAnimationFrame(gameLoop);
+          return;
+        }
         
-        function recoverFuel() {
+        updateCamera();
+        let prevX = ship.x, prevY = ship.y;
+        
+        if (!ship.landed) {
+          ship.vy += engineGravity;
+          if (ship.fuel > 0) {
+            if (leftThrustActive && rightThrustActive) {
+              ship.vx += engineVerticalThrust * Math.sin(ship.angle);
+              ship.vy -= engineVerticalThrust * Math.cos(ship.angle);
+              if (difficulty === "realista") { ship.angularVelocity = 0; }
+              emitExhaust('left');
+              emitExhaust('right');
+              ship.fuel -= 0.08;
+            } else if (leftThrustActive) {
+              ship.vx += engineLateralThrust;
+              ship.vy -= engineVerticalThrust;
+              if (difficulty === "realista") { ship.angularVelocity += torqueIncrement; }
+              else { ship.angularVelocity = 0; }
+              emitExhaust('left');
+              ship.fuel -= 0.04;
+            } else if (rightThrustActive) {
+              ship.vx -= engineLateralThrust;
+              ship.vy -= engineVerticalThrust;
+              if (difficulty === "realista") { ship.angularVelocity -= torqueIncrement; }
+              else { ship.angularVelocity = 0; }
+              emitExhaust('right');
+              ship.fuel -= 0.04;
+            }
+          }
+          ship.x += ship.vx;
+          ship.y += ship.vy;
+          if (difficulty === "realista") {
+            ship.angularVelocity *= 0.98;
+            ship.angle += ship.angularVelocity;
+          }
+        }
+        
+        let speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+        if (!leftThrustActive && !rightThrustActive && (ship.landed || speed < 0.01)) {
+          ship.fuel = Math.min(100, ship.fuel + fuelRecoveryRate);
+        }
+        
+        if (!ship.landed && ship.vy > 0 && (checkPlatformLanding(targetPlatform) || checkPlatformLanding(startingPlatform))) {
+          if (Math.abs(ship.vy) < safeLandingThreshold && Math.abs(ship.vx) < safeLandingThreshold) {
+            ship.landed = true;
+            ship.vx = 0;
+            ship.vy = 0;
+            ship.angularVelocity = 0;
+            if (checkPlatformLanding(targetPlatform)) {
+              messageEl.textContent = "¡Aterrizaje exitoso! Reiniciando...";
+              setTimeout(restartGame, 2000);
+            } else {
+              messageEl.textContent = "¡Aterrizaje exitoso!";
+            }
+          } else {
+            ship.health -= (speed - collisionSpeedThreshold) * damageMultiplier;
+            ship.vy = -ship.vy * 0.2;
+            ship.landed = false;
+          }
+        }
+        else if (!ship.landed && isBottomLandingPossible()) {
+          if (Math.abs(ship.vy) < safeLandingThreshold && Math.abs(ship.vx) < safeLandingThreshold) {
+            ship.landed = true;
+            ship.vx = 0;
+            ship.vy = 0;
+            ship.angularVelocity = 0;
+          } else {
+            ship.health -= (speed - collisionSpeedThreshold) * damageMultiplier;
+            ship.vy = -ship.vy * 0.2;
+            ship.landed = false;
+          }
+        }
+        
+        if (!isBottomLandingPossible() && checkShipCollision()) {
           let speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
-          if (!leftThrustActive && !rightThrustActive && (ship.landed || speed < 0.01)) {
-            ship.fuel = Math.min(100, ship.fuel + fuelRecoveryRate);
+          if (speed < collisionSpeedThreshold) {
+            ship.x = prevX;
+            ship.y = prevY;
+            ship.vx = 0;
+            ship.vy = 0;
+            ship.landed = false;
+          } else {
+            ship.health -= (speed - collisionSpeedThreshold) * damageMultiplier;
+            ship.x = prevX;
+            ship.y = prevY;
+            ship.vx = -ship.vx * reboundFactor;
+            ship.vy = -ship.vy * reboundFactor;
+            ship.landed = false;
           }
         }
         
-        let ship = {
-          x: 0,
-          y: 0,
-          vx: 0,
-          vy: 0,
-          width: Math.round(20 * 4/3),
-          height: Math.round(10 * 4/3),
-          health: 100,
-          fuel: 100,
-          landed: true,
-          onPlatform: 'start',
-          angle: 0,
-          angularVelocity: 0
-        };
+        if (ship.health <= 0 && !exploding) {
+          exploding = true;
+          explodeShip();
+          messageEl.textContent = "¡Nave explotó!";
+          setTimeout(restartGame, 2000);
+        }
         
+        if (ship.x < 0) { ship.x = 0; ship.vx = 0; }
+        if (ship.x > caveMapWidth) { ship.x = caveMapWidth; ship.vx = 0; }
+        
+        updateParticles();
+        
+        checkAstronautRescue();
+        checkAllRescued();
+        
+        let rescuedCount = astronauts.filter(a => a.rescued).length;
+        astronautIndicator.textContent = "Astronautas rescatados: " + rescuedCount + " / " + totalAstronauts;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawCaveMap(camX, camY);
+        drawPlatform(startingPlatform, camX, camY);
+        drawPlatform(targetPlatform, camX, camY);
+        for (let a of astronauts) {
+          if (!a.rescued) {
+            drawAstronauts(camX, camY);
+            drawOffscreenIndicator(a.x, a.y, camX, camY, "#0ff");
+          }
+        }
+        drawShip(ship, camX, camY);
+        drawParticles(camX, camY);
+        drawTargetIndicator(camX, camY);
+        drawHealthBarOverShip(ship, camX, camY);
+        drawFuelBarOverShip(ship, camX, camY);
+        if (exploding) drawExplosionParticles();
+        
+        recoverFuel();
+        animationId = requestAnimationFrame(gameLoop);
+      }
+      
+      function restartGame() {
+        cancelAnimationFrame(animationId);
         updatePlatforms();
         ship.x = startingPlatform.x + platformWidth / 2;
         ship.y = startingPlatform.y - 20;
+        ship.vx = 0;
+        ship.vy = 0;
+        ship.health = 100;
+        ship.fuel = 100;
+        ship.landed = true;
+        ship.onPlatform = 'start';
+        ship.angle = 0;
+        ship.angularVelocity = 0;
+        leftThrustActive = false;
+        rightThrustActive = false;
+        messageEl.textContent = "";
+        restartBtn.style.display = "none";
         generateCaveMap();
-        // Aumentamos el margen para limpiar más área y evitar explosiones prematuras
-        function clearSpawnArea() {
-          let spawnX = Math.floor(ship.x / cellSize);
-          let spawnY = Math.floor(ship.y / cellSize);
-          let margin = 10;
-          for (let y = spawnY - margin; y <= spawnY + margin; y++) {
-            for (let x = spawnX - margin; x <= spawnX + margin; x++) {
-              if (y >= 0 && y < gridHeight && x >= 0 && x < gridWidth) {
-                caveMap[y][x] = false;
-              }
-            }
-          }
-        }
         clearSpawnArea();
-        
-        let exploding = false;
-        let explosionParticles = [];
-        // No se usa flash blanco
-        let explosionFlash = false;
-        let explosionFlashTime = 0;
-        
-        const messageEl = document.getElementById('message');
-        const restartBtn = document.getElementById('restart');
-        const astronautIndicator = document.getElementById('astronautIndicator');
-        // Referencia al botón "Menú"
-        const btnMenu = document.getElementById('btnMenu');
-        
-        let leftThrustActive = false;
-        let rightThrustActive = false;
-        let gameOver = false;
-        
-        function isWallAtPoint(x, y) {
-          let gx = Math.floor(x / cellSize);
-          let gy = Math.floor(y / cellSize);
-          if (gx < 0 || gy < 0 || gx >= gridWidth || gy >= gridHeight) return false;
-          return caveMap[gy][gx];
-        }
-        
-        function checkShipCollision() {
-          const cosA = Math.cos(ship.angle);
-          const sinA = Math.sin(ship.angle);
-          const halfW = ship.width / 2, halfH = ship.height / 2;
-          const localCorners = [
-            { x: -halfW, y: -halfH },
-            { x: halfW, y: -halfH },
-            { x: halfW, y: halfH },
-            { x: -halfW, y: halfH }
-          ];
-          let globalPoints = [];
-          for (let pt of localCorners) {
-            globalPoints.push({
-              x: ship.x + pt.x * cosA - pt.y * sinA,
-              y: ship.y + pt.x * sinA + pt.y * cosA
-            });
-          }
-          for (let i = 0; i < 4; i++) {
-            let next = (i + 1) % 4;
-            globalPoints.push({
-              x: (globalPoints[i].x + globalPoints[next].x) / 2,
-              y: (globalPoints[i].y + globalPoints[next].y) / 2
-            });
-          }
-          let bottomLeft = globalPoints[2];
-          let bottomRight = globalPoints[3];
-          if (isWallAtPoint(bottomLeft.x, bottomLeft.y) && isWallAtPoint(bottomRight.x, bottomRight.y)) {
-            return true;
-          }
-          return globalPoints.some(pt => isWallAtPoint(pt.x, pt.y));
-        }
-        
-        function createParticle(x, y, vx, vy) {
-          return { x: x, y: y, vx: vx, vy: vy, life: 2 };
-        }
-        let particles = [];
-        function updateParticles() {
-          for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life -= 0.015;
-            if (p.life <= 0) {
-              particles.splice(i, 1);
-            }
-          }
-        }
-        function drawParticles(offsetX, offsetY) {
-          for (let p of particles) {
-            ctx.fillStyle = "rgba(255,255,255," + p.life + ")";
-            ctx.beginPath();
-            ctx.arc(p.x - offsetX, p.y - offsetY, 1, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-        function emitExhaust(side) {
-          if (ship.fuel <= 0) return;
-          const thrusterOffsetX = (side === 'left' ? -ship.width/2 - 2 : ship.width/2 + 2);
-          const thrusterOffsetY = 0;
-          let emissionX = ship.x + thrusterOffsetX * Math.cos(ship.angle) - thrusterOffsetY * Math.sin(ship.angle);
-          let emissionY = ship.y + thrusterOffsetX * Math.sin(ship.angle) + thrusterOffsetY * Math.cos(ship.angle);
-          let dirX = -Math.sin(ship.angle);
-          let dirY = Math.cos(ship.angle);
-          let vx = dirX * (1.5 + Math.random() * 0.2) + (Math.random() - 0.5) * 0.2;
-          let vy = dirY * (1.5 + Math.random() * 0.2);
-          particles.push(createParticle(emissionX, emissionY, vx, vy));
-        }
-        
-        function explodeShip() {
-          for (let i = 0; i < 300; i++) {
-            let angle = Math.random() * 2 * Math.PI;
-            let speed = Math.random() * 7;
-            explosionParticles.push({
-              x: ship.x,
-              y: ship.y,
-              vx: Math.cos(angle) * speed,
-              vy: Math.sin(angle) * speed,
-              life: 3
-            });
-          }
-          explosionFlash = false; // No se usa flash
-          explosionFlashTime = Date.now();
-        }
-        function updateExplosionParticles() {
-          for (let i = explosionParticles.length - 1; i >= 0; i--) {
-            let p = explosionParticles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life -= 0.03;
-            if (p.life <= 0) explosionParticles.splice(i, 1);
-          }
-        }
-        // Para que la explosión aparezca donde estaba la nave, restamos la posición de la cámara
-        function drawExplosionParticles() {
-          for (let p of explosionParticles) {
-            ctx.fillStyle = "rgba(255,255,255," + p.life + ")";
-            ctx.beginPath();
-            ctx.arc(p.x - camX, p.y - camY, 3, 0, 2 * Math.PI);
-            ctx.fill();
-          }
-        }
-        
-        function drawTargetIndicator(offsetX, offsetY) {
-          let tx = targetPlatform.x + targetPlatform.width/2 - offsetX;
-          let ty = targetPlatform.y + targetPlatform.height/2 - offsetY;
-          if (tx >= 0 && tx <= canvas.width && ty >= 0 && ty <= canvas.height) return;
-          let cx = canvas.width / 2;
-          let cy = canvas.height / 2;
-          let dx = tx - cx;
-          let dy = ty - cy;
-          let angle = Math.atan2(dy, dx);
-          let t = Infinity;
-          if (Math.cos(angle) > 0) t = Math.min(t, (canvas.width - cx) / Math.cos(angle));
-          else if (Math.cos(angle) < 0) t = Math.min(t, -cx / Math.cos(angle));
-          if (Math.sin(angle) > 0) t = Math.min(t, (canvas.height - cy) / Math.sin(angle));
-          else if (Math.sin(angle) < 0) t = Math.min(t, -cy / Math.sin(angle));
-          let arrowX = cx + Math.cos(angle) * t * 0.9;
-          let arrowY = cy + Math.sin(angle) * t * 0.9;
-          ctx.fillStyle = "#ff0";
-          ctx.save();
-          ctx.translate(arrowX, arrowY);
-          ctx.rotate(angle);
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(-10, -5);
-          ctx.lineTo(-10, 5);
-          ctx.closePath();
-          ctx.fill();
-          ctx.restore();
-        }
-        
-        function drawCaveMap(offsetX, offsetY) {
-          for (let y = 0; y < gridHeight; y++) {
-            for (let x = 0; x < gridWidth; x++) {
-              if (caveMap[y][x]) {
-                let drawX = x * cellSize - offsetX;
-                let drawY = y * cellSize - offsetY;
-                if (drawX + cellSize > 0 && drawX < canvas.width && drawY + cellSize > 0 && drawY < canvas.height) {
-                  ctx.fillStyle = "#555";
-                  ctx.fillRect(drawX, drawY, cellSize, cellSize);
-                }
-              }
-            }
-          }
-        }
-        
-        function drawPlatform(platform, offsetX, offsetY) {
-          ctx.fillStyle = "#ccc";
-          ctx.fillRect(platform.x - offsetX, platform.y - offsetY, platform.width, platform.height);
-        }
-        
-        function drawShip(s, offsetX, offsetY) {
-          ctx.save();
-          ctx.translate(s.x - offsetX, s.y - offsetY);
-          ctx.rotate(s.angle);
-          ctx.fillStyle = "#fff";
-          ctx.fillRect(-s.width/2, -s.height/2, s.width, s.height);
-          const thrusterWidth = 3, thrusterHeight = 8, thrusterMargin = 2;
-          ctx.fillRect(-s.width/2 - thrusterMargin - thrusterWidth, -thrusterHeight/2, thrusterWidth, thrusterHeight);
-          ctx.fillRect(s.width/2 + thrusterMargin, -thrusterHeight/2, thrusterWidth, thrusterHeight);
-          ctx.restore();
-        }
-        
-        function drawHealthBarOverShip(s, offsetX, offsetY) {
-          const barWidth = 30, barHeight = 5;
-          const healthPercent = s.health / 100;
-          const barX = (s.x - offsetX) - barWidth/2;
-          const barY = (s.y - offsetY) - s.height/2 - 10;
-          ctx.fillStyle = "#444";
-          ctx.fillRect(barX, barY, barWidth, barHeight);
-          ctx.fillStyle = (s.health > 60) ? "#0f0" : (s.health > 30 ? "#ff0" : "#f00");
-          ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
-        }
-        
-        function drawFuelBarOverShip(s, offsetX, offsetY) {
-          const barWidth = 30, barHeight = 5;
-          const fuelPercent = s.fuel / 100;
-          const barX = (s.x - offsetX) - barWidth/2;
-          const barY = (s.y - offsetY) - s.height/2 - 18;
-          ctx.fillStyle = "#222";
-          ctx.fillRect(barX, barY, barWidth, barHeight);
-          ctx.fillStyle = "#ffa500";
-          ctx.fillRect(barX, barY, barWidth * fuelPercent, barHeight);
-        }
-        
-        function checkPlatformLanding(platform) {
-          let shipBottom = ship.y + ship.height/2;
-          if (shipBottom >= platform.y && shipBottom <= platform.y + platform.height) {
-            if (ship.x > platform.x && ship.x < platform.x + platform.width) return true;
-          }
-          return false;
-        }
-        function isBottomLandingPossible() {
-          const bottomLeft = { x: ship.x - ship.width/2, y: ship.y + ship.height/2 };
-          const bottomRight = { x: ship.x + ship.width/2, y: ship.y + ship.height/2 };
-          let gx1 = Math.floor(bottomLeft.x / cellSize),
-              gy1 = Math.floor(bottomLeft.y / cellSize),
-              gx2 = Math.floor(bottomRight.x / cellSize),
-              gy2 = Math.floor(bottomRight.y / cellSize);
-          if (gx1 < 0 || gy1 < 0 || gx1 >= gridWidth || gy1 >= gridHeight ||
-              gx2 < 0 || gy2 < 0 || gx2 >= gridWidth || gy2 >= gridHeight) return false;
-          return caveMap[gy1][gx1] && caveMap[gy2][gx2];
-        }
-        
-        function gameLoop() {
-          if (gameOver) return;
-          // Si la nave ha explotado, congelamos el fondo y mostramos solo la explosión de partículas
-          if (exploding) {
-            if (!explosionBgImage) {
-              setTimeout(function() {
-                explosionBgImage = new Image();
-                explosionBgImage.src = canvas.toDataURL();
-              }, 50);
-            }
-            if (explosionBgImage) {
-              ctx.drawImage(explosionBgImage, 0, 0, canvas.width, canvas.height);
-            }
-            drawExplosionParticles();
-            updateExplosionParticles();
-            animationId = requestAnimationFrame(gameLoop);
-            return;
-          }
-          
-          updateCamera();
-          let prevX = ship.x, prevY = ship.y;
-          
-          if (!ship.landed) {
-            ship.vy += engineGravity;
-            if (ship.fuel > 0) {
-              if (leftThrustActive && rightThrustActive) {
-                ship.vx += engineVerticalThrust * Math.sin(ship.angle);
-                ship.vy -= engineVerticalThrust * Math.cos(ship.angle);
-                if (difficulty === "realista") { ship.angularVelocity = 0; }
-                emitExhaust('left');
-                emitExhaust('right');
-                ship.fuel -= 0.08;
-              } else if (leftThrustActive) {
-                ship.vx += engineLateralThrust;
-                ship.vy -= engineVerticalThrust;
-                if (difficulty === "realista") { ship.angularVelocity += torqueIncrement; }
-                else { ship.angularVelocity = 0; }
-                emitExhaust('left');
-                ship.fuel -= 0.04;
-              } else if (rightThrustActive) {
-                ship.vx -= engineLateralThrust;
-                ship.vy -= engineVerticalThrust;
-                if (difficulty === "realista") { ship.angularVelocity -= torqueIncrement; }
-                else { ship.angularVelocity = 0; }
-                emitExhaust('right');
-                ship.fuel -= 0.04;
-              }
-            }
-            ship.x += ship.vx;
-            ship.y += ship.vy;
-            if (difficulty === "realista") {
-              ship.angularVelocity *= 0.98;
-              ship.angle += ship.angularVelocity;
-            }
-          }
-          
-          let speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
-          if (!leftThrustActive && !rightThrustActive && (ship.landed || speed < 0.01)) {
-            ship.fuel = Math.min(100, ship.fuel + fuelRecoveryRate);
-          }
-          
-          if (!ship.landed && ship.vy > 0 && (checkPlatformLanding(targetPlatform) || checkPlatformLanding(startingPlatform))) {
-            if (Math.abs(ship.vy) < safeLandingThreshold && Math.abs(ship.vx) < safeLandingThreshold) {
-              ship.landed = true;
-              ship.vx = 0;
-              ship.vy = 0;
-              ship.angularVelocity = 0;
-              if (checkPlatformLanding(targetPlatform)) {
-                messageEl.textContent = "¡Aterrizaje exitoso! Reiniciando...";
-                setTimeout(restartGame, 2000);
-              } else {
-                messageEl.textContent = "¡Aterrizaje exitoso!";
-              }
-            } else {
-              ship.health -= (speed - collisionSpeedThreshold) * damageMultiplier;
-              ship.vy = -ship.vy * 0.2;
-              ship.landed = false;
-            }
-          }
-          else if (!ship.landed && isBottomLandingPossible()) {
-            if (Math.abs(ship.vy) < safeLandingThreshold && Math.abs(ship.vx) < safeLandingThreshold) {
-              ship.landed = true;
-              ship.vx = 0;
-              ship.vy = 0;
-              ship.angularVelocity = 0;
-            } else {
-              ship.health -= (speed - collisionSpeedThreshold) * damageMultiplier;
-              ship.vy = -ship.vy * 0.2;
-              ship.landed = false;
-            }
-          }
-          
-          if (!isBottomLandingPossible() && checkShipCollision()) {
-            let speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
-            if (speed < collisionSpeedThreshold) {
-              ship.x = prevX;
-              ship.y = prevY;
-              ship.vx = 0;
-              ship.vy = 0;
-              ship.landed = false;
-            } else {
-              ship.health -= (speed - collisionSpeedThreshold) * damageMultiplier;
-              ship.x = prevX;
-              ship.y = prevY;
-              ship.vx = -ship.vx * reboundFactor;
-              ship.vy = -ship.vy * reboundFactor;
-              ship.landed = false;
-            }
-          }
-          
-          if (ship.health <= 0 && !exploding) {
-            exploding = true;
-            explodeShip();
-            messageEl.textContent = "¡Nave explotó!";
-            setTimeout(restartGame, 2000);
-          }
-          
-          if (ship.x < 0) { ship.x = 0; ship.vx = 0; }
-          if (ship.x > caveMapWidth) { ship.x = caveMapWidth; ship.vx = 0; }
-          
-          updateParticles();
-          
-          checkAstronautRescue();
-          checkAllRescued();
-          
-          let rescuedCount = astronauts.filter(a => a.rescued).length;
-          astronautIndicator.textContent = "Astronautas rescatados: " + rescuedCount + " / " + totalAstronauts;
-          
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          drawCaveMap(camX, camY);
-          drawPlatform(startingPlatform, camX, camY);
-          drawPlatform(targetPlatform, camX, camY);
-          for (let a of astronauts) {
-            if (!a.rescued) {
-              drawAstronauts(camX, camY);
-              drawOffscreenIndicator(a.x, a.y, camX, camY, "#0ff");
-            }
-          }
-          drawShip(ship, camX, camY);
-          drawParticles(camX, camY);
-          drawTargetIndicator(camX, camY);
-          drawHealthBarOverShip(ship, camX, camY);
-          drawFuelBarOverShip(ship, camX, camY);
-          if (exploding) drawExplosionParticles();
-          
-          recoverFuel();
-          animationId = requestAnimationFrame(gameLoop);
-        }
-        
-        function restartGame() {
-          cancelAnimationFrame(animationId);
-          updatePlatforms();
-          ship.x = startingPlatform.x + platformWidth / 2;
-          ship.y = startingPlatform.y - 20;
-          ship.vx = 0;
-          ship.vy = 0;
-          ship.health = 100;
-          ship.fuel = 100;
-          ship.landed = true;
-          ship.onPlatform = 'start';
-          ship.angle = 0;
-          ship.angularVelocity = 0;
+        ship.fuel = 100;
+        updateParticles();
+        particles = [];
+        explosionParticles = [];
+        exploding = false;
+        explosionBgImage = null;
+        generateAstronauts();
+        setTimeout(() => {
           leftThrustActive = false;
           rightThrustActive = false;
-          messageEl.textContent = "";
-          restartBtn.style.display = "none";
-          generateCaveMap();
-          clearSpawnArea();
-          ship.fuel = 100;
-          updateParticles();
-          particles = [];
-          explosionParticles = [];
-          exploding = false;
-          // Reiniciamos la imagen del fondo congelado
-          explosionBgImage = null;
-          generateAstronauts();
-          setTimeout(() => {
-            leftThrustActive = false;
-            rightThrustActive = false;
-          }, 100);
-          animationId = requestAnimationFrame(gameLoop);
-        }
-        restartBtn.addEventListener('click', restartGame);
-        
-        // Listener para el botón "Menú": cancela la animación y muestra el overlay de selección
-        btnMenu.addEventListener('click', function(e) {
-          e.preventDefault();
-          cancelAnimationFrame(animationId);
-          difficultyOverlay.style.display = "flex";
-        });
-        
-        function activateLeft(state) {
-          leftThrustActive = state;
-          if (state) { ship.landed = false; }
-        }
-        function activateRight(state) {
-          rightThrustActive = state;
-          if (state) { ship.landed = false; }
-        }
-        // Controles táctiles y de ratón
-        document.getElementById('btnLeft').addEventListener('touchstart', function(e){ if(e.cancelable) e.preventDefault(); activateLeft(true); }, {passive: false});
-        document.getElementById('btnLeft').addEventListener('touchend', function(e){ if(e.cancelable) e.preventDefault(); activateLeft(false); }, {passive: false});
-        document.getElementById('btnLeft').addEventListener('mousedown', function(e){ e.preventDefault(); activateLeft(true); });
-        document.getElementById('btnLeft').addEventListener('mouseup', function(e){ e.preventDefault(); activateLeft(false); });
-        document.getElementById('btnLeft').addEventListener('mouseleave', function(e){ activateLeft(false); });
-        
-        document.getElementById('btnRight').addEventListener('touchstart', function(e){ if(e.cancelable) e.preventDefault(); activateRight(true); }, {passive: false});
-        document.getElementById('btnRight').addEventListener('touchend', function(e){ if(e.cancelable) e.preventDefault(); activateRight(false); }, {passive: false});
-        document.getElementById('btnRight').addEventListener('mousedown', function(e){ e.preventDefault(); activateRight(true); });
-        document.getElementById('btnRight').addEventListener('mouseup', function(e){ e.preventDefault(); activateRight(false); });
-        document.getElementById('btnRight').addEventListener('mouseleave', function(e){ activateRight(false); });
-        
-        // Controles para PC: teclas de flecha izquierda y derecha
-        window.addEventListener("keydown", function(e) {
-          if (e.key === "ArrowLeft") {
-            activateLeft(true);
-          } else if (e.key === "ArrowRight") {
-            activateRight(true);
-          }
-        });
-        window.addEventListener("keyup", function(e) {
-          if (e.key === "ArrowLeft") {
-            activateLeft(false);
-          } else if (e.key === "ArrowRight") {
-            activateRight(false);
-          }
-        });
-        
-        const difficultyOverlay = document.getElementById('difficultyOverlay');
-        document.getElementById('normalModeBtn').addEventListener('click', function() {
-          difficulty = "arcade";
-          difficultyOverlay.style.display = "none";
-          restartGame();
-        });
-        document.getElementById('hardModeBtn').addEventListener('click', function() {
-          difficulty = "realista";
-          difficultyOverlay.style.display = "none";
-          restartGame();
-        });
-        
+        }, 100);
         animationId = requestAnimationFrame(gameLoop);
-      };
+      }
+      
+      restartBtn.addEventListener('click', restartGame);
+      
+      btnMenu.addEventListener('click', function(e) {
+        e.preventDefault();
+        cancelAnimationFrame(animationId);
+        document.getElementById('difficultyOverlay').style.display = "flex";
+      });
+      
+      function activateLeft(state) {
+        if (ship.fuel <= 0) state = false;
+        leftThrustActive = state;
+        if (state) {
+          ship.landed = false;
+          if (jetSound.paused) jetSound.play();
+        } else if (!rightThrustActive) {
+          jetSound.pause();
+          jetSound.currentTime = 0;
+        }
+      }
+      
+      function activateRight(state) {
+        if (ship.fuel <= 0) state = false;
+        rightThrustActive = state;
+        if (state) {
+          ship.landed = false;
+          if (jetSound.paused) jetSound.play();
+        } else if (!leftThrustActive) {
+          jetSound.pause();
+          jetSound.currentTime = 0;
+        }
+      }
+      
+      // Controles táctiles y de ratón
+      document.getElementById('btnLeft').addEventListener('touchstart', function(e){ if(e.cancelable) e.preventDefault(); activateLeft(true); }, {passive: false});
+      document.getElementById('btnLeft').addEventListener('touchend', function(e){ if(e.cancelable) e.preventDefault(); activateLeft(false); }, {passive: false});
+      document.getElementById('btnLeft').addEventListener('mousedown', function(e){ e.preventDefault(); activateLeft(true); });
+      document.getElementById('btnLeft').addEventListener('mouseup', function(e){ e.preventDefault(); activateLeft(false); });
+      document.getElementById('btnLeft').addEventListener('mouseleave', function(e){ activateLeft(false); });
+      
+      document.getElementById('btnRight').addEventListener('touchstart', function(e){ if(e.cancelable) e.preventDefault(); activateRight(true); }, {passive: false});
+      document.getElementById('btnRight').addEventListener('touchend', function(e){ if(e.cancelable) e.preventDefault(); activateRight(false); }, {passive: false});
+      document.getElementById('btnRight').addEventListener('mousedown', function(e){ e.preventDefault(); activateRight(true); });
+      document.getElementById('btnRight').addEventListener('mouseup', function(e){ e.preventDefault(); activateRight(false); });
+      document.getElementById('btnRight').addEventListener('mouseleave', function(e){ activateRight(false); });
+      
+      // Controles para PC
+      window.addEventListener("keydown", function(e) {
+        if (e.key === "ArrowLeft") {
+          activateLeft(true);
+        } else if (e.key === "ArrowRight") {
+          activateRight(true);
+        }
+      });
+      window.addEventListener("keyup", function(e) {
+        if (e.key === "ArrowLeft") {
+          activateLeft(false);
+        } else if (e.key === "ArrowRight") {
+          activateRight(false);
+        }
+      });
+      
+      const difficultyOverlay = document.getElementById('difficultyOverlay');
+      document.getElementById('normalModeBtn').addEventListener('click', function() {
+        difficulty = "arcade";
+        difficultyOverlay.style.display = "none";
+        restartGame();
+      });
+      document.getElementById('hardModeBtn').addEventListener('click', function() {
+        difficulty = "realista";
+        difficultyOverlay.style.display = "none";
+        restartGame();
+      });
+      
+      animationId = requestAnimationFrame(gameLoop);
     })();
   </script>
 </body>
 </html>
-
