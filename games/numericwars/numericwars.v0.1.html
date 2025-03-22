@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Numeric Wars</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; }
+    canvas { display: block; }
+    
+    /* Indicador de puntuación */
+    #puntuacion {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 40px;
+      user-select: none;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+      z-index: 1000;
+    }
+    
+    /* Botón Menu */
+    #menuButton {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2000;
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 5px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    #menuButton:hover { opacity: 1; }
+    
+    /* Panel para secuencia o respuesta */
+    #secuenciaInput {
+      position: absolute;
+      bottom: 300px;
+      width: 100%;
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
+      z-index: 100;
+    }
+    
+    /* Teclado numérico estilo calculadora */
+    #keypad {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      z-index: 150;
+    }
+    button, .key { font-family: 'Orbitron', sans-serif; }
+    .key {
+      width: 100%;
+      padding: 15px 0;
+      border: none;
+      border-radius: 10px;
+      background: #333;
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(255,255,255,0.3);
+      cursor: pointer;
+      user-select: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .key:hover { opacity: 1; }
+    /* Botón Disparar */
+    #btnDisparar {
+      grid-column: span 1;
+      background: #ff8800;
+      font-size: 20px;
+      font-weight: bold;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    #btnDisparar:hover { opacity: 1; }
+    /* Botón Corregir */
+    #btnCorregir {
+      grid-column: span 1;
+      background: #ff8800;
+      font-size: 24px;
+      font-weight: bold;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    #btnCorregir:hover { opacity: 1; }
+    
+    /* Pantalla de inicio / menú de selección */
+    #startScreen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    #startScreen h1 {
+      font-size: 70px;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+    #startScreen p {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+    #startScreen h2 {
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: #fff;
+    }
+    .startButton {
+      padding: 15px 30px;
+      font-size: 24px;
+      margin: 10px;
+      cursor: pointer;
+      border: 2px solid #fff;
+      border-radius: 10px;
+      background: linear-gradient(45deg, #ff44ff, #4488ff);
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      box-shadow: 0 0 15px rgba(255,255,255,0.6);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .startButton:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255,255,255,0.8);
+    }
+  </style>
+</head>
+<body>
+  <!-- Botón Menu -->
+  <button id="menuButton">Menu</button>
+  
+  <!-- Pantalla de inicio / menú de selección -->
+  <div id="startScreen">
+    <h1>Numeric Wars</h1>
+    <p>Hecho por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" style="color: #ff44ff; text-decoration: none;">Oriol Badia Campanera</a> con IA ChatGPT</p>
+    <h2>Escoge el modo</h2>
+    <button class="startButton" id="arcadeModeButton">Modo Arcade</button>
+    <button class="startButton" id="mathModeButton">Modo Matemáticas</button>
+  </div>
+  
+  <canvas id="game"></canvas>
+  <div id="puntuacion">0</div>
+  
+  <!-- Panel para secuencia o respuesta -->
+  <div id="secuenciaInput"></div>
+  
+  <!-- Teclado numérico estilo calculadora -->
+  <div id="keypad">
+    <button class="key" data-key="7">7</button>
+    <button class="key" data-key="8">8</button>
+    <button class="key" data-key="9">9</button>
+    <button class="key" data-key="4">4</button>
+    <button class="key" data-key="5">5</button>
+    <button class="key" data-key="6">6</button>
+    <button class="key" data-key="1">1</button>
+    <button class="key" data-key="2">2</button>
+    <button class="key" data-key="3">3</button>
+    <button class="key" data-key="0">0</button>
+    <button class="key" id="btnCorregir">&lt;</button>
+    <button class="key" id="btnDisparar">Disparar</button>
+  </div>
+  
+  <script>
+    // Listener global para reanudar audio (utilizando objetos Audio) en el primer clic o pulsación
+    function resumeAudio() {
+      // No es necesario reanudar AudioContext, ya que usamos objetos Audio
+    }
+    document.addEventListener('click', resumeAudio, { once: true });
+    document.addEventListener('mousedown', resumeAudio, { once: true });
+    document.addEventListener('keydown', resumeAudio, { once: true });
+    
+    // Declaramos objetos Audio
+    const tieblasterSound = new Audio("tieblaster.mp3");
+    tieblasterSound.preload = "auto";
+    tieblasterSound.volume = 0.8;
+    
+    const explosionSound = new Audio("explosion.mp3");
+    explosionSound.preload = "auto";
+    explosionSound.volume = 0.8;
+    
+    function playNote(note) {
+      if (note === "tieblaster") {
+        tieblasterSound.currentTime = 0;
+        tieblasterSound.play().catch(err => console.error(err));
+      } else if (note === "explosion") {
+        explosionSound.currentTime = 0;
+        explosionSound.play().catch(err => console.error(err));
+      }
+    }
+    
+    // Variables globales
+    let currentMode = "arcade"; // "arcade" o "math"
+    let enemigos = [], lasers = [], particulas = [];
+    let puntuacion = 0;
+    let intervalo = 3000;
+    let startTime = Date.now();
+    let gameOver = false;
+    let userSequence = [];
+    let firingSequence = [];
+    let enemyTimeoutID;
+    
+    const secuenciaDisplay = document.getElementById("secuenciaInput");
+    function actualizarSecuenciaDisplay() {
+      const combined = firingSequence.concat(userSequence);
+      secuenciaDisplay.innerHTML = combined.map(d => `<span style="color: #fff; font-weight: bold;">${d}</span>`).join(" ");
+    }
+    
+    function setPuntuacion(p) {
+      puntuacion = p;
+      document.getElementById('puntuacion').textContent = puntuacion;
+    }
+    
+    function explosionEnPuntuacion() {
+      const cx = canvas.width / 2;
+      const cy = 50;
+      for (let i = 0; i < 50; i++) {
+        particulas.push({
+          x: cx,
+          y: cy,
+          dx: (Math.random() - 0.5) * 8,
+          dy: (Math.random() - 0.5) * 8,
+          alpha: 1,
+          color: "#fff"
+        });
+      }
+      playNote("explosion");
+    }
+    
+    function reiniciarJuego() {
+      enemigos = [];
+      lasers = [];
+      particulas = [];
+      setPuntuacion(0);
+      explosionEnPuntuacion();
+      intervalo = 3000;
+      startTime = Date.now();
+      gameOver = false;
+      actualizar();
+      enemyTimeoutID = setTimeout(generarEnemigos, 1000);
+    }
+    
+    function startGame() {
+      gameOver = false;
+      document.getElementById('startScreen').style.display = "none";
+      enemigos = []; lasers = []; particulas = [];
+      setPuntuacion(0);
+      intervalo = 3000;
+      startTime = Date.now();
+      enemyTimeoutID = setTimeout(generarEnemigos, 1000);
+      actualizar();
+    }
+    
+    // Mapping para colores (global)
+    const mapping = {
+      "0": { color: "red" },
+      "1": { color: "orange" },
+      "2": { color: "yellow" },
+      "3": { color: "green" },
+      "4": { color: "cyan" },
+      "5": { color: "blue" },
+      "6": { color: "indigo" },
+      "7": { color: "violet" },
+      "8": { color: "pink" },
+      "9": { color: "lime" }
+    };
+    
+    // Función para generar una operación matemática (Modo Matemáticas) de nivel primaria
+    function generarOperacionMatematica() {
+      const opTypes = ['+', '-', '×', '÷'];
+      const opType = opTypes[Math.floor(Math.random() * opTypes.length)];
+      let num1, num2, result, operationStr;
+      if (opType === '+' || opType === '-') {
+        num1 = Math.floor(Math.random() * 21);
+        num2 = Math.floor(Math.random() * 21);
+        if (opType === '-' && num1 < num2) { [num1, num2] = [num2, num1]; }
+        result = opType === '+' ? num1 + num2 : num1 - num2;
+        operationStr = `${num1} ${opType} ${num2} = ?`;
+      } else {
+        if (opType === '×') {
+          num1 = Math.floor(Math.random() * 10) + 1;
+          num2 = Math.floor(Math.random() * 10) + 1;
+          result = num1 * num2;
+          operationStr = `${num1} ${opType} ${num2} = ?`;
+        } else {
+          num2 = Math.floor(Math.random() * 10) + 1;
+          let quotient = Math.floor(Math.random() * 10) + 1;
+          num1 = num2 * quotient;
+          result = quotient;
+          operationStr = `${num1} ${opType} ${num2} = ?`;
+        }
+      }
+      return { operation: operationStr, answer: result.toString() };
+    }
+    
+    // Función para generar una secuencia aleatoria (Modo Arcade)
+    function generarSecuenciaUnica() {
+      let length = Math.floor(Math.pow(Math.random(), 2) * 8) + 1;
+      if (Math.random() > (1 - length / 10)) {
+        length = Math.floor(Math.random() * 3) + 1;
+      }
+      let seq = "";
+      for (let i = 0; i < length; i++) {
+        seq += Math.floor(Math.random() * 10).toString();
+      }
+      for (let i = 0; i < enemigos.length; i++) {
+        if (enemigos[i].sequence === seq) {
+          return generarSecuenciaUnica();
+        }
+      }
+      return seq;
+    }
+    
+    // Generación de enemigos según modo
+    function generarEnemigos(){
+      if (gameOver) return;
+      const elapsedMinutes = (Date.now() - startTime) / 60000;
+      const maxEnemigos = 5 + Math.floor(2 * elapsedMinutes);
+      const calculated = 1 + Math.floor(elapsedMinutes * 0.5);
+      const availableSlots = maxEnemigos - enemigos.length;
+      const spawnCount = availableSlots > 0 ? Math.min(calculated, availableSlots) : 0;
+      
+      for (let i = 0; i < spawnCount; i++){
+        let enemy = {};
+        const keys = Object.keys(mapping);
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        enemy.color = mapping[randomKey].color;
+        const baseRadio = 13;
+        const baseSpeedY = 0.2 + Math.random() * 0.1;
+        if (currentMode === "math") {
+          const op = generarOperacionMatematica();
+          enemy.operation = op.operation;
+          enemy.answer = op.answer;
+          enemy.radius = baseRadio + op.answer.length * 2;
+          enemy.speedY = baseSpeedY / (1 + op.answer.length / 5);
+        } else {
+          let seq = generarSecuenciaUnica();
+          enemy.sequence = seq;
+          enemy.radius = baseRadio + seq.length * 2;
+          enemy.speedY = baseSpeedY / (1 + seq.length / 5);
+        }
+        enemy.x = Math.random() * (canvas.width - 80) + 40;
+        enemy.y = -20;
+        enemy.speedX = (Math.random() - 0.5) * 0.3;
+        enemigos.push(enemy);
+      }
+      if (intervalo > 800) {
+        intervalo -= 10;
+        setParallaxSpeed();
+      }
+      enemyTimeoutID = setTimeout(generarEnemigos, intervalo);
+    }
+    
+    // Configuración del canvas
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    
+    // Efecto Parallax de Estrellas
+    let stars = [];
+    function initStars() {
+      for (let i = 0; i < 150; i++) {
+        const layer = Math.floor(Math.random() * 3) + 1;
+        const speedBase = layer * 0.2;
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * layer + 0.5,
+          speedBase: speedBase,
+          speed: speedBase
+        });
+      }
+    }
+    initStars();
+    function setParallaxSpeed() {
+      const factor = 1 + (3000 - intervalo) / 2500;
+      stars.forEach(star => {
+        star.speed = star.speedBase * factor;
+      });
+    }
+    function drawStars(){
+      stars.forEach(star => {
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+        }
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    
+    // Actualización del juego
+    function actualizar(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStars();
+      
+      // Actualización de enemigos y colisiones
+      for (let i = 0; i < enemigos.length; i++) {
+        let e1 = enemigos[i];
+        e1.y += e1.speedY;
+        e1.x += e1.speedX;
+        if (e1.x < 40) { e1.x = 40; e1.speedX = Math.abs(e1.speedX); }
+        if (e1.x > canvas.width - 40) { e1.x = canvas.width - 40; e1.speedX = -Math.abs(e1.speedX); }
+        for (let j = i + 1; j < enemigos.length; j++) {
+          let e2 = enemigos[j];
+          let dx = e1.x - e2.x;
+          let dy = e1.y - e2.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          let minDist = e1.radius + e2.radius;
+          if (dist < minDist && dist > 0) {
+            let overlap = (minDist - dist) / 2;
+            let nx = dx / dist;
+            let ny = dy / dist;
+            e1.x += nx * overlap;
+            e1.y += ny * overlap;
+            e2.x -= nx * overlap;
+            e2.y -= ny * overlap;
+            let rvx = e1.speedX - e2.speedX;
+            let rvy = e1.speedY - e2.speedY;
+            let velAlongNormal = rvx * nx + rvy * ny;
+            if (velAlongNormal < 0) {
+              let impulse = -2 * velAlongNormal / 2;
+              e1.speedX += impulse * nx;
+              e1.speedY += impulse * ny;
+              e2.speedX -= impulse * nx;
+              e2.speedY -= impulse * ny;
+            }
+          }
+        }
+        ctx.fillStyle = e1.color;
+        ctx.shadowColor = e1.color;
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(e1.x, e1.y, e1.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 20px Orbitron";
+        ctx.textAlign = "center";
+        if (currentMode === "math") {
+          ctx.fillText(e1.operation, e1.x, e1.y - e1.radius - 5);
+        } else {
+          ctx.fillText(e1.sequence, e1.x, e1.y - e1.radius - 5);
+        }
+        if (e1.y >= canvas.height - 80) { gameOver = true; }
+      }
+      
+      lasers.forEach((l, i) => {
+        ctx.strokeStyle = l.color;
+        ctx.lineWidth = 6;
+        ctx.shadowColor = l.color;
+        ctx.shadowBlur = 100;
+        ctx.beginPath();
+        ctx.moveTo(l.x1, l.y1);
+        ctx.lineTo(l.x2, l.y2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        if (Date.now() - l.time > 80) lasers.splice(i, 1);
+      });
+      
+      particulas.forEach((p, i) => {
+        p.x += p.dx;
+        p.y += p.dy;
+        p.alpha -= 0.015;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        if (p.alpha <= 0) particulas.splice(i, 1);
+      });
+      
+      if (!gameOver) {
+        requestAnimationFrame(actualizar);
+      } else {
+        setTimeout(reiniciarJuego, 2000);
+      }
+    }
+    
+    // Teclado numérico: detectar pulsaciones para ingresar, corregir y disparar
+    document.addEventListener("keydown", function(e) {
+      if (e.key >= "0" && e.key <= "9") {
+        userSequence.push(e.key);
+        actualizarSecuenciaDisplay();
+      }
+      if (e.key === "Backspace") {
+        userSequence.pop();
+        actualizarSecuenciaDisplay();
+        e.preventDefault();
+      }
+      if (e.key === "Enter" || e.key === " ") {
+        document.getElementById("btnDisparar").click();
+        e.preventDefault();
+      }
+    });
+    
+    // Teclado virtual: clic para ingresar dígitos
+    const keyButtons = document.querySelectorAll("#keypad .key");
+    keyButtons.forEach(boton => {
+      if (boton.id === "btnDisparar" || boton.id === "btnCorregir") return;
+      boton.addEventListener("click", function() {
+        const key = boton.textContent.trim();
+        userSequence.push(key);
+        actualizarSecuenciaDisplay();
+      });
+    });
+    
+    // Botón Corregir: elimina el último dígito
+    const btnCorregir = document.getElementById("btnCorregir");
+    btnCorregir.addEventListener("click", function() {
+      userSequence.pop();
+      actualizarSecuenciaDisplay();
+    });
+    
+    // Botón Disparar: disparo secuencial
+    const btnDisparar = document.getElementById("btnDisparar");
+    btnDisparar.addEventListener("click", function() {
+      if (userSequence.length === 0) return;
+      let enemigoSeleccionado = null;
+      for (let i = 0; i < enemigos.length; i++){
+        if (currentMode === "math") {
+          if (enemigos[i].answer === userSequence.join("")) {
+            enemigoSeleccionado = enemigos[i];
+            break;
+          }
+        } else {
+          if (enemigos[i].sequence === userSequence.join("")) {
+            enemigoSeleccionado = enemigos[i];
+            break;
+          }
+        }
+      }
+      if (!enemigoSeleccionado) {
+        userSequence = [];
+        actualizarSecuenciaDisplay();
+        setPuntuacion(0);
+        explosionEnPuntuacion();
+        playNote("explosion");
+        return;
+      }
+      firingSequence = userSequence.slice();
+      userSequence = [];
+      actualizarSecuenciaDisplay();
+      function dispararSecuencia() {
+        if (firingSequence.length === 0 || gameOver) {
+          for (let i = 0; i < 30; i++) {
+            particulas.push({
+              x: enemigoSeleccionado.x,
+              y: enemigoSeleccionado.y,
+              dx: (Math.random() - 0.5) * 6,
+              dy: (Math.random() - 0.5) * 6,
+              alpha: 1,
+              color: enemigoSeleccionado.color
+            });
+          }
+          let idx = enemigos.indexOf(enemigoSeleccionado);
+          if (idx !== -1) enemigos.splice(idx, 1);
+          firingSequence = [];
+          actualizarSecuenciaDisplay();
+          playNote("explosion");
+          return;
+        }
+        const digito = firingSequence.shift();
+        actualizarSecuenciaDisplay();
+        if (currentMode === "math") {
+          enemigoSeleccionado.answer = enemigoSeleccionado.answer.substring(1);
+        } else {
+          enemigoSeleccionado.sequence = enemigoSeleccionado.sequence.substring(1);
+        }
+        const rectSeq = secuenciaDisplay.getBoundingClientRect();
+        const ox = rectSeq.left + rectSeq.width / 2;
+        const oy = rectSeq.top + rectSeq.height / 2;
+        lasers.push({ x1: ox, y1: oy, x2: enemigoSeleccionado.x, y2: enemigoSeleccionado.y, color: enemigoSeleccionado.color, time: Date.now() });
+        setPuntuacion(puntuacion + 1);
+        playNote("tieblaster");
+        setTimeout(dispararSecuencia, 200);
+      }
+      dispararSecuencia();
+    });
+    
+    window.onresize = () => {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    };
+    
+    actualizar();
+    
+    // Selección de modos en la pantalla de inicio
+    document.getElementById('arcadeModeButton').addEventListener('click', () => {
+      currentMode = "arcade";
+      startGame();
+    });
+    document.getElementById('mathModeButton').addEventListener('click', () => {
+      currentMode = "math";
+      startGame();
+    });
+    
+    // Botón Menu en juego: detener partida y mostrar pantalla de selección
+    document.getElementById("menuButton").addEventListener("click", function() {
+      gameOver = true;
+      userSequence = [];
+      firingSequence = [];
+      actualizarSecuenciaDisplay();
+      clearTimeout(enemyTimeoutID);
+      document.getElementById("startScreen").style.display = "flex";
+    });
+  </script>
+</body>
+</html>
