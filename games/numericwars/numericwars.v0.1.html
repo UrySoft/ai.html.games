@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <!-- Para que el juego se adapte a la pantalla del dispositivo -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Numeric Wars</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
@@ -149,6 +151,15 @@
       transform: scale(1.05);
       box-shadow: 0 0 25px rgba(255,255,255,0.8);
     }
+    
+    /* Media queries para móviles */
+    @media (max-width: 600px) {
+      #puntuacion { font-size: 28px; }
+      #menuButton { padding: 10px 15px; font-size: 16px; }
+      #secuenciaInput { font-size: 24px; bottom: 250px; }
+      .startButton { padding: 10px 20px; font-size: 20px; }
+      .key { padding: 10px 0; font-size: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -187,10 +198,9 @@
   </div>
   
   <script>
-    // Listener global para reanudar audio (utilizando objetos Audio) en el primer clic o pulsación
-    function resumeAudio() {
-      // No es necesario reanudar AudioContext, ya que usamos objetos Audio
-    }
+    // Listener global para reanudar audio (no es necesario AudioContext, usamos objetos Audio)
+    // Se añaden listeners para click, mousedown y keydown (aunque en este caso no es necesario, se deja como referencia)
+    function resumeAudio() {}
     document.addEventListener('click', resumeAudio, { once: true });
     document.addEventListener('mousedown', resumeAudio, { once: true });
     document.addEventListener('keydown', resumeAudio, { once: true });
