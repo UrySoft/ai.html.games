@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ver Cámara Remota con QR - Corregido</title>
+  <title>Ver Cámara Remota con QR</title>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 1em; font-size: 16px; display: flex; flex-direction: column; align-items: center; }
-    .section { display: none; /* Oculto por defecto */ width: 100%; max-width: 500px; margin-top: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9; }
-    .section.active { display: block; /* Mostrar sección activa */ }
+    .section { display: none; width: 100%; max-width: 500px; margin-top: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9; }
+    .section.active { display: block; }
     video { width: 90%; max-width: 350px; margin: 0.5em auto; border: 2px solid #555; background-color: #eee; display: block; }
     .qr-display-area { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; }
-    /* Estilo para el párrafo que precede al canvas QR */
     .qr-display-area p { display: block; margin-bottom: 0.5em; font-weight: bold;}
-    canvas { border: 1px solid #ccc; display: block; margin: 0 auto; } /* Centrado */
+    canvas { border: 1px solid #ccc; display: block; margin: 0 auto; }
     textarea { width: 95%; height: 80px; margin: 0.5em auto; display: block; font-size: 0.8em; }
     button { padding: 0.8em 1.2em; margin: 0.5em; font-size: 1em; cursor: pointer; border-radius: 5px; border: 1px solid #adadad; background-color: #f0f0f0; color: #333; }
     button:not(:disabled) { background-color: #d0eaff; border-color: #a0c0ff; }
     button:disabled { cursor: not-allowed; background-color: #e8e8e8; color: #a0a0a0; border-color: #d0d0d0; }
+    #app-title { margin-bottom: 0; } /* Reducir espacio debajo del título */
+    #version-display { font-size: 0.8em; color: grey; margin-top: 2px; margin-bottom: 15px; } /* Estilo para versión */
     #status { margin-top: 1em; font-weight: bold; min-height: 1.2em; color: #0056b3; text-align: center; width: 100%; max-width: 500px; }
     .instructions { background-color: #fff8d5; padding: 10px; border-radius: 5px; margin-bottom: 1em; text-align: left; border: 1px solid #f0e0a0;}
     .error-message { color: #d9534f; font-weight: bold; }
@@ -25,7 +26,9 @@
   </style>
 </head>
 <body>
-  <h1>Ver Cámara Remota con QR - Corregido</h1>
+  <h1 id="app-title">Ver Cámara Remota con QR</h1>
+  <!-- Elemento para mostrar la versión -->
+  <div id="version-display"></div>
 
   <div id="status">Selecciona el rol de este dispositivo.</div>
 
@@ -46,7 +49,7 @@
     <p><strong>Mi Cámara:</strong></p>
     <video id="localVideoCamera" autoplay muted playsinline title="Tu Cámara Local"></video>
     <div id="camera-qr-area" class="qr-display-area" style="display: none;">
-        <p>Código QR para iniciar conexión:</p> <!-- Texto simplificado -->
+        <p>Código QR para iniciar conexión:</p>
         <canvas id="qrCanvasOffer" width="250" height="250"></canvas>
         <button id="btnScanViewerCode" onclick="scanQR()">Escanear Código de Confirmación (de la Pantalla)</button>
         <button id="btnPasteViewerCode" onclick="showPasteArea('answer')">Pegar Código Manualmente</button>
@@ -73,7 +76,7 @@
     <div class="instructions">
       ¡Código de la Cámara recibido! Ahora, muestra este código QR al dispositivo "Cámara" para que lo escanee y se establezca la conexión de vídeo.
     </div>
-    <p>Tu Código de Confirmación:</p> <!-- Texto simplificado -->
+    <p>Tu Código de Confirmación:</p>
     <canvas id="qrCanvasAnswer" width="250" height="250"></canvas>
      <button id="btnCancelViewerAnswer" onclick="disconnect()">Cancelar</button>
   </div>
@@ -111,12 +114,19 @@
   <script src="jsQR.min.js"></script>
 
   <script>
+    // ==========================================
+    // VERSIÓN DE LA APLICACIÓN
+    // ==========================================
+    const APP_VERSION = "2.0.0"; // ¡Actualiza esto cuando hagas cambios!
+    // ==========================================
+
     // --- Variables Globales ---
     let pc; let localStream; let qrScanInterval; let isCameraDevice; let currentSdpForQR = null;
 
     // --- Elementos DOM ---
     const sections = document.querySelectorAll('.section');
     const statusDiv = document.getElementById('status');
+    const versionDisplayElement = document.getElementById('version-display'); // Elemento para la versión
     const localVideoCameraEl = document.getElementById('localVideoCamera');
     const localVideoViewerEl = document.getElementById('localVideoViewer');
     const localVideoConnectedEl = document.getElementById('localVideoConnected');
@@ -135,156 +145,19 @@
     const pc_config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     // --- Funciones de UI ---
-    function showSection(sectionId) {
-        console.log("UI: Mostrando sección:", sectionId);
-        sections.forEach(section => section.classList.remove('active'));
-        const activeSection = document.getElementById(sectionId);
-        if (activeSection) activeSection.classList.add('active');
-        else console.error("UI: Sección no encontrada:", sectionId);
-    }
-    function updateStatusUI(message, isError = false) {
-        console.log(`Status (${isError ? 'ERROR' : 'INFO'}):`, message);
-        statusDiv.textContent = message;
-        statusDiv.className = isError ? 'error-message' : '';
-    }
-     function setLocalVideoStream(stream) {
-         localVideoCameraEl.srcObject = stream;
-         localVideoViewerEl.srcObject = stream;
-         localVideoConnectedEl.srcObject = stream;
-    }
-     function clearVideoElements() {
-         localVideoCameraEl.srcObject = null;
-         localVideoViewerEl.srcObject = null;
-         localVideoConnectedEl.srcObject = null;
-         remoteVideoConnectedEl.srcObject = null;
-     }
-    function showPasteArea(type) {
-        const expectedType = type === 'offer' ? 'Código de la Cámara' : 'Código de Confirmación';
-        pasteInstructions.textContent = `Pega aquí el ${expectedType} recibido del otro dispositivo.`;
-        sdpPasteArea.value = ''; showSection('paste-section');
-    }
-    function hidePasteArea() {
-        if (isCameraDevice === true) { showSection('camera-setup-section'); }
-        else if (isCameraDevice === false) { if (pc && pc.localDescription) showSection('viewer-answer-section'); else showSection('viewer-setup-section'); }
-        else { showSection('role-choice-section'); }
-    }
+    function showSection(sectionId) { /* ... (sin cambios) ... */ }
+    function updateStatusUI(message, isError = false) { /* ... (sin cambios) ... */ }
+    function setLocalVideoStream(stream) { /* ... (sin cambios) ... */ }
+    function clearVideoElements() { /* ... (sin cambios) ... */ }
+    function showPasteArea(type) { /* ... (sin cambios) ... */ }
+    function hidePasteArea() { /* ... (sin cambios) ... */ }
 
     // --- Lógica Principal WebRTC ---
-    function chooseRole(isCamera) {
-        // Quitamos el alert una vez confirmado que el problema era el SyntaxError
-        // alert("Función 'chooseRole' ejecutada! Rol Cámara: " + isCamera);
-        console.log("chooseRole called with isCamera =", isCamera);
-        isCameraDevice = isCamera;
-        if (isCameraDevice) {
-            showSection('camera-setup-section');
-            cameraQrArea.style.display = 'none';
-            cameraInstructions.textContent = "Preparando tu cámara y el código QR...";
-        } else {
-            showSection('viewer-setup-section');
-        }
-        startWebRTCProcess();
-    }
-
-    async function startWebRTCProcess() {
-        if (pc) { updateStatusUI("La conexión ya está iniciada.", true); return; }
-        console.log(`--- Iniciando como ${isCameraDevice ? 'Cámara' : 'Pantalla'} ---`);
-        updateStatusUI(isCameraDevice ? "Configurando Cámara..." : "Preparando Pantalla...");
-        if (!verifyPrerequisites()) { disconnect(); return; }
-        try {
-            updateStatusUI("Accediendo a tu cámara...");
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            setLocalVideoStream(localStream);
-            updateStatusUI("Tu cámara está lista.");
-            console.log("getUserMedia OK.");
-            console.log("Creando conexión P2P...");
-            pc = new RTCPeerConnection(pc_config);
-            console.log("RTCPeerConnection creado.");
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            console.log("Track de vídeo local añadido.");
-            setupWebRTCEvents();
-            if (isCameraDevice) {
-                updateStatusUI("Creando código de conexión inicial...");
-                console.log("DEBUG: Cámara - Calling createOffer()...");
-                const offer = await pc.createOffer();
-                console.log("DEBUG: Cámara - Offer created.");
-                await pc.setLocalDescription(offer);
-                console.log("DEBUG: Cámara - setLocalDescription(offer) OK.");
-                cameraInstructions.textContent = "Recopilando información de red para generar el código QR...";
-                updateStatusUI("Recopilando info de red...");
-            } else {
-                updateStatusUI("Listo para escanear el código de la Cámara.");
-            }
-        } catch (error) { console.error('Error en startWebRTCProcess():', error); handleStartError(error); }
-    }
-
-    function setupWebRTCEvents() {
-        pc.onicecandidate = e => { if (!e || !e.candidate) { console.log("DEBUG: ICE Gathering FINISHED."); handleIceGatheringComplete(); } };
-        pc.ontrack = e => { if (remoteVideoConnectedEl.srcObject !== e.streams[0]) { remoteVideoConnectedEl.srcObject = e.streams[0]; updateStatusUI("¡Conectado! Viendo cámara remota."); console.log('Stream remoto asignado.'); showSection('connected-section'); } };
-        pc.oniceconnectionstatechange = () => { /* ... (sin cambios) ... */ };
-    }
-
-    function handleIceGatheringComplete() {
-        if (!pc || !pc.localDescription) { console.error("DEBUG: handleIceGatheringComplete - Error crítico."); if (pc) updateStatusUI("Error interno de red.", true); return; }
-        console.log("DEBUG: Información de red completa. Generando código QR...");
-        currentSdpForQR = JSON.stringify(pc.localDescription);
-        if (isCameraDevice) {
-            updateStatusUI("Código inicial listo. Muéstralo a la Pantalla.");
-            cameraInstructions.textContent = "Muestra este código QR al dispositivo \"Pantalla\". Luego, pulsa abajo para escanear su código de confirmación.";
-            generateQrForCanvas(qrCanvasOffer, currentSdpForQR); // Usa la función corregida
-            cameraQrArea.style.display = 'block';
-        } else {
-            updateStatusUI("Código de confirmación listo. Muéstralo a la Cámara.");
-            showSection('viewer-answer-section');
-            generateQrForCanvas(qrCanvasAnswer, currentSdpForQR); // Usa la función corregida
-        }
-    }
-
-    // =====================================================
-    // VERSIÓN CORREGIDA / SIMPLIFICADA de generateQrForCanvas
-    // =====================================================
-    function generateQrForCanvas(canvasElement, sdpString) {
-        console.log(`DEBUG: Dibujando QR en ${canvasElement.id}`);
-        const parentArea = canvasElement.closest('.qr-display-area') || canvasElement.parentElement; // Área contenedora
-        const precedingP = parentArea ? parentArea.querySelector('p') : null; // El <p> que va antes
-
-        // Ocultar por defecto antes de intentar generar
-        canvasElement.style.display = 'none';
-        if(precedingP) precedingP.style.display = 'none';
-
-        if (!sdpString || !canvasElement || typeof QRCode === 'undefined') {
-             console.error("generateQrForCanvas: Faltan datos, canvas o librería QR.");
-             updateStatusUI("Error al preparar código QR.", true);
-             return;
-        }
-        try {
-            QRCode.toCanvas(canvasElement, sdpString, { width: 250, margin: 1, errorCorrectionLevel: 'L' }, err => {
-                if (err) {
-                    console.error(`DEBUG: Error al dibujar QR en ${canvasElement.id}:`, err);
-                    let errorMsg = "Error al generar el código QR.";
-                    if (err.message && err.message.toLowerCase().includes('data too long')) {
-                         errorMsg = "Error: ¡Demasiados datos para el QR! Intenta en otra red.";
-                    }
-                    updateStatusUI(errorMsg, true);
-                    // Asegurarse que sigue oculto si falla
-                    canvasElement.style.display = 'none';
-                    if(precedingP) precedingP.style.display = 'none';
-                } else {
-                    console.log(`DEBUG: QR dibujado con éxito en ${canvasElement.id}.`);
-                    // Mostrar el canvas Y el párrafo asociado
-                    canvasElement.style.display = 'block';
-                    if(precedingP) precedingP.style.display = 'block';
-                    // No es necesario actualizar el status general aquí, ya lo hizo handleIceGatheringComplete
-                }
-            });
-        } catch (e) {
-            console.error(`DEBUG: Excepción al llamar a QRCode.toCanvas para ${canvasElement.id}:`, e);
-            updateStatusUI("Error crítico al generar QR.", true);
-            canvasElement.style.display = 'none';
-            if(precedingP) precedingP.style.display = 'none';
-        }
-    }
-    // =====================================================
-
+    function chooseRole(isCamera) { /* ... (sin cambios) ... */ }
+    async function startWebRTCProcess() { /* ... (sin cambios) ... */ }
+    function setupWebRTCEvents() { /* ... (sin cambios) ... */ }
+    function handleIceGatheringComplete() { /* ... (sin cambios) ... */ }
+    function generateQrForCanvas(canvasElement, sdpString) { /* ... (sin cambios) ... */ }
     async function scanQR() { /* ... (sin cambios) ... */ }
     function stopScanQR(triggeredByUser = false) { /* ... (sin cambios) ... */ }
     function pasteAndConnect() { /* ... (sin cambios) ... */ }
@@ -297,6 +170,15 @@
     // --- Inicialización ---
     window.onload = () => {
       console.log("--- Página cargada ---");
+
+      // **Mostrar la versión de la app**
+      if (versionDisplayElement) {
+          versionDisplayElement.textContent = `Versión: ${APP_VERSION}`;
+      } else {
+          console.warn("Elemento para mostrar versión no encontrado.");
+      }
+
+      // Verificar prerrequisitos y habilitar/deshabilitar botones iniciales
        if (!verifyPrerequisites()) {
             btnBeCamera.disabled = true; btnWatchCamera.disabled = true;
             updateStatusUI("Error: Tu navegador no es compatible o faltan librerías QR.", true);
@@ -304,6 +186,45 @@
             showSection('role-choice-section'); updateStatusUI("Listo. Selecciona el rol de este dispositivo.");
             btnBeCamera.disabled = false; btnWatchCamera.disabled = false;
        }
+    };
+
+    // --- COPIAR/PEGAR AQUÍ TODAS LAS FUNCIONES COMPLETAS DE LA VERSIÓN ANTERIOR ---
+    // (Asegúrate de copiar las definiciones completas de:
+    // showSection, updateStatusUI, setLocalVideoStream, clearVideoElements,
+    // showPasteArea, hidePasteArea, chooseRole, startWebRTCProcess, setupWebRTCEvents,
+    // handleIceGatheringComplete, generateQrForCanvas, scanQR, stopScanQR,
+    // pasteAndConnect, processScannedOrPastedSDP, disconnect, verifyPrerequisites,
+    // handleStartError, handleScannerError
+    // ...desde la respuesta anterior donde sí funcionaban los botones )
+    // Pego las funciones de nuevo aquí para asegurar que esté completo:
+
+    function showSection(sectionId) { console.log("UI: Mostrando sección:", sectionId); sections.forEach(section => section.classList.remove('active')); const activeSection = document.getElementById(sectionId); if (activeSection) activeSection.classList.add('active'); else console.error("UI: Sección no encontrada:", sectionId); }
+    function updateStatusUI(message, isError = false) { console.log(`Status (${isError ? 'ERROR' : 'INFO'}):`, message); statusDiv.textContent = message; statusDiv.className = isError ? 'error-message' : ''; }
+    function setLocalVideoStream(stream) { localVideoCameraEl.srcObject = stream; localVideoViewerEl.srcObject = stream; localVideoConnectedEl.srcObject = stream; }
+    function clearVideoElements() { localVideoCameraEl.srcObject = null; localVideoViewerEl.srcObject = null; localVideoConnectedEl.srcObject = null; remoteVideoConnectedEl.srcObject = null; }
+    function showPasteArea(type) { const expectedType = type === 'offer' ? 'Código de la Cámara' : 'Código de Confirmación'; pasteInstructions.textContent = `Pega aquí el ${expectedType} recibido del otro dispositivo.`; sdpPasteArea.value = ''; showSection('paste-section'); }
+    function hidePasteArea() { if (isCameraDevice === true) { showSection('camera-setup-section'); } else if (isCameraDevice === false) { if (pc && pc.localDescription) showSection('viewer-answer-section'); else showSection('viewer-setup-section'); } else { showSection('role-choice-section'); } }
+    function chooseRole(isCamera) { console.log("chooseRole called with isCamera =", isCamera); isCameraDevice = isCamera; if (isCameraDevice) { showSection('camera-setup-section'); cameraQrArea.style.display = 'none'; cameraInstructions.textContent = "Preparando tu cámara y el código QR..."; } else { showSection('viewer-setup-section'); } startWebRTCProcess(); }
+    async function startWebRTCProcess() { if (pc) { updateStatusUI("La conexión ya está iniciada.", true); return; } console.log(`--- Iniciando como ${isCameraDevice ? 'Cámara' : 'Pantalla'} ---`); updateStatusUI(isCameraDevice ? "Configurando Cámara..." : "Preparando Pantalla..."); if (!verifyPrerequisites()) { disconnect(); return; } try { updateStatusUI("Accediendo a tu cámara..."); localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); setLocalVideoStream(localStream); updateStatusUI("Tu cámara está lista."); console.log("getUserMedia OK."); console.log("Creando conexión P2P..."); pc = new RTCPeerConnection(pc_config); console.log("RTCPeerConnection creado."); localStream.getTracks().forEach(track => pc.addTrack(track, localStream)); console.log("Track de vídeo local añadido."); setupWebRTCEvents(); if (isCameraDevice) { updateStatusUI("Creando código de conexión inicial..."); console.log("DEBUG: Cámara - Calling createOffer()..."); const offer = await pc.createOffer(); console.log("DEBUG: Cámara - Offer created."); await pc.setLocalDescription(offer); console.log("DEBUG: Cámara - setLocalDescription(offer) OK."); cameraInstructions.textContent = "Recopilando información de red para generar el código QR..."; updateStatusUI("Recopilando info de red..."); } else { updateStatusUI("Listo para escanear el código de la Cámara."); } } catch (error) { console.error('Error en startWebRTCProcess():', error); handleStartError(error); } }
+    function setupWebRTCEvents() { pc.onicecandidate = e => { if (!e || !e.candidate) { console.log("DEBUG: ICE Gathering FINISHED."); handleIceGatheringComplete(); } }; pc.ontrack = e => { if (remoteVideoConnectedEl.srcObject !== e.streams[0]) { remoteVideoConnectedEl.srcObject = e.streams[0]; updateStatusUI("¡Conectado! Viendo cámara remota."); console.log('Stream remoto asignado.'); showSection('connected-section'); } }; pc.oniceconnectionstatechange = () => { if (!pc) return; const state = pc.iceConnectionState; console.log(`Estado de Red (ICE): ${state}`); let statusMsg = `Estado de Red: ${state}`; let isError = false; if (state === 'connected' || state === 'completed') { statusMsg = "Estado de Red: Conectado"; showSection('connected-section'); } else if (state === 'failed') { statusMsg = `Estado de Red: Falló la conexión.`; isError = true; } else if (state === 'disconnected') { statusMsg = `Estado de Red: Desconectado.`; isError = true; } else if (state === 'closed') { statusMsg = `Estado de Red: Conexión cerrada.`; isError = true; } if(state !== 'connected' && state !== 'completed') { updateStatusUI(statusMsg, isError); } }; }
+    function handleIceGatheringComplete() { if (!pc || !pc.localDescription) { console.error("DEBUG: handleIceGatheringComplete - Error crítico."); if (pc) updateStatusUI("Error interno de red.", true); return; } console.log("DEBUG: Información de red completa. Generando código QR..."); currentSdpForQR = JSON.stringify(pc.localDescription); if (isCameraDevice) { updateStatusUI("Código inicial listo. Muéstralo a la Pantalla."); cameraInstructions.textContent = "Muestra este código QR al dispositivo \"Pantalla\". Luego, pulsa abajo para escanear su código de confirmación."; generateQrForCanvas(qrCanvasOffer, currentSdpForQR); cameraQrArea.style.display = 'block'; } else { updateStatusUI("Código de confirmación listo. Muéstralo a la Cámara."); showSection('viewer-answer-section'); generateQrForCanvas(qrCanvasAnswer, currentSdpForQR); } }
+    function generateQrForCanvas(canvasElement, sdpString) { console.log(`DEBUG: Dibujando QR en ${canvasElement.id}`); const parentArea = canvasElement.closest('.qr-display-area') || canvasElement.parentElement; const precedingP = parentArea ? parentArea.querySelector('p') : null; canvasElement.style.display = 'none'; if(precedingP) precedingP.style.display = 'none'; if (!sdpString || !canvasElement || typeof QRCode === 'undefined') { console.error("generateQrForCanvas: Faltan datos, canvas o librería QR."); updateStatusUI("Error al preparar código QR.", true); return; } try { QRCode.toCanvas(canvasElement, sdpString, { width: 250, margin: 1, errorCorrectionLevel: 'L' }, err => { if (err) { console.error(`DEBUG: Error al dibujar QR en ${canvasElement.id}:`, err); let errorMsg = "Error al generar el código QR."; if (err.message && err.message.toLowerCase().includes('data too long')) { errorMsg = "Error: ¡Demasiados datos para el QR! Intenta en otra red."; } updateStatusUI(errorMsg, true); canvasElement.style.display = 'none'; if(precedingP) precedingP.style.display = 'none'; } else { console.log(`DEBUG: QR dibujado con éxito en ${canvasElement.id}.`); canvasElement.style.display = 'block'; if(precedingP) precedingP.style.display = 'block'; } }); } catch (e) { console.error(`DEBUG: Excepción al llamar a QRCode.toCanvas para ${canvasElement.id}:`, e); updateStatusUI("Error crítico al generar QR.", true); canvasElement.style.display = 'none'; if(precedingP) precedingP.style.display = 'none'; } }
+    async function scanQR() { console.log("--- Iniciando escaneo QR ---"); if (!pc) { updateStatusUI("Inicia la conexión primero.", true); return; } if (!verifyPrerequisites()) return; if (qrScanInterval) { updateStatusUI("Ya se está escaneando.", false); return; } updateStatusUI("Preparando escáner QR..."); scannerContainer.style.display = 'flex'; try { console.log("scanQR: Accediendo cámara trasera..."); const constraints = { video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } }; const stream = await navigator.mediaDevices.getUserMedia(constraints); qrScanner.srcObject = stream; await qrScanner.play(); console.log("scanQR: Cámara lista y escaneando..."); updateStatusUI("Escaneando código QR..."); const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d', { willReadFrequently: true }); qrScanInterval = setInterval(() => { if (!qrScanner.srcObject || qrScanner.paused || qrScanner.ended) { stopScanQR(); return; } if (qrScanner.readyState >= qrScanner.HAVE_METADATA && qrScanner.videoWidth > 0) { canvas.width = qrScanner.videoWidth; canvas.height = qrScanner.videoHeight; ctx.drawImage(qrScanner, 0, 0, canvas.width, canvas.height); try { const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); const code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts: "dontInvert" }); if (code && code.data && code.data.trim()) { const detectedData = code.data.trim(); console.log("scanQR: ¡Código detectado!"); updateStatusUI("¡Código detectado! Procesando..."); stopScanQR(false); processScannedOrPastedSDP(detectedData); } } catch (qrError) { /* Ignorar */ } } }, 300); } catch (error) { console.error('Error al iniciar escáner QR:', error); handleScannerError(error); stopScanQR(true); } }
+    function stopScanQR(triggeredByUser = false) { console.log(`--- Deteniendo escaneo QR (usuario: ${triggeredByUser}) ---`); if (qrScanInterval) { clearInterval(qrScanInterval); qrScanInterval = null; } if (qrScanner.srcObject) { qrScanner.srcObject.getTracks().forEach(track => track.stop()); qrScanner.srcObject = null; } scannerContainer.style.display = 'none'; if(triggeredByUser) { hidePasteArea(); if(statusDiv.textContent.includes('Escaneando')) updateStatusUI("Escaneo cancelado."); } }
+    function pasteAndConnect() { const sdpString = sdpPasteArea.value.trim(); sdpPasteArea.value = ''; hidePasteArea(); if (!sdpString) { updateStatusUI("No se pegó ningún código.", true); return; } processScannedOrPastedSDP(sdpString); }
+    async function processScannedOrPastedSDP(sdpString) { console.log("--- Procesando SDP recibido ---"); if (!pc) { updateStatusUI("Error: La conexión no está iniciada.", true); return; } if (pc.localDescription && sdpString === JSON.stringify(pc.localDescription)) { updateStatusUI("Error: No puedes usar tu propio código.", true); return; } if (pc.remoteDescription) { console.warn("processSDP: Ya existe descripción remota."); return; } updateStatusUI("Procesando código recibido..."); try { const sdp = JSON.parse(sdpString); console.log("SDP parseado, tipo:", sdp.type); if (isCameraDevice && sdp.type !== 'answer') { throw new Error("Se esperaba un Código de Confirmación."); } if (!isCameraDevice && sdp.type !== 'offer') { throw new Error("Se esperaba un Código de la Cámara."); } console.log(`Llamando a setRemoteDescription(${sdp.type})...`); await pc.setRemoteDescription(new RTCSessionDescription(sdp)); console.log("setRemoteDescription completado."); updateStatusUI("Código remoto aceptado."); if (!isCameraDevice) { console.log("Pantalla: Creando respuesta..."); updateStatusUI("Creando código de confirmación..."); const answer = await pc.createAnswer(); await pc.setLocalDescription(answer); console.log("Pantalla: setLocalDescription(answer) OK."); updateStatusUI("Código de confirmación creado. Recopilando info de red..."); } else { console.log("Cámara: Respuesta recibida."); updateStatusUI("Respuesta recibida. Conectando vídeo..."); showSection('connected-section'); } } catch (error) { console.error('Error en processScannedOrPastedSDP():', error); updateStatusUI(`Error al procesar código: ${error.message || error.name || 'Error desconocido'}`, true); } }
+    function disconnect() { console.log("--- Desconectando ---"); stopScanQR(false); if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } clearVideoElements(); if (pc) { pc.close(); pc = null; } currentSdpForQR = null; try { const offerCtx = qrCanvasOffer.getContext('2d'); offerCtx.clearRect(0,0,qrCanvasOffer.width, qrCanvasOffer.height); const answerCtx = qrCanvasAnswer.getContext('2d'); answerCtx.clearRect(0,0,qrCanvasAnswer.width, qrCanvasAnswer.height); } catch (e) {} sdpPasteArea.value = ''; isCameraDevice = undefined; showSection('role-choice-section'); updateStatusUI("Desconectado. Selecciona el rol de este dispositivo."); console.log("Desconexión completada."); }
+    function verifyPrerequisites() { let ok = true; console.log("Verificando prerrequisitos..."); if (typeof QRCode === 'undefined') { updateStatusUI("Error CRÍTICO: Falta librería QRCode.", true); console.error("FAIL: QRCode undefined"); ok = false; } if (typeof jsQR === 'undefined') { updateStatusUI("Error CRÍTICO: Falta librería jsQR.", true); console.error("FAIL: jsQR undefined"); ok = false; } if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { updateStatusUI("Error: Navegador no soporta cámara.", true); console.error("FAIL: getUserMedia not supported"); ok = false; } if (!window.RTCPeerConnection) { updateStatusUI("Error: Navegador no soporta WebRTC.", true); console.error("FAIL: RTCPeerConnection not supported"); ok = false; } console.log("Verificación finalizada. Resultado:", ok); return ok; }
+    function handleStartError(error) { let msg = `Error al iniciar: ${error.name || 'Error desconocido'}`; if (error.name === 'NotAllowedError') msg = "Error: Permiso de cámara denegado."; else if (error.name === 'NotFoundError') msg = "Error: No se encontró cámara."; updateStatusUI(msg, true); disconnect(); }
+    function handleScannerError(error) { let msg = `Error cámara escáner: ${error.name || 'Error desconocido'}`; if (error.name === 'NotAllowedError') msg = "Error: Permiso de cámara denegado."; else if (error.name === 'NotFoundError') msg = "Error: No se encontró cámara trasera."; updateStatusUI(msg, true); }
+
+    // --- Inicialización ---
+    window.onload = () => {
+      console.log("--- Página cargada ---");
+      if (versionDisplayElement) versionDisplayElement.textContent = `Versión: ${APP_VERSION}`;
+      else console.warn("Elemento para mostrar versión no encontrado.");
+       if (!verifyPrerequisites()) { btnBeCamera.disabled = true; btnWatchCamera.disabled = true; updateStatusUI("Error: Tu navegador no es compatible o faltan librerías QR.", true); }
+       else { showSection('role-choice-section'); updateStatusUI("Listo. Selecciona el rol de este dispositivo."); btnBeCamera.disabled = false; btnWatchCamera.disabled = false; }
     };
   </script>
 </body>
