@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ver Cámara Remota con QR - Corregido</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 1em; font-size: 16px; display: flex; flex-direction: column; align-items: center; }
+    .section { display: none; /* Oculto por defecto */ width: 100%; max-width: 500px; margin-top: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9; }
+    .section.active { display: block; /* Mostrar sección activa */ }
+    video { width: 90%; max-width: 350px; margin: 0.5em auto; border: 2px solid #555; background-color: #eee; display: block; }
+    .qr-display-area { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; }
+    /* Estilo para el párrafo que precede al canvas QR */
+    .qr-display-area p { display: block; margin-bottom: 0.5em; font-weight: bold;}
+    canvas { border: 1px solid #ccc; display: block; margin: 0 auto; } /* Centrado */
+    textarea { width: 95%; height: 80px; margin: 0.5em auto; display: block; font-size: 0.8em; }
+    button { padding: 0.8em 1.2em; margin: 0.5em; font-size: 1em; cursor: pointer; border-radius: 5px; border: 1px solid #adadad; background-color: #f0f0f0; color: #333; }
+    button:not(:disabled) { background-color: #d0eaff; border-color: #a0c0ff; }
+    button:disabled { cursor: not-allowed; background-color: #e8e8e8; color: #a0a0a0; border-color: #d0d0d0; }
+    #status { margin-top: 1em; font-weight: bold; min-height: 1.2em; color: #0056b3; text-align: center; width: 100%; max-width: 500px; }
+    .instructions { background-color: #fff8d5; padding: 10px; border-radius: 5px; margin-bottom: 1em; text-align: left; border: 1px solid #f0e0a0;}
+    .error-message { color: #d9534f; font-weight: bold; }
+    #main-controls { margin-top: 1em; }
+    #connected-view { display: flex; flex-direction: column; align-items: center; }
+  </style>
+</head>
+<body>
+  <h1>Ver Cámara Remota con QR - Corregido</h1>
+
+  <div id="status">Selecciona el rol de este dispositivo.</div>
+
+  <!-- Sección 1: Selección de Rol -->
+  <div id="role-choice-section" class="section active">
+    <h2>Paso 1: ¿Qué hará este dispositivo?</h2>
+    <div class="instructions">
+      Elige si este dispositivo usará su cámara para transmitir vídeo, o si mostrará el vídeo de la cámara del otro dispositivo.
+    </div>
+    <button id="btnBeCamera" onclick="chooseRole(true)">Usar mi Cámara (Transmitir)</button>
+    <button id="btnWatchCamera" onclick="chooseRole(false)">Ver Cámara Remota (Recibir)</button>
+  </div>
+
+  <!-- Sección 2: Dispositivo "Cámara" - Preparación y Muestra QR Oferta -->
+  <div id="camera-setup-section" class="section">
+    <h2>Paso 2 (Cámara): Preparando y Compartiendo</h2>
+    <div class="instructions" id="camera-instructions">Mostrando tu cámara. Espera a que se genere el código QR de conexión inicial...</div>
+    <p><strong>Mi Cámara:</strong></p>
+    <video id="localVideoCamera" autoplay muted playsinline title="Tu Cámara Local"></video>
+    <div id="camera-qr-area" class="qr-display-area" style="display: none;">
+        <p>Código QR para iniciar conexión:</p> <!-- Texto simplificado -->
+        <canvas id="qrCanvasOffer" width="250" height="250"></canvas>
+        <button id="btnScanViewerCode" onclick="scanQR()">Escanear Código de Confirmación (de la Pantalla)</button>
+        <button id="btnPasteViewerCode" onclick="showPasteArea('answer')">Pegar Código Manualmente</button>
+    </div>
+     <button id="btnCancelCamera" onclick="disconnect()">Cancelar</button>
+  </div>
+
+   <!-- Sección 3: Dispositivo "Pantalla" - Espera y Escanea QR Oferta -->
+   <div id="viewer-setup-section" class="section">
+     <h2>Paso 2 (Pantalla): Preparando para Recibir</h2>
+     <div class="instructions">
+        Verás tu propia cámara brevemente (para confirmar que funciona). Pide al dispositivo "Cámara" que te muestre su código QR inicial y pulsa el botón para escanearlo.
+     </div>
+     <p><strong>(Tu cámara - solo para verificación):</strong></p>
+     <video id="localVideoViewer" autoplay muted playsinline title="Tu Cámara Local (Verificación)"></video>
+     <button id="btnScanCameraCode" onclick="scanQR()">Escanear Código de la Cámara</button>
+     <button id="btnPasteCameraCode" onclick="showPasteArea('offer')">Pegar Código Manualmente</button>
+     <button id="btnCancelViewerSetup" onclick="disconnect()">Cancelar</button>
+   </div>
+
+  <!-- Sección 4: Dispositivo "Pantalla" - Muestra QR de Confirmación -->
+  <div id="viewer-answer-section" class="section">
+    <h2>Paso 3 (Pantalla): Comparte este Código de Confirmación</h2>
+    <div class="instructions">
+      ¡Código de la Cámara recibido! Ahora, muestra este código QR al dispositivo "Cámara" para que lo escanee y se establezca la conexión de vídeo.
+    </div>
+    <p>Tu Código de Confirmación:</p> <!-- Texto simplificado -->
+    <canvas id="qrCanvasAnswer" width="250" height="250"></canvas>
+     <button id="btnCancelViewerAnswer" onclick="disconnect()">Cancelar</button>
+  </div>
+
+  <!-- Sección 5: Vista Conectada (Ambos roles) -->
+  <div id="connected-section" class="section">
+      <h2>Conectado</h2>
+      <div id="connected-view">
+          <p><strong>Mi Cámara:</strong></p>
+          <video id="localVideoConnected" autoplay muted playsinline title="Tu Cámara Local"></video>
+          <p><strong>Cámara Remota:</strong></p>
+          <video id="remoteVideoConnected" autoplay playsinline title="Vídeo de la Cámara Remota"></video>
+      </div>
+       <button id="btnDisconnectConnected" onclick="disconnect()">Terminar Conexión</button>
+  </div>
+
+  <!-- Sección 6: Área de Pegado Manual -->
+   <div id="paste-section" class="section">
+     <h2>Pegar Código Manualmente</h2>
+     <div class="instructions" id="paste-instructions"></div>
+     <textarea id="sdpPasteArea" placeholder="Pega aquí el código JSON recibido del otro dispositivo..."></textarea>
+     <button id="btnSubmitPaste" onclick="pasteAndConnect()">Usar Código Pegado</button>
+     <button onclick="hidePasteArea()">Cancelar Pegado</button>
+   </div>
+
+  <!-- Contenedor del Scanner (Overlay) -->
+  <div id="scanner-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100;">
+     <p style="color: white; font-size: 1.2em; margin-bottom: 10px;">Apuntando al código QR...</p>
+     <video id="qrScanner" autoplay muted playsinline style="width: 80%; max-width: 400px; border: 2px solid red;"></video>
+     <button id="btnStopScan" onclick="stopScanQR(true)" style="margin-top: 15px; background-color: #ffaaaa; border-color: #d9534f; color: #a94442;">Cancelar Escaneo</button>
+  </div>
+
+  <!-- Librerías QR Locales -->
+  <script src="qrcode.min.js"></script>
+  <script src="jsQR.min.js"></script>
+
+  <script>
+    // --- Variables Globales ---
+    let pc; let localStream; let qrScanInterval; let isCameraDevice; let currentSdpForQR = null;
+
+    // --- Elementos DOM ---
+    const sections = document.querySelectorAll('.section');
+    const statusDiv = document.getElementById('status');
+    const localVideoCameraEl = document.getElementById('localVideoCamera');
+    const localVideoViewerEl = document.getElementById('localVideoViewer');
+    const localVideoConnectedEl = document.getElementById('localVideoConnected');
+    const remoteVideoConnectedEl = document.getElementById('remoteVideoConnected');
+    const qrCanvasOffer = document.getElementById('qrCanvasOffer');
+    const qrCanvasAnswer = document.getElementById('qrCanvasAnswer');
+    const qrScanner = document.getElementById('qrScanner');
+    const scannerContainer = document.getElementById('scanner-container');
+    const sdpPasteArea = document.getElementById('sdpPasteArea');
+    const pasteInstructions = document.getElementById('paste-instructions');
+    const btnBeCamera = document.getElementById('btnBeCamera');
+    const btnWatchCamera = document.getElementById('btnWatchCamera');
+    const cameraInstructions = document.getElementById('camera-instructions');
+    const cameraQrArea = document.getElementById('camera-qr-area');
+
+    const pc_config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+    // --- Funciones de UI ---
+    function showSection(sectionId) {
+        console.log("UI: Mostrando sección:", sectionId);
+        sections.forEach(section => section.classList.remove('active'));
+        const activeSection = document.getElementById(sectionId);
+        if (activeSection) activeSection.classList.add('active');
+        else console.error("UI: Sección no encontrada:", sectionId);
+    }
+    function updateStatusUI(message, isError = false) {
+        console.log(`Status (${isError ? 'ERROR' : 'INFO'}):`, message);
+        statusDiv.textContent = message;
+        statusDiv.className = isError ? 'error-message' : '';
+    }
+     function setLocalVideoStream(stream) {
+         localVideoCameraEl.srcObject = stream;
+         localVideoViewerEl.srcObject = stream;
+         localVideoConnectedEl.srcObject = stream;
+    }
+     function clearVideoElements() {
+         localVideoCameraEl.srcObject = null;
+         localVideoViewerEl.srcObject = null;
+         localVideoConnectedEl.srcObject = null;
+         remoteVideoConnectedEl.srcObject = null;
+     }
+    function showPasteArea(type) {
+        const expectedType = type === 'offer' ? 'Código de la Cámara' : 'Código de Confirmación';
+        pasteInstructions.textContent = `Pega aquí el ${expectedType} recibido del otro dispositivo.`;
+        sdpPasteArea.value = ''; showSection('paste-section');
+    }
+    function hidePasteArea() {
+        if (isCameraDevice === true) { showSection('camera-setup-section'); }
+        else if (isCameraDevice === false) { if (pc && pc.localDescription) showSection('viewer-answer-section'); else showSection('viewer-setup-section'); }
+        else { showSection('role-choice-section'); }
+    }
+
+    // --- Lógica Principal WebRTC ---
+    function chooseRole(isCamera) {
+        // Quitamos el alert una vez confirmado que el problema era el SyntaxError
+        // alert("Función 'chooseRole' ejecutada! Rol Cámara: " + isCamera);
+        console.log("chooseRole called with isCamera =", isCamera);
+        isCameraDevice = isCamera;
+        if (isCameraDevice) {
+            showSection('camera-setup-section');
+            cameraQrArea.style.display = 'none';
+            cameraInstructions.textContent = "Preparando tu cámara y el código QR...";
+        } else {
+            showSection('viewer-setup-section');
+        }
+        startWebRTCProcess();
+    }
+
+    async function startWebRTCProcess() {
+        if (pc) { updateStatusUI("La conexión ya está iniciada.", true); return; }
+        console.log(`--- Iniciando como ${isCameraDevice ? 'Cámara' : 'Pantalla'} ---`);
+        updateStatusUI(isCameraDevice ? "Configurando Cámara..." : "Preparando Pantalla...");
+        if (!verifyPrerequisites()) { disconnect(); return; }
+        try {
+            updateStatusUI("Accediendo a tu cámara...");
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            setLocalVideoStream(localStream);
+            updateStatusUI("Tu cámara está lista.");
+            console.log("getUserMedia OK.");
+            console.log("Creando conexión P2P...");
+            pc = new RTCPeerConnection(pc_config);
+            console.log("RTCPeerConnection creado.");
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            console.log("Track de vídeo local añadido.");
+            setupWebRTCEvents();
+            if (isCameraDevice) {
+                updateStatusUI("Creando código de conexión inicial...");
+                console.log("DEBUG: Cámara - Calling createOffer()...");
+                const offer = await pc.createOffer();
+                console.log("DEBUG: Cámara - Offer created.");
+                await pc.setLocalDescription(offer);
+                console.log("DEBUG: Cámara - setLocalDescription(offer) OK.");
+                cameraInstructions.textContent = "Recopilando información de red para generar el código QR...";
+                updateStatusUI("Recopilando info de red...");
+            } else {
+                updateStatusUI("Listo para escanear el código de la Cámara.");
+            }
+        } catch (error) { console.error('Error en startWebRTCProcess():', error); handleStartError(error); }
+    }
+
+    function setupWebRTCEvents() {
+        pc.onicecandidate = e => { if (!e || !e.candidate) { console.log("DEBUG: ICE Gathering FINISHED."); handleIceGatheringComplete(); } };
+        pc.ontrack = e => { if (remoteVideoConnectedEl.srcObject !== e.streams[0]) { remoteVideoConnectedEl.srcObject = e.streams[0]; updateStatusUI("¡Conectado! Viendo cámara remota."); console.log('Stream remoto asignado.'); showSection('connected-section'); } };
+        pc.oniceconnectionstatechange = () => { /* ... (sin cambios) ... */ };
+    }
+
+    function handleIceGatheringComplete() {
+        if (!pc || !pc.localDescription) { console.error("DEBUG: handleIceGatheringComplete - Error crítico."); if (pc) updateStatusUI("Error interno de red.", true); return; }
+        console.log("DEBUG: Información de red completa. Generando código QR...");
+        currentSdpForQR = JSON.stringify(pc.localDescription);
+        if (isCameraDevice) {
+            updateStatusUI("Código inicial listo. Muéstralo a la Pantalla.");
+            cameraInstructions.textContent = "Muestra este código QR al dispositivo \"Pantalla\". Luego, pulsa abajo para escanear su código de confirmación.";
+            generateQrForCanvas(qrCanvasOffer, currentSdpForQR); // Usa la función corregida
+            cameraQrArea.style.display = 'block';
+        } else {
+            updateStatusUI("Código de confirmación listo. Muéstralo a la Cámara.");
+            showSection('viewer-answer-section');
+            generateQrForCanvas(qrCanvasAnswer, currentSdpForQR); // Usa la función corregida
+        }
+    }
+
+    // =====================================================
+    // VERSIÓN CORREGIDA / SIMPLIFICADA de generateQrForCanvas
+    // =====================================================
+    function generateQrForCanvas(canvasElement, sdpString) {
+        console.log(`DEBUG: Dibujando QR en ${canvasElement.id}`);
+        const parentArea = canvasElement.closest('.qr-display-area') || canvasElement.parentElement; // Área contenedora
+        const precedingP = parentArea ? parentArea.querySelector('p') : null; // El <p> que va antes
+
+        // Ocultar por defecto antes de intentar generar
+        canvasElement.style.display = 'none';
+        if(precedingP) precedingP.style.display = 'none';
+
+        if (!sdpString || !canvasElement || typeof QRCode === 'undefined') {
+             console.error("generateQrForCanvas: Faltan datos, canvas o librería QR.");
+             updateStatusUI("Error al preparar código QR.", true);
+             return;
+        }
+        try {
+            QRCode.toCanvas(canvasElement, sdpString, { width: 250, margin: 1, errorCorrectionLevel: 'L' }, err => {
+                if (err) {
+                    console.error(`DEBUG: Error al dibujar QR en ${canvasElement.id}:`, err);
+                    let errorMsg = "Error al generar el código QR.";
+                    if (err.message && err.message.toLowerCase().includes('data too long')) {
+                         errorMsg = "Error: ¡Demasiados datos para el QR! Intenta en otra red.";
+                    }
+                    updateStatusUI(errorMsg, true);
+                    // Asegurarse que sigue oculto si falla
+                    canvasElement.style.display = 'none';
+                    if(precedingP) precedingP.style.display = 'none';
+                } else {
+                    console.log(`DEBUG: QR dibujado con éxito en ${canvasElement.id}.`);
+                    // Mostrar el canvas Y el párrafo asociado
+                    canvasElement.style.display = 'block';
+                    if(precedingP) precedingP.style.display = 'block';
+                    // No es necesario actualizar el status general aquí, ya lo hizo handleIceGatheringComplete
+                }
+            });
+        } catch (e) {
+            console.error(`DEBUG: Excepción al llamar a QRCode.toCanvas para ${canvasElement.id}:`, e);
+            updateStatusUI("Error crítico al generar QR.", true);
+            canvasElement.style.display = 'none';
+            if(precedingP) precedingP.style.display = 'none';
+        }
+    }
+    // =====================================================
+
+    async function scanQR() { /* ... (sin cambios) ... */ }
+    function stopScanQR(triggeredByUser = false) { /* ... (sin cambios) ... */ }
+    function pasteAndConnect() { /* ... (sin cambios) ... */ }
+    async function processScannedOrPastedSDP(sdpString) { /* ... (sin cambios) ... */ }
+    function disconnect() { /* ... (sin cambios) ... */ }
+    function verifyPrerequisites() { /* ... (sin cambios) ... */ }
+    function handleStartError(error) { /* ... (sin cambios) ... */ }
+    function handleScannerError(error) { /* ... (sin cambios) ... */ }
+
+    // --- Inicialización ---
+    window.onload = () => {
+      console.log("--- Página cargada ---");
+       if (!verifyPrerequisites()) {
+            btnBeCamera.disabled = true; btnWatchCamera.disabled = true;
+            updateStatusUI("Error: Tu navegador no es compatible o faltan librerías QR.", true);
+       } else {
+            showSection('role-choice-section'); updateStatusUI("Listo. Selecciona el rol de este dispositivo.");
+            btnBeCamera.disabled = false; btnWatchCamera.disabled = false;
+       }
+    };
+  </script>
+</body>
+</html>
