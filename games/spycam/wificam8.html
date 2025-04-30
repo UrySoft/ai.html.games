@@ -1,0 +1,725 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebRTC múltiple QR</title>
+  <style>
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #444;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+    body { font-family: sans-serif; text-align: center; padding: 1em; }
+    video { width: 45%; margin: 0.5em; border: 1px solid #ccc; }
+    textarea { width: 90%; height: 120px; margin: 0.5em auto; display: block; font-size: 0.9em; }
+    button, select, label { margin: 0.5em; font-size: 1em; padding: 0.5em 1em; }
+    #qrcodeContainer, #qrcodeAnswerContainer { margin: 1em auto; }
+    #roleSelect, #emitterUI, #receiverUI { margin: 2em auto; display: none; }
+    .hidden { display: none; }
+    .bold { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="stepsBox" style="background:#f0f0f0; padding:1em; margin-bottom:1em; border:1px solid #ccc; text-align:left; max-width:800px; margin:auto;">
+    <button id="toggleBtn" onclick="toggleSteps()" style="float:right;">Ocultar pasos</button>
+    <h3>Pasos a seguir</h3>
+    <ul>
+      <li><strong>1.</strong> Selecciona si eres <em>Emisor</em> o <em>Receptor</em>.</li>
+      <li><strong>2.</strong> El Emisor inicia la cámara y pulsa <strong>Crear oferta</strong>.</li>
+      <li><strong>3.</strong> El Emisor verá el texto de la oferta y sus códigos QR (múltiples si es necesario).</li>
+      <li><strong>4.</strong> El Receptor escanea los QR desde el Emisor.</li>
+      <li><strong>5.</strong> El Receptor pulsa <strong>Generar respuesta</strong>.</li>
+      <li><strong>6.</strong> El Receptor verá el texto de la respuesta y los QR.</li>
+      <li><strong>7.</strong> El Emisor copia y pega la respuesta y pulsa <strong>Añadir remoto</strong>.</li>
+    </ul>
+  </div>
+  <h2>WebRTC con múltiples códigos QR</h2><button onclick="restartAll()">Volver al inicio</button>
+
+  <div id="roleSelect">
+    <p>¿Qué dispositivo estás configurando?</p>
+    <button onclick="setRole('emitter')">Emisor (Cámara)</button>
+    <button onclick="setRole('receiver')">Receptor (Monitor)</button>
+  </div>
+
+  <div id="emitterUI">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video><br>
+    <label for="cameraSelect">Cámara:</label>
+    <select id="cameraSelect">
+      <option value="user">Frontal</option>
+      <option value="environment" selected>Trasera</option>
+    </select>
+    <label><input type="checkbox" id="includeAudio" checked> Incluir audio</label><br>
+    <button onclick="startCamera()">Iniciar cámara</button>
+    <button onclick="createOffer()">Crear oferta</button>
+    <textarea id="generatedOffer" readonly style="height: 200px;" placeholder="Oferta generada"></textarea><button onclick="copyToClipboard('generatedOffer', 'msgGeneratedOffer')">Copiar oferta</button> <span id="msgGeneratedOffer" style="color:green;font-weight:bold;"></span>
+    <button onclick="addRemote()">Añadir remoto</button>
+    <p id="generationStatus" class="bold"></p><p id="confirmationStatus" class="bold" style="color: green;"></p><div id="qrcodeContainer" style="min-height: 320px;"></div>
+<p class="bold">1. Visualiza y copia la oferta. 2. Escanea los QR desde el receptor.</p>
+    <p id="qrStep" class="bold hidden"></p>
+    <button id="nextQR" class="hidden" onclick="showNextQR()">Siguiente QR</button>
+  </div>
+
+  <div id="receiverUI">
+    <video id="remoteVideo" autoplay playsinline></video><br>
+    <button onclick="startCamera()">Inicializar receptor</button>
+    <button onclick="startQRScanner()">Escanear QR</button><button onclick="resetQRScanner()">Reiniciar escaneo</button>
+    <textarea id="localSDP" readonly style="height: 200px;" placeholder="Respuesta generada"></textarea><button onclick="copyToClipboard('localSDP', 'msgLocal')">Copiar respuesta</button> <span id="msgLocal" style="color:green;font-weight:bold;"></span><p class="bold">1. Visualiza y copia la respuesta. 2. Muestra los QR para que los escanee el emisor.</p><button onclick="showResponseQRs()">Mostrar respuesta en QR</button><p id="generationAnswerStatus" class="bold"></p><p id="confirmationAnswerStatus" class="bold" style="color: green;"></p><div id="qrcodeAnswerContainer" style="min-height: 320px;"></div><p id="qrAnswerStep" class="bold hidden"></p><button id="nextQRAnswer" class="hidden" onclick="showNextQRAnswer()">Siguiente QR</button>
+    <p id="generationAnswerStatus" class="bold"></p><p id="confirmationAnswerStatus" class="bold" style="color: green;"></p><div id="qrcodeAnswerContainer" style="min-height: 320px;"></div>
+  <p id="qrProgress" class="bold"></p></div>
+
+  <div id="qr-reader" style="width:300px; margin:auto;"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js">
+    let qrAnswerChunks = [];
+    let currentQRAnswerIndex = 0;
+
+    function showResponseQRs() {
+      const sdp = localSDP.value;
+      const compressed = LZString.compressToEncodedURIComponent(sdp);
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+
+    function renderQRAnswerChunk() {
+      const current = qrAnswerChunks[currentQRAnswerIndex];
+      document.getElementById("qrcodeAnswerContainer").innerHTML = "";
+      document.getElementById("qrAnswerStep").innerText = `QR ${current.part + 1} de ${current.total}`;
+      new QRCode(document.getElementById("qrcodeAnswerContainer"), {
+        text: JSON.stringify(current),
+        width: 300,
+        height: 300
+      });
+    }
+
+    function showNextQRAnswer() {
+      if (currentQRAnswerIndex < qrAnswerChunks.length - 1) {
+        currentQRAnswerIndex++;
+        renderQRAnswerChunk();
+      }
+    }
+    
+    let qrReader;
+function resetQRScanner() {
+      scannedParts = {};
+      expectedParts = 0;
+      receivedGroupId = null;
+      document.getElementById('qr-reader').innerHTML = "";
+      document.getElementById('qrProgress').innerText = "";
+      remoteSDP.value = "";
+      qrReader.stop().then(() => startQRScanner()).catch(() => startQRScanner());
+    }
+    
+    function restartAll() {
+      location.reload();
+    }
+    
+    function showResponseQRsFromCompressed(compressed) {
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+    
+    function copyToClipboard(id, msgId) {
+      const el = document.getElementById(id);
+      el.select();
+      document.execCommand("copy");
+  const msg = document.getElementById(msgId);
+  msg.innerText = "Copiado";
+  setTimeout(() => { msg.innerText = ""; }, 2000);
+    }
+
+    // Depuración por consola
+    const originalSetLocalDescription = RTCPeerConnection.prototype.setLocalDescription;
+    RTCPeerConnection.prototype.setLocalDescription = async function(description) {
+      console.log("SDP generado:", description);
+      return originalSetLocalDescription.call(this, description);
+    };
+    function toggleSteps() {
+  const box = document.getElementById("stepsBox");
+  const btn = document.getElementById("toggleBtn");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    btn.innerText = "Ocultar pasos";
+  } else {
+    box.style.display = "none";
+    btn.innerText = "Mostrar pasos";
+  }
+}
+  const box = document.getElementById("stepsBox");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+  } else {
+        receiverUI.style.display = 'block';
+        setTimeout(() => {
+          startQRScanner();
+        }, 500);
+    }
+    box.style.display = "none";
+  }
+}
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    let qrAnswerChunks = [];
+    let currentQRAnswerIndex = 0;
+
+    function showResponseQRs() {
+      const sdp = localSDP.value;
+      const compressed = LZString.compressToEncodedURIComponent(sdp);
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+
+    function renderQRAnswerChunk() {
+      const current = qrAnswerChunks[currentQRAnswerIndex];
+      document.getElementById("qrcodeAnswerContainer").innerHTML = "";
+      document.getElementById("qrAnswerStep").innerText = `QR ${current.part + 1} de ${current.total}`;
+      new QRCode(document.getElementById("qrcodeAnswerContainer"), {
+        text: JSON.stringify(current),
+        width: 300,
+        height: 300
+      });
+    }
+
+    function showNextQRAnswer() {
+      if (currentQRAnswerIndex < qrAnswerChunks.length - 1) {
+        currentQRAnswerIndex++;
+        renderQRAnswerChunk();
+      }
+    }
+    
+    let qrReader;
+function resetQRScanner() {
+      scannedParts = {};
+      expectedParts = 0;
+      receivedGroupId = null;
+      document.getElementById('qr-reader').innerHTML = "";
+      document.getElementById('qrProgress').innerText = "";
+      remoteSDP.value = "";
+      qrReader.stop().then(() => startQRScanner()).catch(() => startQRScanner());
+    }
+    
+    function restartAll() {
+      location.reload();
+    }
+    
+    function showResponseQRsFromCompressed(compressed) {
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+    
+    function copyToClipboard(id, msgId) {
+      const el = document.getElementById(id);
+      el.select();
+      document.execCommand("copy");
+  const msg = document.getElementById(msgId);
+  msg.innerText = "Copiado";
+  setTimeout(() => { msg.innerText = ""; }, 2000);
+    }
+
+    // Depuración por consola
+    const originalSetLocalDescription = RTCPeerConnection.prototype.setLocalDescription;
+    RTCPeerConnection.prototype.setLocalDescription = async function(description) {
+      console.log("SDP generado:", description);
+      return originalSetLocalDescription.call(this, description);
+    };
+    function toggleSteps() {
+  const box = document.getElementById("stepsBox");
+  const btn = document.getElementById("toggleBtn");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    btn.innerText = "Ocultar pasos";
+  } else {
+    box.style.display = "none";
+    btn.innerText = "Mostrar pasos";
+  }
+}
+  const box = document.getElementById("stepsBox");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+  } else {
+        receiverUI.style.display = 'block';
+        setTimeout(() => {
+          startQRScanner();
+        }, 500);
+    }
+    box.style.display = "none";
+  }
+}
+</script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js">
+    let qrAnswerChunks = [];
+    let currentQRAnswerIndex = 0;
+
+    function showResponseQRs() {
+      const sdp = localSDP.value;
+      const compressed = LZString.compressToEncodedURIComponent(sdp);
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+
+    function renderQRAnswerChunk() {
+      const current = qrAnswerChunks[currentQRAnswerIndex];
+      document.getElementById("qrcodeAnswerContainer").innerHTML = "";
+      document.getElementById("qrAnswerStep").innerText = `QR ${current.part + 1} de ${current.total}`;
+      new QRCode(document.getElementById("qrcodeAnswerContainer"), {
+        text: JSON.stringify(current),
+        width: 300,
+        height: 300
+      });
+    }
+
+    function showNextQRAnswer() {
+      if (currentQRAnswerIndex < qrAnswerChunks.length - 1) {
+        currentQRAnswerIndex++;
+        renderQRAnswerChunk();
+      }
+    }
+    
+    let qrReader;
+function resetQRScanner() {
+      scannedParts = {};
+      expectedParts = 0;
+      receivedGroupId = null;
+      document.getElementById('qr-reader').innerHTML = "";
+      document.getElementById('qrProgress').innerText = "";
+      remoteSDP.value = "";
+      qrReader.stop().then(() => startQRScanner()).catch(() => startQRScanner());
+    }
+    
+    function restartAll() {
+      location.reload();
+    }
+    
+    function showResponseQRsFromCompressed(compressed) {
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+    
+    function copyToClipboard(id, msgId) {
+      const el = document.getElementById(id);
+      el.select();
+      document.execCommand("copy");
+  const msg = document.getElementById(msgId);
+  msg.innerText = "Copiado";
+  setTimeout(() => { msg.innerText = ""; }, 2000);
+    }
+
+    // Depuración por consola
+    const originalSetLocalDescription = RTCPeerConnection.prototype.setLocalDescription;
+    RTCPeerConnection.prototype.setLocalDescription = async function(description) {
+      console.log("SDP generado:", description);
+      return originalSetLocalDescription.call(this, description);
+    };
+    function toggleSteps() {
+  const box = document.getElementById("stepsBox");
+  const btn = document.getElementById("toggleBtn");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    btn.innerText = "Ocultar pasos";
+  } else {
+    box.style.display = "none";
+    btn.innerText = "Mostrar pasos";
+  }
+}
+  const box = document.getElementById("stepsBox");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+  } else {
+        receiverUI.style.display = 'block';
+        setTimeout(() => {
+          startQRScanner();
+        }, 500);
+    }
+    box.style.display = "none";
+  }
+}
+</script>
+  <script>
+    let pc;
+    let localStream;
+    let currentQRIndex = 0;
+    let qrChunks = [];
+    let scannedParts = {};
+    let expectedParts = 0;
+    let receivedGroupId = null;
+
+    const maxChunkSize = 1400;
+
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const includeAudio = document.getElementById('includeAudio');
+    const roleSelect = document.getElementById('roleSelect');
+    const emitterUI = document.getElementById('emitterUI');
+    const receiverUI = document.getElementById('receiverUI');
+    const localSDP = document.getElementById('localSDP');
+    const remoteSDP = document.getElementById('remoteSDP');
+    const qrcodeContainer = document.getElementById('qrcodeContainer');
+    const qrStep = document.getElementById('qrStep');
+    const nextQR = document.getElementById('nextQR');
+
+    roleSelect.style.display = 'block';
+
+    function setRole(role) {
+  const audioEnabled = true;
+  const facingMode = 'environment';
+      roleSelect.style.display = 'none';
+      if (role === 'emitter') {
+        emitterUI.style.display = 'block';
+        setTimeout(async () => {
+          localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: audioEnabled });
+          localVideo.srcObject = localStream;
+          localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          const sdp = JSON.stringify(pc.localDescription);
+          document.getElementById("generatedOffer").value = sdp;
+          const compressed = LZString.compressToEncodedURIComponent(sdp);
+          showQRs(compressed);
+        }, 500);
+    }
+        emitterUI.style.display = 'block';
+      } else {
+        receiverUI.style.display = 'block';
+        setTimeout(() => {
+          startQRScanner();
+        }, 500);
+    }
+        receiverUI.style.display = 'block';
+      }
+
+      pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+
+      pc.ontrack = e => remoteVideo.srcObject = e.streams[0];
+      pc.onicecandidate = e => {
+        if (e.candidate === null) {
+        document.getElementById("generationStatus").innerText = ""; document.getElementById("confirmationStatus").innerText = "Oferta generada correctamente.";
+          const sdp = JSON.stringify(pc.localDescription);
+          const compressed = LZString.compressToEncodedURIComponent(sdp);
+          showQRs(compressed);
+        }
+      };
+    }
+
+    async function startCamera() {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      const facingMode = cameraSelect ? cameraSelect.value : "user";
+      const audioEnabled = includeAudio.checked;
+      localStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+        audio: audioEnabled
+      });
+      localVideo.srcObject = localStream;
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
+    async function createOffer() {
+  document.getElementById("generationStatus").innerHTML = "Generando oferta <span class='loader'></span>";
+  document.getElementById("qrcodeContainer").innerHTML = "";
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+  const sdp = JSON.stringify(pc.localDescription);
+  document.getElementById("generatedOffer").value = sdp;
+  const compressed = LZString.compressToEncodedURIComponent(sdp);
+  showQRs(compressed);
+    }
+
+    async function addRemote() {
+      const remoteDesc = new RTCSessionDescription(JSON.parse(remoteSDP.value));
+      await pc.setRemoteDescription(remoteDesc);
+    }
+
+    function showQRs(data) {
+      qrChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < data.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(data.length / maxChunkSize),
+          data: data.slice(i, i + maxChunkSize)
+        };
+        qrChunks.push(chunk);
+      }
+      currentQRIndex = 0;
+      renderQRChunk();
+      nextQR.classList.remove("hidden");
+      qrStep.classList.remove("hidden");
+    }
+
+    function renderQRChunk() {
+      const current = qrChunks[currentQRIndex];
+      qrcodeContainer.innerHTML = "";
+      qrStep.innerText = `QR ${current.part + 1} de ${current.total}`;
+      new QRCode(qrcodeContainer, {
+        text: JSON.stringify(current),
+        width: 300,
+        height: 300
+      });
+    }
+
+    function showNextQR() {
+      if (currentQRIndex < qrChunks.length - 1) {
+        currentQRIndex++;
+        renderQRChunk();
+      }
+    }
+
+    function startQRScanner() {
+      scannedParts = {};
+      expectedParts = 0;
+      receivedGroupId = null;
+      qrReader = new Html5Qrcode("qr-reader");
+      qrReader.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          try {
+            const chunk = JSON.parse(decodedText);
+            if (!chunk.id || typeof chunk.part === "undefined") return;
+            if (!receivedGroupId) {
+              receivedGroupId = chunk.id;
+              expectedParts = chunk.total;
+            }
+            if (chunk.id === receivedGroupId) {
+              scannedParts[chunk.part] = chunk.data;
+              document.getElementById('qrProgress').innerText = `Escaneado ${Object.keys(scannedParts).length} de ${expectedParts} QRs`;
+              scannedParts[chunk.part] = chunk.data;
+              if (Object.keys(scannedParts).length === expectedParts) {
+                qrReader.stop();
+                const ordered = [];
+                for (let i = 0; i < expectedParts; i++) ordered.push(scannedParts[i]);
+                const full = ordered.join("");
+                const sdp = LZString.decompressFromEncodedURIComponent(full);
+                remoteSDP.value = sdp;
+                document.getElementById('qr-reader').innerHTML = "QRs completados correctamente.";
+document.getElementById('qrProgress').innerText = '';
+              }
+            }
+          } catch (e) {
+            console.warn("Error leyendo QR:", e);
+          }
+        },
+        (err) => console.warn(err)
+      );
+    }
+
+    async function createAnswer() {
+  document.getElementById("generationAnswerStatus").innerHTML = "Generando respuesta <span class='loader'></span>";
+  document.getElementById("qrcodeAnswerContainer").innerHTML = "";
+      const remoteDesc = new RTCSessionDescription(JSON.parse(remoteSDP.value));
+      await pc.setRemoteDescription(remoteDesc);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+  const sdp = JSON.stringify(pc.localDescription);
+  const compressed = LZString.compressToEncodedURIComponent(sdp);
+  document.getElementById("generationAnswerStatus").innerText = ""; document.getElementById("confirmationAnswerStatus").innerText = "Respuesta generada correctamente.";
+  showResponseQRsFromCompressed(compressed);
+    }
+  
+    let qrAnswerChunks = [];
+    let currentQRAnswerIndex = 0;
+
+    function showResponseQRs() {
+      const sdp = localSDP.value;
+      const compressed = LZString.compressToEncodedURIComponent(sdp);
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+
+    function renderQRAnswerChunk() {
+      const current = qrAnswerChunks[currentQRAnswerIndex];
+      document.getElementById("qrcodeAnswerContainer").innerHTML = "";
+      document.getElementById("qrAnswerStep").innerText = `QR ${current.part + 1} de ${current.total}`;
+      new QRCode(document.getElementById("qrcodeAnswerContainer"), {
+        text: JSON.stringify(current),
+        width: 300,
+        height: 300
+      });
+    }
+
+    function showNextQRAnswer() {
+      if (currentQRAnswerIndex < qrAnswerChunks.length - 1) {
+        currentQRAnswerIndex++;
+        renderQRAnswerChunk();
+      }
+    }
+    
+    let qrReader;
+function resetQRScanner() {
+      scannedParts = {};
+      expectedParts = 0;
+      receivedGroupId = null;
+      document.getElementById('qr-reader').innerHTML = "";
+      document.getElementById('qrProgress').innerText = "";
+      remoteSDP.value = "";
+      qrReader.stop().then(() => startQRScanner()).catch(() => startQRScanner());
+    }
+    
+    function restartAll() {
+      location.reload();
+    }
+    
+    function showResponseQRsFromCompressed(compressed) {
+      qrAnswerChunks = [];
+      const groupId = Math.random().toString(36).substr(2, 6);
+      for (let i = 0; i < compressed.length; i += maxChunkSize) {
+        const chunk = {
+          id: groupId,
+          part: i / maxChunkSize,
+          total: Math.ceil(compressed.length / maxChunkSize),
+          data: compressed.slice(i, i + maxChunkSize)
+        };
+        qrAnswerChunks.push(chunk);
+      }
+      currentQRAnswerIndex = 0;
+      renderQRAnswerChunk();
+      document.getElementById("nextQRAnswer").classList.remove("hidden");
+      document.getElementById("qrAnswerStep").classList.remove("hidden");
+    }
+    
+    function copyToClipboard(id, msgId) {
+      const el = document.getElementById(id);
+      el.select();
+      document.execCommand("copy");
+  const msg = document.getElementById(msgId);
+  msg.innerText = "Copiado";
+  setTimeout(() => { msg.innerText = ""; }, 2000);
+    }
+
+    // Depuración por consola
+    const originalSetLocalDescription = RTCPeerConnection.prototype.setLocalDescription;
+    RTCPeerConnection.prototype.setLocalDescription = async function(description) {
+      console.log("SDP generado:", description);
+      return originalSetLocalDescription.call(this, description);
+    };
+    function toggleSteps() {
+  const box = document.getElementById("stepsBox");
+  const btn = document.getElementById("toggleBtn");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    btn.innerText = "Ocultar pasos";
+  } else {
+    box.style.display = "none";
+    btn.innerText = "Mostrar pasos";
+  }
+}
+  const box = document.getElementById("stepsBox");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+  } else {
+        receiverUI.style.display = 'block';
+        setTimeout(() => {
+          startQRScanner();
+        }, 500);
+    }
+    box.style.display = "none";
+  }
+}
+</script>
+</body>
+</html>
