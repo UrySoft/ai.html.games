@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebRTC múltiple QR</title>
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 0; padding: 1em; }
+    textarea { width: 90%; margin: 1em auto; display: block; }
+    button { margin: 0.5em; padding: 0.6em 1em; font-size: 1em; }
+    .bold { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="stepsBox" style="background:#f0f0f0; padding:1em; margin-bottom:1em; border:1px solid #ccc; text-align:left; max-width:800px; margin:auto;">
+    <button id="toggleBtn" onclick="toggleSteps()" style="float:right;">Ocultar pasos</button>
+    <h3>Pasos a seguir</h3>
+    <ul>
+      <li><strong>1.</strong> Selecciona si eres <em>Emisor</em> o <em>Receptor</em>.</li>
+      <li><strong>2.</strong> El Emisor inicia la cámara y pulsa <strong>Crear oferta</strong>.</li>
+      <li><strong>3.</strong> El Emisor verá el texto de la oferta y sus códigos QR (múltiples si es necesario).</li>
+      <li><strong>4.</strong> El Receptor escanea los QR desde el Emisor.</li>
+      <li><strong>5.</strong> El Receptor pulsa <strong>Generar respuesta</strong>.</li>
+      <li><strong>6.</strong> El Receptor verá el texto de la respuesta y los QR.</li>
+      <li><strong>7.</strong> El Emisor copia y pega la respuesta y pulsa <strong>Añadir remoto</strong>.</li>
+    </ul>
+  </div>
+
+  <div id="roleSection" style="text-align:center; margin-bottom:1em;">
+    <p id="selectPrompt" class="bold" style="color: #555;">Selecciona un rol para comenzar:</p>
+    <div id="roleSelect">
+      <button onclick="setRole('emitter')">Emisor (Cámara)</button>
+      <button onclick="setRole('receiver')">Receptor (Monitor)</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleSteps() {
+      const box = document.getElementById("stepsBox");
+      const btn = document.getElementById("toggleBtn");
+      if (box.style.display === "none") {
+        box.style.display = "block";
+        btn.innerText = "Ocultar pasos";
+      } else {
+        box.style.display = "none";
+        btn.innerText = "Mostrar pasos";
+      }
+    }
+
+    function hidePrompt() {
+      const prompt = document.getElementById("selectPrompt");
+      if (prompt) prompt.style.display = "none";
+    }
+
+    function setRole(role) {
+      hidePrompt();
+      alert("Has elegido el rol: " + role);
+    }
+  </script>
+</body>
+</html>
