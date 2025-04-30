@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebRTC QR con control de audio</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 1em; }
+    video { width: 45%; margin: 0.5em; border: 1px solid #ccc; }
+    textarea { width: 90%; height: 120px; margin: 0.5em auto; display: block; font-size: 0.9em; }
+    button, select, label { margin: 0.5em; font-size: 1em; padding: 0.5em 1em; }
+    #qrcode, #qrcodeAnswer { margin: 1em auto; }
+    #roleSelect, #emitterUI, #receiverUI { margin: 2em auto; display: none; }
+    #warning { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>WebRTC QR - Emisor con audio opcional</h2>
+
+  <div id="roleSelect">
+    <p>¿Qué dispositivo estás configurando?</p>
+    <button onclick="setRole('emitter')">Emisor (Cámara)</button>
+    <button onclick="setRole('receiver')">Receptor (Monitor)</button>
+  </div>
+
+  <div id="emitterUI">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video><br>
+    <label for="cameraSelect">Cámara:</label>
+    <select id="cameraSelect">
+      <option value="user">Frontal</option>
+      <option value="environment" selected>Trasera</option>
+    </select>
+    <label><input type="checkbox" id="includeAudio" checked> Incluir audio</label><br>
+    <button onclick="startCamera()">Iniciar cámara</button>
+    <button onclick="createOffer()">Crear oferta QR</button>
+    <textarea id="localSDP" placeholder="SDP local (generada)"></textarea>
+    <textarea id="remoteSDP" placeholder="Pega aquí la respuesta del receptor"></textarea>
+    <button onclick="addRemote()">Añadir remoto</button>
+    <div id="warning"></div>
+    <div id="qrcode"></div>
+  </div>
+
+  <div id="receiverUI">
+    <video id="localVideo" autoplay muted playsinline style="display:none;"></video>
+    <video id="remoteVideo" autoplay playsinline></video><br>
+    <button onclick="startCamera()">Inicializar receptor</button>
+    <button onclick="startQRScanner()">Escanear QR del emisor</button>
+    <textarea id="remoteSDP" placeholder="SDP remota escaneada (del emisor)"></textarea>
+    <button onclick="createAnswer()">Generar respuesta</button>
+    <textarea id="localSDP" placeholder="SDP local (respuesta generada)"></textarea>
+    <div id="warning"></div>
+    <div id="qrcodeAnswer"></div>
+  </div>
+
+  <div id="qr-reader" style="width:300px; margin:auto;"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+  <script>
+    let pc;
+    let localStream;
+    const roleSelect = document.getElementById('roleSelect');
+    const emitterUI = document.getElementById('emitterUI');
+    const receiverUI = document.getElementById('receiverUI');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const localSDP = document.getElementById('localSDP');
+    const remoteSDP = document.getElementById('remoteSDP');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const includeAudio = document.getElementById('includeAudio');
+
+    roleSelect.style.display = 'block';
+
+    function setRole(role) {
+      roleSelect.style.display = 'none';
+      document.getElementById('warning').innerText = '';
+      if (role === 'emitter') {
+        emitterUI.style.display = 'block';
+      } else {
+        receiverUI.style.display = 'block';
+      }
+      pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+
+      pc.ontrack = e => remoteVideo.srcObject = e.streams[0];
+      pc.onicecandidate = e => {
+        if (e.candidate === null) {
+          const sdp = JSON.stringify(pc.localDescription);
+          localSDP.value = sdp;
+          const compressed = LZString.compressToEncodedURIComponent(sdp);
+          const target = role === 'emitter' ? "qrcode" : "qrcodeAnswer";
+          const warningTarget = document.getElementById("warning");
+          document.getElementById(target).innerHTML = "";
+          if (compressed.length > 2000) {
+            warningTarget.innerText = "Advertencia: el QR puede ser demasiado grande para escanear. Prueba sin audio o más cerca.";
+          } else {
+            warningTarget.innerText = "";
+          }
+          new QRCode(document.getElementById(target), {
+            text: compressed,
+            width: 300,
+            height: 300
+          });
+        }
+      };
+    }
+
+    async function startCamera() {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      const facingMode = cameraSelect ? cameraSelect.value : "user";
+      const audioEnabled = includeAudio.checked;
+      localStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+        audio: audioEnabled
+      });
+      if (localVideo.style.display !== 'none') localVideo.srcObject = localStream;
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
+    async function createOffer() {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+    }
+
+    async function createAnswer() {
+      const remoteDesc = new RTCSessionDescription(JSON.parse(remoteSDP.value));
+      await pc.setRemoteDescription(remoteDesc);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+    }
+
+    async function addRemote() {
+      const remoteDesc = new RTCSessionDescription(JSON.parse(remoteSDP.value));
+      await pc.setRemoteDescription(remoteDesc);
+    }
+
+    function startQRScanner() {
+      const qrReader = new Html5Qrcode("qr-reader");
+      qrReader.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          const decompressed = LZString.decompressFromEncodedURIComponent(decodedText);
+          remoteSDP.value = decompressed;
+          qrReader.stop();
+          document.getElementById('qr-reader').innerHTML = "QR escaneado correctamente.";
+        },
+        (errorMessage) => { console.warn(errorMessage); }
+      );
+    }
+  </script>
+</body>
+</html>
