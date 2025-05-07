@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Laberinto Subterráneo con Texturas</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; }
+        canvas { display: block; cursor: grab; }
+        #joystick-area { position: absolute; width: 120px; height: 120px; background: rgba(200, 200, 200, 0.15); border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 10; pointer-events: none; transform: translate(-50%, -50%); }
+        #joystick-thumb { width: 50px; height: 50px; background: rgba(200, 200, 200, 0.4); border-radius: 50%; }
+        #action-buttons { position: absolute; bottom: 30px; right: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
+        .action-button { width: 60px; height: 60px; background: rgba(200, 50, 50, 0.6); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 12px; text-align: center; user-select: none; border: 2px solid rgba(255, 255, 255, 0.3); cursor: pointer; }
+        #message { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background-color: rgba(20, 20, 20, 0.8); color: white; padding: 10px 20px; border-radius: 5px; font-family: sans-serif; display: none; z-index: 20; }
+        #minimapCanvas { position: absolute; top: 15px; right: 15px; width: 160px; height: 160px; border: 1px solid rgba(255, 255, 255, 0.4); background-color: rgba(10, 10, 10, 0.6); z-index: 15; image-rendering: pixelated; }
+        #pointer-lock-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: sans-serif;
+            font-size: 1.2em;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+
+        /* --- Estilos Pantalla de Carga --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            z-index: 1000;
+            text-align: center;
+            transition: opacity 0.5s ease-out;
+        }
+        #loading-screen h1 {
+            font-size: 3.5em;
+            margin-bottom: 0.1em;
+            color: #ffc107;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #loading-screen .version {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #aaa;
+        }
+        #loading-screen .loading-text {
+            font-size: 1.5em;
+            color: #ccc;
+        }
+        /* --- Fin Estilos Pantalla de Carga --- */
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <h1>Minotaurio</h1>
+        <p class="version">Versión <span id="game-version"></span></p>
+        <p class="loading-text">Cargando texturas y laberinto...</p>
+    </div>
+
+    <div id="pointer-lock-info">Haz clic para controlar la cámara con el ratón. Presiona ESC para liberar.</div>
+    <div id="container"></div>
+    <div id="joystick-area"><div id="joystick-thumb"></div></div>
+    <div id="action-buttons">
+        <div id="jump-button" class="action-button">SALTAR</div>
+        <div id="action-button" class="action-button">VISTA</div>
+    </div>
+    <div id="message"></div>
+    <canvas id="minimapCanvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // --- Constantes y Configuración ---
+        const GAME_VERSION = "v1.7"; // Versión actualizada
+        const MAZE_WIDTH = 15; const MAZE_HEIGHT = 15; const CELL_SIZE = 4;
+        const WALL_HEIGHT = 7;
+        const PLAYER_HEIGHT = 1.8; const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 3.5; const SPRINT_SPEED = 6.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 8.0; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; const CAMERA_SENSITIVITY = 0.002; const OBSTACLE_OPACITY = 0.20; const TORCH_COLOR = 0xffa545; const TORCH_PLAYER_INTENSITY = 1.6; const TORCH_PLAYER_DISTANCE = 11; const TORCH_PLAYER_DECAY = 1.4;
+        const TORCH_STATIC_INTENSITY = 1.8; const TORCH_STATIC_DISTANCE = 12; const TORCH_STATIC_DECAY = 1.8;
+        const STATIC_TORCH_FREQUENCY = 0.45;
+        const TORCH_FLICKER_AMOUNT = 0.25; const TORCH_WALL_OFFSET = 0.25; const FLAME_BASE_OPACITY = 0.7; const FLAME_OPACITY_VAR = 0.2; const FLAME_BASE_SCALE_Y = 0.35; const FLAME_SCALE_Y_VAR = 0.1; const MIN_CAMERA_Y_ABOVE_GROUND = 0.5;
+        const MINIMAP_SIZE = 160; const MINIMAP_RADIUS_CELLS = 5; const MINIMAP_CELL_SIZE_PX = Math.floor(MINIMAP_SIZE / (MINIMAP_RADIUS_CELLS * 2 + 1)); const MINIMAP_PLAYER_COLOR = '#ff4444'; const MINIMAP_WALL_COLOR = '#505050'; const MINIMAP_PATH_COLOR = '#888888'; const MINIMAP_END_COLOR = '#33cc33';
+        const PLAYER_VISION_RADIUS_CELLS = 4; const MINIMAP_UNSEEN_COLOR = '#181818';
+        const FIRST_PERSON_EYE_HEIGHT_FACTOR = 0.85;
+        const CAMERA_PITCH_OFFSET_FPS = Math.PI / 2;
+
+        // Offset de la LUZ relativo a la cámara en FPS (para cálculo de posición mundial)
+        const FPS_TORCH_LIGHT_OFFSET = new THREE.Vector3(0.2, -0.25, -0.5);
+        // Offset del MODELO de antorcha relativo a la cámara en FPS
+        const FPS_TORCH_GROUP_OFFSET = new THREE.Vector3(0.35, -0.45, -0.7);
+        const FPS_TORCH_GROUP_ROTATION = new THREE.Euler(Math.PI / 10, Math.PI / 8, -Math.PI / 12, 'YXZ');
+
+
+        // --- TEXTURAS ---
+        const textureURLs = [ 'https://urysoft.github.io/ai.html.games/general/assets/images/textura1.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura2.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura3.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura4.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura5.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura6.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura7.jpeg' ];
+        const textureLoader = new THREE.TextureLoader();
+        let loadedTextures = [];
+        let floorTexture, wallTexture;
+
+        // --- Variables Globales ---
+        let scene, camera, renderer, player, clock; let maze = []; let collidableObjects = []; let interactiveObjects = []; let playerVelocity = new THREE.Vector3(); let playerOnGround = false; let moveForward = 0, moveRight = 0; let cameraPhi = Math.PI / 3; let cameraTheta = 0; let endZone = null; let gameActive = true; const joystickArea = document.getElementById('joystick-area'); const joystickThumb = document.getElementById('joystick-thumb'); const jumpButton = document.getElementById('jump-button'); const actionButton = document.getElementById('action-button'); const messageDiv = document.getElementById('message'); const containerDiv = document.getElementById('container'); let joystickPointerId = -1; let cameraPointerId = -1; let joystickStartPos = { x: 0, y: 0 }; let joystickCurrentPos = { x: 0, y: 0 }; let cameraTouchStartPos = { x: 0, y: 0 }; let currentlyTransparentObjects = new Set(); let playerTorchLight = null; let staticTorches = [];
+        let playerTorchGroup = null;
+        let playerTorchFlameMesh = null;
+        let originalPlayerTorchLightPosition = new THREE.Vector3();
+        let originalPlayerTorchGroupPosition = new THREE.Vector3();
+        let originalPlayerTorchGroupRotation = new THREE.Euler();
+        let minimapCanvas = null; let minimapCtx = null; let minimapWidth = MINIMAP_SIZE; let minimapHeight = MINIMAP_SIZE;
+        let visibilityMaze = [];
+        const loadingScreenElement = document.getElementById('loading-screen');
+        const gameVersionSpan = document.getElementById('game-version');
+        const pointerLockInfoDiv = document.getElementById('pointer-lock-info');
+
+        let isFirstPersonView = false;
+
+        let keyStates = {};
+        let isPointerLocked = false;
+        let isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+        // REINTRODUCIDO: Helper para cálculos de posición mundial
+        const lightWorldPosHelper = new THREE.Vector3();
+        const collisionCheckTempBox = new THREE.Box3();
+
+
+        // --- Pre-cargar texturas ---
+        function preloadTextures(callback) { let texturesToLoad = textureURLs.length; if (texturesToLoad === 0) { console.log("No hay texturas definidas para cargar."); selectRandomTextures(); callback(); return; } textureURLs.forEach((url, index) => { textureLoader.load( url, (texture) => { texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; loadedTextures[index] = texture; texturesToLoad--; if (texturesToLoad === 0) { console.log("Todas las texturas cargadas exitosamente."); selectRandomTextures(); callback(); } }, undefined, (error) => { console.error('Error al cargar textura:', url, error); texturesToLoad--; if (texturesToLoad === 0) { console.warn("Algunas texturas no pudieron cargarse. Continuando con las disponibles..."); selectRandomTextures(); callback(); } } ); }); }
+        function selectRandomTextures() { if (loadedTextures.length === 0) { console.warn("No hay texturas cargadas para seleccionar. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; return; } const validTextures = loadedTextures.filter(t => t); if (validTextures.length === 0) { console.warn("Todas las texturas cargadas son inválidas. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; return; } let floorTextureIndex = Math.floor(Math.random() * validTextures.length); floorTexture = validTextures[floorTextureIndex]; let wallTextureIndex; if (validTextures.length > 1) { do { wallTextureIndex = Math.floor(Math.random() * validTextures.length); } while (wallTextureIndex === floorTextureIndex); wallTexture = validTextures[wallTextureIndex]; } else { wallTexture = validTextures[0]; console.warn("Solo una textura válida disponible, usándola para suelo y paredes."); } console.log("Textura suelo seleccionada:", floorTexture ? floorTexture.image.src : "Ninguna (color sólido)"); console.log("Textura pared seleccionada:", wallTexture ? wallTexture.image.src : "Ninguna (color sólido)"); }
+
+
+        // --- Inicialización ---
+        function init() {
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x050508); scene.fog = new THREE.Fog(0x050508, 5, 25); camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100); renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.shadowMap.enabled = true; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.8; containerDiv.appendChild(renderer.domElement); clock = new THREE.Clock(); const ambientLight = new THREE.AmbientLight(0x404040, 0.15); scene.add(ambientLight); minimapCanvas = document.getElementById('minimapCanvas'); minimapCanvas.width = minimapWidth; minimapCanvas.height = minimapHeight; minimapCtx = minimapCanvas.getContext('2d'); if (!minimapCtx) { console.error("No se pudo obtener el contexto 2D del minimapa."); }
+
+            maze = generateMaze(MAZE_WIDTH, MAZE_HEIGHT);
+            for (let z = 0; z < MAZE_HEIGHT; z++) { visibilityMaze[z] = []; for (let x = 0; x < MAZE_WIDTH; x++) { visibilityMaze[z][x] = false; } }
+
+            buildMazeGeometry();
+
+            const playerGeometry = new THREE.CylinderGeometry(PLAYER_RADIUS, PLAYER_RADIUS, PLAYER_HEIGHT, 16); const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.6 }); player = new THREE.Mesh(playerGeometry, playerMaterial); player.castShadow = true; player.rotation.order = 'YXZ'; const startPos = findCell(5); if (startPos) player.position.set( (startPos.x - MAZE_WIDTH / 2 + 0.5) * CELL_SIZE, PLAYER_HEIGHT / 2 + 0.01, (startPos.z - MAZE_HEIGHT / 2 + 0.5) * CELL_SIZE ); else player.position.set(0, PLAYER_HEIGHT / 2 + 0.01, 0); scene.add(player); playerTorchLight = new THREE.PointLight( TORCH_COLOR, TORCH_PLAYER_INTENSITY, TORCH_PLAYER_DISTANCE, TORCH_PLAYER_DECAY );
+            playerTorchLight.castShadow = true;
+            playerTorchLight.shadow.mapSize.width = 512; playerTorchLight.shadow.mapSize.height = 512; playerTorchLight.shadow.camera.near = 0.1; playerTorchLight.shadow.camera.far = TORCH_PLAYER_DISTANCE;
+
+            const lightPosX = PLAYER_RADIUS + 0.2;
+            const lightPosY = PLAYER_HEIGHT * 0.45;
+            const lightPosZ = PLAYER_RADIUS + 0.3;
+
+            originalPlayerTorchLightPosition.set(lightPosX, lightPosY, lightPosZ);
+            playerTorchLight.position.copy(originalPlayerTorchLightPosition);
+            playerTorchLight.userData.baseIntensity = TORCH_PLAYER_INTENSITY;
+            player.add(playerTorchLight);
+
+            const torchHolderMat = new THREE.MeshStandardMaterial({ color: 0x604020, roughness: 0.7 }); const flameMat = new THREE.MeshBasicMaterial({ color: 0xffd080, transparent: true, opacity: FLAME_BASE_OPACITY, blending: THREE.AdditiveBlending, depthWrite: false }); const holderGeom = new THREE.CylinderGeometry(0.08, 0.1, 0.7, 8); const flameGeom = new THREE.SphereGeometry(0.2, 10, 8);
+            playerTorchGroup = new THREE.Group();
+            const torchHolder = new THREE.Mesh(holderGeom, torchHolderMat); playerTorchFlameMesh = new THREE.Mesh(flameGeom, flameMat); torchHolder.position.y = -0.35; playerTorchFlameMesh.position.y = 0.1; playerTorchGroup.add(torchHolder); playerTorchGroup.add(playerTorchFlameMesh);
+
+            originalPlayerTorchGroupPosition.set(lightPosX, lightPosY, lightPosZ);
+            originalPlayerTorchGroupRotation.set(Math.PI / 10, 0, -Math.PI / 12, 'YXZ');
+            playerTorchGroup.position.copy(originalPlayerTorchGroupPosition);
+            playerTorchGroup.rotation.copy(originalPlayerTorchGroupRotation);
+            player.add(playerTorchGroup);
+
+            const ceilingSize = Math.max(MAZE_WIDTH, MAZE_HEIGHT) * CELL_SIZE * 1.2; const ceilingGeometry = new THREE.PlaneGeometry(ceilingSize, ceilingSize); const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.9 }).clone(); if (wallTexture) { ceilingMaterial.map = wallTexture.clone(); ceilingMaterial.map.needsUpdate = true; ceilingMaterial.color.set(0xffffff); ceilingMaterial.map.repeat.set(ceilingSize / (CELL_SIZE*2) , ceilingSize / (CELL_SIZE*2)); } const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial); ceiling.position.y = WALL_HEIGHT + 0.1; ceiling.rotation.x = Math.PI / 2; ceiling.receiveShadow = true; ceiling.userData = { isCeiling: true, originalOpacity: 1.0, isTransparentCapable: true }; scene.add(ceiling); collidableObjects.push(ceiling);
+
+            if (isTouchDevice) {
+                setupTouchControls();
+            } else {
+                setupKeyboardAndMouseControls();
+                if (pointerLockInfoDiv) pointerLockInfoDiv.style.display = 'block';
+                joystickArea.style.display = 'none';
+                document.getElementById('action-buttons').style.display = 'none';
+            }
+            window.addEventListener('resize', onWindowResize, false);
+
+            player.visible = !isFirstPersonView;
+            player.castShadow = !isFirstPersonView;
+            if (playerTorchGroup) playerTorchGroup.visible = !isFirstPersonView;
+
+            animate();
+        }
+
+        // --- Generación de Laberinto ---
+        function generateMaze(w, h) { let matrix = []; for (let y = 0; y < h; y++) { matrix[y] = []; for (let x = 0; x < w; x++) matrix[y][x] = 0; } let stack = []; let startX = 1, startY = 1; matrix[startY][startX] = 1; stack.push({ x: startX, y: startY }); function isValid(x, y) { return y >= 0 && y < h && x >= 0 && x < w && matrix[y][x] === 0; } while (stack.length > 0) { let current = stack[stack.length - 1]; let neighbors = []; let potential = [ { x: current.x, y: current.y - 2, wallX: current.x, wallY: current.y - 1 }, { x: current.x, y: current.y + 2, wallX: current.x, wallY: current.y + 1 }, { x: current.x + 2, y: current.y, wallX: current.x + 1, wallY: current.y }, { x: current.x - 2, y: current.y, wallX: current.x - 1, wallY: current.y } ]; potential.forEach(p => { if (isValid(p.x, p.y)) neighbors.push(p); }); if (neighbors.length > 0) { let next = neighbors[Math.floor(Math.random() * neighbors.length)]; matrix[next.y][next.x] = 1; matrix[next.wallY][next.wallX] = 1; stack.push({ x: next.x, y: next.y }); } else stack.pop(); } matrix[1][1] = 5; let deadEnds = findDeadEnds(matrix); let endPlaced = false; let potentialEndPos = []; for (let y = 1; y < h - 1; y++) { for (let x = 1; x < w - 1; x++) { if (matrix[y][x] === 1) { if (Math.abs(x - startX) + Math.abs(y - startY) > (w + h) / 2.5) { potentialEndPos.push({ x, y }); } } } } if (potentialEndPos.length > 0) { let endPos = potentialEndPos.find(p => deadEnds.some(d => d.x === p.x && d.y === p.y)); if (!endPos) endPos = potentialEndPos[Math.floor(Math.random() * potentialEndPos.length)]; matrix[endPos.y][endPos.x] = 6; endPlaced = true; } if (!endPlaced) { matrix[h-2][w-2] = (matrix[h-2][w-2] === 0) ? 0 : 6; console.warn("Fallback final.");} return matrix; }
+        function findCell(type) { for (let z = 0; z < MAZE_HEIGHT; z++) { for (let x = 0; x < MAZE_WIDTH; x++) { if (maze[z][x] === type) return { x, z }; } } return null; }
+        function findDeadEnds(matrix) { let deadEnds = []; for (let y = 1; y < matrix.length - 1; y++) { for (let x = 1; x < matrix[0].length - 1; x++) { if (matrix[y][x] !== 0) { let pN = 0; if (matrix[y+1]?.[x] !== 0) pN++; if (matrix[y-1]?.[x] !== 0) pN++; if (matrix[y]?.[x+1] !== 0) pN++; if (matrix[y]?.[x-1] !== 0) pN++; if (pN === 1) deadEnds.push({ x, y }); } } } return deadEnds; }
+
+
+        // --- Construcción de Geometría (CON TEXTURAS) ---
+        function buildMazeGeometry() { collidableObjects = []; interactiveObjects = []; endZone = null; staticTorches = []; const wallMaterialBase = new THREE.MeshStandardMaterial({ map: wallTexture, roughness: 0.9, metalness: 0.1, color: wallTexture ? 0xffffff : 0x605548 }); const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture, roughness: 0.95, metalness: 0.1, side: THREE.DoubleSide, color: floorTexture ? 0xffffff : 0x444038 }); if (floorTexture) { floorTexture.repeat.set(MAZE_WIDTH / 2, MAZE_HEIGHT / 2); if (renderer && renderer.capabilities) floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy(); floorTexture.needsUpdate = true; } if (wallTexture) { if (renderer && renderer.capabilities) wallTexture.anisotropy = renderer.capabilities.getMaxAnisotropy(); wallTexture.needsUpdate = true; } const endMaterial = new THREE.MeshStandardMaterial({ color: 0x33ff33, emissive: 0x22dd22, transparent: true, opacity: 0.6 }); const torchHolderMaterial = new THREE.MeshStandardMaterial({ color: 0x504030, roughness: 0.8 }); const flameMaterialBase = new THREE.MeshBasicMaterial({ color: 0xffd080, transparent: true, opacity: FLAME_BASE_OPACITY, blending: THREE.AdditiveBlending, depthWrite: false }); const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, WALL_HEIGHT, CELL_SIZE); const floorGeometry = new THREE.PlaneGeometry(MAZE_WIDTH * CELL_SIZE, MAZE_HEIGHT * CELL_SIZE); const endGeometry = new THREE.CylinderGeometry(CELL_SIZE * 0.3, CELL_SIZE * 0.3, 0.2, 16); const torchHolderGeometry = new THREE.BoxGeometry(0.2, 0.8, 0.2); const flameGeometry = new THREE.SphereGeometry(0.25, 10, 8); const floor = new THREE.Mesh(floorGeometry, floorMaterial); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; floor.userData = { isFloor: true }; scene.add(floor); let torchLocations = []; for (let z = 0; z < MAZE_HEIGHT; z++) { for (let x = 0; x < MAZE_WIDTH; x++) { const cellType = maze[z][x]; const posX = (x - MAZE_WIDTH / 2 + 0.5) * CELL_SIZE; const posYBase = WALL_HEIGHT / 2; const posZ = (z - MAZE_HEIGHT / 2 + 0.5) * CELL_SIZE; if (cellType === 0) { const wallMatInstance = wallMaterialBase.clone(); if (wallTexture) { wallMatInstance.map = wallTexture.clone(); wallMatInstance.map.needsUpdate = true; wallMatInstance.map.repeat.set(CELL_SIZE / (CELL_SIZE / 2) , WALL_HEIGHT / (CELL_SIZE/2)); } const wall = new THREE.Mesh(wallGeometry, wallMatInstance); wall.position.set(posX, posYBase, posZ); wall.castShadow = false; wall.receiveShadow = true; wall.userData = { isWall: true, originalOpacity: 1.0, isTransparentCapable: true }; scene.add(wall); collidableObjects.push(wall); } else { if (Math.random() < STATIC_TORCH_FREQUENCY) { let possibleTorchWalls = []; if (maze[z-1]?.[x] === 0) possibleTorchWalls.push({ wallX: x, wallZ: z-1, side: 'N' }); if (maze[z+1]?.[x] === 0) possibleTorchWalls.push({ wallX: x, wallZ: z+1, side: 'S' }); if (maze[z]?.[x-1] === 0) possibleTorchWalls.push({ wallX: x-1, wallZ: z, side: 'W' }); if (maze[z]?.[x+1] === 0) possibleTorchWalls.push({ wallX: x+1, wallZ: z, side: 'E' }); if (possibleTorchWalls.length > 0) { const chosenWall = possibleTorchWalls[Math.floor(Math.random() * possibleTorchWalls.length)]; let tooClose = torchLocations.some(loc => Math.abs(loc.x - chosenWall.wallX) <= 1 && Math.abs(loc.z - chosenWall.wallZ) <= 1); if (!tooClose) { addStaticTorch(chosenWall.wallX, chosenWall.wallZ, chosenWall.side, torchHolderGeometry, flameGeometry, torchHolderMaterial, flameMaterialBase); torchLocations.push({x: chosenWall.wallX, z: chosenWall.wallZ}); } } } if (cellType === 6) { endZone = new THREE.Mesh(endGeometry, endMaterial); endZone.position.set(posX, 0.1, posZ); endZone.userData = { type: 'end' }; scene.add(endZone); interactiveObjects.push(endZone); } } } } }
+        function addStaticTorch(wallGridX, wallGridZ, side, holderGeom, flameGeom, holderMat, flameMatBase) { const wallCenterX = (wallGridX - MAZE_WIDTH / 2 + 0.5) * CELL_SIZE; const wallCenterZ = (wallGridZ - MAZE_HEIGHT / 2 + 0.5) * CELL_SIZE; const torchY = WALL_HEIGHT * 0.6; const holder = new THREE.Mesh(holderGeom, holderMat); const flameMaterial = flameMatBase.clone(); const flame = new THREE.Mesh(flameGeom, flameMaterial); const light = new THREE.PointLight( TORCH_COLOR, TORCH_STATIC_INTENSITY, TORCH_STATIC_DISTANCE, TORCH_STATIC_DECAY ); light.castShadow = false; light.userData.baseIntensity = TORCH_STATIC_INTENSITY; staticTorches.push({ light: light, flameMesh: flame }); const surfaceOffset = CELL_SIZE / 2; const torchMargin = TORCH_WALL_OFFSET; let torchPosX = wallCenterX; let torchPosZ = wallCenterZ; if (side === 'N') { torchPosZ = wallCenterZ - surfaceOffset - torchMargin; } else if (side === 'S') { torchPosZ = wallCenterZ + surfaceOffset + torchMargin; } else if (side === 'W') { torchPosX = wallCenterX - surfaceOffset - torchMargin; } else if (side === 'E') { torchPosX = wallCenterX + surfaceOffset + torchMargin; } holder.position.set(torchPosX, torchY, torchPosZ); flame.position.set(torchPosX, torchY + 0.5, torchPosZ); light.position.set(torchPosX, torchY + 0.4, torchPosZ); if (side === 'N' || side === 'S') holder.rotation.y = 0; else if (side === 'W' || side === 'E') holder.rotation.y = Math.PI / 2; scene.add(holder); scene.add(flame); scene.add(light); }
+
+
+        // --- Controles Táctiles ---
+        function setupTouchControls() { document.body.addEventListener('pointerdown', handlePointerDown); document.body.addEventListener('pointermove', handlePointerMove); document.body.addEventListener('pointerup', handlePointerEnd); document.body.addEventListener('pointercancel', handlePointerEnd); jumpButton.addEventListener('touchstart', (e) => { e.preventDefault(); if (playerOnGround && gameActive) playerVelocity.y = JUMP_VELOCITY; }, { passive: false }); actionButton.addEventListener('touchstart', (e) => { e.preventDefault(); if (gameActive) toggleView(); }, { passive: false }); }
+        function handlePointerDown(event) { if (event.target === jumpButton || event.target === actionButton) return; event.preventDefault(); const tX=event.clientX, tY=event.clientY, sW=window.innerWidth; if (tX < sW/2 && joystickPointerId===-1){ joystickPointerId=event.pointerId; joystickStartPos={x:tX,y:tY}; joystickCurrentPos={x:tX,y:tY}; joystickArea.style.display='flex'; joystickArea.style.left=`${tX}px`; joystickArea.style.top=`${tY}px`; joystickThumb.style.transform='translate(0px, 0px)'; updateMovementFromJoystick(); } else if (tX >= sW/2 && cameraPointerId===-1){ cameraPointerId=event.pointerId; cameraTouchStartPos={x:tX, y:tY}; } }
+        function handlePointerMove(event) { event.preventDefault(); if(event.pointerId===joystickPointerId){ joystickCurrentPos={x:event.clientX, y:event.clientY}; updateJoystickThumb(); updateMovementFromJoystick(); } else if(event.pointerId===cameraPointerId){ const tX=event.clientX, tY=event.clientY; updateCameraLook(tX-cameraTouchStartPos.x, tY-cameraTouchStartPos.y); cameraTouchStartPos={x:tX,y:tY}; } }
+        function handlePointerEnd(event) { event.preventDefault(); if(event.pointerId===joystickPointerId){ joystickPointerId=-1; joystickArea.style.display='none'; moveForward=0; moveRight=0; } else if(event.pointerId===cameraPointerId){ cameraPointerId=-1; } }
+        function updateJoystickThumb() { const dX=joystickCurrentPos.x-joystickStartPos.x, dY=joystickCurrentPos.y-joystickStartPos.y, dist=Math.sqrt(dX*dX+dY*dY); const angle=Math.atan2(dY,dX); const tD=Math.min(dist, JOYSTICK_VISUAL_RADIUS/2-joystickThumb.offsetWidth/4); const tX=Math.cos(angle)*tD, tY=Math.sin(angle)*tD; joystickThumb.style.transform=`translate(${tX}px, ${tY}px)`; }
+        function updateMovementFromJoystick() { const dx=joystickCurrentPos.x-joystickStartPos.x, dy=joystickCurrentPos.y-joystickStartPos.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist===0){moveForward=0; moveRight=0; return;} const nX=dx/JOYSTICK_EFFECTIVE_RADIUS, nY=dy/JOYSTICK_EFFECTIVE_RADIUS; const mag=Math.min(1.0, dist/JOYSTICK_EFFECTIVE_RADIUS); let fwd=-nY*mag, rgt=nX*mag; if(dist/JOYSTICK_EFFECTIVE_RADIUS<JOYSTICK_DEADZONE){fwd=0; rgt=0;} moveForward=Math.max(-1,Math.min(1,fwd)); moveRight=Math.max(-1,Math.min(1,rgt)); }
+
+
+        // --- Controles de Teclado y Ratón ---
+        function setupKeyboardAndMouseControls() {
+            document.addEventListener('keydown', (event) => {
+                keyStates[event.code] = true;
+                handleKeyPress(event.code);
+            });
+            document.addEventListener('keyup', (event) => {
+                keyStates[event.code] = false;
+            });
+
+            renderer.domElement.addEventListener('mousedown', (event) => {
+                if (event.button === 0 && !isPointerLocked && gameActive) {
+                    renderer.domElement.requestPointerLock();
+                }
+            });
+
+            renderer.domElement.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+                if (gameActive) {
+                    toggleView();
+                }
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isPointerLocked = document.pointerLockElement === renderer.domElement;
+                if (isPointerLocked) {
+                    if (pointerLockInfoDiv) pointerLockInfoDiv.style.display = 'none';
+                    renderer.domElement.style.cursor = 'none';
+                } else {
+                    if (pointerLockInfoDiv && !isTouchDevice) pointerLockInfoDiv.style.display = 'block';
+                    renderer.domElement.style.cursor = 'grab';
+                }
+            }, false);
+
+            document.addEventListener('pointerlockerror', () => {
+                console.error('Error al bloquear el puntero del ratón.');
+                if (pointerLockInfoDiv && !isTouchDevice) pointerLockInfoDiv.style.display = 'block';
+            }, false);
+
+            document.addEventListener('mousemove', (event) => {
+                if (isPointerLocked && gameActive) {
+                    updateCameraLook(event.movementX, event.movementY);
+                }
+            });
+        }
+
+        function handleKeyPress(code) {
+            if (!gameActive) return;
+            if (code === 'KeyV') {
+                toggleView();
+            }
+        }
+
+        function updateMovementFromKeyboard() {
+            if (isTouchDevice) return;
+
+            let newMoveForward = 0;
+            let newMoveRight = 0;
+
+            if (keyStates['KeyW'] || keyStates['ArrowUp']) newMoveForward = 1;
+            if (keyStates['KeyS'] || keyStates['ArrowDown']) newMoveForward = -1;
+            if (keyStates['KeyA'] || keyStates['ArrowLeft']) newMoveRight = -1;
+            if (keyStates['KeyD'] || keyStates['ArrowRight']) newMoveRight = 1;
+
+            if (joystickPointerId === -1) {
+                moveForward = newMoveForward;
+                moveRight = newMoveRight;
+            }
+
+            if (keyStates['Space'] && playerOnGround) {
+                playerVelocity.y = JUMP_VELOCITY;
+            }
+        }
+
+        function updateCameraLook(deltaX, deltaY) {
+            cameraTheta -= deltaX * CAMERA_SENSITIVITY;
+            cameraPhi -= deltaY * CAMERA_SENSITIVITY;
+            cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi));
+        }
+
+
+        // --- Alternar Vista (Revertido a v1.3 - Luz hija de escena en FPS) ---
+        function toggleView() {
+            if (!player || !camera || !playerTorchLight || !playerTorchGroup || !scene) return;
+
+            isFirstPersonView = !isFirstPersonView;
+            player.visible = !isFirstPersonView;
+
+            if (isFirstPersonView) {
+                showMessage("Vista: Primera Persona", 1500);
+                playerTorchLight.castShadow = false; // <-- Desactivar sombra luz FPS
+
+                // Mover LUZ a la escena
+                if (playerTorchLight.parent) playerTorchLight.parent.remove(playerTorchLight);
+                scene.add(playerTorchLight); // <-- Añadir a la escena
+                // Su posición mundial se actualizará en updateCamera()
+
+                // Mover GRUPO VISUAL DE ANTORCHA a la cámara
+                if (playerTorchGroup.parent) playerTorchGroup.parent.remove(playerTorchGroup);
+                camera.add(playerTorchGroup);
+                playerTorchGroup.position.copy(FPS_TORCH_GROUP_OFFSET);
+                playerTorchGroup.rotation.copy(FPS_TORCH_GROUP_ROTATION);
+                playerTorchGroup.visible = true;
+
+            } else {
+                showMessage("Vista: Tercera Persona", 1500);
+                playerTorchLight.castShadow = true; // <-- Reactivar sombra luz TPS
+
+                // Mover LUZ al jugador
+                if (playerTorchLight.parent === scene) { // Asegurarse de quitarla de la escena
+                     scene.remove(playerTorchLight);
+                }
+                player.add(playerTorchLight);
+                playerTorchLight.position.copy(originalPlayerTorchLightPosition);
+                playerTorchLight.rotation.set(0,0,0);
+
+                // Mover GRUPO VISUAL DE ANTORCHA al jugador
+                if (playerTorchGroup.parent === camera) { // Asegurarse de quitarla de la cámara
+                     camera.remove(playerTorchGroup);
+                }
+                player.add(playerTorchGroup);
+                playerTorchGroup.position.copy(originalPlayerTorchGroupPosition);
+                playerTorchGroup.rotation.copy(originalPlayerTorchGroupRotation);
+                playerTorchGroup.visible = true; // Ya debería ser visible si player.visible es true
+            }
+            // Llamar a updateCamera una vez para aplicar la posición/visibilidad inicial
+            updateCamera();
+        }
+
+
+        // --- Lógica del Jugador y Colisiones (v1.4) ---
+        function updatePlayer(deltaTime) {
+            if (!gameActive || !player) return;
+
+            if (!isTouchDevice) {
+                updateMovementFromKeyboard();
+            }
+
+            player.rotation.y = cameraTheta + Math.PI;
+
+            let currentSpeed = PLAYER_SPEED;
+            let isSprinting = (!isTouchDevice && keyStates['ShiftLeft'] && moveForward > 0);
+            if (playerOnGround && ( (moveForward > SPRINT_THRESHOLD && joystickPointerId !== -1) || isSprinting) ) {
+                currentSpeed = SPRINT_SPEED;
+            }
+
+            let dampingFactor = playerOnGround ? 0.85 : 0.98; if (!playerOnGround) playerVelocity.y += GRAVITY * deltaTime; playerVelocity.y = Math.max(playerVelocity.y, -30); const forward = new THREE.Vector3(0, 0, -1); forward.applyQuaternion(player.quaternion); forward.y = 0; forward.normalize(); const right = new THREE.Vector3(1, 0, 0); right.applyQuaternion(player.quaternion); right.y = 0; right.normalize(); const targetVelocityXZ = new THREE.Vector3(); targetVelocityXZ.addScaledVector(forward, -moveForward * currentSpeed); targetVelocityXZ.addScaledVector(right,   -moveRight * currentSpeed); playerVelocity.x += (targetVelocityXZ.x - playerVelocity.x) * 0.25; playerVelocity.z += (targetVelocityXZ.z - playerVelocity.z) * 0.25; playerVelocity.x *= dampingFactor; playerVelocity.z *= dampingFactor; const deltaPosition = playerVelocity.clone().multiplyScalar(deltaTime); playerOnGround = false;
+
+            const collisionSizeVec = new THREE.Vector3(PLAYER_RADIUS * 2, PLAYER_HEIGHT, PLAYER_RADIUS * 2);
+
+            // Comprobación Vertical
+            const verticalCheckCenter = player.position.clone().add(new THREE.Vector3(0, deltaPosition.y, 0));
+            collisionCheckTempBox.setFromCenterAndSize(verticalCheckCenter, collisionSizeVec);
+            for (const obj of collidableObjects) {
+                if (obj.userData.isFloor || obj.userData.isCeiling) continue;
+                const oB = new THREE.Box3().setFromObject(obj);
+                if (collisionCheckTempBox.intersectsBox(oB)) {
+                    if (deltaPosition.y < 0 && collisionCheckTempBox.min.y < oB.max.y) {
+                        playerVelocity.y = 0;
+                        deltaPosition.y = oB.max.y - (player.position.y - PLAYER_HEIGHT / 2) + 0.001;
+                        playerOnGround = true;
+                    } else if (deltaPosition.y > 0 && collisionCheckTempBox.max.y > oB.min.y) {
+                        playerVelocity.y = 0;
+                        deltaPosition.y = oB.min.y - (player.position.y + PLAYER_HEIGHT / 2) - 0.001;
+                    }
+                    break;
+                }
+            }
+
+            // Comprobación con suelo
+            const groundY = 0;
+            const feetY = player.position.y + deltaPosition.y - PLAYER_HEIGHT / 2;
+            if (feetY <= groundY && playerVelocity.y <= 0) {
+                 playerVelocity.y = 0;
+                 deltaPosition.y = groundY - (player.position.y - PLAYER_HEIGHT / 2);
+                 playerOnGround = true;
+            }
+
+            // Comprobación Horizontal
+            const finalVerticalPos = player.position.clone().add(new THREE.Vector3(0, deltaPosition.y, 0));
+            const horizontalCheckCenter = finalVerticalPos.clone().add(new THREE.Vector3(deltaPosition.x, 0, deltaPosition.z));
+            collisionCheckTempBox.setFromCenterAndSize(horizontalCheckCenter, collisionSizeVec);
+
+            for (const obj of collidableObjects) {
+                if (obj.userData.isFloor || obj.userData.isCeiling) continue;
+                const oB = new THREE.Box3().setFromObject(obj);
+                if (collisionCheckTempBox.intersectsBox(oB)) {
+                    const currentBoxX = new THREE.Box3().setFromCenterAndSize(finalVerticalPos.clone().add(new THREE.Vector3(deltaPosition.x, 0, 0)), collisionSizeVec);
+                    if (currentBoxX.intersectsBox(oB)) {
+                        playerVelocity.x = 0;
+                        deltaPosition.x = 0;
+                    }
+                    const currentBoxZ = new THREE.Box3().setFromCenterAndSize(finalVerticalPos.clone().add(new THREE.Vector3(0, 0, deltaPosition.z)), collisionSizeVec);
+                     if (currentBoxZ.intersectsBox(oB)) {
+                        playerVelocity.z = 0;
+                        deltaPosition.z = 0;
+                    }
+                 }
+            }
+
+            player.position.add(deltaPosition);
+
+            if (endZone && gameActive) { const pXZ = new THREE.Vector2(player.position.x, player.position.z); const eZXZ = new THREE.Vector2(endZone.position.x, endZone.position.z); if (playerOnGround && pXZ.distanceTo(eZXZ) < PLAYER_RADIUS + CELL_SIZE * 0.3) winGame(); }
+        }
+
+
+        // --- Actualización de Cámara (Revertido a v1.3 - Actualización manual pos luz FPS) ---
+        function updateCamera() {
+            if (!player || !camera) return;
+
+            if (isFirstPersonView) {
+                // --- VISTA EN PRIMERA PERSONA ---
+                camera.position.copy(player.position);
+                camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR;
+                camera.rotation.order = 'YXZ';
+                camera.rotation.y = cameraTheta;
+                camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS;
+                camera.rotation.z = 0;
+                camera.updateMatrixWorld(); // Asegurar que la matriz de la cámara esté actualizada
+
+                // Actualizar manualmente la posición mundial de la luz si es hija de la escena
+                if (playerTorchLight && playerTorchLight.parent === scene) {
+                     lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); // Offset local respecto a la cámara
+                     camera.localToWorld(lightWorldPosHelper); // Convertir a posición mundial
+                     playerTorchLight.position.copy(lightWorldPosHelper); // Aplicar posición mundial
+                }
+
+                // Limpiar objetos transparentes de TPS
+                for (const obj of currentlyTransparentObjects) {
+                    if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) {
+                        obj.material.transparent = false;
+                        obj.material.opacity = obj.userData.originalOpacity || 1.0;
+                    }
+                }
+                currentlyTransparentObjects.clear();
+
+            } else {
+                 // --- VISTA EN TERCERA PERSONA ---
+                const targetPosition = new THREE.Vector3();
+                const offset = new THREE.Vector3();
+                offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta);
+                offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET;
+                offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta);
+                targetPosition.copy(player.position).add(offset);
+
+                const cameraRaycaster = new THREE.Raycaster();
+                const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0));
+                const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize();
+                const rayLength = rayOrigin.distanceTo(targetPosition);
+                cameraRaycaster.set(rayOrigin, directionToCamera);
+                cameraRaycaster.far = rayLength;
+                const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable);
+                const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false);
+
+                let objectsToMakeTransparentThisFrame = new Set();
+                for (const intersect of intersects) {
+                    if (intersect.object.userData.isTransparentCapable) {
+                        objectsToMakeTransparentThisFrame.add(intersect.object);
+                    }
+                }
+
+                for (const obj of currentlyTransparentObjects) {
+                    if (!objectsToMakeTransparentThisFrame.has(obj)) {
+                        if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) {
+                            obj.material.transparent = false;
+                            obj.material.opacity = obj.userData.originalOpacity || 1.0;
+                        }
+                    }
+                }
+                for (const obj of objectsToMakeTransparentThisFrame) {
+                    if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) {
+                        obj.material.transparent = true;
+                        obj.material.opacity = OBSTACLE_OPACITY;
+                    }
+                }
+                currentlyTransparentObjects = objectsToMakeTransparentThisFrame;
+
+                let finalCameraPosition = targetPosition.clone();
+                if (intersects.length > 0) {
+                    let closestDistance = rayLength;
+                    for (const intersect of intersects) {
+                        if (intersect.distance < closestDistance) {
+                            closestDistance = intersect.distance;
+                        }
+                    }
+                    finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3));
+                }
+                finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND);
+                camera.position.copy(finalCameraPosition);
+                const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0));
+                camera.lookAt(lookAtTarget);
+            }
+        }
+
+        // --- Función Minimapa ---
+        function drawMinimap() {
+             if (!minimapCtx || !player || !maze.length || !visibilityMaze.length) return;
+             const playerGridX = Math.round(player.position.x / CELL_SIZE + MAZE_WIDTH / 2 - 0.5);
+             const playerGridZ = Math.round(player.position.z / CELL_SIZE + MAZE_HEIGHT / 2 - 0.5);
+             minimapCtx.clearRect(0, 0, minimapWidth, minimapHeight);
+             minimapCtx.save();
+             minimapCtx.translate(minimapWidth / 2, minimapHeight / 2);
+             minimapCtx.rotate(cameraTheta);
+             const radius = MINIMAP_RADIUS_CELLS;
+             const cellSizePx = MINIMAP_CELL_SIZE_PX;
+             for (let relZ = -radius; relZ <= radius; relZ++) {
+                 for (let relX = -radius; relX <= radius; relX++) {
+                     const checkX = playerGridX + relX;
+                     const checkZ = playerGridZ + relZ;
+                     let fillColor;
+                     if (!visibilityMaze[checkZ] || typeof visibilityMaze[checkZ][checkX] === 'undefined' || !visibilityMaze[checkZ][checkX]) {
+                         fillColor = MINIMAP_UNSEEN_COLOR;
+                     } else {
+                         if (checkX < 0 || checkX >= MAZE_WIDTH || checkZ < 0 || checkZ >= MAZE_HEIGHT) {
+                             fillColor = MINIMAP_UNSEEN_COLOR;
+                         } else {
+                             const cellType = maze[checkZ][checkX];
+                             if (cellType === 0) {
+                                 fillColor = MINIMAP_WALL_COLOR;
+                             } else if (cellType === 6) {
+                                 fillColor = MINIMAP_END_COLOR;
+                             } else {
+                                 fillColor = MINIMAP_PATH_COLOR;
+                             }
+                         }
+                     }
+                     minimapCtx.fillStyle = fillColor;
+                     const drawX = relX * cellSizePx - cellSizePx / 2;
+                     const drawY = relZ * cellSizePx - cellSizePx / 2;
+                     minimapCtx.fillRect(drawX, drawY, cellSizePx, cellSizePx);
+                 }
+             }
+             minimapCtx.restore();
+
+             minimapCtx.beginPath();
+             const playerMarkerSize = cellSizePx * 0.9;
+             const halfSize = playerMarkerSize / 2;
+             minimapCtx.moveTo(minimapWidth / 2, minimapHeight / 2 - halfSize * 0.8);
+             minimapCtx.lineTo(minimapWidth / 2 - halfSize * 0.6, minimapHeight / 2 + halfSize * 0.5);
+             minimapCtx.lineTo(minimapWidth / 2 + halfSize * 0.6, minimapHeight / 2 + halfSize * 0.5);
+             minimapCtx.closePath();
+             minimapCtx.fillStyle = MINIMAP_PLAYER_COLOR;
+             minimapCtx.fill();
+        }
+
+        // --- Niebla de Guerra ---
+        function hasLineOfSight(x0, z0, x1, z1) { let dx = Math.abs(x1 - x0); let sx = x0 < x1 ? 1 : -1; let dz = -Math.abs(z1 - z0); let sz = z0 < z1 ? 1 : -1; let err = dx + dz; let currentX = x0; let currentZ = z0; let steps = 0; const maxSteps = MAZE_WIDTH + MAZE_HEIGHT; while (steps < maxSteps) { steps++; if (currentX === x1 && currentZ === z1) return true; if (!(currentX === x0 && currentZ === z0)) { if (currentX >= 0 && currentX < MAZE_WIDTH && currentZ >= 0 && currentZ < MAZE_HEIGHT) { if (maze[currentZ][currentX] === 0) { if (visibilityMaze[currentZ] && typeof visibilityMaze[currentZ][currentX] !== 'undefined') { visibilityMaze[currentZ][currentX] = true; } return false; } } else { return false; } } let e2 = 2 * err; let moved = false; if (e2 >= dz) { if (currentX === x1 && currentZ === z1) return true; err += dz; currentX += sx; moved = true; } if (e2 <= dx) { if (currentX === x1 && currentZ === z1) return true; err += dx; currentZ += sz; moved = true; } if (!moved && (currentX !== x1 || currentZ !== z1)) { return false; } } return false; }
+        function updateVisibility() {
+            if (!player || !visibilityMaze.length || !maze.length) return;
+            const playerGridX = Math.round(player.position.x / CELL_SIZE + MAZE_WIDTH / 2 - 0.5);
+            const playerGridZ = Math.round(player.position.z / CELL_SIZE + MAZE_HEIGHT / 2 - 0.5);
+            const visionRadius = PLAYER_VISION_RADIUS_CELLS;
+
+            if (playerGridX >= 0 && playerGridX < MAZE_WIDTH && playerGridZ >= 0 && playerGridZ < MAZE_HEIGHT) {
+                if(visibilityMaze[playerGridZ]) visibilityMaze[playerGridZ][playerGridX] = true;
+            }
+
+            for (let relZ = -visionRadius; relZ <= visionRadius; relZ++) {
+                for (let relX = -visionRadius; relX <= visionRadius; relX++) {
+                    if (relX === 0 && relZ === 0) continue;
+                    if (relX * relX + relZ * relZ <= visionRadius * visionRadius) {
+                        const checkX = playerGridX + relX;
+                        const checkZ = playerGridZ + relZ;
+                        if (checkX >= 0 && checkX < MAZE_WIDTH && checkZ >= 0 && checkZ < MAZE_HEIGHT) {
+                            if (hasLineOfSight(playerGridX, playerGridZ, checkX, checkZ)) {
+                                if(visibilityMaze[checkZ]) visibilityMaze[checkZ][checkX] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        // --- Bucle de Animación ---
+        function animate() {
+            if (gameActive) requestAnimationFrame(animate);
+            const dT = Math.min(0.05, clock.getDelta());
+            const flicker = (Math.random() - 0.5) * TORCH_FLICKER_AMOUNT;
+
+            if (playerTorchLight && playerTorchLight.userData.baseIntensity) {
+                playerTorchLight.intensity = Math.max(0, playerTorchLight.userData.baseIntensity + flicker);
+            }
+            if (playerTorchFlameMesh && playerTorchFlameMesh.material) { const pVO = (Math.random()-0.5)*FLAME_OPACITY_VAR; const pVS = (Math.random()-0.5)*FLAME_SCALE_Y_VAR; playerTorchFlameMesh.material.opacity = Math.max(0.1,Math.min(1.0,FLAME_BASE_OPACITY+pVO)); playerTorchFlameMesh.scale.y = Math.max(0.1,FLAME_BASE_SCALE_Y+pVS); playerTorchFlameMesh.scale.x = playerTorchFlameMesh.scale.z = Math.max(0.1,FLAME_BASE_SCALE_Y*0.8+pVS*0.5); }
+            for (const torch of staticTorches) { const sLF = (Math.random()-0.5)*TORCH_FLICKER_AMOUNT*1.1; const vO = (Math.random()-0.5)*FLAME_OPACITY_VAR; const vS = (Math.random()-0.5)*FLAME_SCALE_Y_VAR; if (torch.light?.userData.baseIntensity) { torch.light.intensity = Math.max(0, torch.light.userData.baseIntensity + sLF); } if (torch.flameMesh?.material) { torch.flameMesh.material.opacity = Math.max(0.1,Math.min(1.0,FLAME_BASE_OPACITY+vO)); torch.flameMesh.scale.y = Math.max(0.1,FLAME_BASE_SCALE_Y+vS); torch.flameMesh.scale.x = torch.flameMesh.scale.z = Math.max(0.1,FLAME_BASE_SCALE_Y*0.8 + vS * 0.5); } }
+
+            updatePlayer(dT);
+            updateCamera(); // Actualiza cámara (y la posición mundial de la luz si es FPS y hija de escena)
+            updateVisibility();
+            drawMinimap();
+
+            renderer.render(scene, camera);
+        }
+
+
+        // --- Utilidades ---
+        function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        let messageTimeout = null; function showMessage(text, duration = 2500) { if (messageTimeout) clearTimeout(messageTimeout); messageDiv.textContent = text; messageDiv.style.display = 'block'; messageTimeout = setTimeout(() => { messageDiv.style.display = 'none'; messageTimeout = null; }, duration); }
+        function winGame() { if (!gameActive) return; gameActive = false; showMessage("¡HAS ESCAPADO!", 10000); console.log("Juego ganado!"); setTimeout(() => { window.location.reload(); }, 5000); }
+
+        // --- Iniciar Juego (CON PRECARGA DE TEXTURAS Y PANTALLA DE CARGA) ---
+        function startGameSequence() { console.log("Iniciando secuencia de carga..."); if(gameVersionSpan) gameVersionSpan.textContent = GAME_VERSION; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; preloadTextures(() => { console.log("Preload de texturas completado. Iniciando juego..."); init(); setTimeout(() => { if(loadingScreenElement) { loadingScreenElement.style.opacity = '0'; setTimeout(() => { loadingScreenElement.style.display = 'none'; }, 500); } console.log("Pantalla de carga oculta. Juego iniciado."); }, 200); }); }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', startGameSequence); } else { startGameSequence(); }
+
+    </script>
+</body>
+</html>
