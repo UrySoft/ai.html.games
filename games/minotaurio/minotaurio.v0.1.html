@@ -6,7 +6,8 @@
     <title>Laberinto Subterráneo con Texturas</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; }
-        canvas { display: block; cursor: grab; }
+        /* El canvas llenará el body por defecto */
+        canvas { display: block; width: 100%; height: 100%; } /* Asegurar que el canvas CSS ocupe todo */
         #joystick-area { position: absolute; width: 120px; height: 120px; background: rgba(200, 200, 200, 0.15); border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 10; pointer-events: none; transform: translate(-50%, -50%); }
         #joystick-thumb { width: 50px; height: 50px; background: rgba(200, 200, 200, 0.4); border-radius: 50%; }
         #action-buttons { position: absolute; bottom: 30px; right: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
@@ -86,7 +87,8 @@
 
     <script>
         // --- Constantes y Configuración ---
-        const GAME_VERSION = "v1.7"; // Versión actualizada
+        const GAME_VERSION = "v1.8"; // Versión actualizada
+        const MAX_RESOLUTION_DIMENSION = 1920; // Límite Full HD para la dimensión mayor
         const MAZE_WIDTH = 15; const MAZE_HEIGHT = 15; const CELL_SIZE = 4;
         const WALL_HEIGHT = 7;
         const PLAYER_HEIGHT = 1.8; const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 3.5; const SPRINT_SPEED = 6.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 8.0; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; const CAMERA_SENSITIVITY = 0.002; const OBSTACLE_OPACITY = 0.20; const TORCH_COLOR = 0xffa545; const TORCH_PLAYER_INTENSITY = 1.6; const TORCH_PLAYER_DISTANCE = 11; const TORCH_PLAYER_DECAY = 1.4;
@@ -98,9 +100,7 @@
         const FIRST_PERSON_EYE_HEIGHT_FACTOR = 0.85;
         const CAMERA_PITCH_OFFSET_FPS = Math.PI / 2;
 
-        // Offset de la LUZ relativo a la cámara en FPS (para cálculo de posición mundial)
         const FPS_TORCH_LIGHT_OFFSET = new THREE.Vector3(0.2, -0.25, -0.5);
-        // Offset del MODELO de antorcha relativo a la cámara en FPS
         const FPS_TORCH_GROUP_OFFSET = new THREE.Vector3(0.35, -0.45, -0.7);
         const FPS_TORCH_GROUP_ROTATION = new THREE.Euler(Math.PI / 10, Math.PI / 8, -Math.PI / 12, 'YXZ');
 
@@ -130,7 +130,6 @@
         let isPointerLocked = false;
         let isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-        // REINTRODUCIDO: Helper para cálculos de posición mundial
         const lightWorldPosHelper = new THREE.Vector3();
         const collisionCheckTempBox = new THREE.Box3();
 
@@ -142,7 +141,9 @@
 
         // --- Inicialización ---
         function init() {
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0x050508); scene.fog = new THREE.Fog(0x050508, 5, 25); camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100); renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.shadowMap.enabled = true; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.8; containerDiv.appendChild(renderer.domElement); clock = new THREE.Clock(); const ambientLight = new THREE.AmbientLight(0x404040, 0.15); scene.add(ambientLight); minimapCanvas = document.getElementById('minimapCanvas'); minimapCanvas.width = minimapWidth; minimapCanvas.height = minimapHeight; minimapCtx = minimapCanvas.getContext('2d'); if (!minimapCtx) { console.error("No se pudo obtener el contexto 2D del minimapa."); }
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x050508); scene.fog = new THREE.Fog(0x050508, 5, 25); camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100); renderer = new THREE.WebGLRenderer({ antialias: true });
+            // NO establecemos tamaño aquí, lo hará updateRendererAndCameraSize
+            renderer.shadowMap.enabled = true; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.8; containerDiv.appendChild(renderer.domElement); clock = new THREE.Clock(); const ambientLight = new THREE.AmbientLight(0x404040, 0.15); scene.add(ambientLight); minimapCanvas = document.getElementById('minimapCanvas'); minimapCanvas.width = minimapWidth; minimapCanvas.height = minimapHeight; minimapCtx = minimapCanvas.getContext('2d'); if (!minimapCtx) { console.error("No se pudo obtener el contexto 2D del minimapa."); }
 
             maze = generateMaze(MAZE_WIDTH, MAZE_HEIGHT);
             for (let z = 0; z < MAZE_HEIGHT; z++) { visibilityMaze[z] = []; for (let x = 0; x < MAZE_WIDTH; x++) { visibilityMaze[z][x] = false; } }
@@ -174,6 +175,8 @@
 
             const ceilingSize = Math.max(MAZE_WIDTH, MAZE_HEIGHT) * CELL_SIZE * 1.2; const ceilingGeometry = new THREE.PlaneGeometry(ceilingSize, ceilingSize); const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.9 }).clone(); if (wallTexture) { ceilingMaterial.map = wallTexture.clone(); ceilingMaterial.map.needsUpdate = true; ceilingMaterial.color.set(0xffffff); ceilingMaterial.map.repeat.set(ceilingSize / (CELL_SIZE*2) , ceilingSize / (CELL_SIZE*2)); } const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial); ceiling.position.y = WALL_HEIGHT + 0.1; ceiling.rotation.x = Math.PI / 2; ceiling.receiveShadow = true; ceiling.userData = { isCeiling: true, originalOpacity: 1.0, isTransparentCapable: true }; scene.add(ceiling); collidableObjects.push(ceiling);
 
+             // Configurar tamaño inicial y controles
+            updateRendererAndCameraSize(); // <-- Llamar aquí
             if (isTouchDevice) {
                 setupTouchControls();
             } else {
@@ -182,7 +185,7 @@
                 joystickArea.style.display = 'none';
                 document.getElementById('action-buttons').style.display = 'none';
             }
-            window.addEventListener('resize', onWindowResize, false);
+            window.addEventListener('resize', onWindowResize, false); // onWindowResize llamará a updateRendererAndCameraSize
 
             player.visible = !isFirstPersonView;
             player.castShadow = !isFirstPersonView;
@@ -301,12 +304,11 @@
 
             if (isFirstPersonView) {
                 showMessage("Vista: Primera Persona", 1500);
-                playerTorchLight.castShadow = false; // <-- Desactivar sombra luz FPS
+                playerTorchLight.castShadow = false;
 
                 // Mover LUZ a la escena
                 if (playerTorchLight.parent) playerTorchLight.parent.remove(playerTorchLight);
                 scene.add(playerTorchLight); // <-- Añadir a la escena
-                // Su posición mundial se actualizará en updateCamera()
 
                 // Mover GRUPO VISUAL DE ANTORCHA a la cámara
                 if (playerTorchGroup.parent) playerTorchGroup.parent.remove(playerTorchGroup);
@@ -317,26 +319,22 @@
 
             } else {
                 showMessage("Vista: Tercera Persona", 1500);
-                playerTorchLight.castShadow = true; // <-- Reactivar sombra luz TPS
+                playerTorchLight.castShadow = true;
 
                 // Mover LUZ al jugador
-                if (playerTorchLight.parent === scene) { // Asegurarse de quitarla de la escena
-                     scene.remove(playerTorchLight);
-                }
+                if (playerTorchLight.parent === scene) scene.remove(playerTorchLight); // Quitar de la escena
                 player.add(playerTorchLight);
                 playerTorchLight.position.copy(originalPlayerTorchLightPosition);
                 playerTorchLight.rotation.set(0,0,0);
 
                 // Mover GRUPO VISUAL DE ANTORCHA al jugador
-                if (playerTorchGroup.parent === camera) { // Asegurarse de quitarla de la cámara
-                     camera.remove(playerTorchGroup);
-                }
+                if (playerTorchGroup.parent === camera) camera.remove(playerTorchGroup); // Quitar de la cámara
                 player.add(playerTorchGroup);
                 playerTorchGroup.position.copy(originalPlayerTorchGroupPosition);
                 playerTorchGroup.rotation.copy(originalPlayerTorchGroupRotation);
-                playerTorchGroup.visible = true; // Ya debería ser visible si player.visible es true
+                playerTorchGroup.visible = true;
             }
-            // Llamar a updateCamera una vez para aplicar la posición/visibilidad inicial
+            // Forzar actualización inicial de cámara/luz
             updateCamera();
         }
 
@@ -429,13 +427,13 @@
                 camera.rotation.y = cameraTheta;
                 camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS;
                 camera.rotation.z = 0;
-                camera.updateMatrixWorld(); // Asegurar que la matriz de la cámara esté actualizada
+                camera.updateMatrixWorld(); // Actualizar matriz de la cámara
 
                 // Actualizar manualmente la posición mundial de la luz si es hija de la escena
                 if (playerTorchLight && playerTorchLight.parent === scene) {
-                     lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); // Offset local respecto a la cámara
-                     camera.localToWorld(lightWorldPosHelper); // Convertir a posición mundial
-                     playerTorchLight.position.copy(lightWorldPosHelper); // Aplicar posición mundial
+                     lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); // Offset local deseado
+                     camera.localToWorld(lightWorldPosHelper);       // Convertir a mundial
+                     playerTorchLight.position.copy(lightWorldPosHelper); // Aplicar posición
                 }
 
                 // Limpiar objetos transparentes de TPS
@@ -607,9 +605,29 @@
 
 
         // --- Utilidades ---
-        function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        function onWindowResize() { updateRendererAndCameraSize(); } // Llamar a la función centralizada
         let messageTimeout = null; function showMessage(text, duration = 2500) { if (messageTimeout) clearTimeout(messageTimeout); messageDiv.textContent = text; messageDiv.style.display = 'block'; messageTimeout = setTimeout(() => { messageDiv.style.display = 'none'; messageTimeout = null; }, duration); }
         function winGame() { if (!gameActive) return; gameActive = false; showMessage("¡HAS ESCAPADO!", 10000); console.log("Juego ganado!"); setTimeout(() => { window.location.reload(); }, 5000); }
+
+        // --- Nueva Función para Actualizar Renderer y Cámara ---
+        function updateRendererAndCameraSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const maxDim = Math.max(width, height);
+            const scaleFactor = maxDim > MAX_RESOLUTION_DIMENSION ? MAX_RESOLUTION_DIMENSION / maxDim : 1;
+
+            const renderWidth = Math.floor(width * scaleFactor);
+            const renderHeight = Math.floor(height * scaleFactor);
+
+            if(renderer && camera) {
+                renderer.setSize(renderWidth, renderHeight, false); // false: no cambiar estilo CSS del canvas
+                camera.aspect = renderWidth / renderHeight;
+                camera.updateProjectionMatrix();
+            }
+             // Actualizar también el tamaño del canvas del minimapa si se quiere (opcional)
+            // O mantenerlo fijo como está
+        }
+
 
         // --- Iniciar Juego (CON PRECARGA DE TEXTURAS Y PANTALLA DE CARGA) ---
         function startGameSequence() { console.log("Iniciando secuencia de carga..."); if(gameVersionSpan) gameVersionSpan.textContent = GAME_VERSION; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; preloadTextures(() => { console.log("Preload de texturas completado. Iniciando juego..."); init(); setTimeout(() => { if(loadingScreenElement) { loadingScreenElement.style.opacity = '0'; setTimeout(() => { loadingScreenElement.style.display = 'none'; }, 500); } console.log("Pantalla de carga oculta. Juego iniciado."); }, 200); }); }
