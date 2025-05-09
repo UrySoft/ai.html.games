@@ -11,7 +11,7 @@
             overflow: hidden;
             background-color: #000;
             touch-action: none;
-            font-family: 'Georgia', 'Palatino Linotype', 'Book Antiqua', 'Palatino', serif; /* Base Greek-inspired font */
+            font-family: 'Palatino Linotype', 'Book Antiqua', 'Palatino', serif; /* Fuente principal con aire griego */
             color: #e0e0e0; /* Default text color for consistency */
         }
         canvas { display: block; width: 100%; height: 100%; }
@@ -32,31 +32,46 @@
         /* --- Loading Screen Styles --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #111; /* Darker background, slightly themed */
+            background-color: #111;
             color: #e0e0e0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: opacity 0.5s ease-out; z-index: 1000;
-            padding: 20px; /* Add some padding */
-            box-sizing: border-box; /* Include padding in width/height */
-            overflow-y: auto; /* Allow scrolling if content is large */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            font-family: 'Palatino Linotype', 'Book Antiqua', 'Palatino', serif;
         }
         #loading-screen h1 {
-            font-family: 'Georgia', serif; /* Use a strong serif */
-            font-size: 4.5em; /* Larger */
-            margin-bottom: 0.1em;
-            color: #ffc107; /* Gold */
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.6); /* Stronger shadow */
-            border-bottom: 4px double #ffc107; /* Decorative underline */
+            font-size: 4.8em;
+            margin-bottom: 0.05em;
+            color: #ffc107;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.6);
+            border-bottom: 4px double #ffc107;
             padding-bottom: 10px;
-            margin-bottom: 20px;
+        }
+        #loading-screen .credits {
+            font-size: 1em;
+            color: #b0b0b0;
+            margin-top: 0.5em;
+            margin-bottom: 1em;
+        }
+        #loading-screen .credits a {
+            color: #ffc107;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        #loading-screen .credits a:hover {
+            text-decoration: underline;
+            color: #ffda6b;
         }
         #loading-screen p {
             font-size: 1.1em;
             color: #ccc;
             margin-bottom: 15px;
-            max-width: 700px; /* Limit text width */
-            line-height: 1.5; /* Improve readability */
+            max-width: 700px;
+            line-height: 1.5;
         }
         #loading-screen .version {
-            font-size: 1em; /* Smaller version text */
+            font-size: 0.9em;
+            margin-top: 5px;
             margin-bottom: 20px;
             color: #aaa;
         }
@@ -69,7 +84,7 @@
         #loading-screen .loading-text {
             font-size: 1.5em;
             color: #ccc;
-            margin-top: 20px; /* Space above loading text */
+            margin-top: 20px;
         }
         #start-options {
              margin-top: 30px;
@@ -78,22 +93,22 @@
              gap: 15px;
         }
         .menu-button {
-            background-color: #ffc107; /* Gold */
-            color: #1a1a1a; /* Dark text on gold */
+            background-color: #ffc107;
+            color: #1a1a1a;
             border: none;
             padding: 15px 30px;
-            font-size: 1.2em; /* Slightly larger font */
+            font-size: 1.2em;
             cursor: pointer;
-            border-radius: 5px; /* Slightly rounded corners */
+            border-radius: 5px;
             transition: background-color 0.3s ease, transform 0.1s ease;
             min-width: 300px;
-            text-transform: uppercase; /* Maybe uppercase? */
+            text-transform: uppercase;
              letter-spacing: 1px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
         .menu-button:hover {
-            background-color: #ffda6b; /* Lighter gold on hover */
-            transform: translateY(-2px); /* Subtle hover effect */
+            background-color: #ffda6b;
+            transform: translateY(-2px);
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
         }
          .menu-button:active {
@@ -112,14 +127,14 @@
         /* --- Custom Game Screen Styles --- */
         #custom-game-screen, #scenario-editor-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #151515; /* Slightly darker */
+            background-color: #151515;
             color: #e0e0e0; flex-direction: column; align-items: center; padding-top: 50px; z-index: 900; overflow-y: auto;
             box-sizing: border-box;
         }
         #custom-game-screen h2, #scenario-editor-screen h2 {
-            color: #ffc107; /* Gold */
+            color: #ffc107;
             margin-bottom: 25px;
-            border-bottom: 2px solid #ffc107; /* Simple underline */
+            border-bottom: 2px solid #ffc107;
             padding-bottom: 5px;
              font-size: 2em;
         }
@@ -127,43 +142,43 @@
         #no-custom-scenarios { text-align: center; display: none; color: #aaa; }
         #custom-scenario-list { list-style: none; padding: 0; width: 100%;}
         .scenario-item {
-            background-color: rgba(255,255,255,0.08); /* Slightly lighter background */
-            border: 1px solid rgba(255,255,255,0.15); /* Subtle border */
-            padding: 12px 20px; /* More padding */
+            background-color: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 12px 20px;
             margin-bottom: 10px;
             border-radius: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-             flex-wrap: wrap; /* Allow wrapping on small screens */
-             gap: 10px; /* Space between text and buttons */
+             flex-wrap: wrap;
+             gap: 10px;
         }
-        .scenario-item span { font-size: 1.1em; flex-grow: 1; min-width: 150px; } /* Allow text to grow */
+        .scenario-item span { font-size: 1.1em; flex-grow: 1; min-width: 150px; }
         .scenario-actions {
             display: flex;
-            gap: 8px; /* Space between action buttons */
-            flex-shrink: 0; /* Prevent buttons from shrinking */
+            gap: 8px;
+            flex-shrink: 0;
         }
         .scenario-actions .action-btn {
-            background-color: #007bff; /* Blue */
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 6px 10px; /* Smaller padding */
-            font-size: 0.85em; /* Smaller font */
+            padding: 6px 10px;
+            font-size: 0.85em;
             cursor: pointer;
             border-radius: 3px;
             transition: background-color 0.2s ease;
-            min-width: auto; /* Don't need min-width here */
-             text-transform: none; /* No uppercase for these */
+            min-width: auto;
+             text-transform: none;
              letter-spacing: normal;
              box-shadow: none;
-             height: auto; /* Auto height based on content */
-             display: inline-flex; /* Use inline-flex for centering */
+             height: auto;
+             display: inline-flex;
              align-items: center;
              justify-content: center;
         }
         .scenario-actions .action-btn:hover { background-color: #0056b3; transform: none; box-shadow: none;}
-        .scenario-actions .delete-scenario-btn { background-color: #dc3545; } /* Red */
+        .scenario-actions .delete-scenario-btn { background-color: #dc3545; }
         .scenario-actions .delete-scenario-btn:hover { background-color: #c82333; }
         .menu-button.small-padding { padding: 8px 15px; font-size: 0.9em; min-width: auto; }
 
@@ -171,7 +186,7 @@
         /* --- Scenario Editor Styles --- */
         #scenario-editor-screen { background-color: #151515; z-index: 950; padding-top: 20px;}
         #editor-controls { margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 90%; max-width: 700px;}
-        #dimension-selector { display:none; margin-bottom:10px; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; } /* Allow wrapping */
+        #dimension-selector { display:none; margin-bottom:10px; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
         #dimension-selector label { font-size: 1.1em;}
         #scenario-size-select {
             padding: 8px;
@@ -182,18 +197,18 @@
              font-family: inherit;
              font-size: 1em;
         }
-        #confirm-size-btn { margin-left: 0; /* Remove extra margin */ margin-top: 5px; } /* Add some space if wrapped */
-        #brush-tools { margin-bottom:10px; display:none; flex-wrap: wrap; justify-content: center;} /* Allow wrapping */
+        #confirm-size-btn { margin-left: 0; margin-top: 5px; }
+        #brush-tools { margin-bottom:10px; display:none; flex-wrap: wrap; justify-content: center;}
         #brush-tools span { font-size: 1.1em; margin-right: 10px; margin-bottom: 5px; flex-shrink: 0;}
         .brush-btn {
             padding: 8px 12px; margin: 0 5px; border: 1px solid #ccc; background-color: #555; color:white; cursor:pointer; border-radius: 3px;
             transition: background-color 0.2s ease, border-color 0.2s ease;
             font-family: inherit;
             font-size: 0.9em;
-            margin-bottom: 5px; /* Add space for wrapping */
+            margin-bottom: 5px;
         }
         .brush-btn.active {
-            background-color: #ffc107; /* Gold when active */
+            background-color: #ffc107;
             color:#1a1a1a;
             border-color: #ffc107;
         }
@@ -205,46 +220,45 @@
         #editor-grid-container {
             display: grid; border: 1px solid #444; margin-bottom: 15px;
             background-color: #222;
-            /* column/row templates will be defined with JS */
         }
         .grid-cell {
             width: 25px; height: 25px;
-            background-color: #403a30; /* Earthy brown/grey */
+            background-color: #403a30;
              border: 1px solid #2a2a2a; box-sizing: border-box; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold;
-             color: rgba(255,255,255,0.8); /* Default symbol color */
+             color: rgba(255,255,255,0.8);
         }
         .grid-cell.path {
-            background-color: #605548; /* Lighter earthy brown/grey */
+            background-color: #605548;
         }
-        .grid-cell.start { background-color: #4CAF50; color: white; } /* Green for start */
-        .grid-cell.end { background-color: #F44336; color: white; } /* Red for end */
-        .grid-cell.border { cursor: not-allowed; background-color: #111 !important; color: #444 !important;} /* Border color and text color */
-        #editor-actions { display: flex; gap: 10px; margin-bottom: 15px; display:none; flex-wrap: wrap; justify-content: center;} /* Allow wrapping */
-        #editor-message { color: #ffc107; margin-left:10px; align-self: center; font-size: 1em; margin-top: 5px; text-align: center;} /* Style message */
+        .grid-cell.start { background-color: #4CAF50; color: white; }
+        .grid-cell.end { background-color: #F44336; color: white; }
+        .grid-cell.pittrap { background-color: #8B4513; color: white; }
+        .grid-cell.border { cursor: not-allowed; background-color: #111 !important; color: #444 !important;}
+        #editor-actions { display: flex; gap: 10px; margin-bottom: 15px; display:none; flex-wrap: wrap; justify-content: center;}
+        #editor-message { color: #ffc107; margin-left:10px; align-self: center; font-size: 1em; margin-top: 5px; text-align: center;}
 
-        /* Style for the back button in custom screen */
         #back-to-main-menu-btn {
-            background-color: #6c757d; /* Grey button */
+            background-color: #6c757d;
             color: white;
         }
          #back-to-main-menu-btn:hover {
             background-color: #5a6268;
          }
-         /* Style for the back button in editor screen */
         #back-to-custom-screen-btn {
-            background-color: #6c757d; /* Grey button */
+            background-color: #6c757d;
             color: white;
         }
          #back-to-custom-screen-btn:hover {
             background-color: #5a6268;
          }
-
-
     </style>
 </head>
 <body>
     <div id="loading-screen">
         <h1>Minotaurio</h1>
+        <p class="credits">
+            por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer">Oriol Badia Campanera</a>
+        </p>
         <p class="version">Versión <span id="game-version"></span></p>
 
         <p class="legend-text">
@@ -257,7 +271,7 @@
             pues ¿quién podría navegar la oscuridad? ¿Quién podría enfrentar el rugiente terror en su centro?
         </p>
 
-        <div id="start-options" style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
+        <div id="start-options">
             <button id="start-auto-game" class="menu-button">Iniciar Juego (Laberinto Aleatorio)</button>
             <button id="start-custom-game" class="menu-button">Juego Personalizado</button>
         </div>
@@ -297,6 +311,7 @@
                 <button class="brush-btn" data-type="path">Camino</button>
                 <button class="brush-btn" data-type="start">Inicio</button>
                 <button class="brush-btn" data-type="end">Fin</button>
+                <button class="brush-btn" data-type="pittrap">Trampa Foso</button>
             </div>
         </div>
         <div id="editor-grid-container"></div>
@@ -320,18 +335,23 @@
     <canvas id="minimapCanvas"></canvas>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+
 
     <script>
         // --- Constantes y Configuración ---
-        const GAME_VERSION = "v1.8-custom"; // Versión actualizada
+        const GAME_VERSION = "v1.10.0-gameplay-ux";
         const MAX_RESOLUTION_DIMENSION = 1920;
-        const DEFAULT_MAZE_WIDTH = 15; const DEFAULT_MAZE_HEIGHT = 15; // Para laberintos autogenerados
+        const MAX_RESOLUTION_DIMENSION_MOBILE = 1280;
+        const DEFAULT_MAZE_WIDTH = 15; const DEFAULT_MAZE_HEIGHT = 15;
         const CELL_SIZE = 4; const WALL_HEIGHT = 7;
-        const PLAYER_HEIGHT = 1.8; const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 3.5; const SPRINT_SPEED = 6.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 8.0; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; const CAMERA_SENSITIVITY = 0.002; const OBSTACLE_OPACITY = 0.20; const TORCH_COLOR = 0xffa545; const TORCH_PLAYER_INTENSITY = 1.6; const TORCH_PLAYER_DISTANCE = 11; const TORCH_PLAYER_DECAY = 1.4;
+        const PLAYER_HEIGHT = 1.8; const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 3.5; const SPRINT_SPEED = 6.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 10.5; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; const CAMERA_SENSITIVITY = 0.002; const OBSTACLE_OPACITY = 0.20; const TORCH_COLOR = 0xffa545; const TORCH_PLAYER_INTENSITY = 1.6; const TORCH_PLAYER_DISTANCE = 11; const TORCH_PLAYER_DECAY = 1.4;
         const TORCH_STATIC_INTENSITY = 1.8; const TORCH_STATIC_DISTANCE = 12; const TORCH_STATIC_DECAY = 1.8;
         const STATIC_TORCH_FREQUENCY = 0.45;
         const TORCH_FLICKER_AMOUNT = 0.25; const TORCH_WALL_OFFSET = 0.25; const FLAME_BASE_OPACITY = 0.7; const FLAME_OPACITY_VAR = 0.2; const FLAME_BASE_SCALE_Y = 0.35; const FLAME_SCALE_Y_VAR = 0.1; const MIN_CAMERA_Y_ABOVE_GROUND = 0.5;
         const MINIMAP_SIZE = 160; const MINIMAP_RADIUS_CELLS = 5; const MINIMAP_CELL_SIZE_PX = Math.floor(MINIMAP_SIZE / (MINIMAP_RADIUS_CELLS * 2 + 1)); const MINIMAP_PLAYER_COLOR = '#ff4444'; const MINIMAP_WALL_COLOR = '#505050'; const MINIMAP_PATH_COLOR = '#888888'; const MINIMAP_END_COLOR = '#33cc33';
+        const MINIMAP_PITTRAP_INTACT_COLOR = '#D2691E';
+        const MINIMAP_PITTRAP_BROKEN_COLOR = '#111111';
         const PLAYER_VISION_RADIUS_CELLS = 4; const MINIMAP_UNSEEN_COLOR = '#181818';
         const FIRST_PERSON_EYE_HEIGHT_FACTOR = 0.85;
         const CAMERA_PITCH_OFFSET_FPS = Math.PI / 2;
@@ -339,16 +359,32 @@
         const FPS_TORCH_GROUP_OFFSET = new THREE.Vector3(0.35, -0.45, -0.7);
         const FPS_TORCH_GROUP_ROTATION = new THREE.Euler(Math.PI / 10, Math.PI / 8, -Math.PI / 12, 'YXZ');
 
+        const PIT_TRAP_CELL_TYPE = 7;
+        const BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT = 8;
+        const PIT_TRAP_TRIGGER_RADIUS_SQUARED = (CELL_SIZE * 0.30) * (CELL_SIZE * 0.30);
+        const PIT_TRAP_BREAK_ANIMATION_TIME = 600;
+        const PIT_FALL_DEPTH = -WALL_HEIGHT * 1.5;
+        const PIT_HOLE_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.9 });
+        const PIT_COVER_THICKNESS = 0.05;
+        const PLAYER_STEP_HEIGHT = 0.25;
+
+
         // --- TEXTURAS ---
-        const textureURLs = [ 'https://urysoft.github.io/ai.html.games/general/assets/images/textura1.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura2.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura3.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura4.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura5.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura6.jpeg', 'https://urysoft.github.io/ai.html.games/general/assets/images/textura7.jpeg' ];
+        const textureBaseURL = 'https://urysoft.github.io/ai.html.games/general/assets/images/';
+        const textureURLs = [];
+        for (let i = 1; i <= 20; i++) {
+            textureURLs.push(`${textureBaseURL}textura${i}.jpeg`);
+        }
         const textureLoader = new THREE.TextureLoader();
         let loadedTextures = [];
-        let floorTexture, wallTexture;
+        let floorTexture, wallTexture, crackedTexture;
 
-        // --- Variables Globales del Juego ---
         let scene, camera, renderer, player, clock;
-        let maze = []; // Contendrá la cuadrícula del laberinto actual
-        let currentMazeWidth, currentMazeHeight; // Dimensiones del laberinto actual
+        let maze = [];
+        let currentMazeLayout = [];
+        let initialPlayerPosition = new THREE.Vector3();
+
+        let currentMazeWidth, currentMazeHeight;
         let collidableObjects = []; let interactiveObjects = []; let playerVelocity = new THREE.Vector3(); let playerOnGround = false; let moveForward = 0, moveRight = 0; let cameraPhi = Math.PI / 3; let cameraTheta = 0; let endZone = null; let gameActive = true;
         const joystickArea = document.getElementById('joystick-area'); const joystickThumb = document.getElementById('joystick-thumb'); const jumpButton = document.getElementById('jump-button'); const actionButton = document.getElementById('action-button'); const messageDiv = document.getElementById('message'); const containerDiv = document.getElementById('container');
         let joystickPointerId = -1; let cameraPointerId = -1; let joystickStartPos = { x: 0, y: 0 }; let joystickCurrentPos = { x: 0, y: 0 }; let cameraTouchStartPos = { x: 0, y: 0 };
@@ -368,14 +404,16 @@
         const lightWorldPosHelper = new THREE.Vector3();
         const collisionCheckTempBox = new THREE.Box3();
 
-        // --- Variables UI y Editor ---
+        let pitTrapObjects = [];
+        let playerFallingIntoPit = null;
+
         const startAutoGameButton = document.getElementById('start-auto-game');
         const startCustomGameButton = document.getElementById('start-custom-game');
         const loadingTextElement = document.getElementById('loading-text-element');
         const startOptionsDiv = document.getElementById('start-options');
         const customGameScreen = document.getElementById('custom-game-screen');
         const scenarioEditorScreen = document.getElementById('scenario-editor-screen');
-        const customScenarioListUL = document.getElementById('custom-scenario-list'); // Renombrado para claridad
+        const customScenarioListUL = document.getElementById('custom-scenario-list');
         const noCustomScenariosMsg = document.getElementById('no-custom-scenarios');
         const createNewScenarioBtn = document.getElementById('create-new-scenario-btn');
         const importScenarioBtn = document.getElementById('import-scenario-btn');
@@ -393,14 +431,13 @@
         const playEditedScenarioBtn = document.getElementById('play-edited-scenario-btn');
         const editorMessageSpan = document.getElementById('editor-message');
 
-        let currentEditingScenario = null; // { id, name, width, height, grid }
-        let editorGridData = []; // Array 2D para los datos de la cuadrícula del editor
+        let currentEditingScenario = null;
+        let editorGridData = [];
         let selectedBrush = 'wall';
         let hasUnsavedChanges = false;
-        let editorCellElements = []; // Para acceder a los divs de las celdas
+        let editorCellElements = [];
 
 
-        // --- IndexedDB Wrapper ---
         const DB_NAME = "MinotaurioCustomScenariosDB";
         const DB_VERSION = 1;
         const STORE_NAME = "scenarios";
@@ -419,7 +456,7 @@
                     const dbInstance = event.target.result;
                     if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
                         const store = dbInstance.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
-                        store.createIndex("name", "name", { unique: false }); // Permitir nombres duplicados, pero la UI lo gestionará
+                        store.createIndex("name", "name", { unique: false });
                     }
                     console.log("IndexedDB: Actualización/creación de base de datos completada.");
                 };
@@ -434,46 +471,27 @@
                 };
             });
         }
-
-        // Fix for DataError when adding new scenarios to IndexedDB
         function saveScenarioDB(scenarioData) {
             return new Promise((resolve, reject) => {
                 if (!db) { reject("DB no inicializada"); return; }
-
                 const transaction = db.transaction([STORE_NAME], "readwrite");
                 const store = transaction.objectStore(STORE_NAME);
-
                 let request;
-                let dataToStore; // The object that will actually be stored in IndexedDB
-
-                // If scenarioData has a valid ID, it's an existing scenario, use put.
-                // Otherwise (id is null or undefined), it's a new scenario, use add.
+                let dataToStore;
                 if (scenarioData.id !== null && scenarioData.id !== undefined) {
-                     // For 'put', we need the keyPath property ('id') in the object.
-                     // Use a copy to avoid potential side effects, though passing the original is often fine for put.
                      dataToStore = { ...scenarioData };
                      request = store.put(dataToStore);
                 } else {
-                     // For 'add' on an auto-incrementing store, the keyPath property ('id')
-                     // must *not* be present or must be undefined.
-                     // Using object destructuring to create a new object without the 'id' property.
                      const { id, ...dataWithoutId } = scenarioData;
                      dataToStore = dataWithoutId;
                      request = store.add(dataToStore);
                 }
-
                 request.onsuccess = (event) => {
-                    // event.target.result contains the key assigned by IndexedDB
                     const resultId = event.target.result;
-
                     console.log("Escenario guardado/actualizado en DB:", scenarioData.name, "ID asignado/actualizado:", resultId);
-
-                    // Create and resolve with the object including the correct final ID
-                    // This updates the original scenarioData object reference outside this function
                     scenarioData.id = resultId;
                     resolve(scenarioData);
                 };
-
                 request.onerror = (event) => {
                     console.error("Error al guardar escenario en DB:", event.target.error);
                     if (event.target.error.name === 'ConstraintError') {
@@ -485,11 +503,9 @@
                 };
             });
         }
-
-
         function getAllScenariosDB() {
             return new Promise((resolve, reject) => {
-                if (!db) { resolve([]); return; } // Devuelve array vacío si no hay DB
+                if (!db) { resolve([]); return; }
                 const transaction = db.transaction([STORE_NAME], "readonly");
                 const store = transaction.objectStore(STORE_NAME);
                 const request = store.getAll();
@@ -500,7 +516,6 @@
                 };
             });
         }
-
         function getScenarioByIdDB(id) {
             return new Promise((resolve, reject) => {
                 if (!db) { reject("DB no inicializada"); return; }
@@ -514,7 +529,6 @@
                 };
             });
         }
-
         function deleteScenarioDB(id) {
             return new Promise((resolve, reject) => {
                 if (!db) { reject("DB no inicializada"); return; }
@@ -532,19 +546,44 @@
             });
         }
 
-
-        // --- Pre-cargar texturas ---
         function preloadTextures(callback) {
             let texturesToLoad = textureURLs.length; if (texturesToLoad === 0) { console.log("No hay texturas definidas para cargar."); selectRandomTextures(); callback(); return; } textureURLs.forEach((url, index) => { textureLoader.load( url, (texture) => { texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; loadedTextures[index] = texture; texturesToLoad--; if (texturesToLoad === 0) { console.log("Todas las texturas cargadas exitosamente."); selectRandomTextures(); callback(); } }, undefined, (error) => { console.error('Error al cargar textura:', url, error); texturesToLoad--; if (texturesToLoad === 0) { console.warn("Algunas texturas no pudieron cargarse. Continuando con las disponibles..."); selectRandomTextures(); callback(); } } ); });
         }
+
         function selectRandomTextures() {
-            if (loadedTextures.length === 0) { console.warn("No hay texturas cargadas para seleccionar. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; return; } const validTextures = loadedTextures.filter(t => t); if (validTextures.length === 0) { console.warn("Todas las texturas cargadas son inválidas. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; return; } let floorTextureIndex = Math.floor(Math.random() * validTextures.length); floorTexture = validTextures[floorTextureIndex]; let wallTextureIndex; if (validTextures.length > 1) { do { wallTextureIndex = Math.floor(Math.random() * validTextures.length); } while (wallTextureIndex === floorTextureIndex); wallTexture = validTextures[wallTextureIndex]; } else { wallTexture = validTextures[0]; console.warn("Solo una textura válida disponible, usándola para suelo y paredes."); } console.log("Textura suelo seleccionada:", floorTexture ? floorTexture.image.src : "Ninguna (color sólido)"); console.log("Textura pared seleccionada:", wallTexture ? wallTexture.image.src : "Ninguna (color sólido)");
+            if (loadedTextures.length === 0) { console.warn("No hay texturas cargadas para seleccionar. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; crackedTexture = null; return; } const validTextures = loadedTextures.filter(t => t); if (validTextures.length === 0) { console.warn("Todas las texturas cargadas son inválidas. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; crackedTexture = null; return; }
+
+            let floorTextureIndex = Math.floor(Math.random() * validTextures.length);
+            floorTexture = validTextures[floorTextureIndex].clone();
+            floorTexture.needsUpdate = true;
+
+            let wallTextureIndex;
+            if (validTextures.length > 1) {
+                do { wallTextureIndex = Math.floor(Math.random() * validTextures.length); } while (wallTextureIndex === floorTextureIndex);
+                wallTexture = validTextures[wallTextureIndex].clone();
+            } else {
+                wallTexture = validTextures[0].clone();
+                console.warn("Solo una textura válida disponible, usándola para suelo y paredes.");
+            }
+            wallTexture.needsUpdate = true;
+
+            crackedTexture = floorTexture.clone();
+            crackedTexture.needsUpdate = true;
+
+            if (renderer && renderer.capabilities) {
+                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+                if (floorTexture) floorTexture.anisotropy = maxAnisotropy;
+                if (wallTexture) wallTexture.anisotropy = maxAnisotropy;
+                if (crackedTexture) crackedTexture.anisotropy = maxAnisotropy;
+            }
+
+            console.log("Textura suelo seleccionada:", floorTexture ? floorTexture.image.src : "Ninguna (color sólido)");
+            console.log("Textura pared seleccionada:", wallTexture ? wallTexture.image.src : "Ninguna (color sólido)");
+            console.log("Textura agrietada seleccionada (base):", crackedTexture ? crackedTexture.image.src : "Ninguna");
         }
 
 
-        // --- Inicialización del Juego ---
         function init(customMazeData = null) {
-            // Limpiar escena anterior si existe (importante si se llama init múltiples veces)
             if (scene) {
                 while(scene.children.length > 0){
                     const object = scene.children[0];
@@ -559,33 +598,39 @@
                     scene.remove(object);
                 }
             }
-            if (renderer) { // Detener bucle de animación anterior
-                gameActive = false; // Detiene el requestAnimationFrame del juego anterior
-                // No llamar a renderer.dispose() aquí si se va a reutilizar el renderer
-            }
+            if (renderer) { gameActive = false; }
             collidableObjects = [];
             interactiveObjects = [];
-            staticTorches = []; // Limpiar antorchas estáticas
+            staticTorches = [];
+            pitTrapObjects = [];
+            playerFallingIntoPit = null;
 
 
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0x050508); scene.fog = new THREE.Fog(0x050508, 10, 35); // Aumentar un poco la niebla
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x050508); scene.fog = new THREE.Fog(0x050508, 10, 35);
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-            // Reutilizar renderer si ya existe
             if (!renderer) {
                 renderer = new THREE.WebGLRenderer({ antialias: true });
                 renderer.shadowMap.enabled = true; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.8;
                 containerDiv.appendChild(renderer.domElement);
+
+                if (isTouchDevice) {
+                    if (!touchControlsSetupDone) setupTouchControls();
+                } else {
+                    if (!keyboardControlsSetupDone) setupKeyboardAndMouseControls();
+                }
             }
+
 
             clock = new THREE.Clock();
             const ambientLight = new THREE.AmbientLight(0x404040, 0.15); scene.add(ambientLight);
-            minimapCanvas = document.getElementById('minimapCanvas'); // Ya debería existir
+            minimapCanvas = document.getElementById('minimapCanvas');
             minimapCanvas.width = minimapWidth; minimapCanvas.height = minimapHeight; minimapCtx = minimapCanvas.getContext('2d');
             if (!minimapCtx) { console.error("No se pudo obtener el contexto 2D del minimapa."); }
 
             if (customMazeData) {
                 console.log("Iniciando con laberinto personalizado:", customMazeData.name);
-                maze = JSON.parse(JSON.stringify(customMazeData.grid)); // Deep copy
+                maze = JSON.parse(JSON.stringify(customMazeData.grid));
+                currentMazeLayout = JSON.parse(JSON.stringify(maze));
                 currentMazeWidth = customMazeData.width;
                 currentMazeHeight = customMazeData.height;
             } else {
@@ -593,6 +638,7 @@
                 currentMazeWidth = DEFAULT_MAZE_WIDTH;
                 currentMazeHeight = DEFAULT_MAZE_HEIGHT;
                 maze = generateMaze(currentMazeWidth, currentMazeHeight);
+                currentMazeLayout = JSON.parse(JSON.stringify(maze));
             }
 
             visibilityMaze = [];
@@ -603,7 +649,7 @@
                 }
             }
 
-            buildMazeGeometry(currentMazeWidth, currentMazeHeight, maze);
+            buildMazeGeometry(currentMazeWidth, currentMazeHeight, currentMazeLayout);
 
             const playerGeometry = new THREE.CylinderGeometry(PLAYER_RADIUS, PLAYER_RADIUS, PLAYER_HEIGHT, 16);
             const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.6 });
@@ -612,16 +658,19 @@
 
             const startPos = findCell(5, maze, currentMazeWidth, currentMazeHeight);
             if (startPos) {
-                player.position.set( (startPos.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE, PLAYER_HEIGHT / 2 + 0.01, (startPos.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE );
+                initialPlayerPosition.set( (startPos.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE, PLAYER_HEIGHT / 2 + 0.01, (startPos.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE );
             } else {
                 console.warn("No se encontró celda de inicio (5) en el laberinto. Colocando en el centro del primer camino disponible o (0,0).");
-                let fallbackStart = findCell(1, maze, currentMazeWidth, currentMazeHeight); // Buscar un camino
-                if (!fallbackStart) fallbackStart = {x: Math.floor(currentMazeWidth/2), y: Math.floor(currentMazeHeight/2)}; // Último recurso
-                if (maze[fallbackStart.z] && maze[fallbackStart.z][fallbackStart.x] === 0) { // Si el fallback es pared, intentar buscar otro
-                     fallbackStart = {x:1,z:1}; // Default si todo falla
+                let fallbackStart = findCell(1, maze, currentMazeWidth, currentMazeHeight);
+                if (!fallbackStart) fallbackStart = {x: Math.floor(currentMazeWidth/2), y: Math.floor(currentMazeHeight/2)};
+                if (maze[fallbackStart.z] && maze[fallbackStart.z][fallbackStart.x] === 0) {
+                     fallbackStart = {x:1,z:1};
                 }
-                player.position.set( (fallbackStart.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE, PLAYER_HEIGHT / 2 + 0.01, (fallbackStart.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE );
+                initialPlayerPosition.set( (fallbackStart.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE, PLAYER_HEIGHT / 2 + 0.01, (fallbackStart.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE );
             }
+            player.position.copy(initialPlayerPosition);
+            playerVelocity.set(0,0,0);
+            playerOnGround = true;
             scene.add(player);
 
             playerTorchLight = new THREE.PointLight( TORCH_COLOR, TORCH_PLAYER_INTENSITY, TORCH_PLAYER_DISTANCE, TORCH_PLAYER_DECAY );
@@ -647,172 +696,87 @@
             const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.9 }).clone();
             if (wallTexture) {
                 ceilingMaterial.map = wallTexture.clone(); ceilingMaterial.map.needsUpdate = true; ceilingMaterial.color.set(0xffffff);
-                ceilingMaterial.map.repeat.set(ceilingSize / (CELL_SIZE * 2), ceilingSize / (CELL_SIZE * 2)); // Ajustar repetición
+                ceilingMaterial.map.repeat.set(ceilingSize / (CELL_SIZE * 2), ceilingSize / (CELL_SIZE * 2));
             }
             const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
             ceiling.position.y = WALL_HEIGHT + 0.1; ceiling.rotation.x = Math.PI / 2; ceiling.receiveShadow = true; ceiling.userData = { isCeiling: true, originalOpacity: 1.0, isTransparentCapable: true }; scene.add(ceiling); collidableObjects.push(ceiling);
 
             updateRendererAndCameraSize();
-            // Re-configurar controles puede ser necesario si se limpian con el DOM,
-            // pero si los listeners están en body o window, pueden persistir.
-            // Por seguridad, se puede hacer una función removeEventListeners if init se llama mucho.
-            // Por ahora, asumimos que los listeners de controles se configuran una vez y persisten.
-            if (isTouchDevice) {
-                setupTouchControls(); // Si no se han añadido ya
-            } else {
-                setupKeyboardAndMouseControls(); // Si no se han añadido ya
-                if (pointerLockInfoDiv) pointerLockInfoDiv.style.display = 'block';
-                joystickArea.style.display = 'none';
-                document.getElementById('action-buttons').style.display = 'none';
-            }
-            // window.addEventListener('resize', onWindowResize, false); // Asegurar que solo hay uno
 
             player.visible = !isFirstPersonView;
             player.castShadow = !isFirstPersonView;
             if (playerTorchGroup) playerTorchGroup.visible = !isFirstPersonView;
 
-            cameraPhi = Math.PI / 3; // Resetear ángulos de cámara
+            cameraPhi = Math.PI / 3;
             cameraTheta = 0;
-            updateCamera(); // Llamada inicial para posicionar la cámara correctamente
+            updateCamera();
             gameActive = true;
-            animate();
+            if (!animationFrameId) {
+                 animate();
+            }
         }
 
-        // --- Generación de Laberinto ---
         function generateMaze(width, height) {
-            let matrix = []; for (let y = 0; y < height; y++) { matrix[y] = []; for (let x = 0; x < width; x++) matrix[y][x] = 0; } // 0 = pared
+            let matrix = []; for (let y = 0; y < height; y++) { matrix[y] = []; for (let x = 0; x < width; x++) matrix[y][x] = 0; }
             let stack = [];
-            // Empezar en una celda impar para asegurar que los pasillos se alineen bien si w/h son impares.
             let startX = 1; let startY = 1;
-            matrix[startY][startX] = 1; // 1 = camino
+            matrix[startY][startX] = 1;
             stack.push({ x: startX, y: startY });
-
-            function isValid(x, y, currentMatrix) {
-                return y >= 0 && y < height && x >= 0 && x < width && currentMatrix[y][x] === 0;
-            }
-
+            function isValid(x, y, currentMatrix) { return y >= 0 && y < height && x >= 0 && x < width && currentMatrix[y][x] === 0; }
             while (stack.length > 0) {
                 let current = stack[stack.length - 1];
                 let neighbors = [];
-                // N, S, E, W (con salto de 2 celdas para el camino, 1 para la pared intermedia)
-                let potential = [
-                    { x: current.x, y: current.y - 2, wallX: current.x, wallY: current.y - 1 }, // Norte
-                    { x: current.x, y: current.y + 2, wallX: current.x, wallY: current.y + 1 }, // Sur
-                    { x: current.x + 2, y: current.y, wallX: current.x + 1, wallY: current.y }, // Este
-                    { x: current.x - 2, y: current.y, wallX: current.x - 1, wallY: current.y }  // Oeste
-                ];
-
-                potential.forEach(p => {
-                    if (isValid(p.x, p.y, matrix)) {
-                        neighbors.push(p);
-                    }
-                });
-
-                if (neighbors.length > 0) {
-                    let next = neighbors[Math.floor(Math.random() * neighbors.length)];
-                    matrix[next.y][next.x] = 1; // Celda de destino es camino
-                    matrix[next.wallY][next.wallX] = 1; // Pared intermedia se convierte en camino
-                    stack.push({ x: next.x, y: next.y });
-                } else {
-                    stack.pop();
-                }
+                let potential = [ { x: current.x, y: current.y - 2, wallX: current.x, wallY: current.y - 1 }, { x: current.x, y: current.y + 2, wallX: current.x, wallY: current.y + 1 }, { x: current.x + 2, y: current.y, wallX: current.x + 1, wallY: current.y }, { x: current.x - 2, y: current.y, wallX: current.x - 1, wallY: current.y } ];
+                potential.forEach(p => { if (isValid(p.x, p.y, matrix)) { neighbors.push(p); } });
+                if (neighbors.length > 0) { let next = neighbors[Math.floor(Math.random() * neighbors.length)]; matrix[next.y][next.x] = 1; matrix[next.wallY][next.wallX] = 1; stack.push({ x: next.x, y: next.y });
+                } else { stack.pop(); }
             }
-
-            // Asegurar que (1,1) es el inicio si no se ha modificado
-            if (matrix[1] && matrix[1][1] !== undefined) matrix[1][1] = 5; // 5 = Punto de inicio
-
-            // Colocar punto final (6)
+            if (matrix[1] && matrix[1][1] !== undefined) matrix[1][1] = 5;
             let deadEnds = findDeadEnds(matrix, width, height);
             let endPlaced = false;
             let potentialEndPos = [];
-
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    if (matrix[y][x] === 1) { // Es un camino
-                        // Criterio de distancia para el punto final
-                        if (Math.abs(x - startX) + Math.abs(y - startY) > (width + height) / 2.5) {
-                            potentialEndPos.push({ x, y });
-                        }
-                    }
-                }
-            }
-
-            if (potentialEndPos.length > 0) {
-                // Priorizar dead ends lejanos si existen
-                let endPos = potentialEndPos.find(p => deadEnds.some(d => d.x === p.x && d.y === p.y));
-                if (!endPos) { // Si no, tomar uno al azar de los lejanos
-                    endPos = potentialEndPos[Math.floor(Math.random() * potentialEndPos.length)];
-                }
-                if(matrix[endPos.y] && matrix[endPos.y][endPos.x] !== undefined) matrix[endPos.y][endPos.x] = 6; // 6 = Punto final
-                endPlaced = true;
-            }
-
-            if (!endPlaced) { // Fallback si no se pudo colocar el final de forma inteligente
-                const endY = height - 2;
-                const endX = width - 2;
-                if (matrix[endY] && matrix[endY][endX] !== undefined) {
-                     if (matrix[endY][endX] === 0) { // Si es pared, intentar hacerla camino y la adyacente
-                        matrix[endY][endX] = 6;
-                        if (matrix[endY-1] && matrix[endY-1][endX] === 0) matrix[endY-1][endX] = 1;
-                        else if (matrix[endY+1] && matrix[endY+1][endX] === 0) matrix[endY+1][endX] = 1;
-                        else if (matrix[endY][endX-1] === 0) matrix[endY][endX-1] = 1;
-                        else if (matrix[endY][endX+1] === 0) matrix[endY][endX+1] = 1;
-                     } else {
-                        matrix[endY][endX] = 6;
-                     }
-                }
-                console.warn("Fallback para colocar el punto final.");
-            }
+            for (let y = 1; y < height - 1; y++) { for (let x = 1; x < width - 1; x++) { if (matrix[y][x] === 1) { if (Math.abs(x - startX) + Math.abs(y - startY) > (width + height) / 2.5) { potentialEndPos.push({ x, y }); } } } }
+            if (potentialEndPos.length > 0) { let endPos = potentialEndPos.find(p => deadEnds.some(d => d.x === p.x && d.y === p.y)); if (!endPos) { endPos = potentialEndPos[Math.floor(Math.random() * potentialEndPos.length)]; } if(matrix[endPos.y] && matrix[endPos.y][endPos.x] !== undefined) matrix[endPos.y][endPos.x] = 6; endPlaced = true; }
+            if (!endPlaced) { const endY = height - 2; const endX = width - 2; if (matrix[endY] && matrix[endY][endX] !== undefined) { if (matrix[endY][endX] === 0) { matrix[endY][endX] = 6; if (matrix[endY-1] && matrix[endY-1][endX] === 0) matrix[endY-1][endX] = 1; else if (matrix[endY+1] && matrix[endY+1][endX] === 0) matrix[endY+1][endX] = 1; else if (matrix[endY][endX-1] === 0) matrix[endY][endX-1] = 1; else if (matrix[endY][endX+1] === 0) matrix[endY][endX+1] = 1; } else { matrix[endY][endX] = 6; } } console.warn("Fallback para colocar el punto final."); }
             return matrix;
         }
+        function findCell(type, targetMaze, mazeW, mazeH) { for (let z = 0; z < mazeH; z++) { for (let x = 0; x < mazeW; x++) { if (targetMaze[z] && targetMaze[z][x] === type) return { x, z }; } } return null; }
+        function findDeadEnds(targetMaze, mazeW, mazeH) { let deadEnds = []; for (let y = 1; y < mazeH - 1; y++) { for (let x = 1; x < mazeW - 1; x++) { if (targetMaze[y][x] !== 0) { let pathNeighbors = 0; if (targetMaze[y+1] && targetMaze[y+1][x] !== 0) pathNeighbors++; if (targetMaze[y-1] && targetMaze[y-1][x] !== 0) pathNeighbors++; if (targetMaze[y][x+1] !== 0) pathNeighbors++; if (targetMaze[y][x-1] !== 0) pathNeighbors++; if (pathNeighbors === 1) { deadEnds.push({ x, y }); } } } } return deadEnds; }
 
-        function findCell(type, targetMaze, mazeW, mazeH) {
-            for (let z = 0; z < mazeH; z++) {
-                for (let x = 0; x < mazeW; x++) {
-                    if (targetMaze[z] && targetMaze[z][x] === type) return { x, z };
-                }
-            }
-            return null;
-        }
-
-        function findDeadEnds(targetMaze, mazeW, mazeH) {
-            let deadEnds = [];
-            for (let y = 1; y < mazeH - 1; y++) { // Evitar bordes si son siempre pared
-                for (let x = 1; x < mazeW - 1; x++) {
-                    if (targetMaze[y][x] !== 0) { // Si no es una pared
-                        let pathNeighbors = 0;
-                        if (targetMaze[y+1] && targetMaze[y+1][x] !== 0) pathNeighbors++; // Sur
-                        if (targetMaze[y-1] && targetMaze[y-1][x] !== 0) pathNeighbors++; // Norte
-                        if (targetMaze[y][x+1] !== 0) pathNeighbors++; // Este
-                        if (targetMaze[y][x-1] !== 0) pathNeighbors++; // Oeste
-
-                        if (pathNeighbors === 1) {
-                            deadEnds.push({ x, y });
-                        }
-                    }
-                }
-            }
-            return deadEnds;
-        }
-
-
-        // --- Construcción de Geometría (CON TEXTURAS) ---
-        function buildMazeGeometry(mazeW, mazeH, currentLevelMaze) {
-            collidableObjects = []; // Limpiar antes de reconstruir
+        function buildMazeGeometry(mazeW, mazeH, layout) {
+            collidableObjects = [];
             interactiveObjects = [];
             staticTorches = [];
+            pitTrapObjects = [];
             endZone = null;
 
-            const wallMaterialBase = new THREE.MeshStandardMaterial({ map: wallTexture, roughness: 0.9, metalness: 0.1, color: wallTexture ? 0xffffff : 0x605548 });
-            const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture, roughness: 0.95, metalness: 0.1, side: THREE.DoubleSide, color: floorTexture ? 0xffffff : 0x444038 });
-            if (floorTexture) {
-                floorTexture.repeat.set(mazeW / 2, mazeH / 2); // Usar dimensiones actuales
-                if (renderer && renderer.capabilities) floorTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-                floorTexture.needsUpdate = true;
+            const wallMaterialBase = new THREE.MeshStandardMaterial({
+                map: wallTexture ? wallTexture.clone() : null,
+                roughness: 0.9, metalness: 0.1,
+                color: wallTexture ? 0xffffff : 0x605548
+            });
+            if (wallMaterialBase.map) wallMaterialBase.map.needsUpdate = true;
+
+
+            const mainFloorMaterial = new THREE.MeshStandardMaterial({
+                map: floorTexture ? floorTexture.clone() : null,
+                roughness: 0.95, metalness: 0.1, side: THREE.DoubleSide,
+                color: floorTexture ? 0xffffff : 0x444038
+            });
+            if (mainFloorMaterial.map) {
+                mainFloorMaterial.map.needsUpdate = true;
+                mainFloorMaterial.map.wrapS = mainFloorMaterial.map.wrapT = THREE.RepeatWrapping;
+                mainFloorMaterial.map.repeat.set(mazeW, mazeH);
             }
-            if (wallTexture) {
-                if (renderer && renderer.capabilities) wallTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-                wallTexture.needsUpdate = true;
+
+            const pitTrapCoverMaterialBase = new THREE.MeshStandardMaterial({
+                map: floorTexture ? floorTexture.clone() : null,
+                roughness: 0.95, metalness: 0.1,
+                color: floorTexture ? 0xffffff : 0x444038
+            });
+            if (pitTrapCoverMaterialBase.map) {
+                 pitTrapCoverMaterialBase.map.needsUpdate = true;
+                 pitTrapCoverMaterialBase.map.repeat.set(1,1);
             }
 
             const endMaterial = new THREE.MeshStandardMaterial({ color: 0x33ff33, emissive: 0x22dd22, transparent: true, opacity: 0.6 });
@@ -820,276 +784,343 @@
             const flameMaterialBase = new THREE.MeshBasicMaterial({ color: 0xffd080, transparent: true, opacity: FLAME_BASE_OPACITY, blending: THREE.AdditiveBlending, depthWrite: false });
 
             const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, WALL_HEIGHT, CELL_SIZE);
-            const floorGeometry = new THREE.PlaneGeometry(mazeW * CELL_SIZE, mazeH * CELL_SIZE); // Usar dimensiones actuales
+            const mainFloorGeometry = new THREE.PlaneGeometry(mazeW * CELL_SIZE, mazeH * CELL_SIZE);
             const endGeometry = new THREE.CylinderGeometry(CELL_SIZE * 0.3, CELL_SIZE * 0.3, 0.2, 16);
             const torchHolderGeometry = new THREE.BoxGeometry(0.2, 0.8, 0.2);
             const flameGeometry = new THREE.SphereGeometry(0.25, 10, 8);
+            const pitCoverGeometry = new THREE.BoxGeometry(CELL_SIZE, PIT_COVER_THICKNESS, CELL_SIZE);
+            const pitHoleGeometry = new THREE.BoxGeometry(CELL_SIZE * 0.95, WALL_HEIGHT * 2, CELL_SIZE * 0.95);
 
-            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            floor.userData = { isFloor: true };
-            scene.add(floor);
-            // collidableObjects.push(floor); // El suelo no suele ser un colisionable que detenga, sino que define y_min
+            const mainFloor = new THREE.Mesh(mainFloorGeometry, mainFloorMaterial);
+            mainFloor.rotation.x = -Math.PI / 2;
+            mainFloor.receiveShadow = true;
+            mainFloor.userData = { isFloor: true };
+            scene.add(mainFloor);
 
             let torchLocations = [];
             for (let z = 0; z < mazeH; z++) {
                 for (let x = 0; x < mazeW; x++) {
-                    if (!currentLevelMaze[z] || currentLevelMaze[z][x] === undefined) {
-                        console.warn(`Celda indefinida en [${z}][${x}] para laberinto ${mazeW}x${mazeH}. Tratando como pared.`);
-                        currentLevelMaze[z][x] = 0; // Asegurar que sea una pared if there is corrupted data
-                    }
-                    const cellType = currentLevelMaze[z][x];
+                    if (!layout[z] || layout[z][x] === undefined) { layout[z][x] = 0; }
+                    const cellTypeInLayout = layout[z][x];
+
                     const posX = (x - mazeW / 2 + 0.5) * CELL_SIZE;
                     const posYBase = WALL_HEIGHT / 2;
                     const posZ = (z - mazeH / 2 + 0.5) * CELL_SIZE;
 
-                    if (cellType === 0) { // Pared
+                    if (cellTypeInLayout === 0) {
                         const wallMatInstance = wallMaterialBase.clone();
-                        if (wallTexture) {
-                            wallMatInstance.map = wallTexture.clone();
+                        if (wallMatInstance.map) {
+                            wallMatInstance.map = wallMaterialBase.map.clone();
                             wallMatInstance.map.needsUpdate = true;
-                            wallMatInstance.map.repeat.set(1, WALL_HEIGHT / CELL_SIZE); // Adjust repeat for individual walls
+                            wallMatInstance.map.repeat.set(1, WALL_HEIGHT / CELL_SIZE);
                         }
                         const wall = new THREE.Mesh(wallGeometry, wallMatInstance);
                         wall.position.set(posX, posYBase, posZ);
-                        wall.castShadow = true; // Walls can cast shadows
-                        wall.receiveShadow = true;
+                        wall.castShadow = true; wall.receiveShadow = true;
                         wall.userData = { isWall: true, originalOpacity: 1.0, isTransparentCapable: true };
                         scene.add(wall);
                         collidableObjects.push(wall);
-                    } else { // Path, Start, or End
-                        // Place static torches on paths
+                    } else if (cellTypeInLayout === BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT) {
+                        const pitHole = new THREE.Mesh(pitHoleGeometry, PIT_HOLE_MATERIAL);
+                        pitHole.position.set(posX, -WALL_HEIGHT, posZ);
+                        pitHole.visible = true;
+                        scene.add(pitHole);
+                        pitTrapObjects.push({ mesh: null, holeMesh: pitHole, state: 'broken', gridX: x, gridZ: z, worldX: posX, worldZ: posZ, hasBeenRevealedByActivation: true });
+                    } else if (cellTypeInLayout === PIT_TRAP_CELL_TYPE) {
+                        const pitCoverMatInstance = pitTrapCoverMaterialBase.clone();
+                        if (pitCoverMatInstance.map) {
+                            pitCoverMatInstance.map = pitTrapCoverMaterialBase.map.clone();
+                            pitCoverMatInstance.map.needsUpdate = true;
+                            pitCoverMatInstance.map.repeat.set(1,1);
+                        }
+                        const pitCover = new THREE.Mesh(pitCoverGeometry, pitCoverMatInstance);
+                        pitCover.position.set(posX, -PIT_COVER_THICKNESS / 2, posZ);
+                        pitCover.castShadow = true; pitCover.receiveShadow = true;
+                        pitCover.userData = { isPitTrapCover: true, gridX: x, gridZ: z, isCollidable: true };
+                        scene.add(pitCover);
+                        collidableObjects.push(pitCover);
+
+                        const pitHole = new THREE.Mesh(pitHoleGeometry, PIT_HOLE_MATERIAL);
+                        pitHole.position.set(posX, -WALL_HEIGHT, posZ);
+                        pitHole.visible = false;
+                        scene.add(pitHole);
+                        pitTrapObjects.push({ mesh: pitCover, holeMesh: pitHole, state: 'intact', gridX: x, gridZ: z, worldX: posX, worldZ: posZ, hasBeenRevealedByActivation: false });
+                    } else {
                         if (Math.random() < STATIC_TORCH_FREQUENCY) {
                             let possibleTorchWalls = [];
-                            // Check adjacent walls
-                            if (z > 0 && currentLevelMaze[z-1][x] === 0) possibleTorchWalls.push({ wallX: x, wallZ: z-1, side: 'N' }); // Wall to the North
-                            if (z < mazeH - 1 && currentLevelMaze[z+1][x] === 0) possibleTorchWalls.push({ wallX: x, wallZ: z+1, side: 'S' }); // South
-                            if (x > 0 && currentLevelMaze[z][x-1] === 0) possibleTorchWalls.push({ wallX: x-1, wallZ: z, side: 'W' }); // West
-                            if (x < mazeW - 1 && currentLevelMaze[z][x+1] === 0) possibleTorchWalls.push({ wallX: x+1, wallZ: z, side: 'E' }); // East
-
+                            if (z > 0 && layout[z-1][x] === 0) possibleTorchWalls.push({ side: 'N' });
+                            if (z < mazeH - 1 && layout[z+1][x] === 0) possibleTorchWalls.push({ side: 'S' });
+                            if (x > 0 && layout[z][x-1] === 0) possibleTorchWalls.push({ side: 'W' });
+                            if (x < mazeW - 1 && layout[z][x+1] === 0) possibleTorchWalls.push({ side: 'E' });
                             if (possibleTorchWalls.length > 0) {
                                 const chosenWallData = possibleTorchWalls[Math.floor(Math.random() * possibleTorchWalls.length)];
-                                // Avoid torches too close together
-                                let tooClose = torchLocations.some(loc =>
-                                    Math.abs(loc.x - posX) < CELL_SIZE * 1.5 && Math.abs(loc.z - posZ) < CELL_SIZE * 1.5
-                                );
-                                if (!tooClose) {
-                                    addStaticTorch(posX, posZ, chosenWallData.side, torchHolderGeometry, flameGeometry, torchHolderMaterial, flameMaterialBase, mazeW, mazeH);
-                                    torchLocations.push({x: posX, z: posZ});
-                                }
+                                let tooClose = torchLocations.some(loc => Math.abs(loc.x - posX) < CELL_SIZE * 1.5 && Math.abs(loc.z - posZ) < CELL_SIZE * 1.5 );
+                                if (!tooClose) { addStaticTorch(posX, posZ, chosenWallData.side, torchHolderGeometry, flameGeometry, torchHolderMaterial, flameMaterialBase, mazeW, mazeH); torchLocations.push({x: posX, z: posZ}); }
                             }
                         }
-
-                        if (cellType === 6) { // End
+                        if (cellTypeInLayout === 6) {
                             endZone = new THREE.Mesh(endGeometry, endMaterial);
                             endZone.position.set(posX, 0.1, posZ);
                             endZone.userData = { type: 'end' };
                             scene.add(endZone);
                             interactiveObjects.push(endZone);
                         }
-                        // Type 5 (start) only defines the player's position, not a special visible object (unless desired)
                     }
                 }
             }
         }
 
         function addStaticTorch(pathCellX, pathCellZ, attachSide, holderGeom, flameGeom, holderMat, flameMatBase, mazeW, mazeH) {
-            // pathCellX, pathCellZ are the WORLD coordinates of the path cell the torch originates from.
-            // attachSide indicates which wall of this path cell the torch will be attached to.
-            const torchY = WALL_HEIGHT * 0.6;
-
-            const holder = new THREE.Mesh(holderGeom, holderMat.clone()); // Clone material for unique instances
-            const flameMaterial = flameMatBase.clone();
-            const flame = new THREE.Mesh(flameGeom, flameMaterial);
-            const light = new THREE.PointLight( TORCH_COLOR, TORCH_STATIC_INTENSITY, TORCH_STATIC_DISTANCE, TORCH_STATIC_DECAY );
-            light.castShadow = false; // Shadows from static torches can be expensive
-            light.userData.baseIntensity = TORCH_STATIC_INTENSITY;
-            staticTorches.push({ light: light, flameMesh: flame });
-
-            const torchOffsetFromWall = TORCH_WALL_OFFSET; // Distance from the torch to the wall surface
-            const halfCell = CELL_SIZE / 2;
-
-            let torchPosX = pathCellX;
-            let torchPosZ = pathCellZ;
-            let holderRotationY = 0;
-
-            // The torch is placed "on the wall" of the current path cell (pathCellX, pathCellZ)
-            if (attachSide === 'N') { // Wall to the North of the path cell, torch faces South
-                torchPosZ = pathCellZ - halfCell + torchOffsetFromWall;
-                holderRotationY = Math.PI;
-            } else if (attachSide === 'S') { // Wall to the South, torch faces North
-                torchPosZ = pathCellZ + halfCell - torchOffsetFromWall;
-                holderRotationY = 0;
-            } else if (attachSide === 'W') { // Wall to the West, torch faces East
-                torchPosX = pathCellX - halfCell + torchOffsetFromWall;
-                holderRotationY = Math.PI / 2;
-            } else if (attachSide === 'E') { // Wall to the East, torch faces West
-                torchPosX = pathCellX + halfCell - torchOffsetFromWall;
-                holderRotationY = -Math.PI / 2;
-            }
-
-            holder.position.set(torchPosX, torchY, torchPosZ);
-            holder.rotation.y = holderRotationY;
-            flame.position.set(torchPosX, torchY + 0.5, torchPosZ); // Flame above the holder
-            light.position.set(torchPosX, torchY + 0.4, torchPosZ); // Light near the flame
-
-            scene.add(holder);
-            scene.add(flame);
-            scene.add(light);
+            const torchY = WALL_HEIGHT * 0.6; const holder = new THREE.Mesh(holderGeom, holderMat.clone()); const flameMaterial = flameMatBase.clone(); const flame = new THREE.Mesh(flameGeom, flameMaterial); const light = new THREE.PointLight( TORCH_COLOR, TORCH_STATIC_INTENSITY, TORCH_STATIC_DISTANCE, TORCH_STATIC_DECAY ); light.castShadow = false; light.userData.baseIntensity = TORCH_STATIC_INTENSITY; staticTorches.push({ light: light, flameMesh: flame }); const torchOffsetFromWall = TORCH_WALL_OFFSET; const halfCell = CELL_SIZE / 2; let torchPosX = pathCellX; let torchPosZ = pathCellZ; let holderRotationY = 0;
+            if (attachSide === 'N') { torchPosZ = pathCellZ - halfCell + torchOffsetFromWall; holderRotationY = Math.PI; } else if (attachSide === 'S') { torchPosZ = pathCellZ + halfCell - torchOffsetFromWall; holderRotationY = 0; } else if (attachSide === 'W') { torchPosX = pathCellX - halfCell + torchOffsetFromWall; holderRotationY = Math.PI / 2; } else if (attachSide === 'E') { torchPosX = pathCellX + halfCell - torchOffsetFromWall; holderRotationY = -Math.PI / 2; }
+            holder.position.set(torchPosX, torchY, torchPosZ); holder.rotation.y = holderRotationY; flame.position.set(torchPosX, torchY + 0.5, torchPosZ); light.position.set(torchPosX, torchY + 0.4, torchPosZ); scene.add(holder); scene.add(flame); scene.add(light);
         }
 
 
-        // --- Touch Controls ---
         let touchControlsSetupDone = false;
-
-        // Helper function to check if event target is inside a UI screen
-        function isInsideUIScreen(target) {
-             return target.closest('#loading-screen') ||
-                    target.closest('#custom-game-screen') ||
-                    target.closest('#scenario-editor-screen');
-        }
-
-        function updateJoystickThumb() {
-            const dX=joystickCurrentPos.x-joystickStartPos.x, dY=joystickCurrentPos.y-joystickStartPos.y, dist=Math.sqrt(dX*dX+dY*dY); const angle=Math.atan2(dY,dX); const tD=Math.min(dist, JOYSTICK_VISUAL_RADIUS/2-joystickThumb.offsetWidth/4); const tX=Math.cos(angle)*tD, tY=Math.sin(angle)*tD; joystickThumb.style.transform=`translate(${tX}px, ${tY}px)`;
-        }
-
+        function isInsideUIScreen(target) { return target.closest('#loading-screen') || target.closest('#custom-game-screen') || target.closest('#scenario-editor-screen'); }
+        function updateJoystickThumb() { const dX=joystickCurrentPos.x-joystickStartPos.x, dY=joystickCurrentPos.y-joystickStartPos.y, dist=Math.sqrt(dX*dX+dY*dY); const angle=Math.atan2(dY,dX); const tD=Math.min(dist, JOYSTICK_VISUAL_RADIUS/2-joystickThumb.offsetWidth/4); const tX=Math.cos(angle)*tD, tY=Math.sin(angle)*tD; joystickThumb.style.transform=`translate(${tX}px, ${tY}px)`; }
         function updateMovementFromJoystick() {
-            const dx=joystickCurrentPos.x-joystickStartPos.x, dy=joystickCurrentPos.y-joystickStartPos.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist===0){moveForward=0; moveRight=0; return;} const nX=dx/JOYSTICK_EFFECTIVE_RADIUS, nY=dy/JOYSTICK_EFFECTIVE_RADIUS; const mag=Math.min(1.0, dist/JOYSTICK_EFFECTIVE_RADIUS); let fwd=-nY*mag, rgt=nX*mag; if(dist/JOYSTICK_EFFECTIVE_RADIUS<JOYSTICK_DEADZONE){fwd=0; rgt=0;} moveForward=Math.max(-1,Math.min(1,fwd)); moveRight=Math.max(-1,Math.min(1,rgt));
+            const dx = joystickCurrentPos.x - joystickStartPos.x;
+            const dy = joystickCurrentPos.y - joystickStartPos.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist === 0) {
+                moveForward = 0; moveRight = 0; return;
+            }
+            let normalizedX = dx / JOYSTICK_EFFECTIVE_RADIUS;
+            let normalizedY = dy / JOYSTICK_EFFECTIVE_RADIUS;
+            const magnitude = Math.min(1.0, dist / JOYSTICK_EFFECTIVE_RADIUS);
+            if (magnitude < JOYSTICK_DEADZONE) {
+                moveForward = 0; moveRight = 0; return;
+            }
+            moveForward = -normalizedY * magnitude;
+            moveRight   =  normalizedX * magnitude;
+            moveForward = Math.max(-1, Math.min(1, moveForward));
+            moveRight   = Math.max(-1, Math.min(1, moveRight));
         }
-
-
         function setupTouchControls() {
             if (touchControlsSetupDone) return;
-            // Add check at the beginning of handlers to ignore UI clicks
-            document.body.addEventListener('pointerdown', handlePointerDown);
-            document.body.addEventListener('pointermove', handlePointerMove);
-            document.body.addEventListener('pointerup', handlePointerEnd);
-            document.body.addEventListener('pointercancel', handlePointerEnd);
-            jumpButton.addEventListener('touchstart', (e) => { e.preventDefault(); if (playerOnGround && gameActive) playerVelocity.y = JUMP_VELOCITY; }, { passive: false });
+            document.body.addEventListener('pointerdown', handlePointerDown); document.body.addEventListener('pointermove', handlePointerMove); document.body.addEventListener('pointerup', handlePointerEnd); document.body.addEventListener('pointercancel', handlePointerEnd);
+            jumpButton.addEventListener('touchstart', (e) => { e.preventDefault(); if (playerOnGround && gameActive && !playerFallingIntoPit) playerVelocity.y = JUMP_VELOCITY; }, { passive: false });
             actionButton.addEventListener('touchstart', (e) => { e.preventDefault(); if (gameActive) toggleView(); }, { passive: false });
             touchControlsSetupDone = true;
         }
-
-        function handlePointerDown(event) {
-             // If the event is inside a UI screen, let the browser handle it
-            if (isInsideUIScreen(event.target)) {
-                return;
-            }
-
-             // Existing logic - skip if target is specific game button/area
-             if (event.target === jumpButton || event.target === actionButton || event.target.closest('#minimapCanvas')) return;
-
-             event.preventDefault(); // Prevent default behavior (like scrolling, text selection) for game controls
-
-             const tX=event.clientX, tY=event.clientY, sW=window.innerWidth;
-             if (tX < sW/2 && joystickPointerId===-1){
-                 joystickPointerId=event.pointerId;
-                 joystickStartPos={x:tX,y:tY};
-                 joystickCurrentPos={x:tX,y:tY};
-                 joystickArea.style.display='flex';
-                 joystickArea.style.left=`${tX}px`;
-                 joystickArea.style.top=`${tY}px`;
-                 joystickThumb.style.transform='translate(0px, 0px)';
-                 updateMovementFromJoystick();
-             } else if (tX >= sW/2 && cameraPointerId===-1){
-                 cameraPointerId=event.pointerId;
-                 cameraTouchStartPos={x:tX, y:tY};
-             }
-        }
-
-        function handlePointerMove(event) {
-            // If the event is inside a UI screen, let the browser handle it
-            if (isInsideUIScreen(event.target)) {
-                return;
-            }
-
-            // Existing logic - skip if target is specific game button/area
-            if (event.target === jumpButton || event.target === actionButton || event.target.closest('#minimapCanvas')) return;
-
-            event.preventDefault(); // Prevent default behavior
-
-             if(event.pointerId===joystickPointerId){
-                 joystickCurrentPos={x:event.clientX, y:event.clientY};
-                 updateJoystickThumb();
-                 updateMovementFromJoystick();
-             } else if(event.pointerId===cameraPointerId){
-                 const tX=event.clientX, tY=event.clientY;
-                 updateCameraLook(tX-cameraTouchStartPos.x, tY-cameraTouchStartPos.y);
-                 cameraTouchStartPos={x:tX,y:tY};
-             }
-        }
-
-        function handlePointerEnd(event) {
-            // If the event is inside a UI screen, let the browser handle it
-            if (isInsideUIScreen(event.target)) {
-                return;
-            }
-
-            // Existing logic - skip if target is specific game button/area
-            if (event.target === jumpButton || event.target === actionButton || event.target.closest('#minimapCanvas')) return;
-
-            // event.preventDefault(); // Usually not needed for pointerup
-
-             if(event.pointerId===joystickPointerId){
-                 joystickPointerId=-1;
-                 joystickArea.style.display='none';
-                 moveForward=0;
-                 moveRight=0;
-             } else if(event.pointerId===cameraPointerId){
-                 cameraPointerId=-1;
-             }
-        }
+        function handlePointerDown(event) { if (isInsideUIScreen(event.target)) { return; } if (event.target === jumpButton || event.target === actionButton || event.target.closest('#minimapCanvas')) return; event.preventDefault(); const tX=event.clientX, tY=event.clientY, sW=window.innerWidth; if (tX < sW/2 && joystickPointerId===-1){ joystickPointerId=event.pointerId; joystickStartPos={x:tX,y:tY}; joystickCurrentPos={x:tX,y:tY}; joystickArea.style.display='flex'; joystickArea.style.left=`${tX}px`; joystickArea.style.top=`${tY}px`; joystickThumb.style.transform='translate(0px, 0px)'; updateMovementFromJoystick(); } else if (tX >= sW/2 && cameraPointerId===-1){ cameraPointerId=event.pointerId; cameraTouchStartPos={x:tX, y:tY}; } }
+        function handlePointerMove(event) { if (isInsideUIScreen(event.target)) { return; } if (event.target === jumpButton || event.target === actionButton || event.target.closest('#minimapCanvas')) return; event.preventDefault(); if(event.pointerId===joystickPointerId){ joystickCurrentPos={x:event.clientX, y:event.clientY}; updateJoystickThumb(); updateMovementFromJoystick(); } else if(event.pointerId===cameraPointerId){ const tX=event.clientX, tY=event.clientY; updateCameraLook(tX-cameraTouchStartPos.x, tY-cameraTouchStartPos.y); cameraTouchStartPos={x:tX,y:tY}; } }
+        function handlePointerEnd(event) { if (isInsideUIScreen(event.target)) { return; } if (event.target === jumpButton || event.target === actionButton || event.target.closest('#minimapCanvas')) return; if(event.pointerId===joystickPointerId){ joystickPointerId=-1; joystickArea.style.display='none'; moveForward=0; moveRight=0; } else if(event.pointerId===cameraPointerId){ cameraPointerId=-1; } }
 
 
-        // --- Keyboard and Mouse Controls ---
         let keyboardControlsSetupDone = false;
         function setupKeyboardAndMouseControls() {
             if (keyboardControlsSetupDone) return;
-            document.addEventListener('keydown', (event) => { keyStates[event.code] = true; handleKeyPress(event.code); });
-            document.addEventListener('keyup', (event) => { keyStates[event.code] = false; });
+            document.addEventListener('keydown', (event) => { keyStates[event.code] = true; handleKeyPress(event.code); }); document.addEventListener('keyup', (event) => { keyStates[event.code] = false; });
             renderer.domElement.addEventListener('mousedown', (event) => { if (event.button === 0 && !isPointerLocked && gameActive) { renderer.domElement.requestPointerLock(); } });
             renderer.domElement.addEventListener('contextmenu', (event) => { event.preventDefault(); if (gameActive) { toggleView(); } });
-            document.addEventListener('pointerlockchange', () => { isPointerLocked = document.pointerLockElement === renderer.domElement; if (isPointerLocked) { if (pointerLockInfoDiv) pointerLockInfoDiv.style.display = 'none'; renderer.domElement.style.cursor = 'none'; } else { if (pointerLockInfoDiv && !isTouchDevice) pointerLockInfoDiv.style.display = 'block'; renderer.domElement.style.cursor = 'grab'; keyStates = {}; moveForward=0; moveRight=0; /* Reset movement on losing focus */ } }, false);
+            document.addEventListener('pointerlockchange', () => { isPointerLocked = document.pointerLockElement === renderer.domElement; if (isPointerLocked) { if (pointerLockInfoDiv) pointerLockInfoDiv.style.display = 'none'; renderer.domElement.style.cursor = 'none'; } else { if (pointerLockInfoDiv && !isTouchDevice) pointerLockInfoDiv.style.display = 'block'; renderer.domElement.style.cursor = 'grab'; keyStates = {}; moveForward=0; moveRight=0; } }, false);
             document.addEventListener('pointerlockerror', () => { console.error('Error blocking mouse pointer.'); if (pointerLockInfoDiv && !isTouchDevice) pointerLockInfoDiv.style.display = 'block'; }, false);
             document.addEventListener('mousemove', (event) => { if (isPointerLocked && gameActive) { updateCameraLook(event.movementX, event.movementY); } });
             keyboardControlsSetupDone = true;
         }
-        function handleKeyPress(code) {
-            if (!gameActive) return; if (code === 'KeyV') { toggleView(); }
-        }
-        function updateMovementFromKeyboard() {
-            if (isTouchDevice || !isPointerLocked) { moveForward=0; moveRight=0; return; } let newMoveForward = 0; let newMoveRight = 0; if (keyStates['KeyW'] || keyStates['ArrowUp']) newMoveForward = 1; if (keyStates['KeyS'] || keyStates['ArrowDown']) newMoveForward = -1; if (keyStates['KeyA'] || keyStates['ArrowLeft']) newMoveRight = -1; if (keyStates['KeyD'] || keyStates['ArrowRight']) newMoveRight = 1; if (joystickPointerId === -1) { moveForward = newMoveForward; moveRight = newMoveRight; } if (keyStates['Space'] && playerOnGround) { playerVelocity.y = JUMP_VELOCITY; }
-        }
-        function updateCameraLook(deltaX, deltaY) {
-            cameraTheta -= deltaX * CAMERA_SENSITIVITY; cameraPhi -= deltaY * CAMERA_SENSITIVITY; cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi));
-        }
+        function handleKeyPress(code) { if (!gameActive) return; if (code === 'KeyV') { toggleView(); } }
+        function updateMovementFromKeyboard() { if (isTouchDevice || !isPointerLocked || playerFallingIntoPit) { moveForward=0; moveRight=0; return; } let newMoveForward = 0; let newMoveRight = 0; if (keyStates['KeyW'] || keyStates['ArrowUp']) newMoveForward = 1; if (keyStates['KeyS'] || keyStates['ArrowDown']) newMoveForward = -1; if (keyStates['KeyA'] || keyStates['ArrowLeft']) newMoveRight = -1; if (keyStates['KeyD'] || keyStates['ArrowRight']) newMoveRight = 1; if (joystickPointerId === -1) { moveForward = newMoveForward; moveRight = newMoveRight; } if (keyStates['Space'] && playerOnGround) { playerVelocity.y = JUMP_VELOCITY; } }
+        function updateCameraLook(deltaX, deltaY) { cameraTheta -= deltaX * CAMERA_SENSITIVITY; cameraPhi -= deltaY * CAMERA_SENSITIVITY; cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi)); }
 
 
-        // --- Toggle View ---
-        function toggleView() {
-            if (!player || !camera || !playerTorchLight || !playerTorchGroup || !scene) return; isFirstPersonView = !isFirstPersonView; player.visible = !isFirstPersonView; if (isFirstPersonView) { showMessage("Vista: Primera Persona", 1500); playerTorchLight.castShadow = false; if (playerTorchLight.parent) playerTorchLight.parent.remove(playerTorchLight); scene.add(playerTorchLight); if (playerTorchGroup.parent) playerTorchGroup.parent.remove(playerTorchGroup); camera.add(playerTorchGroup); playerTorchGroup.position.copy(FPS_TORCH_GROUP_OFFSET); playerTorchGroup.rotation.copy(FPS_TORCH_GROUP_ROTATION); playerTorchGroup.visible = true; } else { showMessage("Vista: Tercera Persona", 1500); playerTorchLight.castShadow = true; if (playerTorchLight.parent === scene) scene.remove(playerTorchLight); player.add(playerTorchLight); playerTorchLight.position.copy(originalPlayerTorchLightPosition); playerTorchLight.rotation.set(0,0,0); if (playerTorchGroup.parent === camera) camera.remove(playerTorchGroup); player.add(playerTorchGroup); playerTorchGroup.position.copy(originalPlayerTorchGroupPosition); playerTorchGroup.rotation.copy(originalPlayerTorchGroupRotation); playerTorchGroup.visible = true; } updateCamera();
-        }
+        function toggleView() { if (!player || !camera || !playerTorchLight || !playerTorchGroup || !scene) return; isFirstPersonView = !isFirstPersonView; player.visible = !isFirstPersonView; if (isFirstPersonView) { showMessage("Vista: Primera Persona", 1500); playerTorchLight.castShadow = false; if (playerTorchLight.parent) playerTorchLight.parent.remove(playerTorchLight); scene.add(playerTorchLight); if (playerTorchGroup.parent) playerTorchGroup.parent.remove(playerTorchGroup); camera.add(playerTorchGroup); playerTorchGroup.position.copy(FPS_TORCH_GROUP_OFFSET); playerTorchGroup.rotation.copy(FPS_TORCH_GROUP_ROTATION); playerTorchGroup.visible = true; } else { showMessage("Vista: Tercera Persona", 1500); playerTorchLight.castShadow = true; if (playerTorchLight.parent === scene) scene.remove(playerTorchLight); player.add(playerTorchLight); playerTorchLight.position.copy(originalPlayerTorchLightPosition); playerTorchLight.rotation.set(0,0,0); if (playerTorchGroup.parent === camera) camera.remove(playerTorchGroup); player.add(playerTorchGroup); playerTorchGroup.position.copy(originalPlayerTorchGroupPosition); playerTorchGroup.rotation.copy(originalPlayerTorchGroupRotation); playerTorchGroup.visible = true; } updateCamera(); }
 
 
-        // --- Player Logic and Collisions ---
         function updatePlayer(deltaTime) {
-            if (!gameActive || !player) return; if (!isTouchDevice) { updateMovementFromKeyboard(); } player.rotation.y = cameraTheta + Math.PI; let currentSpeed = PLAYER_SPEED; let isSprinting = (!isTouchDevice && keyStates['ShiftLeft'] && moveForward > 0); if (playerOnGround && ( (moveForward > SPRINT_THRESHOLD && joystickPointerId !== -1) || isSprinting) ) { currentSpeed = SPRINT_SPEED; } let dampingFactor = playerOnGround ? 0.85 : 0.98; if (!playerOnGround) playerVelocity.y += GRAVITY * deltaTime; playerVelocity.y = Math.max(playerVelocity.y, -30); const forward = new THREE.Vector3(0, 0, -1); forward.applyQuaternion(player.quaternion); forward.y = 0; forward.normalize(); const right = new THREE.Vector3(1, 0, 0); right.applyQuaternion(player.quaternion); right.y = 0; right.normalize(); const targetVelocityXZ = new THREE.Vector3(); targetVelocityXZ.addScaledVector(forward, -moveForward * currentSpeed); targetVelocityXZ.addScaledVector(right,   -moveRight * currentSpeed); playerVelocity.x += (targetVelocityXZ.x - playerVelocity.x) * 0.25; playerVelocity.z += (targetVelocityXZ.z - playerVelocity.z) * 0.25; playerVelocity.x *= dampingFactor; playerVelocity.z *= dampingFactor; const deltaPosition = playerVelocity.clone().multiplyScalar(deltaTime); playerOnGround = false; const collisionSizeVec = new THREE.Vector3(PLAYER_RADIUS * 2, PLAYER_HEIGHT, PLAYER_RADIUS * 2); const verticalCheckCenter = player.position.clone().add(new THREE.Vector3(0, deltaPosition.y, 0)); collisionCheckTempBox.setFromCenterAndSize(verticalCheckCenter, collisionSizeVec); for (const obj of collidableObjects) { if (obj.userData.isFloor || obj.userData.isCeiling) continue; const oB = new THREE.Box3().setFromObject(obj); if (collisionCheckTempBox.intersectsBox(oB)) { if (deltaPosition.y < 0 && collisionCheckTempBox.min.y < oB.max.y) { playerVelocity.y = 0; deltaPosition.y = oB.max.y - (player.position.y - PLAYER_HEIGHT / 2) + 0.001; playerOnGround = true; } else if (deltaPosition.y > 0 && collisionCheckTempBox.max.y > oB.min.y) { playerVelocity.y = 0; deltaPosition.y = oB.min.y - (player.position.y + PLAYER_HEIGHT / 2) - 0.001; } break; } } const groundY = 0; const feetY = player.position.y + deltaPosition.y - PLAYER_HEIGHT / 2; if (feetY <= groundY && playerVelocity.y <= 0) { playerVelocity.y = 0; deltaPosition.y = groundY - (player.position.y - PLAYER_HEIGHT / 2); playerOnGround = true; } const finalVerticalPos = player.position.clone().add(new THREE.Vector3(0, deltaPosition.y, 0)); const horizontalCheckCenter = finalVerticalPos.clone().add(new THREE.Vector3(deltaPosition.x, 0, deltaPosition.z)); collisionCheckTempBox.setFromCenterAndSize(horizontalCheckCenter, collisionSizeVec); for (const obj of collidableObjects) { if (obj.userData.isFloor || obj.userData.isCeiling) continue; const oB = new THREE.Box3().setFromObject(obj); if (collisionCheckTempBox.intersectsBox(oB)) { const currentBoxX = new THREE.Box3().setFromCenterAndSize(finalVerticalPos.clone().add(new THREE.Vector3(deltaPosition.x, 0, 0)), collisionSizeVec); if (currentBoxX.intersectsBox(oB)) { playerVelocity.x = 0; deltaPosition.x = 0; } const currentBoxZ = new THREE.Box3().setFromCenterAndSize(finalVerticalPos.clone().add(new THREE.Vector3(0, 0, deltaPosition.z)), collisionSizeVec); if (currentBoxZ.intersectsBox(oB)) { playerVelocity.z = 0; deltaPosition.z = 0; } } } player.position.add(deltaPosition); if (endZone && gameActive) { const pXZ = new THREE.Vector2(player.position.x, player.position.z); const eZXZ = new THREE.Vector2(endZone.position.x, endZone.position.z); if (playerOnGround && pXZ.distanceTo(eZXZ) < PLAYER_RADIUS + CELL_SIZE * 0.3) winGame(); }
+            if (!gameActive || !player) return;
+            if (!isTouchDevice) { updateMovementFromKeyboard(); }
+
+            let currentSpeed = PLAYER_SPEED;
+            let isSprinting = (!isTouchDevice && keyStates['ShiftLeft'] && moveForward > 0);
+            if (playerOnGround && !playerFallingIntoPit && ( (moveForward > SPRINT_THRESHOLD && joystickPointerId !== -1) || isSprinting) ) {
+                currentSpeed = SPRINT_SPEED;
+            }
+
+            let dampingFactor = playerOnGround ? 0.85 : 0.98;
+            if (!playerOnGround) playerVelocity.y += GRAVITY * deltaTime;
+            playerVelocity.y = Math.max(playerVelocity.y, -30);
+
+            const previousY = player.position.y;
+
+            if (!playerFallingIntoPit) {
+                const forward = new THREE.Vector3(0, 0, -1); forward.applyQuaternion(player.quaternion); forward.y = 0; forward.normalize();
+                const right = new THREE.Vector3(1, 0, 0); right.applyQuaternion(player.quaternion); right.y = 0; right.normalize();
+                const targetVelocityXZ = new THREE.Vector3();
+                targetVelocityXZ.addScaledVector(forward, -moveForward * currentSpeed);
+                targetVelocityXZ.addScaledVector(right,   -moveRight * currentSpeed);
+                playerVelocity.x += (targetVelocityXZ.x - playerVelocity.x) * 0.25;
+                playerVelocity.z += (targetVelocityXZ.z - playerVelocity.z) * 0.25;
+            } else {
+                playerVelocity.x *= 0.9;
+                playerVelocity.z *= 0.9;
+            }
+            playerVelocity.x *= dampingFactor;
+            playerVelocity.z *= dampingFactor;
+
+            const deltaPosition = playerVelocity.clone().multiplyScalar(deltaTime);
+            playerOnGround = false;
+            const collisionSizeVec = new THREE.Vector3(PLAYER_RADIUS * 2, PLAYER_HEIGHT, PLAYER_RADIUS * 2);
+
+            const verticalCheckCenter = player.position.clone().add(new THREE.Vector3(0, deltaPosition.y, 0));
+            collisionCheckTempBox.setFromCenterAndSize(verticalCheckCenter, collisionSizeVec);
+
+            for (const obj of collidableObjects) {
+                if (obj.userData.isFloor || obj.userData.isCeiling) continue;
+                if (obj.userData.isPitTrapCover && !obj.userData.isCollidable) continue;
+
+                const oB = new THREE.Box3().setFromObject(obj);
+                if (collisionCheckTempBox.intersectsBox(oB)) {
+                    if (deltaPosition.y < 0 && collisionCheckTempBox.min.y < oB.max.y) {
+                        playerVelocity.y = 0;
+                        deltaPosition.y = oB.max.y - (player.position.y - PLAYER_HEIGHT / 2) + 0.001;
+                        playerOnGround = true;
+                    } else if (deltaPosition.y > 0 && collisionCheckTempBox.max.y > oB.min.y) {
+                        playerVelocity.y = 0;
+                        deltaPosition.y = oB.min.y - (player.position.y + PLAYER_HEIGHT / 2) - 0.001;
+                    }
+                    break;
+                }
+            }
+
+            const groundY = 0;
+            const feetY = player.position.y + deltaPosition.y - PLAYER_HEIGHT / 2;
+
+            if (playerFallingIntoPit) {
+                if (player.position.y + deltaPosition.y < PIT_FALL_DEPTH) {
+                    loseGame("Caíste en un foso!");
+                }
+            } else {
+                if (feetY <= groundY && playerVelocity.y <= 0 && !playerOnGround) {
+                    playerVelocity.y = 0;
+                    deltaPosition.y = groundY - (player.position.y - PLAYER_HEIGHT / 2);
+                    playerOnGround = true;
+                }
+            }
+
+            player.position.y += deltaPosition.y;
+
+            if (!playerFallingIntoPit) {
+                const horizontalCheckPos = player.position.clone().add(new THREE.Vector3(deltaPosition.x, 0, deltaPosition.z));
+                collisionCheckTempBox.setFromCenterAndSize(horizontalCheckPos, collisionSizeVec);
+
+                let collisionX = false; let collisionZ = false;
+                for (const obj of collidableObjects) {
+                    if (obj.userData.isFloor || obj.userData.isCeiling) continue;
+                    if (obj.userData.isPitTrapCover && !obj.userData.isCollidable) continue;
+
+                    const oB = new THREE.Box3().setFromObject(obj);
+
+                    const tempBoxX = new THREE.Box3().setFromCenterAndSize(player.position.clone().add(new THREE.Vector3(deltaPosition.x, 0, 0)), collisionSizeVec);
+                    if (tempBoxX.intersectsBox(oB)) {
+                        if (oB.max.y > player.position.y - PLAYER_HEIGHT/2 && oB.max.y < player.position.y - PLAYER_HEIGHT/2 + PLAYER_STEP_HEIGHT && playerOnGround && deltaPosition.x !== 0) {
+                            const stepUpAmount = oB.max.y - (player.position.y - PLAYER_HEIGHT/2) + 0.01;
+                            player.position.y += stepUpAmount;
+                        } else {
+                            collisionX = true;
+                        }
+                    }
+                    const tempBoxZ = new THREE.Box3().setFromCenterAndSize(player.position.clone().add(new THREE.Vector3(0, 0, deltaPosition.z)), collisionSizeVec);
+                    if (tempBoxZ.intersectsBox(oB)) {
+                         if (oB.max.y > player.position.y - PLAYER_HEIGHT/2 && oB.max.y < player.position.y - PLAYER_HEIGHT/2 + PLAYER_STEP_HEIGHT && playerOnGround && deltaPosition.z !== 0) {
+                            const stepUpAmount = oB.max.y - (player.position.y - PLAYER_HEIGHT/2) + 0.01;
+                            player.position.y += stepUpAmount;
+                        } else {
+                            collisionZ = true;
+                        }
+                    }
+                    if (collisionX && collisionZ) break;
+                }
+                if(collisionX) { playerVelocity.x = 0; deltaPosition.x = 0; }
+                if(collisionZ) { playerVelocity.z = 0; deltaPosition.z = 0; }
+            }
+
+            player.position.x += deltaPosition.x;
+            player.position.z += deltaPosition.z;
+
+
+            player.rotation.y = cameraTheta + Math.PI;
+
+            if (!playerFallingIntoPit) {
+                for (const trap of pitTrapObjects) {
+                    if (trap.state === 'intact') {
+                        const distSq = player.position.clone().setY(0).distanceToSquared(new THREE.Vector3(trap.worldX, 0, trap.worldZ));
+                        if (playerOnGround && distSq < PIT_TRAP_TRIGGER_RADIUS_SQUARED && Math.abs(player.position.y - PLAYER_HEIGHT / 2) < PLAYER_STEP_HEIGHT + 0.01) {
+                            triggerPitTrap(trap);
+                        }
+                    }
+                }
+            }
+
+            if (endZone && gameActive && !playerFallingIntoPit) {
+                const pXZ = new THREE.Vector2(player.position.x, player.position.z);
+                const eZXZ = new THREE.Vector2(endZone.position.x, endZone.position.z);
+                if (playerOnGround && pXZ.distanceTo(eZXZ) < PLAYER_RADIUS + CELL_SIZE * 0.3) winGame();
+            }
+        }
+
+        function triggerPitTrap(trap) {
+            if (trap.state !== 'intact' || !gameActive) return;
+
+            if (!trap.hasBeenRevealedByActivation) {
+                trap.hasBeenRevealedByActivation = true;
+            }
+
+            trap.state = 'breaking';
+            if (trap.mesh && trap.mesh.userData) trap.mesh.userData.isCollidable = false;
+            currentMazeLayout[trap.gridZ][trap.gridX] = BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT;
+
+            if(crackedTexture && trap.mesh && trap.mesh.material.map !== crackedTexture) {
+                const newMaterial = trap.mesh.material.clone();
+                newMaterial.map = crackedTexture.clone();
+                newMaterial.map.needsUpdate = true;
+                newMaterial.map.repeat.set(1,1);
+                trap.mesh.material = newMaterial;
+            }
+            if (trap.holeMesh) trap.holeMesh.visible = true;
+
+            if (trap.mesh) {
+                new TWEEN.Tween(trap.mesh.rotation)
+                    .to({ x: trap.mesh.rotation.x - Math.PI / 2.1 }, PIT_TRAP_BREAK_ANIMATION_TIME * 0.8)
+                    .easing(TWEEN.Easing.Quadratic.In)
+                    .onComplete(() => {
+                         new TWEEN.Tween(trap.mesh.position)
+                            .to({ y: -1000 }, PIT_TRAP_BREAK_ANIMATION_TIME * 0.7) // Mover muy abajo
+                            .easing(TWEEN.Easing.Quadratic.In)
+                            .onComplete(() => {
+                                trap.state = 'broken';
+                                if(trap.mesh) {
+                                     trap.mesh.visible = false;
+                                }
+                            })
+                            .start();
+                    })
+                    .start();
+            }
+
+
+            const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+            const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+
+            if (playerGridX === trap.gridX && playerGridZ === trap.gridZ && playerOnGround) {
+                playerFallingIntoPit = { x: trap.gridX, z: trap.gridZ };
+                playerOnGround = false;
+                playerVelocity.y = -1.0;
+                showMessage("¡El suelo se rompe!", 2000);
+            }
         }
 
 
-        // --- Camera Update ---
-        function updateCamera() {
-            if (!player || !camera) return; if (isFirstPersonView) { camera.position.copy(player.position); camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR; camera.rotation.order = 'YXZ'; camera.rotation.y = cameraTheta; camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS; camera.rotation.z = 0; camera.updateMatrixWorld(); if (playerTorchLight && playerTorchLight.parent === scene) { lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); camera.localToWorld(lightWorldPosHelper); playerTorchLight.position.copy(lightWorldPosHelper); } for (const obj of currentlyTransparentObjects) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } currentlyTransparentObjects.clear(); } else { const targetPosition = new THREE.Vector3(); const offset = new THREE.Vector3(); offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta); offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET; offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta); targetPosition.copy(player.position).add(offset); const cameraRaycaster = new THREE.Raycaster(); const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize(); const rayLength = rayOrigin.distanceTo(targetPosition); cameraRaycaster.set(rayOrigin, directionToCamera); cameraRaycaster.far = rayLength; const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable); const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false); let objectsToMakeTransparentThisFrame = new Set(); for (const intersect of intersects) { if (intersect.object.userData.isTransparentCapable) { objectsToMakeTransparentThisFrame.add(intersect.object); } } for (const obj of currentlyTransparentObjects) { if (!objectsToMakeTransparentThisFrame.has(obj)) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } } for (const obj of objectsToMakeTransparentThisFrame) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = true; obj.material.opacity = OBSTACLE_OPACITY; } } currentlyTransparentObjects = objectsToMakeTransparentThisFrame; let finalCameraPosition = targetPosition.clone(); if (intersects.length > 0) { let closestDistance = rayLength; for (const intersect of intersects) { if (intersect.distance < closestDistance) { closestDistance = intersect.distance; } } finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3)); } finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND); camera.position.copy(finalCameraPosition); const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); camera.lookAt(lookAtTarget); }
-        }
-
-        // --- Minimap Function ---
+        function updateCamera() { if (!player || !camera) return; if (isFirstPersonView) { camera.position.copy(player.position); camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR; camera.rotation.order = 'YXZ'; camera.rotation.y = cameraTheta; camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS; camera.rotation.z = 0; camera.updateMatrixWorld(); if (playerTorchLight && playerTorchLight.parent === scene) { lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); camera.localToWorld(lightWorldPosHelper); playerTorchLight.position.copy(lightWorldPosHelper); } for (const obj of currentlyTransparentObjects) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } currentlyTransparentObjects.clear(); } else { const targetPosition = new THREE.Vector3(); const offset = new THREE.Vector3(); offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta); offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET; offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta); targetPosition.copy(player.position).add(offset); const cameraRaycaster = new THREE.Raycaster(); const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize(); const rayLength = rayOrigin.distanceTo(targetPosition); cameraRaycaster.set(rayOrigin, directionToCamera); cameraRaycaster.far = rayLength; const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable && !(obj.userData.isPitTrapCover && !obj.userData.isCollidable) ); const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false); let objectsToMakeTransparentThisFrame = new Set(); for (const intersect of intersects) { if (intersect.object.userData.isTransparentCapable) { objectsToMakeTransparentThisFrame.add(intersect.object); } } for (const obj of currentlyTransparentObjects) { if (!objectsToMakeTransparentThisFrame.has(obj)) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } } for (const obj of objectsToMakeTransparentThisFrame) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = true; obj.material.opacity = OBSTACLE_OPACITY; } } currentlyTransparentObjects = objectsToMakeTransparentThisFrame; let finalCameraPosition = targetPosition.clone(); if (intersects.length > 0) { let closestDistance = rayLength; for (const intersect of intersects) { if (intersect.distance < closestDistance) { closestDistance = intersect.distance; } } finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3)); } finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND); camera.position.copy(finalCameraPosition); const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); camera.lookAt(lookAtTarget); } }
         function drawMinimap() {
-            if (!minimapCtx || !player || !maze.length || !visibilityMaze.length || !currentMazeWidth || !currentMazeHeight) return;
+            if (!minimapCtx || !player || !currentMazeLayout.length || !visibilityMaze.length || !currentMazeWidth || !currentMazeHeight) return;
             const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
             const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
             minimapCtx.clearRect(0, 0, minimapWidth, minimapHeight); minimapCtx.save(); minimapCtx.translate(minimapWidth / 2, minimapHeight / 2); minimapCtx.rotate(cameraTheta);
             const radius = MINIMAP_RADIUS_CELLS; const cellSizePx = MINIMAP_CELL_SIZE_PX;
+
             for (let relZ = -radius; relZ <= radius; relZ++) {
                 for (let relX = -radius; relX <= radius; relX++) {
                     const checkX = playerGridX + relX; const checkZ = playerGridZ + relZ;
@@ -1098,11 +1129,22 @@
                         fillColor = MINIMAP_UNSEEN_COLOR;
                     } else {
                         if (checkX < 0 || checkX >= currentMazeWidth || checkZ < 0 || checkZ >= currentMazeHeight) {
-                            fillColor = MINIMAP_UNSEEN_COLOR; // Outside maze but visible on minimap
+                            fillColor = MINIMAP_UNSEEN_COLOR;
                         } else {
-                            const cellType = maze[checkZ][checkX];
-                            if (cellType === 0) fillColor = MINIMAP_WALL_COLOR;
-                            else if (cellType === 6) fillColor = MINIMAP_END_COLOR;
+                            const cellTypeInLayout = currentMazeLayout[checkZ][checkX];
+                            const originalCellType = maze[checkZ][checkX];
+
+                            if (cellTypeInLayout === 0) fillColor = MINIMAP_WALL_COLOR;
+                            else if (cellTypeInLayout === BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT) fillColor = MINIMAP_PITTRAP_BROKEN_COLOR;
+                            else if (cellTypeInLayout === 6) fillColor = MINIMAP_END_COLOR;
+                            else if (originalCellType === PIT_TRAP_CELL_TYPE) {
+                                const trapObject = pitTrapObjects.find(t => t.gridX === checkX && t.gridZ === checkZ);
+                                if (trapObject && trapObject.hasBeenRevealedByActivation && cellTypeInLayout === PIT_TRAP_CELL_TYPE) {
+                                    fillColor = MINIMAP_PITTRAP_INTACT_COLOR;
+                                } else {
+                                    fillColor = MINIMAP_PATH_COLOR;
+                                }
+                            }
                             else fillColor = MINIMAP_PATH_COLOR;
                         }
                     }
@@ -1113,36 +1155,14 @@
             }
             minimapCtx.restore(); minimapCtx.beginPath(); const playerMarkerSize = cellSizePx * 0.9; const halfSize = playerMarkerSize / 2; minimapCtx.moveTo(minimapWidth / 2, minimapHeight / 2 - halfSize * 0.8); minimapCtx.lineTo(minimapWidth / 2 - halfSize * 0.6, minimapHeight / 2 + halfSize * 0.5); minimapCtx.lineTo(minimapWidth / 2 + halfSize * 0.6, minimapHeight / 2 + halfSize * 0.5); minimapCtx.closePath(); minimapCtx.fillStyle = MINIMAP_PLAYER_COLOR; minimapCtx.fill();
         }
+        function hasLineOfSight(x0, z0, x1, z1) { let dx = Math.abs(x1 - x0); let sx = x0 < x1 ? 1 : -1; let dz = -Math.abs(z1 - z0); let sz = z0 < z1 ? 1 : -1; let err = dx + dz; let currentX = x0; let currentZ = z0; let steps = 0; const maxSteps = currentMazeWidth + currentMazeHeight; while (steps < maxSteps) { steps++; if (currentX === x1 && currentZ === z1) return true; if (!(currentX === x0 && currentZ === z0)) { if (currentX >= 0 && currentX < currentMazeWidth && currentZ >= 0 && currentZ < currentMazeHeight) { if (currentMazeLayout[currentZ][currentX] === 0 && maze[currentZ][currentX] === 0) { if (visibilityMaze[currentZ] && typeof visibilityMaze[currentZ][currentX] !== 'undefined') { visibilityMaze[currentZ][currentX] = true; } return false; } } else { return false; } } let e2 = 2 * err; let moved = false; if (e2 >= dz) { if (currentX === x1 && currentZ === z1 && !(currentX === x0 && currentZ === z0)) break; err += dz; currentX += sx; moved = true; } if (e2 <= dx) { if (currentX === x1 && currentZ === z1 && !(currentX === x0 && currentZ === z0)) break; err += dx; currentZ += sz; moved = true; } if (!moved && (currentX !== x1 || currentZ !== z1)) { return false; } } return (currentX === x1 && currentZ === z1); }
 
-        // --- Fog of War ---
-        function hasLineOfSight(x0, z0, x1, z1) {
-            let dx = Math.abs(x1 - x0); let sx = x0 < x1 ? 1 : -1; let dz = -Math.abs(z1 - z0); let sz = z0 < z1 ? 1 : -1; let err = dx + dz; let currentX = x0; let currentZ = z0; let steps = 0; const maxSteps = currentMazeWidth + currentMazeHeight;
-            while (steps < maxSteps) {
-                steps++;
-                if (currentX === x1 && currentZ === z1) return true;
-                // Don't mark the start cell of the ray as a blocking wall
-                if (!(currentX === x0 && currentZ === z0)) {
-                    if (currentX >= 0 && currentX < currentMazeWidth && currentZ >= 0 && currentZ < currentMazeHeight) {
-                        if (maze[currentZ][currentX] === 0) { // Is a wall
-                            if (visibilityMaze[currentZ] && typeof visibilityMaze[currentZ][currentX] !== 'undefined') {
-                                visibilityMaze[currentZ][currentX] = true; // Reveal the wall that blocked vision
-                            }
-                            return false; // Blocked
-                        }
-                    } else { return false; /* Outside maze bounds */ }
-                }
-                let e2 = 2 * err; let moved = false;
-                if (e2 >= dz) { if (currentX === x1 && currentZ === z1 && !(currentX === x0 && currentZ === z0)) break; err += dz; currentX += sx; moved = true; }
-                if (e2 <= dx) { if (currentX === x1 && currentZ === z1 && !(currentX === x0 && currentZ === z0)) break; err += dx; currentZ += sz; moved = true; }
-                if (!moved && (currentX !== x1 || currentZ !== z1)) { return false; /* Stuck, should rarely happen */ }
-            }
-            return (currentX === x1 && currentZ === z1); // Final check
-        }
         function updateVisibility() {
-            if (!player || !visibilityMaze.length || !maze.length || !currentMazeWidth || !currentMazeHeight) return;
+            if (!player || !visibilityMaze.length || !currentMazeLayout.length || !currentMazeWidth || !currentMazeHeight) return;
             const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
             const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
             const visionRadius = PLAYER_VISION_RADIUS_CELLS;
+
             if (playerGridX >= 0 && playerGridX < currentMazeWidth && playerGridZ >= 0 && playerGridZ < currentMazeHeight) {
                 if(visibilityMaze[playerGridZ]) visibilityMaze[playerGridZ][playerGridX] = true;
             }
@@ -1162,547 +1182,148 @@
         }
 
 
-        // --- Animation Loop ---
         let animationFrameId;
         function animate() {
-            if (!gameActive) {
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (!gameActive && !TWEEN.getAll().length && playerFallingIntoPit === null) {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
                 return;
             }
             animationFrameId = requestAnimationFrame(animate);
-            const dT = Math.min(0.05, clock.getDelta()); // Cap delta time
-            const flicker = (Math.random() - 0.5) * TORCH_FLICKER_AMOUNT;
+            const dT = Math.min(0.05, clock.getDelta());
+            TWEEN.update();
 
-            if (playerTorchLight && playerTorchLight.userData.baseIntensity) { playerTorchLight.intensity = Math.max(0, playerTorchLight.userData.baseIntensity + flicker); }
-            if (playerTorchFlameMesh && playerTorchFlameMesh.material) { const pVO = (Math.random()-0.5)*FLAME_OPACITY_VAR; const pVS = (Math.random()-0.5)*FLAME_SCALE_Y_VAR; playerTorchFlameMesh.material.opacity = Math.max(0.1,Math.min(1.0,FLAME_BASE_OPACITY+pVO)); playerTorchFlameMesh.scale.y = Math.max(0.1,FLAME_BASE_SCALE_Y+pVS); playerTorchFlameMesh.scale.x = playerTorchFlameMesh.scale.z = Math.max(0.1,FLAME_BASE_SCALE_Y*0.8+pVS*0.5); }
-            for (const torch of staticTorches) { const sLF = (Math.random()-0.5)*TORCH_FLICKER_AMOUNT*1.1; const vO = (Math.random()-0.5)*FLAME_OPACITY_VAR; const vS = (Math.random()-0.5)*FLAME_SCALE_Y_VAR; if (torch.light?.userData.baseIntensity) { torch.light.intensity = Math.max(0, torch.light.userData.baseIntensity + sLF); } if (torch.flameMesh?.material) { torch.flameMesh.material.opacity = Math.max(0.1,Math.min(1.0,FLAME_BASE_OPACITY+vO)); torch.flameMesh.scale.y = Math.max(0.1,FLAME_BASE_SCALE_Y+vS); torch.flameMesh.scale.x = torch.flameMesh.scale.z = Math.max(0.1,FLAME_BASE_SCALE_Y*0.8 + vS * 0.5); } }
+            if (gameActive || playerFallingIntoPit !== null) {
+                updatePlayer(dT);
+            }
 
-            updatePlayer(dT);
+            if (gameActive) {
+                const flicker = (Math.random() - 0.5) * TORCH_FLICKER_AMOUNT;
+                if (playerTorchLight && playerTorchLight.userData.baseIntensity) { playerTorchLight.intensity = Math.max(0, playerTorchLight.userData.baseIntensity + flicker); }
+                if (playerTorchFlameMesh && playerTorchFlameMesh.material) { const pVO = (Math.random()-0.5)*FLAME_OPACITY_VAR; const pVS = (Math.random()-0.5)*FLAME_SCALE_Y_VAR; playerTorchFlameMesh.material.opacity = Math.max(0.1,Math.min(1.0,FLAME_BASE_OPACITY+pVO)); playerTorchFlameMesh.scale.y = Math.max(0.1,FLAME_BASE_SCALE_Y+pVS); playerTorchFlameMesh.scale.x = playerTorchFlameMesh.scale.z = Math.max(0.1,FLAME_BASE_SCALE_Y*0.8+pVS*0.5); }
+                for (const torch of staticTorches) { const sLF = (Math.random()-0.5)*TORCH_FLICKER_AMOUNT*1.1; const vO = (Math.random()-0.5)*FLAME_OPACITY_VAR; const vS = (Math.random()-0.5)*FLAME_SCALE_Y_VAR; if (torch.light?.userData.baseIntensity) { torch.light.intensity = Math.max(0, torch.light.userData.baseIntensity + sLF); } if (torch.flameMesh?.material) { torch.flameMesh.material.opacity = Math.max(0.1,Math.min(1.0,FLAME_BASE_OPACITY+vO)); torch.flameMesh.scale.y = Math.max(0.1,FLAME_BASE_SCALE_Y+vS); torch.flameMesh.scale.x = torch.flameMesh.scale.z = Math.max(0.1,FLAME_BASE_SCALE_Y*0.8 + vS * 0.5); } }
+            }
             updateCamera();
             updateVisibility();
             drawMinimap();
 
             if(renderer && scene && camera) renderer.render(scene, camera);
         }
-
-
-        // --- Utilities ---
         function onWindowResize() { updateRendererAndCameraSize(); }
         let messageTimeout = null; function showMessage(text, duration = 2500) { if (messageTimeout) clearTimeout(messageTimeout); messageDiv.textContent = text; messageDiv.style.display = 'block'; messageTimeout = setTimeout(() => { messageDiv.style.display = 'none'; messageTimeout = null; }, duration); }
-        function winGame() { if (!gameActive) return; gameActive = false; showMessage("¡HAS ESCAPADO!", 10000); console.log("Juego ganado!"); if (isPointerLocked && document.pointerLockElement) document.exitPointerLock(); setTimeout(() => { // Go back to main menu or scenario list if came from there
-            // For now, reload the page, but ideally would go to selection screen.
-            // showCustomGameUI(); // Could be an option
-            window.location.reload(); // Simple for now
-        }, 5000); }
-        function updateRendererAndCameraSize() {
-            const width = window.innerWidth; const height = window.innerHeight; const maxDim = Math.max(width, height); const scaleFactor = maxDim > MAX_RESOLUTION_DIMENSION ? MAX_RESOLUTION_DIMENSION / maxDim : 1; const renderWidth = Math.floor(width * scaleFactor); const renderHeight = Math.floor(height * scaleFactor); if(renderer && camera) { renderer.setSize(renderWidth, renderHeight, false); camera.aspect = renderWidth / renderHeight; camera.updateProjectionMatrix(); }
-        }
 
-        // --- Custom Game and Editor UI Logic (Continuation) ---
-        function showCustomGameUI() {
-            gameActive = false; // Stop the game if it was running
+        function winGame() {
+            if (!gameActive) return; gameActive = false; TWEEN.removeAll();
+            showMessage("¡HAS ESCAPADO!", 10000); console.log("Juego ganado!");
             if (isPointerLocked && document.pointerLockElement) document.exitPointerLock();
-            if(startOptionsDiv) startOptionsDiv.style.display = 'none';
-            if(loadingTextElement) loadingTextElement.style.display = 'none';
-            if(loadingScreenElement) loadingScreenElement.style.display = 'none';
-            customGameScreen.style.display = 'flex';
-            scenarioEditorScreen.style.display = 'none';
-            loadAndDisplayCustomScenarios();
+            setTimeout(() => { window.location.reload(); }, 5000);
         }
 
-        backToMainMenuBtn.addEventListener('click', () => {
-            customGameScreen.style.display = 'none';
-            if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
-            if(startOptionsDiv) startOptionsDiv.style.display = 'flex';
-        });
+        function loseGame(reason = "Has perdido.") {
+            if (!gameActive && playerFallingIntoPit === null) return;
+            gameActive = false;
 
-        async function loadAndDisplayCustomScenarios() {
-            try {
-                const scenarios = await getAllScenariosDB();
-                customScenarioListUL.innerHTML = '';
-                if (scenarios && scenarios.length > 0) {
-                    noCustomScenariosMsg.style.display = 'none';
-                    scenarios.forEach(scenario => {
-                        const listItem = document.createElement('li');
-                        listItem.classList.add('scenario-item');
-                        listItem.innerHTML = `
-                            <span>${escapeHTML(scenario.name)} (${scenario.width}x${scenario.height})</span>
-                            <div class="scenario-actions">
-                                <button class="action-btn play-scenario-btn" data-id="${scenario.id}">Jugar</button>
-                                <button class="action-btn edit-scenario-btn" data-id="${scenario.id}">Editar</button>
-                                <button class="action-btn export-scenario-btn" data-id="${scenario.id}">Exportar</button>
-                                <button class="action-btn delete-scenario-btn" data-id="${scenario.id}">Eliminar</button>
-                            </div>
-                        `;
-                        customScenarioListUL.appendChild(listItem);
-                    });
-                    addScenarioActionListeners();
-                } else {
-                    noCustomScenariosMsg.style.display = 'block';
-                }
-            } catch (error) {
-                console.error("Error loading scenarios:", error);
-                noCustomScenariosMsg.textContent = "Error loading scenarios.";
-                noCustomScenariosMsg.style.display = 'block';
-            }
-        }
+            showMessage(reason, 3000);
+            console.log("Juego perdido:", reason);
+            if (isPointerLocked && document.pointerLockElement) document.exitPointerLock();
 
-        function addScenarioActionListeners() {
-            document.querySelectorAll('.play-scenario-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const scenarioId = parseInt(e.target.dataset.id);
-                    const scenarioToPlay = await getScenarioByIdDB(scenarioId);
-                    if (scenarioToPlay) {
-                        customGameScreen.style.display = 'none';
-                        if(loadingTextElement) loadingTextElement.style.display = 'block'; // Show "Loading..."
-                        if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; // Show loading background
-                        preloadTextures(() => {
-                            init(scenarioToPlay); // Pass scenario data
-                            finalizeLoadingScreen();
-                        });
-                    } else {
-                        alert("Error: Could not load scenario to play.");
-                    }
-                });
-            });
-            document.querySelectorAll('.edit-scenario-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const scenarioId = parseInt(e.target.dataset.id);
-                    openScenarioEditor(scenarioId);
-                });
-            });
-            document.querySelectorAll('.export-scenario-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const scenarioId = parseInt(e.target.dataset.id);
-                    const scenario = await getScenarioByIdDB(scenarioId);
-                    if (scenario) {
-                        const { id, ...exportData } = scenario; // Remove ID for clean export
-                        exportScenarioAsJSON(exportData);
-                    }
-                });
-            });
-            document.querySelectorAll('.delete-scenario-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const scenarioId = parseInt(e.target.dataset.id);
-                    if (confirm("Are you sure you want to delete this scenario?")) {
-                        try {
-                            await deleteScenarioDB(scenarioId);
-                            loadAndDisplayCustomScenarios();
-                        } catch (error) {
-                            console.error("Error deleting scenario:", error);
-                            alert("Error deleting scenario.");
-                        }
-                    }
-                });
-            });
-        }
+            setTimeout(() => {
+                player.position.copy(initialPlayerPosition);
+                playerVelocity.set(0, 0, 0);
+                playerOnGround = true;
+                playerFallingIntoPit = null;
+                moveForward = 0;
+                moveRight = 0;
+                keyStates = {};
+                cameraPhi = Math.PI / 3;
+                cameraTheta = player.rotation.y - Math.PI;
+                updateCamera();
 
-        function exportScenarioAsJSON(scenarioData) {
-            const jsonString = JSON.stringify(scenarioData, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${scenarioData.name.replace(/[^a-z0-9\s-]/gi, '_').trim().replace(/\s+/g, '-').toLowerCase() || 'custom_scenario'}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+                for (const trap of pitTrapObjects) {
+                    if (trap.state === 'broken' || trap.state === 'breaking') { // También resetear si está 'breaking'
+                        trap.state = 'intact';
+                        currentMazeLayout[trap.gridZ][trap.gridX] = PIT_TRAP_CELL_TYPE;
 
-        importScenarioBtn.addEventListener('click', () => { importFileInput.click(); });
-        importFileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const importedScenario = JSON.parse(e.target.result);
-                        if (importedScenario.name && importedScenario.width && importedScenario.height && importedScenario.grid &&
-                            Array.isArray(importedScenario.grid) && importedScenario.grid.length === importedScenario.height &&
-                            importedScenario.grid.every(row => Array.isArray(row) && row.length === importedScenario.width)) {
-
-                            let scenarioToSave = { // Create object with expected fields
-                                name: importedScenario.name,
-                                width: importedScenario.width,
-                                height: importedScenario.height,
-                                grid: importedScenario.grid
-                            };
-
-                            const existingScenarios = await getAllScenariosDB();
-                            const existingByName = existingScenarios.find(s => s.name === scenarioToSave.name);
-
-                            if (existingByName) {
-                                if (confirm(`A scenario named "${scenarioToSave.name}" already exists. Do you want to overwrite it?`)) {
-                                    scenarioToSave.id = existingByName.id; // Assign ID to overwrite
-                                } else {
-                                    importFileInput.value = ''; return;
+                        if (trap.mesh) {
+                            trap.mesh.visible = true;
+                            trap.mesh.userData.isCollidable = true;
+                            trap.mesh.position.set(trap.worldX, -PIT_COVER_THICKNESS / 2, trap.worldZ);
+                            trap.mesh.rotation.set(0, 0, 0);
+                            if (floorTexture && trap.mesh.material.map !== floorTexture) { // Restaurar material original
+                                 // Re-crear el material base para la tapa.
+                                const originalCoverMaterial = new THREE.MeshStandardMaterial({
+                                    map: floorTexture.clone(), // Usar un clon de la textura de suelo original
+                                    roughness: 0.95, metalness: 0.1,
+                                    color: floorTexture ? 0xffffff : 0x444038
+                                });
+                                if (originalCoverMaterial.map) {
+                                    originalCoverMaterial.map.needsUpdate = true;
+                                    originalCoverMaterial.map.repeat.set(1,1);
                                 }
-                            }
-                            await saveScenarioDB(scenarioToSave);
-                            loadAndDisplayCustomScenarios();
-                            alert(`Scenario "${importedScenario.name}" imported successfully.`);
-                        } else {
-                            alert("The JSON file does not have the expected scenario format or is corrupt.");
-                        }
-                    } catch (error) {
-                        console.error("Error importing scenario:", error);
-                        alert("Error processing the JSON file. Ensure it is valid.");
-                    }
-                    importFileInput.value = '';
-                };
-                reader.readAsText(file);
-            }
-        });
-
-        createNewScenarioBtn.addEventListener('click', () => {
-            openScenarioEditor(null); // null indicates new scenario
-        });
-
-        backToCustomScreenBtn.addEventListener('click', () => {
-             if (hasUnsavedChanges) {
-                if (!confirm("You have unsaved changes. Are you sure you want to leave the editor? Changes will be lost.")) {
-                    return;
-                }
-            }
-            scenarioEditorScreen.style.display = 'none';
-            customGameScreen.style.display = 'flex';
-            currentEditingScenario = null;
-            hasUnsavedChanges = false;
-            editorMessageSpan.textContent = '';
-        });
-
-        async function openScenarioEditor(scenarioId) {
-            customGameScreen.style.display = 'none';
-            scenarioEditorScreen.style.display = 'flex';
-            hasUnsavedChanges = false;
-            editorMessageSpan.textContent = '';
-            playEditedScenarioBtn.disabled = true; // Disabled until something is playable and saved
-
-            if (scenarioId !== null) { // Editing
-                const scenario = await getScenarioByIdDB(scenarioId);
-                if (!scenario) { alert("Error: Could not load scenario."); backToCustomScreenBtn.click(); return; }
-                currentEditingScenario = JSON.parse(JSON.stringify(scenario)); // Deep copy
-                scenarioNameInput.value = currentEditingScenario.name;
-                dimensionSelectorDiv.style.display = 'none'; // Hide size selector when editing
-                scenarioNameInput.style.display = 'block'; // Show name input when editing
-                brushToolsDiv.style.display = 'block'; // Show brush tools when editing
-                editorActionsDiv.style.display = 'flex'; // Show actions when editing
-                setupEditorGrid(currentEditingScenario.width, currentEditingScenario.height, currentEditingScenario.grid);
-                checkEditorStateForPlayability(); // Check if playable on load
-            } else { // New
-                currentEditingScenario = { id: null, name: "", width: 0, height: 0, grid: [] };
-                scenarioNameInput.value = '';
-                dimensionSelectorDiv.style.display = 'flex'; // Show size selector for new maps
-                scenarioNameInput.style.display = 'none'; // Hide name input initially for new maps
-                brushToolsDiv.style.display = 'none'; // Hide brush tools initially for new maps
-                editorActionsDiv.style.display = 'none'; // Hide actions initially for new maps
-                editorGridContainer.innerHTML = ''; // Clear grid for new maps
-            }
-            // Reset active brush
-            document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.brush-btn[data-type="wall"]').classList.add('active');
-            selectedBrush = 'wall';
-        }
-
-        confirmSizeBtn.addEventListener('click', () => {
-            const [w, h] = scenarioSizeSelect.value.split('x').map(Number);
-            currentEditingScenario.width = w;
-            currentEditingScenario.height = h;
-            // Initialize grid filled with walls (0)
-            currentEditingScenario.grid = Array(h).fill(null).map(() => Array(w).fill(0));
-            // Borders are always wall (already are by fill(0), but explicit in click logic)
-
-            dimensionSelectorDiv.style.display = 'none';
-            scenarioNameInput.style.display = 'block';
-            scenarioNameInput.value = "Nuevo Laberinto"; // Default name
-            currentEditingScenario.name = "Nuevo Laberinto";
-            brushToolsDiv.style.display = 'block';
-            editorActionsDiv.style.display = 'flex';
-            setupEditorGrid(w, h, currentEditingScenario.grid);
-            hasUnsavedChanges = true; // New scenario implies changes
-            checkEditorStateForPlayability();
-        });
-
-        function setupEditorGrid(width, height, gridData) {
-            editorGridContainer.innerHTML = ''; // Clear
-            editorGridContainer.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
-            editorGridContainer.style.gridTemplateRows = `repeat(${height}, 1fr)`;
-            editorGridData = JSON.parse(JSON.stringify(gridData)); // Deep copy for editing
-            editorCellElements = []; // Reset cell element array
-
-            for (let r = 0; r < height; r++) {
-                editorCellElements[r] = [];
-                for (let c = 0; c < width; c++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('grid-cell');
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-
-                    // Mark borders
-                    if (r === 0 || r === height - 1 || c === 0 || c === width - 1) {
-                        cell.classList.add('border');
-                        editorGridData[r][c] = 0; // Ensure borders are walls in data
-                    }
-                    updateCellVisual(cell, editorGridData[r][c]);
-
-                    cell.addEventListener('click', handleGridCellClick);
-                    editorGridContainer.appendChild(cell);
-                    editorCellElements[r][c] = cell; // Store the element
-                }
-            }
-        }
-
-        function updateCellVisual(cellElement, cellType) {
-            cellElement.classList.remove('path', 'start', 'end', 'wall'); // Clear previous classes
-            let symbol = '';
-            switch (cellType) {
-                case 0: cellElement.classList.add('wall'); break; // Wall
-                case 1: cellElement.classList.add('path'); break; // Path
-                case 5: cellElement.classList.add('start'); symbol = 'S'; break; // Start
-                case 6: cellElement.classList.add('end'); symbol = 'E'; break; // End
-                default: cellElement.classList.add('wall'); break; // Default to wall
-            }
-            cellElement.textContent = symbol;
-        }
-
-        function handleGridCellClick(event) {
-            const cell = event.target;
-            const r = parseInt(cell.dataset.row);
-            const c = parseInt(cell.dataset.col);
-
-            if (cell.classList.contains('border')) return; // Cannot modify borders
-
-            let newType;
-            switch (selectedBrush) {
-                case 'wall': newType = 0; break;
-                case 'path': newType = 1; break;
-                case 'start': newType = 5; break;
-                case 'end': newType = 6; break;
-                default: return;
-            }
-
-            // If placing start (5) or end (6), find and remove the old one
-            if (newType === 5 || newType === 6) {
-                for (let i = 0; i < editorGridData.length; i++) {
-                    for (let j = 0; j < editorGridData[i].length; j++) {
-                        if (editorGridData[i][j] === newType) {
-                            editorGridData[i][j] = 1; // Convert old one to path
-                            if (editorCellElements[i] && editorCellElements[i][j]) {
-                                updateCellVisual(editorCellElements[i][j], 1);
+                                trap.mesh.material = originalCoverMaterial;
                             }
                         }
-                    }
-                }
-            }
-
-            editorGridData[r][c] = newType;
-            updateCellVisual(cell, newType);
-            hasUnsavedChanges = true;
-            checkEditorStateForPlayability();
-        }
-
-        document.querySelectorAll('.brush-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
-                button.classList.add('active');
-                selectedBrush = button.dataset.type;
-            });
-        });
-
-        saveScenarioBtn.addEventListener('click', async () => {
-            const scenarioName = scenarioNameInput.value.trim();
-            if (!scenarioName) {
-                editorMessageSpan.textContent = "Please enter a scenario name.";
-                return;
-            }
-
-            // Validations before saving
-            const validationResult = validateEditorGrid();
-            if (!validationResult.valid) {
-                editorMessageSpan.textContent = validationResult.message;
-                return;
-            }
-
-            currentEditingScenario.name = scenarioName;
-            currentEditingScenario.grid = JSON.parse(JSON.stringify(editorGridData)); // Save the current copy
-
-            try {
-                // If existing scenario (has ID) and name changed,
-                // check if the new name already exists (excluding the current ID).
-                if (currentEditingScenario.id !== null && currentEditingScenario.id !== undefined) { // Check for non-null and non-undefined ID
-                    const allScenarios = await getAllScenariosDB();
-                    const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name && s.id !== currentEditingScenario.id);
-                    if (nameConflict) {
-                         if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite the current scenario with this name anyway? (This will not affect the other scenario).`)) {
-                            editorMessageSpan.textContent = "Save cancelled. Name conflict.";
-                            return;
+                        if (trap.holeMesh) {
+                            trap.holeMesh.visible = false;
                         }
+                        // trap.hasBeenRevealedByActivation se MANTIENE true.
                     }
-                } else { // New scenario, check if the name already exists
-                     const allScenarios = await getAllScenariosDB();
-                     const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name);
-                     if (nameConflict) {
-                        if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite it?`)) {
-                            editorMessageSpan.textContent = "Save cancelled. Name conflict.";
-                            return;
-                        }
-                        currentEditingScenario.id = nameConflict.id; // Prepare to overwrite the existing one found by name
-                     }
                 }
+                TWEEN.removeAll();
 
 
-                const savedScenario = await saveScenarioDB(currentEditingScenario);
-                currentEditingScenario.id = savedScenario.id; // Update ID if it was new, or confirm if it was existing
-                hasUnsavedChanges = false;
-                editorMessageSpan.textContent = "Scenario saved!";
-                playEditedScenarioBtn.disabled = false; // Enable play after saving
-                setTimeout(() => editorMessageSpan.textContent = "", 2000);
-                loadAndDisplayCustomScenarios(); // Refresh the list after saving
-            } catch (error) {
-                console.error("Error saving scenario:", error);
-                editorMessageSpan.textContent = "Error saving. Check console.";
-            }
-        });
-
-        playEditedScenarioBtn.addEventListener('click', () => {
-            if (hasUnsavedChanges) {
-                editorMessageSpan.textContent = "Save changes before playing.";
-                return;
-            }
-            if (!currentEditingScenario || currentEditingScenario.id === null || currentEditingScenario.id === undefined) { // Check for valid ID
-                editorMessageSpan.textContent = "Save the scenario first.";
-                return;
-            }
-            const validation = validateEditorGrid();
-            if (!validation.valid) {
-                 editorMessageSpan.textContent = "The maze is not valid for playing: " + validation.message;
-                 return;
-            }
-
-            scenarioEditorScreen.style.display = 'none';
-            if(loadingTextElement) loadingTextElement.style.display = 'block';
-            if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
-
-            // Use a deep copy of currentEditingScenario to play
-            const scenarioToPlay = JSON.parse(JSON.stringify(currentEditingScenario));
-
-            preloadTextures(() => {
-                init(scenarioToPlay);
-                finalizeLoadingScreen();
-            });
-        });
-
-        function checkEditorStateForPlayability() {
-            // Check if there is a scenario being edited AND if it has been saved at least once (has an ID)
-            const isSaved = (currentEditingScenario && currentEditingScenario.id !== null && currentEditingScenario.id !== undefined);
-
-            if (hasUnsavedChanges || !isSaved) {
-                playEditedScenarioBtn.disabled = true;
-                if (hasUnsavedChanges) {
-                     editorMessageSpan.textContent = "Unsaved changes.";
-                } else if (!isSaved) {
-                    editorMessageSpan.textContent = "Save to enable 'Play'.";
+                gameActive = true;
+                if (!animationFrameId && TWEEN.getAll().length === 0) {
+                     animate();
                 }
-                 // Clear message if it was previously a validation error
-                if (!hasUnsavedChanges && isSaved && editorMessageSpan.textContent.startsWith("The maze is not valid")) {
-                    editorMessageSpan.textContent = ""; // Or a default message
-                }
-
-            } else {
-                const validation = validateEditorGrid(); // Validate if it's playable
-                playEditedScenarioBtn.disabled = !validation.valid;
-                editorMessageSpan.textContent = validation.valid ? "Ready to play or save." : validation.message;
-            }
+                showMessage("Inténtalo de nuevo...", 2000);
+            }, 3000);
         }
 
-        function validateEditorGrid() {
-            if (!editorGridData || editorGridData.length === 0 || !editorGridData[0] || editorGridData[0].length === 0) return {valid: false, message: "The grid is empty."};
+        function updateRendererAndCameraSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            let maxDim = Math.max(width, height);
+            let currentMaxRes = isTouchDevice ? MAX_RESOLUTION_DIMENSION_MOBILE : MAX_RESOLUTION_DIMENSION;
 
-            let startPoint = null, endPoint = null;
-            const rows = editorGridData.length;
-            const cols = editorGridData[0].length;
+            const scaleFactor = maxDim > currentMaxRes ? currentMaxRes / maxDim : 1;
+            const renderWidth = Math.floor(width * scaleFactor);
+            const renderHeight = Math.floor(height * scaleFactor);
 
-
-            for (let r = 0; r < rows; r++) {
-                 if (!editorGridData[r]) { console.error(`Row ${r} is null/undefined in editorGridData`); continue; } // Defensive check
-                for (let c = 0; c < cols; c++) {
-                     // Defensive check for cell existence/value
-                     const cellValue = editorGridData[r][c];
-                     if (cellValue === undefined || cellValue === null) {
-                         console.warn(`Cell [${r}][${c}] is null/undefined, treating as wall (0).`);
-                         editorGridData[r][c] = 0; // Correct potentially bad data
-                         // Update visual if cell element exists and editorCellElements is populated
-                          if (editorCellElements && editorCellElements[r] && editorCellElements[r][c]) {
-                            updateCellVisual(editorCellElements[r][c], 0);
-                         }
-                     }
-
-                    if (editorGridData[r][c] === 5) {
-                         if (startPoint) return {valid: false, message: "Only one start point (S) is allowed."};
-                         startPoint = {r, c};
-                    }
-                    if (editorGridData[r][c] === 6) {
-                         if (endPoint) return {valid: false, message: "Only one end point (E) is allowed."};
-                         endPoint = {r, c};
-                    }
-                }
+            if(renderer && camera) {
+                renderer.setSize(renderWidth, renderHeight, false);
+                renderer.domElement.style.width = '100%';
+                renderer.domElement.style.height = '100%';
+                camera.aspect = renderWidth / renderHeight;
+                camera.updateProjectionMatrix();
             }
-
-
-            if (!startPoint) return {valid: false, message: "Missing a start point (S)."};
-            if (!endPoint) return {valid: false, message: "Missing an end point (E)."};
-
-             // Check if start/end are on a path cell type (not a wall 0) and not on the border
-             if (editorGridData[startPoint.r][startPoint.c] === 0) return { valid: false, message: "Start (S) cannot be on a wall." };
-             if (editorGridData[endPoint.r][endPoint.c] === 0) return { valid: false, message: "End (E) cannot be on a wall." };
-
-             if (startPoint.r === 0 || startPoint.r === rows - 1 || startPoint.c === 0 || startPoint.c === cols - 1) return { valid: false, message: "Start (S) cannot be on the border." };
-             if (endPoint.r === 0 || endPoint.r === rows - 1 || endPoint.c === 0 || endPoint.c === cols - 1) return { valid: false, message: "End (E) cannot be on the border." };
-
-
-            // Validation of accessibility (BFS)
-            const queue = [[startPoint.r, startPoint.c]];
-            const visited = Array(rows).fill(null).map(() => Array(cols).fill(false));
-            visited[startPoint.r][startPoint.c] = true;
-            let pathFound = false;
-
-            const dr = [-1, 1, 0, 0]; // Delta row (N, S)
-            const dc = [0, 0, -1, 1]; // Delta col (W, E)
-
-            while (queue.length > 0) {
-                const [r, c] = queue.shift();
-                if (r === endPoint.r && c === endPoint.c) {
-                    pathFound = true;
-                    break;
-                }
-                for (let i = 0; i < 4; i++) {
-                    const nr = r + dr[i];
-                    const nc = c + dc[i];
-                    // Check bounds before accessing editorGridData or visited
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                         // Ensure cell is not a wall (0) and hasn't been visited
-                        if (!visited[nr][nc] && editorGridData[nr][nc] !== 0) {
-                             visited[nr][nc] = true;
-                             queue.push([nr, nc]);
-                        }
-                    }
-                }
-            }
-
-            if (!pathFound) return {valid: false, message: "The end point is not accessible from the start."};
-            return {valid: true, message: "Valid maze."};
+            console.log(`Render size: ${renderWidth}x${renderHeight} (Touch: ${isTouchDevice}, Scale: ${scaleFactor.toFixed(2)})`);
         }
 
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return "";
-            return String(str).replace(/[&<>"']/g, function (match) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
-            });
-        }
+        function showCustomGameUI() { gameActive = false; if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null;} if (isPointerLocked && document.pointerLockElement) document.exitPointerLock(); if(startOptionsDiv) startOptionsDiv.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'none'; if(loadingScreenElement) loadingScreenElement.style.display = 'none'; customGameScreen.style.display = 'flex'; scenarioEditorScreen.style.display = 'none'; loadAndDisplayCustomScenarios(); }
+        backToMainMenuBtn.addEventListener('click', () => { customGameScreen.style.display = 'none'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; if(startOptionsDiv) startOptionsDiv.style.display = 'flex'; });
+        async function loadAndDisplayCustomScenarios() { try { const scenarios = await getAllScenariosDB(); customScenarioListUL.innerHTML = ''; if (scenarios && scenarios.length > 0) { noCustomScenariosMsg.style.display = 'none'; scenarios.forEach(scenario => { const listItem = document.createElement('li'); listItem.classList.add('scenario-item'); listItem.innerHTML = `<span>${escapeHTML(scenario.name)} (${scenario.width}x${scenario.height})</span><div class="scenario-actions"><button class="action-btn play-scenario-btn" data-id="${scenario.id}">Jugar</button><button class="action-btn edit-scenario-btn" data-id="${scenario.id}">Editar</button><button class="action-btn export-scenario-btn" data-id="${scenario.id}">Exportar</button><button class="action-btn delete-scenario-btn" data-id="${scenario.id}">Eliminar</button></div>`; customScenarioListUL.appendChild(listItem); }); addScenarioActionListeners(); } else { noCustomScenariosMsg.style.display = 'block'; } } catch (error) { console.error("Error loading scenarios:", error); noCustomScenariosMsg.textContent = "Error loading scenarios."; noCustomScenariosMsg.style.display = 'block'; } }
+        function addScenarioActionListeners() { document.querySelectorAll('.play-scenario-btn').forEach(btn => { btn.addEventListener('click', async (e) => { const scenarioId = parseInt(e.target.dataset.id); const scenarioToPlay = await getScenarioByIdDB(scenarioId); if (scenarioToPlay) { customGameScreen.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'block'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; preloadTextures(() => { init(scenarioToPlay); finalizeLoadingScreen(); }); } else { alert("Error: Could not load scenario to play."); } }); }); document.querySelectorAll('.edit-scenario-btn').forEach(btn => { btn.addEventListener('click', (e) => { const scenarioId = parseInt(e.target.dataset.id); openScenarioEditor(scenarioId); }); }); document.querySelectorAll('.export-scenario-btn').forEach(btn => { btn.addEventListener('click', async (e) => { const scenarioId = parseInt(e.target.dataset.id); const scenario = await getScenarioByIdDB(scenarioId); if (scenario) { const { id, ...exportData } = scenario; exportScenarioAsJSON(exportData); } }); }); document.querySelectorAll('.delete-scenario-btn').forEach(btn => { btn.addEventListener('click', async (e) => { const scenarioId = parseInt(e.target.dataset.id); if (confirm("Are you sure you want to delete this scenario?")) { try { await deleteScenarioDB(scenarioId); loadAndDisplayCustomScenarios(); } catch (error) { console.error("Error deleting scenario:", error); alert("Error deleting scenario."); } } }); }); }
+        function exportScenarioAsJSON(scenarioData) { const jsonString = JSON.stringify(scenarioData, null, 2); const blob = new Blob([jsonString], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${scenarioData.name.replace(/[^a-z0-9\s-]/gi, '_').trim().replace(/\s+/g, '-').toLowerCase() || 'custom_scenario'}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+        importScenarioBtn.addEventListener('click', () => { importFileInput.click(); });
+        importFileInput.addEventListener('change', (event) => { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = async (e) => { try { const importedScenario = JSON.parse(e.target.result); if (importedScenario.name && importedScenario.width && importedScenario.height && importedScenario.grid && Array.isArray(importedScenario.grid) && importedScenario.grid.length === importedScenario.height && importedScenario.grid.every(row => Array.isArray(row) && row.length === importedScenario.width)) { let scenarioToSave = { name: importedScenario.name, width: importedScenario.width, height: importedScenario.height, grid: importedScenario.grid }; const existingScenarios = await getAllScenariosDB(); const existingByName = existingScenarios.find(s => s.name === scenarioToSave.name); if (existingByName) { if (confirm(`A scenario named "${scenarioToSave.name}" already exists. Do you want to overwrite it?`)) { scenarioToSave.id = existingByName.id; } else { importFileInput.value = ''; return; } } await saveScenarioDB(scenarioToSave); loadAndDisplayCustomScenarios(); alert(`Scenario "${importedScenario.name}" imported successfully.`); } else { alert("The JSON file does not have the expected scenario format or is corrupt."); } } catch (error) { console.error("Error importing scenario:", error); alert("Error processing the JSON file. Ensure it is valid."); } importFileInput.value = ''; }; reader.readAsText(file); } });
+        createNewScenarioBtn.addEventListener('click', () => { openScenarioEditor(null); });
+        backToCustomScreenBtn.addEventListener('click', () => { if (hasUnsavedChanges) { if (!confirm("You have unsaved changes. Are you sure you want to leave the editor? Changes will be lost.")) { return; } } scenarioEditorScreen.style.display = 'none'; customGameScreen.style.display = 'flex'; currentEditingScenario = null; hasUnsavedChanges = false; editorMessageSpan.textContent = ''; });
+        async function openScenarioEditor(scenarioId) { customGameScreen.style.display = 'none'; scenarioEditorScreen.style.display = 'flex'; hasUnsavedChanges = false; editorMessageSpan.textContent = ''; playEditedScenarioBtn.disabled = true; if (scenarioId !== null) { const scenario = await getScenarioByIdDB(scenarioId); if (!scenario) { alert("Error: Could not load scenario."); backToCustomScreenBtn.click(); return; } currentEditingScenario = JSON.parse(JSON.stringify(scenario)); scenarioNameInput.value = currentEditingScenario.name; dimensionSelectorDiv.style.display = 'none'; scenarioNameInput.style.display = 'block'; brushToolsDiv.style.display = 'flex'; editorActionsDiv.style.display = 'flex'; setupEditorGrid(currentEditingScenario.width, currentEditingScenario.height, currentEditingScenario.grid); checkEditorStateForPlayability(); } else { currentEditingScenario = { id: null, name: "", width: 0, height: 0, grid: [] }; scenarioNameInput.value = ''; dimensionSelectorDiv.style.display = 'flex'; scenarioNameInput.style.display = 'none'; brushToolsDiv.style.display = 'none'; editorActionsDiv.style.display = 'none'; editorGridContainer.innerHTML = ''; } document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active')); document.querySelector('.brush-btn[data-type="wall"]').classList.add('active'); selectedBrush = 'wall'; }
+        confirmSizeBtn.addEventListener('click', () => { const [w, h] = scenarioSizeSelect.value.split('x').map(Number); currentEditingScenario.width = w; currentEditingScenario.height = h; currentEditingScenario.grid = Array(h).fill(null).map(() => Array(w).fill(0)); dimensionSelectorDiv.style.display = 'none'; scenarioNameInput.style.display = 'block'; scenarioNameInput.value = "Nuevo Laberinto"; currentEditingScenario.name = "Nuevo Laberinto"; brushToolsDiv.style.display = 'flex'; editorActionsDiv.style.display = 'flex'; setupEditorGrid(w, h, currentEditingScenario.grid); hasUnsavedChanges = true; checkEditorStateForPlayability(); });
+        function setupEditorGrid(width, height, gridData) { editorGridContainer.innerHTML = ''; editorGridContainer.style.gridTemplateColumns = `repeat(${width}, 1fr)`; editorGridContainer.style.gridTemplateRows = `repeat(${height}, 1fr)`; editorGridData = JSON.parse(JSON.stringify(gridData)); editorCellElements = []; for (let r = 0; r < height; r++) { editorCellElements[r] = []; for (let c = 0; c < width; c++) { const cell = document.createElement('div'); cell.classList.add('grid-cell'); cell.dataset.row = r; cell.dataset.col = c; if (r === 0 || r === height - 1 || c === 0 || c === width - 1) { cell.classList.add('border'); editorGridData[r][c] = 0; } updateCellVisual(cell, editorGridData[r][c]); cell.addEventListener('click', handleGridCellClick); editorGridContainer.appendChild(cell); editorCellElements[r][c] = cell; } } }
+        function updateCellVisual(cellElement, cellType) { cellElement.classList.remove('path', 'start', 'end', 'wall', 'pittrap'); let symbol = ''; switch (cellType) { case 0: cellElement.classList.add('wall'); break; case 1: cellElement.classList.add('path'); break; case 5: cellElement.classList.add('start'); symbol = 'S'; break; case 6: cellElement.classList.add('end'); symbol = 'E'; break; case PIT_TRAP_CELL_TYPE: cellElement.classList.add('pittrap'); symbol = 'T'; break; default: cellElement.classList.add('wall'); break; } cellElement.textContent = symbol; }
+        function handleGridCellClick(event) { const cell = event.target; const r = parseInt(cell.dataset.row); const c = parseInt(cell.dataset.col); if (cell.classList.contains('border')) return; let newType; switch (selectedBrush) { case 'wall': newType = 0; break; case 'path': newType = 1; break; case 'start': newType = 5; break; case 'end': newType = 6; break; case 'pittrap': newType = PIT_TRAP_CELL_TYPE; break; default: return; } if (newType === 5 || newType === 6) { for (let i = 0; i < editorGridData.length; i++) { for (let j = 0; j < editorGridData[i].length; j++) { if (editorGridData[i][j] === newType) { editorGridData[i][j] = 1; if (editorCellElements[i] && editorCellElements[i][j]) { updateCellVisual(editorCellElements[i][j], 1); } } } } } editorGridData[r][c] = newType; updateCellVisual(cell, newType); hasUnsavedChanges = true; checkEditorStateForPlayability(); }
+        document.querySelectorAll('.brush-btn').forEach(button => { button.addEventListener('click', () => { document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active')); button.classList.add('active'); selectedBrush = button.dataset.type; }); });
+        saveScenarioBtn.addEventListener('click', async () => { const scenarioName = scenarioNameInput.value.trim(); if (!scenarioName) { editorMessageSpan.textContent = "Please enter a scenario name."; return; } const validationResult = validateEditorGrid(); if (!validationResult.valid) { editorMessageSpan.textContent = validationResult.message; return; } currentEditingScenario.name = scenarioName; currentEditingScenario.grid = JSON.parse(JSON.stringify(editorGridData)); try { if (currentEditingScenario.id !== null && currentEditingScenario.id !== undefined) { const allScenarios = await getAllScenariosDB(); const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name && s.id !== currentEditingScenario.id); if (nameConflict) { if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite the current scenario with this name anyway? (This will not affect the other scenario).`)) { editorMessageSpan.textContent = "Save cancelled. Name conflict."; return; } } } else { const allScenarios = await getAllScenariosDB(); const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name); if (nameConflict) { if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite it?`)) { editorMessageSpan.textContent = "Save cancelled. Name conflict."; return; } currentEditingScenario.id = nameConflict.id; } } const savedScenario = await saveScenarioDB(currentEditingScenario); currentEditingScenario.id = savedScenario.id; hasUnsavedChanges = false; editorMessageSpan.textContent = "Scenario saved!"; playEditedScenarioBtn.disabled = false; setTimeout(() => editorMessageSpan.textContent = "", 2000); loadAndDisplayCustomScenarios(); } catch (error) { console.error("Error saving scenario:", error); editorMessageSpan.textContent = "Error saving. Check console."; } });
+        playEditedScenarioBtn.addEventListener('click', () => { if (hasUnsavedChanges) { editorMessageSpan.textContent = "Save changes before playing."; return; } if (!currentEditingScenario || currentEditingScenario.id === null || currentEditingScenario.id === undefined) { editorMessageSpan.textContent = "Save the scenario first."; return; } const validation = validateEditorGrid(); if (!validation.valid) { editorMessageSpan.textContent = "The maze is not valid for playing: " + validation.message; return; } scenarioEditorScreen.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'block'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; const scenarioToPlay = JSON.parse(JSON.stringify(currentEditingScenario)); preloadTextures(() => { init(scenarioToPlay); finalizeLoadingScreen(); }); });
+        function checkEditorStateForPlayability() { const isSaved = (currentEditingScenario && currentEditingScenario.id !== null && currentEditingScenario.id !== undefined); if (hasUnsavedChanges || !isSaved) { playEditedScenarioBtn.disabled = true; if (hasUnsavedChanges) { editorMessageSpan.textContent = "Unsaved changes."; } else if (!isSaved) { editorMessageSpan.textContent = "Save to enable 'Play'."; } if (!hasUnsavedChanges && isSaved && editorMessageSpan.textContent.startsWith("The maze is not valid")) { editorMessageSpan.textContent = ""; } } else { const validation = validateEditorGrid(); playEditedScenarioBtn.disabled = !validation.valid; editorMessageSpan.textContent = validation.valid ? "Ready to play or save." : validation.message; } }
+        function validateEditorGrid() { if (!editorGridData || editorGridData.length === 0 || !editorGridData[0] || editorGridData[0].length === 0) return {valid: false, message: "The grid is empty."}; let startPoint = null, endPoint = null; const rows = editorGridData.length; const cols = editorGridData[0].length; for (let r = 0; r < rows; r++) { if (!editorGridData[r]) { console.error(`Row ${r} is null/undefined in editorGridData`); continue; } for (let c = 0; c < cols; c++) { const cellValue = editorGridData[r][c]; if (cellValue === undefined || cellValue === null) { console.warn(`Cell [${r}][${c}] is null/undefined, treating as wall (0).`); editorGridData[r][c] = 0; if (editorCellElements && editorCellElements[r] && editorCellElements[r][c]) { updateCellVisual(editorCellElements[r][c], 0); } } if (editorGridData[r][c] === 5) { if (startPoint) return {valid: false, message: "Only one start point (S) is allowed."}; startPoint = {r, c}; } if (editorGridData[r][c] === 6) { if (endPoint) return {valid: false, message: "Only one end point (E) is allowed."}; endPoint = {r, c}; } if (editorGridData[r][c] === PIT_TRAP_CELL_TYPE && (r === 0 || r === rows - 1 || c === 0 || c === cols - 1)) { return { valid: false, message: "Pit traps (T) cannot be on the border." }; } } } if (!startPoint) return {valid: false, message: "Missing a start point (S)."}; if (!endPoint) return {valid: false, message: "Missing an end point (E)."}; if (editorGridData[startPoint.r][startPoint.c] === 0 || editorGridData[startPoint.r][startPoint.c] === PIT_TRAP_CELL_TYPE) return { valid: false, message: "Start (S) must be on a regular path cell, not wall or trap." }; if (editorGridData[endPoint.r][endPoint.c] === 0 || editorGridData[endPoint.r][endPoint.c] === PIT_TRAP_CELL_TYPE) return { valid: false, message: "End (E) must be on a regular path cell, not wall or trap." }; if (startPoint.r === 0 || startPoint.r === rows - 1 || startPoint.c === 0 || startPoint.c === cols - 1) return { valid: false, message: "Start (S) cannot be on the border." }; if (endPoint.r === 0 || endPoint.r === rows - 1 || endPoint.c === 0 || endPoint.c === cols - 1) return { valid: false, message: "End (E) cannot be on the border." }; const queue = [[startPoint.r, startPoint.c]]; const visited = Array(rows).fill(null).map(() => Array(cols).fill(false)); visited[startPoint.r][startPoint.c] = true; let pathFound = false; const dr = [-1, 1, 0, 0]; const dc = [0, 0, -1, 1]; while (queue.length > 0) { const [r, c] = queue.shift(); if (r === endPoint.r && c === endPoint.c) { pathFound = true; break; } for (let i = 0; i < 4; i++) { const nr = r + dr[i]; const nc = c + dc[i]; if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) { if (!visited[nr][nc] && (editorGridData[nr][nc] === 1 || editorGridData[nr][nc] === PIT_TRAP_CELL_TYPE || editorGridData[nr][nc] === 5 || editorGridData[nr][nc] === 6 )) { visited[nr][nc] = true; queue.push([nr, nc]); } } } } if (!pathFound) return {valid: false, message: "The end point is not accessible from the start."}; return {valid: true, message: "Valid maze."}; }
+        function escapeHTML(str) { if (str === null || str === undefined) return ""; return String(str).replace(/[&<>"']/g, function (match) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]; }); }
 
 
-        // --- Start Game ---
         function startGameSequence() {
             console.log("Showing start options...");
             if(gameVersionSpan) gameVersionSpan.textContent = GAME_VERSION;
@@ -1710,17 +1331,14 @@
             if(startOptionsDiv) startOptionsDiv.style.display = 'flex';
             if(loadingTextElement) loadingTextElement.style.display = 'none';
 
-            // Initialize IndexedDB here
             initDB().then(() => {
                 console.log("Database ready for use from startGameSequence.");
-                // Enable buttons that depend on DB if necessary
-                 if (startCustomGameButton) startCustomGameButton.disabled = false; // Ensure button is enabled if DB is ok
+                 if (startCustomGameButton) startCustomGameButton.disabled = false;
             }).catch(error => {
                 console.error("Database initialization failed. Custom game will not work correctly.", error);
                 alert("Could not initialize database for custom scenarios. This feature might not be available.");
-                if (startCustomGameButton) startCustomGameButton.disabled = true; // Disable if DB fails
+                if (startCustomGameButton) startCustomGameButton.disabled = true;
             });
-
 
             startAutoGameButton.addEventListener('click', () => {
                 if(startOptionsDiv) startOptionsDiv.style.display = 'none';
@@ -1728,34 +1346,29 @@
                 console.log("Starting game with autogenerated maze...");
                 preloadTextures(() => {
                     console.log("Texture preload complete. Starting game...");
-                    init(); // Without argument for autogenerated maze
+                    init();
                     finalizeLoadingScreen();
                 });
             });
 
             startCustomGameButton.addEventListener('click', showCustomGameUI);
-             // Ensure global control listeners are added only once
-            if (!touchControlsSetupDone && isTouchDevice) setupTouchControls();
-            if (!keyboardControlsSetupDone && !isTouchDevice) setupKeyboardAndMouseControls();
             if (!window.onresize) window.addEventListener('resize', onWindowResize, false);
         }
-
         function finalizeLoadingScreen() {
             setTimeout(() => {
                 if(loadingScreenElement) {
                     loadingScreenElement.style.opacity = '0';
                     setTimeout(() => {
                         loadingScreenElement.style.display = 'none';
-                        loadingScreenElement.style.opacity = '1'; // Reset for future loads
+                        loadingScreenElement.style.opacity = '1';
                     }, 500);
                 }
                 console.log("Loading screen hidden. Game started.");
                  if (!isTouchDevice && pointerLockInfoDiv && pointerLockInfoDiv.style.display !== 'none' && !isPointerLocked) {
-                    pointerLockInfoDiv.style.display = 'block'; // Show if not locked
+                    pointerLockInfoDiv.style.display = 'block';
                 }
             }, 200);
         }
-
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', startGameSequence);
         } else {
