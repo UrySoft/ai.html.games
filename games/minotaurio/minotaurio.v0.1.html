@@ -125,22 +125,22 @@
 
 
         /* --- Custom Game Screen Styles --- */
-        #custom-game-screen, #scenario-editor-screen {
+        #custom-game-screen, #scenario-editor-screen, #next-scenario-selection-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #151515;
             color: #e0e0e0; flex-direction: column; align-items: center; padding-top: 50px; z-index: 900; overflow-y: auto;
             box-sizing: border-box;
         }
-        #custom-game-screen h2, #scenario-editor-screen h2 {
+        #custom-game-screen h2, #scenario-editor-screen h2, #next-scenario-selection-screen h2 {
             color: #ffc107;
             margin-bottom: 25px;
             border-bottom: 2px solid #ffc107;
             padding-bottom: 5px;
              font-size: 2em;
         }
-        #custom-scenario-list-container { width: 90%; max-width: 700px; margin-bottom: 20px; }
-        #no-custom-scenarios { text-align: center; display: none; color: #aaa; }
-        #custom-scenario-list { list-style: none; padding: 0; width: 100%;}
+        #custom-scenario-list-container, #next-scenario-list-container { width: 90%; max-width: 700px; margin-bottom: 20px; }
+        #no-custom-scenarios, #no-next-scenarios { text-align: center; display: none; color: #aaa; }
+        #custom-scenario-list, #next-scenario-list { list-style: none; padding: 0; width: 100%;}
         .scenario-item {
             background-color: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
@@ -150,10 +150,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-             flex-wrap: wrap;
-             gap: 10px;
+             flex-wrap: nowrap;
+             gap: 15px;
         }
-        .scenario-item span { font-size: 1.1em; flex-grow: 1; min-width: 150px; }
+        .scenario-preview {
+            width: 60px;
+            height: 60px;
+            display: grid;
+            border: 1px solid #555;
+            background-color: #222;
+            flex-shrink: 0;
+            image-rendering: pixelated;
+        }
+        .scenario-preview-cell {
+            box-sizing: border-box;
+        }
+        .scenario-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .scenario-info span {
+            font-size: 1.1em;
+        }
+
         .scenario-actions {
             display: flex;
             gap: 8px;
@@ -233,9 +253,88 @@
         .grid-cell.start { background-color: #4CAF50; color: white; }
         .grid-cell.end { background-color: #F44336; color: white; }
         .grid-cell.pittrap { background-color: #8B4513; color: white; }
+        .grid-cell.fallingblock { background-color: #708090; color: white; }
+        .grid-cell.spikes { background-color: #A9A9A9; color: black; }
         .grid-cell.border { cursor: not-allowed; background-color: #111 !important; color: #444 !important;}
         #editor-actions { display: flex; gap: 10px; margin-bottom: 15px; display:none; flex-wrap: wrap; justify-content: center;}
         #editor-message { color: #ffc107; margin-left:10px; align-self: center; font-size: 1em; margin-top: 5px; text-align: center;}
+
+        #texture-selectors {
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(255,255,255,0.05);
+            text-align: left;
+        }
+        #texture-selectors h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #ffc107;
+            text-align: center;
+        }
+        .texture-selector-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        #texture-selectors label {
+            display: inline-block;
+            width: 60px;
+            text-align: right;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        #texture-selectors select {
+            padding: 5px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 3px;
+            min-width: 150px;
+            margin-right: 10px;
+        }
+        .texture-preview-img {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #777;
+            background-color: #222;
+            object-fit: cover;
+        }
+         #end-cell-options {
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(255,255,255,0.05);
+            margin-top: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        #end-cell-options h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #ffc107;
+            text-align: center;
+        }
+        #end-cell-options label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        #end-cell-options input[type="radio"] {
+            margin-right: 8px;
+        }
+        #specific-next-scenario-select {
+            padding: 5px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 3px;
+            min-width: 200px;
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
 
         #back-to-main-menu-btn {
             background-color: #6c757d;
@@ -298,9 +397,9 @@
             <div id="dimension-selector">
                 <label for="scenario-size-select">Tamaño del Laberinto:</label>
                 <select id="scenario-size-select">
-                    <option value="10x10">Pequeño (10x10)</option>
-                    <option value="15x15" selected>Mediano (15x15)</option>
-                    <option value="20x20">Grande (20x20)</option>
+                    <option value="7x7">Pequeño (7x7)</option>
+                    <option value="12x12" selected>Mediano (12x12)</option>
+                    <option value="17x17">Grande (17x17)</option>
                 </select>
                 <button id="confirm-size-btn" class="menu-button small-padding">Confirmar Tamaño</button>
             </div>
@@ -312,6 +411,32 @@
                 <button class="brush-btn" data-type="start">Inicio</button>
                 <button class="brush-btn" data-type="end">Fin</button>
                 <button class="brush-btn" data-type="pittrap">Trampa Foso</button>
+                <button class="brush-btn" data-type="fallingblock">Bloque Cae</button>
+                <button class="brush-btn" data-type="spikes">Pinchos</button>
+            </div>
+             <div id="texture-selectors" style="display:none; margin-top: 15px;">
+                <h4>Selección de Texturas:</h4>
+                <div class="texture-selector-row">
+                    <label for="wall-texture-select">Pared:</label>
+                    <select id="wall-texture-select"></select>
+                    <img id="wall-texture-preview" class="texture-preview-img" alt="Pared Preview">
+                </div>
+                <div class="texture-selector-row">
+                    <label for="floor-texture-select">Suelo:</label>
+                    <select id="floor-texture-select"></select>
+                    <img id="floor-texture-preview" class="texture-preview-img" alt="Suelo Preview">
+                </div>
+                <div class="texture-selector-row">
+                    <label for="ceiling-texture-select">Techo:</label>
+                    <select id="ceiling-texture-select"></select>
+                    <img id="ceiling-texture-preview" class="texture-preview-img" alt="Techo Preview">
+                </div>
+            </div>
+            <div id="end-cell-options" style="display:none; margin-top: 10px; padding: 10px; border: 1px solid #555; background-color: rgba(255,255,255,0.05);">
+                <h4>Comportamiento de Casilla Final:</h4>
+                <label><input type="radio" name="end-behavior" value="terminate" checked> Terminar Partida</label>
+                <label><input type="radio" name="end-behavior" value="specific_next_scenario"> Cargar Escenario Específico:</label>
+                <select id="specific-next-scenario-select" style="display:none; margin-left: 5px;"></select>
             </div>
         </div>
         <div id="editor-grid-container"></div>
@@ -334,24 +459,39 @@
     <div id="message"></div>
     <canvas id="minimapCanvas"></canvas>
 
+    <div id="next-scenario-selection-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #151515; z-index: 2001; flex-direction: column; align-items: center; padding-top: 50px; overflow-y: auto; box-sizing: border-box;">
+        <h2 style="color: #ffc107;">Elige el Siguiente Laberinto</h2>
+        <div id="next-scenario-list-container" style="width: 90%; max-width: 700px; margin-bottom: 20px;">
+            <p id="no-next-scenarios" style="text-align: center; color: #aaa;">No hay otros escenarios guardados.</p>
+            <ul id="next-scenario-list" style="list-style: none; padding: 0; width: 100%;"></ul>
+        </div>
+        <button id="cancel-next-scenario" class="menu-button" style="background-color: #6c757d; margin-top:20px;">Cancelar y Volver al Menú</button>
+    </div>
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
 
     <script>
         // --- Constantes y Configuración ---
-        const GAME_VERSION = "v1.10.0-gameplay-ux";
+        const GAME_VERSION = "v1.10.2-specific-exit-name";
         const MAX_RESOLUTION_DIMENSION = 1920;
         const MAX_RESOLUTION_DIMENSION_MOBILE = 1280;
-        const DEFAULT_MAZE_WIDTH = 15; const DEFAULT_MAZE_HEIGHT = 15;
+        const DEFAULT_MAZE_WIDTH = 12;
+        const DEFAULT_MAZE_HEIGHT = 12;
         const CELL_SIZE = 4; const WALL_HEIGHT = 7;
-        const PLAYER_HEIGHT = 1.8; const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 3.5; const SPRINT_SPEED = 6.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 10.5; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; const CAMERA_SENSITIVITY = 0.002; const OBSTACLE_OPACITY = 0.20; const TORCH_COLOR = 0xffa545; const TORCH_PLAYER_INTENSITY = 1.6; const TORCH_PLAYER_DISTANCE = 11; const TORCH_PLAYER_DECAY = 1.4;
+        const PLAYER_HEIGHT = 1.8; const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 4.5; const SPRINT_SPEED = 8.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 10.5; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; const CAMERA_SENSITIVITY = 0.002; const OBSTACLE_OPACITY = 0.20; const TORCH_COLOR = 0xffa545; const TORCH_PLAYER_INTENSITY = 1.6; const TORCH_PLAYER_DISTANCE = 11; const TORCH_PLAYER_DECAY = 1.4;
         const TORCH_STATIC_INTENSITY = 1.8; const TORCH_STATIC_DISTANCE = 12; const TORCH_STATIC_DECAY = 1.8;
         const STATIC_TORCH_FREQUENCY = 0.45;
         const TORCH_FLICKER_AMOUNT = 0.25; const TORCH_WALL_OFFSET = 0.25; const FLAME_BASE_OPACITY = 0.7; const FLAME_OPACITY_VAR = 0.2; const FLAME_BASE_SCALE_Y = 0.35; const FLAME_SCALE_Y_VAR = 0.1; const MIN_CAMERA_Y_ABOVE_GROUND = 0.5;
-        const MINIMAP_SIZE = 160; const MINIMAP_RADIUS_CELLS = 5; const MINIMAP_CELL_SIZE_PX = Math.floor(MINIMAP_SIZE / (MINIMAP_RADIUS_CELLS * 2 + 1)); const MINIMAP_PLAYER_COLOR = '#ff4444'; const MINIMAP_WALL_COLOR = '#505050'; const MINIMAP_PATH_COLOR = '#888888'; const MINIMAP_END_COLOR = '#33cc33';
+        const MINIMAP_SIZE = 160; const MINIMAP_RADIUS_CELLS = 5; const MINIMAP_CELL_SIZE_PX = Math.floor(MINIMAP_SIZE / (MINIMAP_RADIUS_CELLS * 2 + 1)); const MINIMAP_PLAYER_COLOR = '#ff4444'; const MINIMAP_WALL_COLOR = '#505050'; const MINIMAP_PATH_COLOR = '#888888'; const MINIMAP_END_COLOR = '#F44336';
+        const MINIMAP_END_LINK_COLOR = '#FF9800';
         const MINIMAP_PITTRAP_INTACT_COLOR = '#D2691E';
         const MINIMAP_PITTRAP_BROKEN_COLOR = '#111111';
+        const MINIMAP_FALLING_BLOCK_COLOR = '#6A5ACD'; // Para minimapa
+        const MINIMAP_SPIKES_COLOR = '#CD5C5C';      // Para minimapa
+
         const PLAYER_VISION_RADIUS_CELLS = 4; const MINIMAP_UNSEEN_COLOR = '#181818';
         const FIRST_PERSON_EYE_HEIGHT_FACTOR = 0.85;
         const CAMERA_PITCH_OFFSET_FPS = Math.PI / 2;
@@ -361,28 +501,38 @@
 
         const PIT_TRAP_CELL_TYPE = 7;
         const BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT = 8;
+        const FALLING_BLOCK_TRAP_CELL_TYPE = 9;
+        const SPIKE_TRAP_CELL_TYPE = 10;
+        const END_CELL_TERMINATE = 6;
+        const END_CELL_SPECIFIC_NEXT = 61;
+
         const PIT_TRAP_TRIGGER_RADIUS_SQUARED = (CELL_SIZE * 0.30) * (CELL_SIZE * 0.30);
         const PIT_TRAP_BREAK_ANIMATION_TIME = 600;
         const PIT_FALL_DEPTH = -WALL_HEIGHT * 1.5;
         const PIT_HOLE_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.9 });
         const PIT_COVER_THICKNESS = 0.05;
         const PLAYER_STEP_HEIGHT = 0.25;
+        const FALLING_BLOCK_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x505050, roughness: 0.8 });
+        const SPIKE_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.8, roughness: 0.3 });
+        const SPIKE_RISE_TIME = 200;
+        const SPIKE_HEIGHT = PLAYER_HEIGHT * 0.8;
 
 
         // --- TEXTURAS ---
         const textureBaseURL = 'https://urysoft.github.io/ai.html.games/general/assets/images/';
         const textureURLs = [];
-        for (let i = 1; i <= 20; i++) {
+        for (let i = 1; i <= 26; i++) {
             textureURLs.push(`${textureBaseURL}textura${i}.jpeg`);
         }
         const textureLoader = new THREE.TextureLoader();
         let loadedTextures = [];
-        let floorTexture, wallTexture, crackedTexture;
+        let floorTexture, wallTexture, ceilingTexture, crackedTexture;
 
         let scene, camera, renderer, player, clock;
         let maze = [];
         let currentMazeLayout = [];
         let initialPlayerPosition = new THREE.Vector3();
+        let currentPlayingScenarioData = null;
 
         let currentMazeWidth, currentMazeHeight;
         let collidableObjects = []; let interactiveObjects = []; let playerVelocity = new THREE.Vector3(); let playerOnGround = false; let moveForward = 0, moveRight = 0; let cameraPhi = Math.PI / 3; let cameraTheta = 0; let endZone = null; let gameActive = true;
@@ -405,6 +555,8 @@
         const collisionCheckTempBox = new THREE.Box3();
 
         let pitTrapObjects = [];
+        let fallingBlockTrapObjects = [];
+        let spikeTrapObjects = [];
         let playerFallingIntoPit = null;
 
         const startAutoGameButton = document.getElementById('start-auto-game');
@@ -430,6 +582,15 @@
         const saveScenarioBtn = document.getElementById('save-scenario-btn');
         const playEditedScenarioBtn = document.getElementById('play-edited-scenario-btn');
         const editorMessageSpan = document.getElementById('editor-message');
+        const textureSelectorsDiv = document.getElementById('texture-selectors');
+        const endCellOptionsDiv = document.getElementById('end-cell-options');
+        const specificNextScenarioSelect = document.getElementById('specific-next-scenario-select');
+
+        const nextScenarioSelectionScreen = document.getElementById('next-scenario-selection-screen');
+        const nextScenarioListUL = document.getElementById('next-scenario-list');
+        const noNextScenariosMsg = document.getElementById('no-next-scenarios');
+        const cancelNextScenarioBtn = document.getElementById('cancel-next-scenario');
+
 
         let currentEditingScenario = null;
         let editorGridData = [];
@@ -547,39 +708,85 @@
         }
 
         function preloadTextures(callback) {
-            let texturesToLoad = textureURLs.length; if (texturesToLoad === 0) { console.log("No hay texturas definidas para cargar."); selectRandomTextures(); callback(); return; } textureURLs.forEach((url, index) => { textureLoader.load( url, (texture) => { texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; loadedTextures[index] = texture; texturesToLoad--; if (texturesToLoad === 0) { console.log("Todas las texturas cargadas exitosamente."); selectRandomTextures(); callback(); } }, undefined, (error) => { console.error('Error al cargar textura:', url, error); texturesToLoad--; if (texturesToLoad === 0) { console.warn("Algunas texturas no pudieron cargarse. Continuando con las disponibles..."); selectRandomTextures(); callback(); } } ); });
+            let texturesToLoad = textureURLs.length; if (texturesToLoad === 0) { console.log("No hay texturas definidas para cargar."); selectRandomTextures(); callback(); return; } textureURLs.forEach((url, index) => { textureLoader.load( url, (texture) => { texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; loadedTextures[index] = texture; texturesToLoad--; if (texturesToLoad === 0) { console.log("Todas las texturas cargadas exitosamente."); callback(); } }, undefined, (error) => { console.error('Error al cargar textura:', url, error); texturesToLoad--; if (texturesToLoad === 0) { console.warn("Algunas texturas no pudieron cargarse. Continuando con las disponibles..."); callback(); } } ); });
         }
 
         function selectRandomTextures() {
-            if (loadedTextures.length === 0) { console.warn("No hay texturas cargadas para seleccionar. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; crackedTexture = null; return; } const validTextures = loadedTextures.filter(t => t); if (validTextures.length === 0) { console.warn("Todas las texturas cargadas son inválidas. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; crackedTexture = null; return; }
+            if (loadedTextures.length === 0) { console.warn("No hay texturas cargadas para seleccionar. Se usarán colores sólidos."); floorTexture = null; wallTexture = null; ceilingTexture = null; crackedTexture = null; return; }
+            const validTextures = loadedTextures.filter(t => t);
+            if (validTextures.length === 0) { console.warn("Todas las texturas cargadas son inválidas."); floorTexture = null; wallTexture = null; ceilingTexture = null; crackedTexture = null; return; }
 
-            let floorTextureIndex = Math.floor(Math.random() * validTextures.length);
-            floorTexture = validTextures[floorTextureIndex].clone();
-            floorTexture.needsUpdate = true;
+            let floorIdx = Math.floor(Math.random() * validTextures.length);
+            floorTexture = validTextures[floorIdx].clone();
 
-            let wallTextureIndex;
+            let wallIdx;
             if (validTextures.length > 1) {
-                do { wallTextureIndex = Math.floor(Math.random() * validTextures.length); } while (wallTextureIndex === floorTextureIndex);
-                wallTexture = validTextures[wallTextureIndex].clone();
+                do { wallIdx = Math.floor(Math.random() * validTextures.length); } while (wallIdx === floorIdx);
+                wallTexture = validTextures[wallIdx].clone();
             } else {
                 wallTexture = validTextures[0].clone();
-                console.warn("Solo una textura válida disponible, usándola para suelo y paredes.");
             }
-            wallTexture.needsUpdate = true;
+
+            let ceilingIdx;
+             if (validTextures.length > 2) {
+                do { ceilingIdx = Math.floor(Math.random() * validTextures.length); } while (ceilingIdx === floorIdx || ceilingIdx === wallIdx);
+                ceilingTexture = validTextures[ceilingIdx].clone();
+            } else if (validTextures.length > 1) {
+                 do { ceilingIdx = Math.floor(Math.random() * validTextures.length); } while (ceilingIdx === floorIdx && ceilingIdx === wallIdx);
+                 if (ceilingIdx === floorIdx && ceilingIdx === wallIdx) {
+                    ceilingTexture = validTextures.find(t => t.image.src !== floorTexture.image.src) || floorTexture.clone();
+                 } else {
+                    ceilingTexture = validTextures[ceilingIdx].clone();
+                 }
+            }
+             else {
+                 ceilingTexture = validTextures[0].clone();
+            }
+
+            if (floorTexture) floorTexture.needsUpdate = true;
+            if (wallTexture) wallTexture.needsUpdate = true;
+            if (ceilingTexture) ceilingTexture.needsUpdate = true;
 
             crackedTexture = floorTexture.clone();
-            crackedTexture.needsUpdate = true;
+            if (crackedTexture) crackedTexture.needsUpdate = true;
+            console.log("Texturas aleatorias seleccionadas.");
+        }
 
-            if (renderer && renderer.capabilities) {
-                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-                if (floorTexture) floorTexture.anisotropy = maxAnisotropy;
-                if (wallTexture) wallTexture.anisotropy = maxAnisotropy;
-                if (crackedTexture) crackedTexture.anisotropy = maxAnisotropy;
+        function selectTexturesForScenario(scenarioTextures) {
+            if (loadedTextures.length === 0) { console.warn("No hay texturas cargadas."); selectRandomTextures(); return; }
+            const validTextures = loadedTextures.filter(t => t);
+            if (validTextures.length === 0) { console.warn("No hay texturas válidas cargadas."); selectRandomTextures(); return; }
+
+            const getTex = (index) => (index !== -1 && validTextures[index]) ? validTextures[index].clone() : validTextures[Math.floor(Math.random() * validTextures.length)].clone();
+
+            wallTexture = getTex(scenarioTextures?.wall);
+            floorTexture = getTex(scenarioTextures?.floor);
+            ceilingTexture = getTex(scenarioTextures?.ceiling);
+
+            if (scenarioTextures?.wall === -1 && scenarioTextures?.floor === -1 && wallTexture.image.src === floorTexture.image.src && validTextures.length > 1) {
+                let newFloorIndex;
+                do { newFloorIndex = Math.floor(Math.random() * validTextures.length); } while (validTextures[newFloorIndex].image.src === wallTexture.image.src);
+                floorTexture = validTextures[newFloorIndex].clone();
+            }
+             if (scenarioTextures?.ceiling === -1) {
+                if (validTextures.length > 2) {
+                    let newCeilingIndex;
+                    do { newCeilingIndex = Math.floor(Math.random() * validTextures.length); } while (validTextures[newCeilingIndex].image.src === wallTexture.image.src || validTextures[newCeilingIndex].image.src === floorTexture.image.src);
+                    ceilingTexture = validTextures[newCeilingIndex].clone();
+                } else if (validTextures.length === 2) {
+                     ceilingTexture = validTextures.find(t => t.image.src !== wallTexture.image.src && t.image.src !== floorTexture.image.src) || wallTexture.clone();
+                } else {
+                    ceilingTexture = wallTexture.clone();
+                }
             }
 
-            console.log("Textura suelo seleccionada:", floorTexture ? floorTexture.image.src : "Ninguna (color sólido)");
-            console.log("Textura pared seleccionada:", wallTexture ? wallTexture.image.src : "Ninguna (color sólido)");
-            console.log("Textura agrietada seleccionada (base):", crackedTexture ? crackedTexture.image.src : "Ninguna");
+
+            if (floorTexture) floorTexture.needsUpdate = true;
+            if (wallTexture) wallTexture.needsUpdate = true;
+            if (ceilingTexture) ceilingTexture.needsUpdate = true;
+            crackedTexture = floorTexture.clone();
+            if (crackedTexture) crackedTexture.needsUpdate = true;
+            console.log("Texturas de escenario aplicadas.");
         }
 
 
@@ -603,6 +810,8 @@
             interactiveObjects = [];
             staticTorches = [];
             pitTrapObjects = [];
+            fallingBlockTrapObjects = []; // Reset
+            spikeTrapObjects = [];      // Reset
             playerFallingIntoPit = null;
 
 
@@ -633,12 +842,14 @@
                 currentMazeLayout = JSON.parse(JSON.stringify(maze));
                 currentMazeWidth = customMazeData.width;
                 currentMazeHeight = customMazeData.height;
+                currentPlayingScenarioData = JSON.parse(JSON.stringify(customMazeData));
             } else {
                 console.log("Iniciando con laberinto autogenerado.");
                 currentMazeWidth = DEFAULT_MAZE_WIDTH;
                 currentMazeHeight = DEFAULT_MAZE_HEIGHT;
                 maze = generateMaze(currentMazeWidth, currentMazeHeight);
                 currentMazeLayout = JSON.parse(JSON.stringify(maze));
+                currentPlayingScenarioData = null;
             }
 
             visibilityMaze = [];
@@ -662,7 +873,7 @@
             } else {
                 console.warn("No se encontró celda de inicio (5) en el laberinto. Colocando en el centro del primer camino disponible o (0,0).");
                 let fallbackStart = findCell(1, maze, currentMazeWidth, currentMazeHeight);
-                if (!fallbackStart) fallbackStart = {x: Math.floor(currentMazeWidth/2), y: Math.floor(currentMazeHeight/2)};
+                if (!fallbackStart) fallbackStart = {x: Math.floor(currentMazeWidth/2), z: Math.floor(currentMazeHeight/2)};
                 if (maze[fallbackStart.z] && maze[fallbackStart.z][fallbackStart.x] === 0) {
                      fallbackStart = {x:1,z:1};
                 }
@@ -693,12 +904,14 @@
 
             const ceilingSize = Math.max(currentMazeWidth, currentMazeHeight) * CELL_SIZE * 1.2;
             const ceilingGeometry = new THREE.PlaneGeometry(ceilingSize, ceilingSize);
-            const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.9 }).clone();
-            if (wallTexture) {
-                ceilingMaterial.map = wallTexture.clone(); ceilingMaterial.map.needsUpdate = true; ceilingMaterial.color.set(0xffffff);
-                ceilingMaterial.map.repeat.set(ceilingSize / (CELL_SIZE * 2), ceilingSize / (CELL_SIZE * 2));
+            const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.9 });
+            if (ceilingTexture) {
+                ceilingMat.map = ceilingTexture.clone();
+                ceilingMat.map.needsUpdate = true;
+                ceilingMat.color.set(0xffffff);
+                ceilingMat.map.repeat.set(ceilingSize / (CELL_SIZE * 2), ceilingSize / (CELL_SIZE * 2));
             }
-            const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+            const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMat);
             ceiling.position.y = WALL_HEIGHT + 0.1; ceiling.rotation.x = Math.PI / 2; ceiling.receiveShadow = true; ceiling.userData = { isCeiling: true, originalOpacity: 1.0, isTransparentCapable: true }; scene.add(ceiling); collidableObjects.push(ceiling);
 
             updateRendererAndCameraSize();
@@ -736,8 +949,8 @@
             let endPlaced = false;
             let potentialEndPos = [];
             for (let y = 1; y < height - 1; y++) { for (let x = 1; x < width - 1; x++) { if (matrix[y][x] === 1) { if (Math.abs(x - startX) + Math.abs(y - startY) > (width + height) / 2.5) { potentialEndPos.push({ x, y }); } } } }
-            if (potentialEndPos.length > 0) { let endPos = potentialEndPos.find(p => deadEnds.some(d => d.x === p.x && d.y === p.y)); if (!endPos) { endPos = potentialEndPos[Math.floor(Math.random() * potentialEndPos.length)]; } if(matrix[endPos.y] && matrix[endPos.y][endPos.x] !== undefined) matrix[endPos.y][endPos.x] = 6; endPlaced = true; }
-            if (!endPlaced) { const endY = height - 2; const endX = width - 2; if (matrix[endY] && matrix[endY][endX] !== undefined) { if (matrix[endY][endX] === 0) { matrix[endY][endX] = 6; if (matrix[endY-1] && matrix[endY-1][endX] === 0) matrix[endY-1][endX] = 1; else if (matrix[endY+1] && matrix[endY+1][endX] === 0) matrix[endY+1][endX] = 1; else if (matrix[endY][endX-1] === 0) matrix[endY][endX-1] = 1; else if (matrix[endY][endX+1] === 0) matrix[endY][endX+1] = 1; } else { matrix[endY][endX] = 6; } } console.warn("Fallback para colocar el punto final."); }
+            if (potentialEndPos.length > 0) { let endPos = potentialEndPos.find(p => deadEnds.some(d => d.x === p.x && d.y === p.y)); if (!endPos) { endPos = potentialEndPos[Math.floor(Math.random() * potentialEndPos.length)]; } if(matrix[endPos.y] && matrix[endPos.y][endPos.x] !== undefined) matrix[endPos.y][endPos.x] = END_CELL_TERMINATE; endPlaced = true; }
+            if (!endPlaced) { const endY = height - 2; const endX = width - 2; if (matrix[endY] && matrix[endY][endX] !== undefined) { if (matrix[endY][endX] === 0) { matrix[endY][endX] = END_CELL_TERMINATE; if (matrix[endY-1] && matrix[endY-1][endX] === 0) matrix[endY-1][endX] = 1; else if (matrix[endY+1] && matrix[endY+1][endX] === 0) matrix[endY+1][endX] = 1; else if (matrix[endY][endX-1] === 0) matrix[endY][endX-1] = 1; else if (matrix[endY][endX+1] === 0) matrix[endY][endX+1] = 1; } else { matrix[endY][endX] = END_CELL_TERMINATE; } } console.warn("Fallback para colocar el punto final."); }
             return matrix;
         }
         function findCell(type, targetMaze, mazeW, mazeH) { for (let z = 0; z < mazeH; z++) { for (let x = 0; x < mazeW; x++) { if (targetMaze[z] && targetMaze[z][x] === type) return { x, z }; } } return null; }
@@ -748,6 +961,8 @@
             interactiveObjects = [];
             staticTorches = [];
             pitTrapObjects = [];
+            fallingBlockTrapObjects = [];
+            spikeTrapObjects = [];
             endZone = null;
 
             const wallMaterialBase = new THREE.MeshStandardMaterial({
@@ -779,7 +994,10 @@
                  pitTrapCoverMaterialBase.map.repeat.set(1,1);
             }
 
-            const endMaterial = new THREE.MeshStandardMaterial({ color: 0x33ff33, emissive: 0x22dd22, transparent: true, opacity: 0.6 });
+            const endMaterial = new THREE.MeshStandardMaterial({ color: MINIMAP_END_COLOR, emissive: MINIMAP_END_COLOR, transparent: true, opacity: 0.6 });
+            const endLinkMaterial = new THREE.MeshStandardMaterial({ color: MINIMAP_END_LINK_COLOR, emissive: MINIMAP_END_LINK_COLOR, transparent: true, opacity: 0.7 });
+
+
             const torchHolderMaterial = new THREE.MeshStandardMaterial({ color: 0x504030, roughness: 0.8 });
             const flameMaterialBase = new THREE.MeshBasicMaterial({ color: 0xffd080, transparent: true, opacity: FLAME_BASE_OPACITY, blending: THREE.AdditiveBlending, depthWrite: false });
 
@@ -790,6 +1008,9 @@
             const flameGeometry = new THREE.SphereGeometry(0.25, 10, 8);
             const pitCoverGeometry = new THREE.BoxGeometry(CELL_SIZE, PIT_COVER_THICKNESS, CELL_SIZE);
             const pitHoleGeometry = new THREE.BoxGeometry(CELL_SIZE * 0.95, WALL_HEIGHT * 2, CELL_SIZE * 0.95);
+            const fallingBlockGeometry = new THREE.BoxGeometry(CELL_SIZE * 0.9, WALL_HEIGHT * 0.7, CELL_SIZE * 0.9);
+            const spikeGeometry = new THREE.ConeGeometry(PLAYER_RADIUS * 0.3, SPIKE_HEIGHT, 4);
+
 
             const mainFloor = new THREE.Mesh(mainFloorGeometry, mainFloorMaterial);
             mainFloor.rotation.x = -Math.PI / 2;
@@ -845,7 +1066,39 @@
                         pitHole.visible = false;
                         scene.add(pitHole);
                         pitTrapObjects.push({ mesh: pitCover, holeMesh: pitHole, state: 'intact', gridX: x, gridZ: z, worldX: posX, worldZ: posZ, hasBeenRevealedByActivation: false });
-                    } else {
+                    } else if (cellTypeInLayout === FALLING_BLOCK_TRAP_CELL_TYPE) {
+                        const block = new THREE.Mesh(fallingBlockGeometry, FALLING_BLOCK_MATERIAL.clone());
+                        block.position.set(posX, WALL_HEIGHT + WALL_HEIGHT * 0.35, posZ);
+                        block.visible = false; 
+                        block.castShadow = true;
+                        scene.add(block);
+                        fallingBlockTrapObjects.push({
+                            triggerCellX: x, triggerCellZ: z, worldX: posX, worldZ: posZ,
+                            blockMesh: block, state: 'armed', hasBeenRevealedByActivation: false
+                        });
+                    } else if (cellTypeInLayout === SPIKE_TRAP_CELL_TYPE) {
+                        const spikeGroup = new THREE.Group();
+                        const numSpikes = 5;
+                        for (let i = 0; i < numSpikes; i++) {
+                            const spike = new THREE.Mesh(spikeGeometry, SPIKE_MATERIAL.clone());
+                            if (i < 4) {
+                                spike.position.x = (i % 2 === 0 ? -1 : 1) * CELL_SIZE * 0.25;
+                                spike.position.z = (i < 2 ? -1 : 1) * CELL_SIZE * 0.25;
+                            } else {
+                                spike.position.x = 0; spike.position.z = 0;
+                            }
+                            spike.position.y = -SPIKE_HEIGHT / 2;
+                            spikeGroup.add(spike);
+                        }
+                        spikeGroup.position.set(posX, 0, posZ);
+                        spikeGroup.visible = false;
+                        scene.add(spikeGroup);
+                        spikeTrapObjects.push({
+                            triggerCellX: x, triggerCellZ: z, worldX: posX, worldZ: posZ,
+                            spikeGroup: spikeGroup, state: 'hidden', hasBeenRevealedByActivation: false
+                        });
+                    }
+                     else {
                         if (Math.random() < STATIC_TORCH_FREQUENCY) {
                             let possibleTorchWalls = [];
                             if (z > 0 && layout[z-1][x] === 0) possibleTorchWalls.push({ side: 'N' });
@@ -858,10 +1111,11 @@
                                 if (!tooClose) { addStaticTorch(posX, posZ, chosenWallData.side, torchHolderGeometry, flameGeometry, torchHolderMaterial, flameMaterialBase, mazeW, mazeH); torchLocations.push({x: posX, z: posZ}); }
                             }
                         }
-                        if (cellTypeInLayout === 6) {
-                            endZone = new THREE.Mesh(endGeometry, endMaterial);
+                        if (cellTypeInLayout === END_CELL_TERMINATE || cellTypeInLayout === END_CELL_SPECIFIC_NEXT) {
+                            const currentEndMaterial = (cellTypeInLayout === END_CELL_SPECIFIC_NEXT) ? endLinkMaterial : endMaterial;
+                            endZone = new THREE.Mesh(endGeometry, currentEndMaterial);
                             endZone.position.set(posX, 0.1, posZ);
-                            endZone.userData = { type: 'end' };
+                            endZone.userData = { type: 'end', behaviorType: cellTypeInLayout, gridX: x, gridZ: z };
                             scene.add(endZone);
                             interactiveObjects.push(endZone);
                         }
@@ -878,7 +1132,7 @@
 
 
         let touchControlsSetupDone = false;
-        function isInsideUIScreen(target) { return target.closest('#loading-screen') || target.closest('#custom-game-screen') || target.closest('#scenario-editor-screen'); }
+        function isInsideUIScreen(target) { return target.closest('#loading-screen') || target.closest('#custom-game-screen') || target.closest('#scenario-editor-screen') || target.closest('#next-scenario-selection-screen'); }
         function updateJoystickThumb() { const dX=joystickCurrentPos.x-joystickStartPos.x, dY=joystickCurrentPos.y-joystickStartPos.y, dist=Math.sqrt(dX*dX+dY*dY); const angle=Math.atan2(dY,dX); const tD=Math.min(dist, JOYSTICK_VISUAL_RADIUS/2-joystickThumb.offsetWidth/4); const tX=Math.cos(angle)*tD, tY=Math.sin(angle)*tD; joystickThumb.style.transform=`translate(${tX}px, ${tY}px)`; }
         function updateMovementFromJoystick() {
             const dx = joystickCurrentPos.x - joystickStartPos.x;
@@ -970,6 +1224,7 @@
             for (const obj of collidableObjects) {
                 if (obj.userData.isFloor || obj.userData.isCeiling) continue;
                 if (obj.userData.isPitTrapCover && !obj.userData.isCollidable) continue;
+                if (obj.userData.isFallingBlock && obj.userData.state !== 'landed') continue; // No colisionar con bloques que caen hasta que aterricen
 
                 const oB = new THREE.Box3().setFromObject(obj);
                 if (collisionCheckTempBox.intersectsBox(oB)) {
@@ -1010,6 +1265,7 @@
                 for (const obj of collidableObjects) {
                     if (obj.userData.isFloor || obj.userData.isCeiling) continue;
                     if (obj.userData.isPitTrapCover && !obj.userData.isCollidable) continue;
+                    if (obj.userData.isFallingBlock && obj.userData.state !== 'landed') continue;
 
                     const oB = new THREE.Box3().setFromObject(obj);
 
@@ -1052,12 +1308,49 @@
                         }
                     }
                 }
+                for (const trap of fallingBlockTrapObjects) {
+                    if (trap.state === 'armed') {
+                        const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+                        const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+                        if (playerGridX === trap.triggerCellX && playerGridZ === trap.triggerCellZ && playerOnGround) {
+                            triggerFallingBlockTrap(trap);
+                        }
+                    } else if (trap.state === 'falling') {
+                        const fallSpeed = WALL_HEIGHT * 3 * deltaTime; // Ajustar velocidad
+                        trap.blockMesh.position.y -= fallSpeed;
+                        const playerBox = new THREE.Box3().setFromObject(player);
+                        const blockBox = new THREE.Box3().setFromObject(trap.blockMesh);
+                        if (playerBox.intersectsBox(blockBox)) {
+                            loseGame("¡Aplastado!");
+                            trap.state = 'landed';
+                            trap.blockMesh.position.y = (WALL_HEIGHT * 0.7) / 2; // Asentar en el suelo
+                            if (!collidableObjects.includes(trap.blockMesh)) collidableObjects.push(trap.blockMesh);
+
+                        }
+                        if (trap.blockMesh.position.y <= (WALL_HEIGHT * 0.7) / 2) {
+                            trap.blockMesh.position.y = (WALL_HEIGHT * 0.7) / 2;
+                            trap.state = 'landed';
+                            if (!collidableObjects.includes(trap.blockMesh)) collidableObjects.push(trap.blockMesh);
+                        }
+                    }
+                }
+                for (const trap of spikeTrapObjects) {
+                     if (trap.state === 'hidden') {
+                        const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+                        const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+                        if (playerGridX === trap.triggerCellX && playerGridZ === trap.triggerCellZ && playerOnGround) {
+                            triggerSpikeTrap(trap);
+                        }
+                    }
+                }
             }
 
             if (endZone && gameActive && !playerFallingIntoPit) {
                 const pXZ = new THREE.Vector2(player.position.x, player.position.z);
                 const eZXZ = new THREE.Vector2(endZone.position.x, endZone.position.z);
-                if (playerOnGround && pXZ.distanceTo(eZXZ) < PLAYER_RADIUS + CELL_SIZE * 0.3) winGame();
+                if (playerOnGround && pXZ.distanceTo(eZXZ) < PLAYER_RADIUS + CELL_SIZE * 0.3) {
+                    winGame(endZone.userData.behaviorType, endZone.userData.gridX, endZone.userData.gridZ);
+                }
             }
         }
 
@@ -1087,7 +1380,7 @@
                     .easing(TWEEN.Easing.Quadratic.In)
                     .onComplete(() => {
                          new TWEEN.Tween(trap.mesh.position)
-                            .to({ y: -1000 }, PIT_TRAP_BREAK_ANIMATION_TIME * 0.7) // Mover muy abajo
+                            .to({ y: -1000 }, PIT_TRAP_BREAK_ANIMATION_TIME * 0.7)
                             .easing(TWEEN.Easing.Quadratic.In)
                             .onComplete(() => {
                                 trap.state = 'broken';
@@ -1112,8 +1405,48 @@
             }
         }
 
+        function triggerFallingBlockTrap(trap) {
+            if (trap.state !== 'armed' || !gameActive) return;
+            trap.state = 'falling';
+            trap.blockMesh.visible = true;
+            if (!trap.hasBeenRevealedByActivation) trap.hasBeenRevealedByActivation = true;
+            console.log("Falling block trap activated!");
+            // Sonido: bloque cayendo
+        }
 
-        function updateCamera() { if (!player || !camera) return; if (isFirstPersonView) { camera.position.copy(player.position); camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR; camera.rotation.order = 'YXZ'; camera.rotation.y = cameraTheta; camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS; camera.rotation.z = 0; camera.updateMatrixWorld(); if (playerTorchLight && playerTorchLight.parent === scene) { lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); camera.localToWorld(lightWorldPosHelper); playerTorchLight.position.copy(lightWorldPosHelper); } for (const obj of currentlyTransparentObjects) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } currentlyTransparentObjects.clear(); } else { const targetPosition = new THREE.Vector3(); const offset = new THREE.Vector3(); offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta); offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET; offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta); targetPosition.copy(player.position).add(offset); const cameraRaycaster = new THREE.Raycaster(); const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize(); const rayLength = rayOrigin.distanceTo(targetPosition); cameraRaycaster.set(rayOrigin, directionToCamera); cameraRaycaster.far = rayLength; const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable && !(obj.userData.isPitTrapCover && !obj.userData.isCollidable) ); const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false); let objectsToMakeTransparentThisFrame = new Set(); for (const intersect of intersects) { if (intersect.object.userData.isTransparentCapable) { objectsToMakeTransparentThisFrame.add(intersect.object); } } for (const obj of currentlyTransparentObjects) { if (!objectsToMakeTransparentThisFrame.has(obj)) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } } for (const obj of objectsToMakeTransparentThisFrame) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = true; obj.material.opacity = OBSTACLE_OPACITY; } } currentlyTransparentObjects = objectsToMakeTransparentThisFrame; let finalCameraPosition = targetPosition.clone(); if (intersects.length > 0) { let closestDistance = rayLength; for (const intersect of intersects) { if (intersect.distance < closestDistance) { closestDistance = intersect.distance; } } finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3)); } finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND); camera.position.copy(finalCameraPosition); const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); camera.lookAt(lookAtTarget); } }
+        function triggerSpikeTrap(trap) {
+            if (trap.state !== 'hidden' || !gameActive) return;
+            trap.state = 'rising';
+            trap.spikeGroup.visible = true;
+            currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT; // Usar esto para el minimapa de momento
+
+            if (!trap.hasBeenRevealedByActivation) trap.hasBeenRevealedByActivation = true;
+
+            trap.spikeGroup.children.forEach((spike, index) => {
+                new TWEEN.Tween(spike.position)
+                    .to({ y: SPIKE_HEIGHT / 2 - 0.1 }, SPIKE_RISE_TIME)
+                    .easing(TWEEN.Easing.Quadratic.Out)
+                    .delay(index * 30)
+                    .onComplete(() => {
+                        if (index === trap.spikeGroup.children.length - 1) {
+                            trap.state = 'risen';
+                            const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+                            const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+                            if (playerGridX === trap.triggerCellX && playerGridZ === trap.triggerCellZ &&
+                                Math.abs(player.position.y - PLAYER_HEIGHT/2) < SPIKE_HEIGHT * 0.7 ) { // Aumentar un poco la tolerancia de altura para ser ensartado
+                                loseGame("¡Ensartado por pinchos!");
+                            }
+                        }
+                    })
+                    .start();
+            });
+            console.log("Spike trap activated!");
+            // Sonido: pinchos
+        }
+
+
+
+        function updateCamera() { if (!player || !camera) return; if (isFirstPersonView) { camera.position.copy(player.position); camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR; camera.rotation.order = 'YXZ'; camera.rotation.y = cameraTheta; camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS; camera.rotation.z = 0; camera.updateMatrixWorld(); if (playerTorchLight && playerTorchLight.parent === scene) { lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); camera.localToWorld(lightWorldPosHelper); playerTorchLight.position.copy(lightWorldPosHelper); } for (const obj of currentlyTransparentObjects) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } currentlyTransparentObjects.clear(); } else { const targetPosition = new THREE.Vector3(); const offset = new THREE.Vector3(); offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta); offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET; offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta); targetPosition.copy(player.position).add(offset); const cameraRaycaster = new THREE.Raycaster(); const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize(); const rayLength = rayOrigin.distanceTo(targetPosition); cameraRaycaster.set(rayOrigin, directionToCamera); cameraRaycaster.far = rayLength; const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable && !(obj.userData.isPitTrapCover && !obj.userData.isCollidable) && !(obj.userData.isFallingBlock && obj.userData.state !== 'landed') ); const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false); let objectsToMakeTransparentThisFrame = new Set(); for (const intersect of intersects) { if (intersect.object.userData.isTransparentCapable) { objectsToMakeTransparentThisFrame.add(intersect.object); } } for (const obj of currentlyTransparentObjects) { if (!objectsToMakeTransparentThisFrame.has(obj)) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } } for (const obj of objectsToMakeTransparentThisFrame) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = true; obj.material.opacity = OBSTACLE_OPACITY; } } currentlyTransparentObjects = objectsToMakeTransparentThisFrame; let finalCameraPosition = targetPosition.clone(); if (intersects.length > 0) { let closestDistance = rayLength; for (const intersect of intersects) { if (intersect.distance < closestDistance) { closestDistance = intersect.distance; } } finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3)); } finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND); camera.position.copy(finalCameraPosition); const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); camera.lookAt(lookAtTarget); } }
         function drawMinimap() {
             if (!minimapCtx || !player || !currentMazeLayout.length || !visibilityMaze.length || !currentMazeWidth || !currentMazeHeight) return;
             const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
@@ -1136,7 +1469,8 @@
 
                             if (cellTypeInLayout === 0) fillColor = MINIMAP_WALL_COLOR;
                             else if (cellTypeInLayout === BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT) fillColor = MINIMAP_PITTRAP_BROKEN_COLOR;
-                            else if (cellTypeInLayout === 6) fillColor = MINIMAP_END_COLOR;
+                            else if (cellTypeInLayout === END_CELL_TERMINATE) fillColor = MINIMAP_END_COLOR;
+                            else if (cellTypeInLayout === END_CELL_SPECIFIC_NEXT) fillColor = MINIMAP_END_LINK_COLOR;
                             else if (originalCellType === PIT_TRAP_CELL_TYPE) {
                                 const trapObject = pitTrapObjects.find(t => t.gridX === checkX && t.gridZ === checkZ);
                                 if (trapObject && trapObject.hasBeenRevealedByActivation && cellTypeInLayout === PIT_TRAP_CELL_TYPE) {
@@ -1144,6 +1478,18 @@
                                 } else {
                                     fillColor = MINIMAP_PATH_COLOR;
                                 }
+                            }
+                            else if (originalCellType === FALLING_BLOCK_TRAP_CELL_TYPE) {
+                                const trapObject = fallingBlockTrapObjects.find(t => t.triggerCellX === checkX && t.triggerCellZ === checkZ);
+                                if (trapObject && trapObject.state === 'landed') fillColor = MINIMAP_WALL_COLOR; // Bloque caído
+                                else if (trapObject && trapObject.hasBeenRevealedByActivation) fillColor = MINIMAP_FALLING_BLOCK_COLOR;
+                                else fillColor = MINIMAP_PATH_COLOR;
+                            }
+                            else if (originalCellType === SPIKE_TRAP_CELL_TYPE) {
+                                const trapObject = spikeTrapObjects.find(t => t.triggerCellX === checkX && t.triggerCellZ === checkZ);
+                                if (trapObject && trapObject.state === 'risen') fillColor = MINIMAP_SPIKES_COLOR; // Pinchos arriba
+                                else if (trapObject && trapObject.hasBeenRevealedByActivation) fillColor = MINIMAP_PATH_COLOR; // Marcado pero oculto, como camino
+                                else fillColor = MINIMAP_PATH_COLOR;
                             }
                             else fillColor = MINIMAP_PATH_COLOR;
                         }
@@ -1214,15 +1560,59 @@
         function onWindowResize() { updateRendererAndCameraSize(); }
         let messageTimeout = null; function showMessage(text, duration = 2500) { if (messageTimeout) clearTimeout(messageTimeout); messageDiv.textContent = text; messageDiv.style.display = 'block'; messageTimeout = setTimeout(() => { messageDiv.style.display = 'none'; messageTimeout = null; }, duration); }
 
-        function winGame() {
-            if (!gameActive) return; gameActive = false; TWEEN.removeAll();
-            showMessage("¡HAS ESCAPADO!", 10000); console.log("Juego ganado!");
+        function winGame(endCellType = END_CELL_TERMINATE, endCellX = -1, endCellZ = -1) {
+            if (!gameActive) return;
+            gameActive = false;
+            TWEEN.removeAll();
+
+            console.log("Juego ganado! Tipo de fin:", endCellType, "en celda:", endCellX, ",", endCellZ);
             if (isPointerLocked && document.pointerLockElement) document.exitPointerLock();
-            setTimeout(() => { window.location.reload(); }, 5000);
+
+            if (endCellType === END_CELL_SPECIFIC_NEXT) {
+                showMessage("¡Portal Activado!", 2000);
+                
+                const nextScenarioNameToLoad = currentPlayingScenarioData?.specificNextScenarioName;
+                const exitCoordsMatch = currentPlayingScenarioData?.specificExitCoords?.x === endCellX &&
+                                      currentPlayingScenarioData?.specificExitCoords?.z === endCellZ;
+
+                if (nextScenarioNameToLoad && exitCoordsMatch) {
+                    setTimeout(async () => {
+                        const scenarios = await getAllScenariosDB();
+                        const scenarioToPlay = scenarios.find(s => s.name === nextScenarioNameToLoad);
+
+                        if (scenarioToPlay) {
+                            if (nextScenarioSelectionScreen) nextScenarioSelectionScreen.style.display = 'none';
+                            if(loadingTextElement) loadingTextElement.style.display = 'block';
+                            if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
+                            
+                            cleanUpScene();
+                            preloadTextures(() => {
+                                selectTexturesForScenario(scenarioToPlay.textures);
+                                currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay)); 
+                                init(scenarioToPlay);
+                                finalizeLoadingScreen();
+                            });
+                        } else {
+                            alert(`Error: No se pudo encontrar el escenario de destino llamado "${nextScenarioNameToLoad}". Volviendo al menú.`);
+                            window.location.reload();
+                        }
+                    }, 1500);
+                } else {
+                    console.warn("Fin específico activado, pero no se encontró nombre de escenario de destino válido o las coordenadas no coinciden. Terminando partida.");
+                    showMessage("¡HAS ESCAPADO!", 10000);
+                    setTimeout(() => { window.location.reload(); }, 5000);
+                }
+            } else { 
+                showMessage("¡HAS ESCAPADO!", 10000);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
+            }
         }
 
+
         function loseGame(reason = "Has perdido.") {
-            if (!gameActive && playerFallingIntoPit === null) return;
+            if (!gameActive && playerFallingIntoPit === null) return; // Evita múltiples llamadas si no es por caída
             gameActive = false;
 
             showMessage(reason, 3000);
@@ -1242,19 +1632,17 @@
                 updateCamera();
 
                 for (const trap of pitTrapObjects) {
-                    if (trap.state === 'broken' || trap.state === 'breaking') { // También resetear si está 'breaking'
+                    if (trap.state === 'broken' || trap.state === 'breaking') {
                         trap.state = 'intact';
                         currentMazeLayout[trap.gridZ][trap.gridX] = PIT_TRAP_CELL_TYPE;
-
                         if (trap.mesh) {
                             trap.mesh.visible = true;
                             trap.mesh.userData.isCollidable = true;
                             trap.mesh.position.set(trap.worldX, -PIT_COVER_THICKNESS / 2, trap.worldZ);
                             trap.mesh.rotation.set(0, 0, 0);
-                            if (floorTexture && trap.mesh.material.map !== floorTexture) { // Restaurar material original
-                                 // Re-crear el material base para la tapa.
+                            if (floorTexture && trap.mesh.material.map !== floorTexture) {
                                 const originalCoverMaterial = new THREE.MeshStandardMaterial({
-                                    map: floorTexture.clone(), // Usar un clon de la textura de suelo original
+                                    map: floorTexture.clone(),
                                     roughness: 0.95, metalness: 0.1,
                                     color: floorTexture ? 0xffffff : 0x444038
                                 });
@@ -1268,7 +1656,30 @@
                         if (trap.holeMesh) {
                             trap.holeMesh.visible = false;
                         }
-                        // trap.hasBeenRevealedByActivation se MANTIENE true.
+                    }
+                }
+                for (const trap of fallingBlockTrapObjects) {
+                    if (trap.state === 'falling' || trap.state === 'landed') {
+                        trap.state = 'armed';
+                        if (trap.blockMesh) {
+                             trap.blockMesh.visible = false;
+                             trap.blockMesh.position.y = WALL_HEIGHT + WALL_HEIGHT * 0.35;
+                             const colIndex = collidableObjects.indexOf(trap.blockMesh);
+                             if (colIndex > -1) collidableObjects.splice(colIndex, 1);
+                        }
+                         currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = FALLING_BLOCK_TRAP_CELL_TYPE;
+                    }
+                }
+                for (const trap of spikeTrapObjects) {
+                     if (trap.state === 'rising' || trap.state === 'risen') {
+                        trap.state = 'hidden';
+                        if (trap.spikeGroup) {
+                            trap.spikeGroup.visible = false;
+                            trap.spikeGroup.children.forEach(spike => {
+                                spike.position.y = -SPIKE_HEIGHT / 2;
+                            });
+                        }
+                         currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = SPIKE_TRAP_CELL_TYPE;
                     }
                 }
                 TWEEN.removeAll();
@@ -1302,25 +1713,659 @@
             console.log(`Render size: ${renderWidth}x${renderHeight} (Touch: ${isTouchDevice}, Scale: ${scaleFactor.toFixed(2)})`);
         }
 
-        function showCustomGameUI() { gameActive = false; if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null;} if (isPointerLocked && document.pointerLockElement) document.exitPointerLock(); if(startOptionsDiv) startOptionsDiv.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'none'; if(loadingScreenElement) loadingScreenElement.style.display = 'none'; customGameScreen.style.display = 'flex'; scenarioEditorScreen.style.display = 'none'; loadAndDisplayCustomScenarios(); }
-        backToMainMenuBtn.addEventListener('click', () => { customGameScreen.style.display = 'none'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; if(startOptionsDiv) startOptionsDiv.style.display = 'flex'; });
-        async function loadAndDisplayCustomScenarios() { try { const scenarios = await getAllScenariosDB(); customScenarioListUL.innerHTML = ''; if (scenarios && scenarios.length > 0) { noCustomScenariosMsg.style.display = 'none'; scenarios.forEach(scenario => { const listItem = document.createElement('li'); listItem.classList.add('scenario-item'); listItem.innerHTML = `<span>${escapeHTML(scenario.name)} (${scenario.width}x${scenario.height})</span><div class="scenario-actions"><button class="action-btn play-scenario-btn" data-id="${scenario.id}">Jugar</button><button class="action-btn edit-scenario-btn" data-id="${scenario.id}">Editar</button><button class="action-btn export-scenario-btn" data-id="${scenario.id}">Exportar</button><button class="action-btn delete-scenario-btn" data-id="${scenario.id}">Eliminar</button></div>`; customScenarioListUL.appendChild(listItem); }); addScenarioActionListeners(); } else { noCustomScenariosMsg.style.display = 'block'; } } catch (error) { console.error("Error loading scenarios:", error); noCustomScenariosMsg.textContent = "Error loading scenarios."; noCustomScenariosMsg.style.display = 'block'; } }
-        function addScenarioActionListeners() { document.querySelectorAll('.play-scenario-btn').forEach(btn => { btn.addEventListener('click', async (e) => { const scenarioId = parseInt(e.target.dataset.id); const scenarioToPlay = await getScenarioByIdDB(scenarioId); if (scenarioToPlay) { customGameScreen.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'block'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; preloadTextures(() => { init(scenarioToPlay); finalizeLoadingScreen(); }); } else { alert("Error: Could not load scenario to play."); } }); }); document.querySelectorAll('.edit-scenario-btn').forEach(btn => { btn.addEventListener('click', (e) => { const scenarioId = parseInt(e.target.dataset.id); openScenarioEditor(scenarioId); }); }); document.querySelectorAll('.export-scenario-btn').forEach(btn => { btn.addEventListener('click', async (e) => { const scenarioId = parseInt(e.target.dataset.id); const scenario = await getScenarioByIdDB(scenarioId); if (scenario) { const { id, ...exportData } = scenario; exportScenarioAsJSON(exportData); } }); }); document.querySelectorAll('.delete-scenario-btn').forEach(btn => { btn.addEventListener('click', async (e) => { const scenarioId = parseInt(e.target.dataset.id); if (confirm("Are you sure you want to delete this scenario?")) { try { await deleteScenarioDB(scenarioId); loadAndDisplayCustomScenarios(); } catch (error) { console.error("Error deleting scenario:", error); alert("Error deleting scenario."); } } }); }); }
+        function populateTextureSelectors() {
+            const selectorsData = [
+                { id: 'wall-texture-select', previewId: 'wall-texture-preview' },
+                { id: 'floor-texture-select', previewId: 'floor-texture-preview' },
+                { id: 'ceiling-texture-select', previewId: 'ceiling-texture-preview' }
+            ];
+
+            selectorsData.forEach(data => {
+                const selectElement = document.getElementById(data.id);
+                const previewElement = document.getElementById(data.previewId);
+                if (!selectElement || !previewElement) return;
+
+                selectElement.innerHTML = '<option value="-1" data-url="">Aleatorio</option>';
+                textureURLs.forEach((url, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Textura ${index + 1}`;
+                    option.dataset.url = url;
+                    selectElement.appendChild(option);
+                });
+
+                selectElement.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const textureUrl = selectedOption.dataset.url;
+                    if (textureUrl) {
+                        previewElement.src = textureUrl;
+                        previewElement.style.display = 'inline-block';
+                    } else {
+                        previewElement.src = '';
+                        previewElement.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        async function populateSpecificNextScenarioSelector() {
+            if (!specificNextScenarioSelect) return;
+            
+            const previouslySelectedId = specificNextScenarioSelect.value;
+            specificNextScenarioSelect.innerHTML = '<option value="">-- Seleccionar Escenario --</option>';
+
+            try {
+                const scenarios = await getAllScenariosDB();
+                scenarios.forEach(s => {
+                    if (currentEditingScenario && currentEditingScenario.id === s.id) {
+                        return;
+                    }
+                    const option = document.createElement('option');
+                    option.value = s.id; 
+                    option.textContent = s.name;
+                    specificNextScenarioSelect.appendChild(option);
+                });
+                if (previouslySelectedId && specificNextScenarioSelect.querySelector(`option[value="${previouslySelectedId}"]`)) {
+                    specificNextScenarioSelect.value = previouslySelectedId;
+                } else if (currentEditingScenario && currentEditingScenario.specificNextScenarioName) {
+                    const targetScenario = scenarios.find(s => s.name === currentEditingScenario.specificNextScenarioName);
+                    if (targetScenario) {
+                        specificNextScenarioSelect.value = targetScenario.id;
+                    }
+                }
+
+
+            } catch (error) {
+                console.error("Error al poblar selector de escenarios específicos:", error);
+            }
+        }
+
+
+        function updateTexturePreview(selectId, previewId, textureIndex) {
+            const selectElement = document.getElementById(selectId);
+            const previewElement = document.getElementById(previewId);
+            if (!selectElement || !previewElement) return;
+
+            if (textureIndex !== -1 && textureURLs[textureIndex]) {
+                previewElement.src = textureURLs[textureIndex];
+                previewElement.style.display = 'inline-block';
+            } else {
+                previewElement.src = '';
+                previewElement.style.display = 'none';
+            }
+            selectElement.value = textureIndex;
+        }
+
+        function cleanUpScene() {
+            if (scene) {
+                while(scene.children.length > 0){
+                    const object = scene.children[0];
+                    if(object.geometry) object.geometry.dispose();
+                    if(object.material){
+                        if(Array.isArray(object.material)){
+                            object.material.forEach(material => material.dispose());
+                        } else {
+                            object.material.dispose();
+                        }
+                    }
+                    scene.remove(object);
+                }
+            }
+            collidableObjects = [];
+            interactiveObjects = [];
+            staticTorches = [];
+            pitTrapObjects = [];
+            fallingBlockTrapObjects = [];
+            spikeTrapObjects = [];
+        }
+
+        async function displayNextScenarioSelection() {
+            try {
+                const scenarios = await getAllScenariosDB();
+                nextScenarioListUL.innerHTML = '';
+                if (scenarios && scenarios.length > 0) {
+                    noNextScenariosMsg.style.display = 'none';
+                    scenarios.forEach(scenario => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('scenario-item');
+                        listItem.innerHTML = `
+                            <div class="scenario-info">
+                                <span>${escapeHTML(scenario.name)} (${scenario.width}x${scenario.height})</span>
+                            </div>
+                            <div class="scenario-actions">
+                                <button class="action-btn play-this-scenario-btn" data-id="${scenario.id}">Jugar este</button>
+                            </div>
+                        `;
+                        listItem.querySelector('.play-this-scenario-btn').addEventListener('click', async () => {
+                            const scenarioId = parseInt(scenario.id);
+                            const scenarioToPlay = await getScenarioByIdDB(scenarioId);
+                            if (scenarioToPlay) {
+                                nextScenarioSelectionScreen.style.display = 'none';
+                                if(loadingTextElement) loadingTextElement.style.display = 'block';
+                                if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
+                                
+                                cleanUpScene();
+                                preloadTextures(() => {
+                                    selectTexturesForScenario(scenarioToPlay.textures);
+                                    currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay)); 
+                                    init(scenarioToPlay);
+                                    finalizeLoadingScreen();
+                                });
+                            } else {
+                                alert("Error: No se pudo cargar el escenario seleccionado.");
+                            }
+                        });
+                        nextScenarioListUL.appendChild(listItem);
+                    });
+                    nextScenarioSelectionScreen.style.display = 'flex';
+                } else {
+                    noNextScenariosMsg.style.display = 'block';
+                    nextScenarioSelectionScreen.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error("Error cargando escenarios para la selección:", error);
+                noNextScenariosMsg.textContent = "Error cargando escenarios.";
+                noNextScenariosMsg.style.display = 'block';
+                nextScenarioSelectionScreen.style.display = 'flex';
+            }
+        }
+
+
+        function showCustomGameUI() { gameActive = false; if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null;} if (isPointerLocked && document.pointerLockElement) document.exitPointerLock(); if(startOptionsDiv) startOptionsDiv.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'none'; if(loadingScreenElement) loadingScreenElement.style.display = 'none'; customGameScreen.style.display = 'flex'; scenarioEditorScreen.style.display = 'none'; nextScenarioSelectionScreen.style.display = 'none'; loadAndDisplayCustomScenarios(); }
+        backToMainMenuBtn.addEventListener('click', () => { customGameScreen.style.display = 'none'; nextScenarioSelectionScreen.style.display = 'none'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; if(startOptionsDiv) startOptionsDiv.style.display = 'flex'; });
+        cancelNextScenarioBtn.addEventListener('click', () => {
+            nextScenarioSelectionScreen.style.display = 'none';
+            if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
+            if(startOptionsDiv) startOptionsDiv.style.display = 'flex';
+        });
+        async function loadAndDisplayCustomScenarios() {
+            try {
+                const scenarios = await getAllScenariosDB();
+                customScenarioListUL.innerHTML = '';
+                if (scenarios && scenarios.length > 0) {
+                    noCustomScenariosMsg.style.display = 'none';
+                    scenarios.forEach(scenario => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('scenario-item');
+                        listItem.dataset.id = scenario.id;
+                        listItem.innerHTML = `
+                            <div class="scenario-preview" id="preview-${scenario.id}"></div>
+                            <div class="scenario-info">
+                                <span>${escapeHTML(scenario.name)} (${scenario.width}x${scenario.height})</span>
+                            </div>
+                            <div class="scenario-actions">
+                                <button class="action-btn play-scenario-btn">Jugar</button>
+                                <button class="action-btn edit-scenario-btn">Editar</button>
+                                <button class="action-btn export-scenario-btn">Exportar</button>
+                                <button class="action-btn delete-scenario-btn">Eliminar</button>
+                            </div>
+                        `;
+                        customScenarioListUL.appendChild(listItem);
+                        generateScenarioPreview(scenario, `preview-${scenario.id}`);
+                    });
+                    addScenarioActionListeners();
+                } else {
+                    noCustomScenariosMsg.style.display = 'block';
+                }
+            } catch (error) { console.error("Error loading scenarios:", error); noCustomScenariosMsg.textContent = "Error loading scenarios."; noCustomScenariosMsg.style.display = 'block'; }
+        }
+
+        function generateScenarioPreview(scenario, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container || !scenario.grid) return;
+
+            container.innerHTML = '';
+            const rows = scenario.height;
+            const cols = scenario.width;
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.classList.add('scenario-preview-cell');
+                    let cellColor = MINIMAP_PATH_COLOR;
+                    const cellType = scenario.grid[r][c];
+                    switch (cellType) {
+                        case 0: cellColor = MINIMAP_WALL_COLOR; break;
+                        case 1: cellColor = MINIMAP_PATH_COLOR; break;
+                        case 5: cellColor = MINIMAP_PLAYER_COLOR; break;
+                        case END_CELL_TERMINATE: cellColor = MINIMAP_END_COLOR; break;
+                        case END_CELL_SPECIFIC_NEXT: cellColor = MINIMAP_END_LINK_COLOR; break;
+                        case PIT_TRAP_CELL_TYPE: cellColor = MINIMAP_PITTRAP_INTACT_COLOR; break;
+                        case BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT: cellColor = MINIMAP_PITTRAP_BROKEN_COLOR; break;
+                        case FALLING_BLOCK_TRAP_CELL_TYPE: cellColor = MINIMAP_FALLING_BLOCK_COLOR; break;
+                        case SPIKE_TRAP_CELL_TYPE: cellColor = MINIMAP_SPIKES_COLOR; break;
+                    }
+                    cellDiv.style.backgroundColor = cellColor;
+                    container.appendChild(cellDiv);
+                }
+            }
+        }
+
+
+        function addScenarioActionListeners() {
+            customScenarioListUL.querySelectorAll('.scenario-item').forEach(item => {
+                const scenarioId = parseInt(item.dataset.id);
+                item.querySelector('.play-scenario-btn').addEventListener('click', async () => {
+                    const scenarioToPlay = await getScenarioByIdDB(scenarioId);
+                    if (scenarioToPlay) {
+                        customGameScreen.style.display = 'none';
+                        if(loadingTextElement) loadingTextElement.style.display = 'block';
+                        if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
+                        preloadTextures(() => {
+                            selectTexturesForScenario(scenarioToPlay.textures);
+                            currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay));
+                            init(scenarioToPlay);
+                            finalizeLoadingScreen();
+                        });
+                    } else { alert("Error: Could not load scenario to play."); }
+                });
+                item.querySelector('.edit-scenario-btn').addEventListener('click', () => { openScenarioEditor(scenarioId); });
+                item.querySelector('.export-scenario-btn').addEventListener('click', async () => {
+                    const scenario = await getScenarioByIdDB(scenarioId);
+                    if (scenario) { const { id, ...exportData } = scenario; exportScenarioAsJSON(exportData); }
+                });
+                item.querySelector('.delete-scenario-btn').addEventListener('click', async () => {
+                    if (confirm("Are you sure you want to delete this scenario?")) {
+                        try { await deleteScenarioDB(scenarioId); loadAndDisplayCustomScenarios(); }
+                        catch (error) { console.error("Error deleting scenario:", error); alert("Error deleting scenario."); }
+                    }
+                });
+            });
+        }
+
         function exportScenarioAsJSON(scenarioData) { const jsonString = JSON.stringify(scenarioData, null, 2); const blob = new Blob([jsonString], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${scenarioData.name.replace(/[^a-z0-9\s-]/gi, '_').trim().replace(/\s+/g, '-').toLowerCase() || 'custom_scenario'}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
         importScenarioBtn.addEventListener('click', () => { importFileInput.click(); });
-        importFileInput.addEventListener('change', (event) => { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = async (e) => { try { const importedScenario = JSON.parse(e.target.result); if (importedScenario.name && importedScenario.width && importedScenario.height && importedScenario.grid && Array.isArray(importedScenario.grid) && importedScenario.grid.length === importedScenario.height && importedScenario.grid.every(row => Array.isArray(row) && row.length === importedScenario.width)) { let scenarioToSave = { name: importedScenario.name, width: importedScenario.width, height: importedScenario.height, grid: importedScenario.grid }; const existingScenarios = await getAllScenariosDB(); const existingByName = existingScenarios.find(s => s.name === scenarioToSave.name); if (existingByName) { if (confirm(`A scenario named "${scenarioToSave.name}" already exists. Do you want to overwrite it?`)) { scenarioToSave.id = existingByName.id; } else { importFileInput.value = ''; return; } } await saveScenarioDB(scenarioToSave); loadAndDisplayCustomScenarios(); alert(`Scenario "${importedScenario.name}" imported successfully.`); } else { alert("The JSON file does not have the expected scenario format or is corrupt."); } } catch (error) { console.error("Error importing scenario:", error); alert("Error processing the JSON file. Ensure it is valid."); } importFileInput.value = ''; }; reader.readAsText(file); } });
+        importFileInput.addEventListener('change', (event) => { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = async (e) => { try { const importedScenario = JSON.parse(e.target.result); if (importedScenario.name && importedScenario.width && importedScenario.height && importedScenario.grid && Array.isArray(importedScenario.grid) && importedScenario.grid.length === importedScenario.height && importedScenario.grid.every(row => Array.isArray(row) && row.length === importedScenario.width)) { let scenarioToSave = { name: importedScenario.name, width: importedScenario.width, height: importedScenario.height, grid: importedScenario.grid, textures: importedScenario.textures || {wall:-1, floor:-1, ceiling:-1}, specificNextScenarioName: importedScenario.specificNextScenarioName || null, specificExitCoords: importedScenario.specificExitCoords || null }; const existingScenarios = await getAllScenariosDB(); const existingByName = existingScenarios.find(s => s.name === scenarioToSave.name); if (existingByName) { if (confirm(`A scenario named "${scenarioToSave.name}" already exists. Do you want to overwrite it?`)) { scenarioToSave.id = existingByName.id; } else { importFileInput.value = ''; return; } } await saveScenarioDB(scenarioToSave); loadAndDisplayCustomScenarios(); alert(`Scenario "${importedScenario.name}" imported successfully.`); } else { alert("The JSON file does not have the expected scenario format or is corrupt."); } } catch (error) { console.error("Error importing scenario:", error); alert("Error processing the JSON file. Ensure it is valid."); } importFileInput.value = ''; }; reader.readAsText(file); } });
         createNewScenarioBtn.addEventListener('click', () => { openScenarioEditor(null); });
         backToCustomScreenBtn.addEventListener('click', () => { if (hasUnsavedChanges) { if (!confirm("You have unsaved changes. Are you sure you want to leave the editor? Changes will be lost.")) { return; } } scenarioEditorScreen.style.display = 'none'; customGameScreen.style.display = 'flex'; currentEditingScenario = null; hasUnsavedChanges = false; editorMessageSpan.textContent = ''; });
-        async function openScenarioEditor(scenarioId) { customGameScreen.style.display = 'none'; scenarioEditorScreen.style.display = 'flex'; hasUnsavedChanges = false; editorMessageSpan.textContent = ''; playEditedScenarioBtn.disabled = true; if (scenarioId !== null) { const scenario = await getScenarioByIdDB(scenarioId); if (!scenario) { alert("Error: Could not load scenario."); backToCustomScreenBtn.click(); return; } currentEditingScenario = JSON.parse(JSON.stringify(scenario)); scenarioNameInput.value = currentEditingScenario.name; dimensionSelectorDiv.style.display = 'none'; scenarioNameInput.style.display = 'block'; brushToolsDiv.style.display = 'flex'; editorActionsDiv.style.display = 'flex'; setupEditorGrid(currentEditingScenario.width, currentEditingScenario.height, currentEditingScenario.grid); checkEditorStateForPlayability(); } else { currentEditingScenario = { id: null, name: "", width: 0, height: 0, grid: [] }; scenarioNameInput.value = ''; dimensionSelectorDiv.style.display = 'flex'; scenarioNameInput.style.display = 'none'; brushToolsDiv.style.display = 'none'; editorActionsDiv.style.display = 'none'; editorGridContainer.innerHTML = ''; } document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active')); document.querySelector('.brush-btn[data-type="wall"]').classList.add('active'); selectedBrush = 'wall'; }
-        confirmSizeBtn.addEventListener('click', () => { const [w, h] = scenarioSizeSelect.value.split('x').map(Number); currentEditingScenario.width = w; currentEditingScenario.height = h; currentEditingScenario.grid = Array(h).fill(null).map(() => Array(w).fill(0)); dimensionSelectorDiv.style.display = 'none'; scenarioNameInput.style.display = 'block'; scenarioNameInput.value = "Nuevo Laberinto"; currentEditingScenario.name = "Nuevo Laberinto"; brushToolsDiv.style.display = 'flex'; editorActionsDiv.style.display = 'flex'; setupEditorGrid(w, h, currentEditingScenario.grid); hasUnsavedChanges = true; checkEditorStateForPlayability(); });
+
+        async function openScenarioEditor(scenarioId) {
+            customGameScreen.style.display = 'none';
+            scenarioEditorScreen.style.display = 'flex';
+            hasUnsavedChanges = false;
+            editorMessageSpan.textContent = '';
+            playEditedScenarioBtn.disabled = true;
+
+             if (document.getElementById('wall-texture-select').options.length <= 1) {
+                 populateTextureSelectors();
+             }
+
+
+            if (scenarioId !== null) {
+                const scenario = await getScenarioByIdDB(scenarioId);
+                if (!scenario) { alert("Error: Could not load scenario."); backToCustomScreenBtn.click(); return; }
+                currentEditingScenario = JSON.parse(JSON.stringify(scenario));
+                scenarioNameInput.value = currentEditingScenario.name;
+                dimensionSelectorDiv.style.display = 'none';
+                scenarioNameInput.style.display = 'block';
+                brushToolsDiv.style.display = 'flex';
+                if (textureSelectorsDiv) textureSelectorsDiv.style.display = 'block';
+                editorActionsDiv.style.display = 'flex';
+
+                updateTexturePreview('wall-texture-select', 'wall-texture-preview', currentEditingScenario.textures?.wall ?? -1);
+                updateTexturePreview('floor-texture-select', 'floor-texture-preview', currentEditingScenario.textures?.floor ?? -1);
+                updateTexturePreview('ceiling-texture-select', 'ceiling-texture-preview', currentEditingScenario.textures?.ceiling ?? -1);
+                
+                let endTypeToSelect = 'terminate';
+                let specificNextName = currentEditingScenario.specificNextScenarioName || null;
+                
+                if (specificNextName && currentEditingScenario.specificExitCoords) {
+                    endTypeToSelect = 'specific_next_scenario';
+                } else {
+                    outerLoop: for (let r = 0; r < currentEditingScenario.grid.length; r++) {
+                        for (let c = 0; c < currentEditingScenario.grid[r].length; c++) {
+                            if (currentEditingScenario.grid[r][c] === END_CELL_SPECIFIC_NEXT) {
+                                endTypeToSelect = 'specific_next_scenario'; break outerLoop;
+                            } else if (currentEditingScenario.grid[r][c] === END_CELL_TERMINATE) {
+                                endTypeToSelect = 'terminate';
+                            }
+                        }
+                    }
+                }
+                
+                document.querySelector(`input[name="end-behavior"][value="${endTypeToSelect}"]`).checked = true;
+
+                if (endTypeToSelect === 'specific_next_scenario') {
+                    await populateSpecificNextScenarioSelector();
+                    const scenarios = await getAllScenariosDB();
+                    const targetScenario = scenarios.find(s => s.name === specificNextName);
+                    specificNextScenarioSelect.value = targetScenario ? targetScenario.id : "";
+                    specificNextScenarioSelect.style.display = 'inline-block';
+                } else {
+                    specificNextScenarioSelect.style.display = 'none';
+                }
+
+
+                setupEditorGrid(currentEditingScenario.width, currentEditingScenario.height, currentEditingScenario.grid);
+                checkEditorStateForPlayability();
+            } else {
+                currentEditingScenario = { id: null, name: "", width: 0, height: 0, grid: [], textures: {wall: -1, floor: -1, ceiling: -1 }, specificNextScenarioName: null, specificExitCoords: null };
+                scenarioNameInput.value = '';
+                dimensionSelectorDiv.style.display = 'flex';
+                scenarioNameInput.style.display = 'none';
+                brushToolsDiv.style.display = 'none';
+                if (textureSelectorsDiv) textureSelectorsDiv.style.display = 'none';
+                if (endCellOptionsDiv) endCellOptionsDiv.style.display = 'none';
+                editorActionsDiv.style.display = 'none';
+                editorGridContainer.innerHTML = '';
+
+                updateTexturePreview('wall-texture-select', 'wall-texture-preview', -1);
+                updateTexturePreview('floor-texture-select', 'floor-texture-preview', -1);
+                updateTexturePreview('ceiling-texture-select', 'ceiling-texture-preview', -1);
+                if (document.querySelector('input[name="end-behavior"]')) {
+                    document.querySelector('input[name="end-behavior"][value="terminate"]').checked = true;
+                }
+                if (specificNextScenarioSelect) {
+                    specificNextScenarioSelect.style.display = 'none';
+                    specificNextScenarioSelect.value = "";
+                }
+            }
+
+            if (selectedBrush === 'end' && brushToolsDiv.style.display !== 'none' && endCellOptionsDiv) {
+                endCellOptionsDiv.style.display = 'block';
+                const currentEndBehavior = document.querySelector('input[name="end-behavior"]:checked').value;
+                if(specificNextScenarioSelect) specificNextScenarioSelect.style.display = (currentEndBehavior === 'specific_next_scenario') ? 'inline-block' : 'none';
+                if (currentEndBehavior === 'specific_next_scenario' && specificNextScenarioSelect && specificNextScenarioSelect.options.length <=1 ) {
+                     populateSpecificNextScenarioSelector();
+                }
+            } else if (endCellOptionsDiv) {
+                endCellOptionsDiv.style.display = 'none';
+            }
+            document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+            const activeButton = document.querySelector(`.brush-btn[data-type="${selectedBrush}"]`);
+            if (activeButton) activeButton.classList.add('active');
+        }
+
+        confirmSizeBtn.addEventListener('click', () => {
+            const [w, h] = scenarioSizeSelect.value.split('x').map(Number);
+            currentEditingScenario.width = w;
+            currentEditingScenario.height = h;
+            currentEditingScenario.grid = Array(h).fill(null).map(() => Array(w).fill(0));
+            currentEditingScenario.textures = {wall: -1, floor: -1, ceiling: -1 };
+            currentEditingScenario.specificNextScenarioName = null;
+            currentEditingScenario.specificExitCoords = null;
+
+            dimensionSelectorDiv.style.display = 'none';
+            scenarioNameInput.style.display = 'block';
+            scenarioNameInput.value = "Nuevo Laberinto";
+            currentEditingScenario.name = "Nuevo Laberinto";
+            brushToolsDiv.style.display = 'flex';
+            if (textureSelectorsDiv) textureSelectorsDiv.style.display = 'block';
+             updateTexturePreview('wall-texture-select', 'wall-texture-preview', -1);
+             updateTexturePreview('floor-texture-select', 'floor-texture-preview', -1);
+             updateTexturePreview('ceiling-texture-select', 'ceiling-texture-preview', -1);
+            if (endCellOptionsDiv) {
+                endCellOptionsDiv.style.display = (selectedBrush === 'end') ? 'block' : 'none';
+                document.querySelector('input[name="end-behavior"][value="terminate"]').checked = true;
+                specificNextScenarioSelect.style.display = 'none';
+                specificNextScenarioSelect.value = "";
+            }
+
+            editorActionsDiv.style.display = 'flex';
+            setupEditorGrid(w, h, currentEditingScenario.grid);
+            hasUnsavedChanges = true;
+            checkEditorStateForPlayability();
+        });
         function setupEditorGrid(width, height, gridData) { editorGridContainer.innerHTML = ''; editorGridContainer.style.gridTemplateColumns = `repeat(${width}, 1fr)`; editorGridContainer.style.gridTemplateRows = `repeat(${height}, 1fr)`; editorGridData = JSON.parse(JSON.stringify(gridData)); editorCellElements = []; for (let r = 0; r < height; r++) { editorCellElements[r] = []; for (let c = 0; c < width; c++) { const cell = document.createElement('div'); cell.classList.add('grid-cell'); cell.dataset.row = r; cell.dataset.col = c; if (r === 0 || r === height - 1 || c === 0 || c === width - 1) { cell.classList.add('border'); editorGridData[r][c] = 0; } updateCellVisual(cell, editorGridData[r][c]); cell.addEventListener('click', handleGridCellClick); editorGridContainer.appendChild(cell); editorCellElements[r][c] = cell; } } }
-        function updateCellVisual(cellElement, cellType) { cellElement.classList.remove('path', 'start', 'end', 'wall', 'pittrap'); let symbol = ''; switch (cellType) { case 0: cellElement.classList.add('wall'); break; case 1: cellElement.classList.add('path'); break; case 5: cellElement.classList.add('start'); symbol = 'S'; break; case 6: cellElement.classList.add('end'); symbol = 'E'; break; case PIT_TRAP_CELL_TYPE: cellElement.classList.add('pittrap'); symbol = 'T'; break; default: cellElement.classList.add('wall'); break; } cellElement.textContent = symbol; }
-        function handleGridCellClick(event) { const cell = event.target; const r = parseInt(cell.dataset.row); const c = parseInt(cell.dataset.col); if (cell.classList.contains('border')) return; let newType; switch (selectedBrush) { case 'wall': newType = 0; break; case 'path': newType = 1; break; case 'start': newType = 5; break; case 'end': newType = 6; break; case 'pittrap': newType = PIT_TRAP_CELL_TYPE; break; default: return; } if (newType === 5 || newType === 6) { for (let i = 0; i < editorGridData.length; i++) { for (let j = 0; j < editorGridData[i].length; j++) { if (editorGridData[i][j] === newType) { editorGridData[i][j] = 1; if (editorCellElements[i] && editorCellElements[i][j]) { updateCellVisual(editorCellElements[i][j], 1); } } } } } editorGridData[r][c] = newType; updateCellVisual(cell, newType); hasUnsavedChanges = true; checkEditorStateForPlayability(); }
-        document.querySelectorAll('.brush-btn').forEach(button => { button.addEventListener('click', () => { document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active')); button.classList.add('active'); selectedBrush = button.dataset.type; }); });
-        saveScenarioBtn.addEventListener('click', async () => { const scenarioName = scenarioNameInput.value.trim(); if (!scenarioName) { editorMessageSpan.textContent = "Please enter a scenario name."; return; } const validationResult = validateEditorGrid(); if (!validationResult.valid) { editorMessageSpan.textContent = validationResult.message; return; } currentEditingScenario.name = scenarioName; currentEditingScenario.grid = JSON.parse(JSON.stringify(editorGridData)); try { if (currentEditingScenario.id !== null && currentEditingScenario.id !== undefined) { const allScenarios = await getAllScenariosDB(); const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name && s.id !== currentEditingScenario.id); if (nameConflict) { if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite the current scenario with this name anyway? (This will not affect the other scenario).`)) { editorMessageSpan.textContent = "Save cancelled. Name conflict."; return; } } } else { const allScenarios = await getAllScenariosDB(); const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name); if (nameConflict) { if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite it?`)) { editorMessageSpan.textContent = "Save cancelled. Name conflict."; return; } currentEditingScenario.id = nameConflict.id; } } const savedScenario = await saveScenarioDB(currentEditingScenario); currentEditingScenario.id = savedScenario.id; hasUnsavedChanges = false; editorMessageSpan.textContent = "Scenario saved!"; playEditedScenarioBtn.disabled = false; setTimeout(() => editorMessageSpan.textContent = "", 2000); loadAndDisplayCustomScenarios(); } catch (error) { console.error("Error saving scenario:", error); editorMessageSpan.textContent = "Error saving. Check console."; } });
-        playEditedScenarioBtn.addEventListener('click', () => { if (hasUnsavedChanges) { editorMessageSpan.textContent = "Save changes before playing."; return; } if (!currentEditingScenario || currentEditingScenario.id === null || currentEditingScenario.id === undefined) { editorMessageSpan.textContent = "Save the scenario first."; return; } const validation = validateEditorGrid(); if (!validation.valid) { editorMessageSpan.textContent = "The maze is not valid for playing: " + validation.message; return; } scenarioEditorScreen.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'block'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; const scenarioToPlay = JSON.parse(JSON.stringify(currentEditingScenario)); preloadTextures(() => { init(scenarioToPlay); finalizeLoadingScreen(); }); });
+
+        function updateCellVisual(cellElement, cellType) {
+            cellElement.classList.remove('path', 'start', 'end', 'wall', 'pittrap', 'fallingblock', 'spikes');
+            let symbol = '';
+            cellElement.style.fontSize = "12px";
+            cellElement.style.color = "rgba(255,255,255,0.8)";
+
+            switch (cellType) {
+                case 0: cellElement.classList.add('wall'); break;
+                case 1: cellElement.classList.add('path'); break;
+                case 5: cellElement.classList.add('start'); symbol = 'S'; break;
+                case END_CELL_TERMINATE: cellElement.classList.add('end'); symbol = 'E'; break;
+                case END_CELL_SPECIFIC_NEXT:
+                    cellElement.classList.add('end'); 
+                    symbol = 'E>'; 
+                    cellElement.style.fontSize = "11px";
+                    cellElement.style.color = MINIMAP_END_LINK_COLOR;
+                    break;
+                case PIT_TRAP_CELL_TYPE: cellElement.classList.add('pittrap'); symbol = 'T'; break;
+                case FALLING_BLOCK_TRAP_CELL_TYPE: cellElement.classList.add('fallingblock'); symbol = 'B'; break;
+                case SPIKE_TRAP_CELL_TYPE: cellElement.classList.add('spikes'); symbol = 'P'; break;
+                default: cellElement.classList.add('wall'); break;
+            }
+            cellElement.textContent = symbol;
+        }
+
+        function handleGridCellClick(event) {
+            const cell = event.target;
+            const r = parseInt(cell.dataset.row);
+            const c = parseInt(cell.dataset.col);
+
+            if (cell.classList.contains('border')) return;
+
+            let newType;
+            let newCellTypeForGridData = -1;
+            
+            switch (selectedBrush) {
+                case 'wall': newType = 0; break;
+                case 'path': newType = 1; break;
+                case 'start': newType = 5; break;
+                case 'pittrap': newType = PIT_TRAP_CELL_TYPE; break;
+                case 'fallingblock': newType = FALLING_BLOCK_TRAP_CELL_TYPE; break;
+                case 'spikes': newType = SPIKE_TRAP_CELL_TYPE; break;
+                case 'end':
+                    const endBehaviorRadio = document.querySelector('input[name="end-behavior"]:checked');
+                    const endBehavior = endBehaviorRadio ? endBehaviorRadio.value : 'terminate';
+
+                    if (endBehavior === 'specific_next_scenario') {
+                        newType = END_CELL_SPECIFIC_NEXT;
+                        const targetScenarioIdSelected = specificNextScenarioSelect.value ? parseInt(specificNextScenarioSelect.value) : null;
+                        if (targetScenarioIdSelected === null || isNaN(targetScenarioIdSelected) || targetScenarioIdSelected === "") {
+                            editorMessageSpan.textContent = "Selecciona un escenario de destino para el fin específico o cambia el comportamiento.";
+                            setTimeout(() => editorMessageSpan.textContent = "", 3500);
+                            return; 
+                        }
+                        currentEditingScenario.specificExitCoords = { x: c, z: r };
+                        currentEditingScenario.specificNextScenarioId_temp = targetScenarioIdSelected; // Temporalmente el ID
+                    } else {
+                        newType = END_CELL_TERMINATE;
+                        currentEditingScenario.specificNextScenarioName = null;
+                        currentEditingScenario.specificExitCoords = null;
+                        currentEditingScenario.specificNextScenarioId_temp = null;
+                    }
+                    newCellTypeForGridData = newType;
+
+                    for (let i = 0; i < editorGridData.length; i++) {
+                        for (let j = 0; j < editorGridData[i].length; j++) {
+                            if (editorGridData[i][j] === END_CELL_TERMINATE ||
+                                editorGridData[i][j] === END_CELL_SPECIFIC_NEXT) {
+                                editorGridData[i][j] = 1;
+                                if (editorCellElements[i] && editorCellElements[i][j]) {
+                                    updateCellVisual(editorCellElements[i][j], 1);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default: return;
+            }
+            
+            if (selectedBrush !== 'end') { // Si no es fin, limpiar datos de enlace por si se pinta sobre un fin
+                 const existingCellType = editorGridData[r][c];
+                 if (existingCellType === END_CELL_SPECIFIC_NEXT) {
+                    currentEditingScenario.specificNextScenarioName = null;
+                    currentEditingScenario.specificExitCoords = null;
+                 }
+            }
+
+            editorGridData[r][c] = (newCellTypeForGridData !== -1 && selectedBrush === 'end') ? newCellTypeForGridData : newType;
+            updateCellVisual(cell, editorGridData[r][c]);
+            hasUnsavedChanges = true;
+            checkEditorStateForPlayability();
+        }
+
+        document.querySelectorAll('.brush-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                selectedBrush = button.dataset.type;
+
+                if (selectedBrush === 'end') {
+                    if(endCellOptionsDiv) endCellOptionsDiv.style.display = 'block';
+                    const currentEndBehavior = document.querySelector('input[name="end-behavior"]:checked').value;
+                     if (specificNextScenarioSelect) specificNextScenarioSelect.style.display = (currentEndBehavior === 'specific_next_scenario') ? 'inline-block' : 'none';
+                     if (currentEndBehavior === 'specific_next_scenario' && specificNextScenarioSelect && specificNextScenarioSelect.options.length <=1 ) {
+                         populateSpecificNextScenarioSelector();
+                     }
+                } else {
+                    if(endCellOptionsDiv) endCellOptionsDiv.style.display = 'none';
+                }
+            });
+        });
+
+        document.querySelectorAll('input[name="end-behavior"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'specific_next_scenario') {
+                    populateSpecificNextScenarioSelector();
+                    if(specificNextScenarioSelect) specificNextScenarioSelect.style.display = 'inline-block';
+                } else {
+                    if(specificNextScenarioSelect) specificNextScenarioSelect.style.display = 'none';
+                }
+            });
+        });
+
+
+        saveScenarioBtn.addEventListener('click', async () => {
+            const scenarioName = scenarioNameInput.value.trim();
+            if (!scenarioName) { editorMessageSpan.textContent = "Please enter a scenario name."; return; }
+            
+            currentEditingScenario.specificNextScenarioName = null;
+            currentEditingScenario.specificExitCoords = null;
+            
+            let endCellInGridIsSpecificType = false;
+            let coordsOfSpecificEndCell = null;
+
+            for (let r = 0; r < editorGridData.length; r++) {
+                for (let c = 0; c < editorGridData[r].length; c++) {
+                    if (editorGridData[r][c] === END_CELL_SPECIFIC_NEXT) {
+                        endCellInGridIsSpecificType = true;
+                        coordsOfSpecificEndCell = { x: c, z: r };
+                        break;
+                    }
+                }
+                if (endCellInGridIsSpecificType) break;
+            }
+
+            const selectedEndBehaviorRadio = document.querySelector('input[name="end-behavior"]:checked');
+            const endBehavior = selectedEndBehaviorRadio ? selectedEndBehaviorRadio.value : 'terminate';
+
+            if (endBehavior === 'specific_next_scenario' && endCellInGridIsSpecificType) {
+                // Usar el ID temporal guardado en handleGridCellClick o el valor actual del select
+                const targetScenarioId = currentEditingScenario.specificNextScenarioId_temp !== undefined ?
+                                         currentEditingScenario.specificNextScenarioId_temp :
+                                         (specificNextScenarioSelect.value ? parseInt(specificNextScenarioSelect.value) : null);
+
+                if (targetScenarioId !== null && !isNaN(targetScenarioId) && targetScenarioId > 0) {
+                    const scenarios = await getAllScenariosDB();
+                    const targetScenario = scenarios.find(s => s.id === targetScenarioId);
+                    if (targetScenario) {
+                        currentEditingScenario.specificNextScenarioName = targetScenario.name;
+                        currentEditingScenario.specificExitCoords = coordsOfSpecificEndCell;
+                    } else {
+                        editorMessageSpan.textContent = "Error: Escenario de destino seleccionado no encontrado. El fin se guardará como 'Terminar Partida'.";
+                        if (coordsOfSpecificEndCell) editorGridData[coordsOfSpecificEndCell.z][coordsOfSpecificEndCell.x] = END_CELL_TERMINATE;
+                        setTimeout(() => editorMessageSpan.textContent = "", 4000);
+                    }
+                } else {
+                     editorMessageSpan.textContent = "Advertencia: Fin específico sin destino válido. Se guardará como fin normal.";
+                     if (coordsOfSpecificEndCell) editorGridData[coordsOfSpecificEndCell.z][coordsOfSpecificEndCell.x] = END_CELL_TERMINATE;
+                     setTimeout(() => editorMessageSpan.textContent = "", 4000);
+                }
+            }
+             delete currentEditingScenario.specificNextScenarioId_temp;
+
+
+            const validationResult = validateEditorGrid();
+            if (!validationResult.valid) { editorMessageSpan.textContent = validationResult.message; return; }
+
+            currentEditingScenario.name = scenarioName;
+            currentEditingScenario.grid = JSON.parse(JSON.stringify(editorGridData));
+            currentEditingScenario.textures = {
+                wall: parseInt(document.getElementById('wall-texture-select').value),
+                floor: parseInt(document.getElementById('floor-texture-select').value),
+                ceiling: parseInt(document.getElementById('ceiling-texture-select').value)
+            };
+
+            try {
+                if (currentEditingScenario.id !== null && currentEditingScenario.id !== undefined) {
+                    const allScenarios = await getAllScenariosDB();
+                    const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name && s.id !== currentEditingScenario.id);
+                    if (nameConflict) { if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite the current scenario with this name anyway? (This will not affect the other scenario).`)) { editorMessageSpan.textContent = "Save cancelled. Name conflict."; return; } }
+                } else {
+                    const allScenarios = await getAllScenariosDB();
+                    const nameConflict = allScenarios.find(s => s.name === currentEditingScenario.name);
+                    if (nameConflict) { if (!confirm(`A scenario named "${currentEditingScenario.name}" already exists. Do you want to overwrite it?`)) { editorMessageSpan.textContent = "Save cancelled. Name conflict."; return; } currentEditingScenario.id = nameConflict.id; }
+                }
+                const savedScenario = await saveScenarioDB(currentEditingScenario);
+                currentEditingScenario.id = savedScenario.id;
+                hasUnsavedChanges = false;
+                editorMessageSpan.textContent = "Scenario saved!";
+                playEditedScenarioBtn.disabled = false;
+                setTimeout(() => editorMessageSpan.textContent = "", 2000);
+                loadAndDisplayCustomScenarios();
+            } catch (error) { console.error("Error saving scenario:", error); editorMessageSpan.textContent = "Error saving. Check console."; }
+        });
+
+        playEditedScenarioBtn.addEventListener('click', () => { if (hasUnsavedChanges) { editorMessageSpan.textContent = "Save changes before playing."; return; } if (!currentEditingScenario || currentEditingScenario.id === null || currentEditingScenario.id === undefined) { editorMessageSpan.textContent = "Save the scenario first."; return; } const validation = validateEditorGrid(); if (!validation.valid) { editorMessageSpan.textContent = "The maze is not valid for playing: " + validation.message; return; } scenarioEditorScreen.style.display = 'none'; if(loadingTextElement) loadingTextElement.style.display = 'block'; if(loadingScreenElement) loadingScreenElement.style.display = 'flex'; const scenarioToPlay = JSON.parse(JSON.stringify(currentEditingScenario)); preloadTextures(() => { selectTexturesForScenario(scenarioToPlay.textures); currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay)); init(scenarioToPlay); finalizeLoadingScreen(); }); });
         function checkEditorStateForPlayability() { const isSaved = (currentEditingScenario && currentEditingScenario.id !== null && currentEditingScenario.id !== undefined); if (hasUnsavedChanges || !isSaved) { playEditedScenarioBtn.disabled = true; if (hasUnsavedChanges) { editorMessageSpan.textContent = "Unsaved changes."; } else if (!isSaved) { editorMessageSpan.textContent = "Save to enable 'Play'."; } if (!hasUnsavedChanges && isSaved && editorMessageSpan.textContent.startsWith("The maze is not valid")) { editorMessageSpan.textContent = ""; } } else { const validation = validateEditorGrid(); playEditedScenarioBtn.disabled = !validation.valid; editorMessageSpan.textContent = validation.valid ? "Ready to play or save." : validation.message; } }
-        function validateEditorGrid() { if (!editorGridData || editorGridData.length === 0 || !editorGridData[0] || editorGridData[0].length === 0) return {valid: false, message: "The grid is empty."}; let startPoint = null, endPoint = null; const rows = editorGridData.length; const cols = editorGridData[0].length; for (let r = 0; r < rows; r++) { if (!editorGridData[r]) { console.error(`Row ${r} is null/undefined in editorGridData`); continue; } for (let c = 0; c < cols; c++) { const cellValue = editorGridData[r][c]; if (cellValue === undefined || cellValue === null) { console.warn(`Cell [${r}][${c}] is null/undefined, treating as wall (0).`); editorGridData[r][c] = 0; if (editorCellElements && editorCellElements[r] && editorCellElements[r][c]) { updateCellVisual(editorCellElements[r][c], 0); } } if (editorGridData[r][c] === 5) { if (startPoint) return {valid: false, message: "Only one start point (S) is allowed."}; startPoint = {r, c}; } if (editorGridData[r][c] === 6) { if (endPoint) return {valid: false, message: "Only one end point (E) is allowed."}; endPoint = {r, c}; } if (editorGridData[r][c] === PIT_TRAP_CELL_TYPE && (r === 0 || r === rows - 1 || c === 0 || c === cols - 1)) { return { valid: false, message: "Pit traps (T) cannot be on the border." }; } } } if (!startPoint) return {valid: false, message: "Missing a start point (S)."}; if (!endPoint) return {valid: false, message: "Missing an end point (E)."}; if (editorGridData[startPoint.r][startPoint.c] === 0 || editorGridData[startPoint.r][startPoint.c] === PIT_TRAP_CELL_TYPE) return { valid: false, message: "Start (S) must be on a regular path cell, not wall or trap." }; if (editorGridData[endPoint.r][endPoint.c] === 0 || editorGridData[endPoint.r][endPoint.c] === PIT_TRAP_CELL_TYPE) return { valid: false, message: "End (E) must be on a regular path cell, not wall or trap." }; if (startPoint.r === 0 || startPoint.r === rows - 1 || startPoint.c === 0 || startPoint.c === cols - 1) return { valid: false, message: "Start (S) cannot be on the border." }; if (endPoint.r === 0 || endPoint.r === rows - 1 || endPoint.c === 0 || endPoint.c === cols - 1) return { valid: false, message: "End (E) cannot be on the border." }; const queue = [[startPoint.r, startPoint.c]]; const visited = Array(rows).fill(null).map(() => Array(cols).fill(false)); visited[startPoint.r][startPoint.c] = true; let pathFound = false; const dr = [-1, 1, 0, 0]; const dc = [0, 0, -1, 1]; while (queue.length > 0) { const [r, c] = queue.shift(); if (r === endPoint.r && c === endPoint.c) { pathFound = true; break; } for (let i = 0; i < 4; i++) { const nr = r + dr[i]; const nc = c + dc[i]; if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) { if (!visited[nr][nc] && (editorGridData[nr][nc] === 1 || editorGridData[nr][nc] === PIT_TRAP_CELL_TYPE || editorGridData[nr][nc] === 5 || editorGridData[nr][nc] === 6 )) { visited[nr][nc] = true; queue.push([nr, nc]); } } } } if (!pathFound) return {valid: false, message: "The end point is not accessible from the start."}; return {valid: true, message: "Valid maze."}; }
+        function validateEditorGrid() {
+            if (!editorGridData || editorGridData.length === 0 || !editorGridData[0] || editorGridData[0].length === 0) return {valid: false, message: "The grid is empty."};
+            let startPoint = null, endPointInfo = null;
+            const rows = editorGridData.length;
+            const cols = editorGridData[0].length;
+            for (let r = 0; r < rows; r++) {
+                if (!editorGridData[r]) { console.error(`Row ${r} is null/undefined in editorGridData`); continue; }
+                for (let c = 0; c < cols; c++) {
+                    const cellValue = editorGridData[r][c];
+                    if (cellValue === undefined || cellValue === null) { console.warn(`Cell [${r}][${c}] is null/undefined, treating as wall (0).`); editorGridData[r][c] = 0; if (editorCellElements && editorCellElements[r] && editorCellElements[r][c]) { updateCellVisual(editorCellElements[r][c], 0); } }
+                    if (editorGridData[r][c] === 5) { if (startPoint) return {valid: false, message: "Only one start point (S) is allowed."}; startPoint = {r, c}; }
+                    if (editorGridData[r][c] === END_CELL_TERMINATE || editorGridData[r][c] === END_CELL_SPECIFIC_NEXT) { if (endPointInfo) return {valid: false, message: "Only one end point (E or E>) is allowed."}; endPointInfo = {r, c, type: editorGridData[r][c]}; }
+                    if (editorGridData[r][c] === PIT_TRAP_CELL_TYPE && (r === 0 || r === rows - 1 || c === 0 || c === cols - 1)) { return { valid: false, message: "Pit traps (T) cannot be on the border." }; }
+                }
+            }
+            if (!startPoint) return {valid: false, message: "Missing a start point (S)."};
+            if (!endPointInfo) return {valid: false, message: "Missing an end point (E or E>)."};
+            if (editorGridData[startPoint.r][startPoint.c] === 0 || editorGridData[startPoint.r][startPoint.c] === PIT_TRAP_CELL_TYPE) return { valid: false, message: "Start (S) must be on a regular path cell, not wall or trap." };
+
+            if (endPointInfo.type === END_CELL_SPECIFIC_NEXT) {
+                if (!currentEditingScenario.specificNextScenarioName) {
+                    return {valid: false, message: "El fin 'Cargar Escenario Específico' no tiene un escenario de destino válido configurado."};
+                }
+            }
+
+            if (editorGridData[endPointInfo.r][endPointInfo.c] === 0 ) return { valid: false, message: "El punto de fin no puede estar sobre una pared." };
+            if (startPoint.r === 0 || startPoint.r === rows - 1 || startPoint.c === 0 || startPoint.c === cols - 1) return { valid: false, message: "Start (S) cannot be on the border." };
+            if (endPointInfo.r === 0 || endPointInfo.r === rows - 1 || endPointInfo.c === 0 || endPointInfo.c === cols - 1) return { valid: false, message: "End point (E or E>) cannot be on the border." };
+
+            const queue = [[startPoint.r, startPoint.c]];
+            const visited = Array(rows).fill(null).map(() => Array(cols).fill(false));
+            visited[startPoint.r][startPoint.c] = true;
+            let pathFound = false;
+            const dr = [-1, 1, 0, 0]; const dc = [0, 0, -1, 1];
+            while (queue.length > 0) {
+                const [r_bfs, c_bfs] = queue.shift();
+                if (r_bfs === endPointInfo.r && c_bfs === endPointInfo.c) { pathFound = true; break; }
+                for (let i = 0; i < 4; i++) {
+                    const nr = r_bfs + dr[i]; const nc = c_bfs + dc[i];
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                        if (!visited[nr][nc] && (editorGridData[nr][nc] === 1 || editorGridData[nr][nc] === PIT_TRAP_CELL_TYPE || editorGridData[nr][nc] === 5 || editorGridData[nr][nc] === END_CELL_TERMINATE || editorGridData[nr][nc] === END_CELL_SPECIFIC_NEXT || editorGridData[nr][nc] === FALLING_BLOCK_TRAP_CELL_TYPE || editorGridData[nr][nc] === SPIKE_TRAP_CELL_TYPE )) { // Incluir nuevas trampas como transitables
+                             visited[nr][nc] = true; queue.push([nr, nc]);
+                        }
+                    }
+                }
+            }
+            if (!pathFound) return {valid: false, message: "The end point is not accessible from the start."};
+            return {valid: true, message: "Valid maze."};
+        }
         function escapeHTML(str) { if (str === null || str === undefined) return ""; return String(str).replace(/[&<>"']/g, function (match) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]; }); }
 
 
@@ -1330,6 +2375,8 @@
             if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
             if(startOptionsDiv) startOptionsDiv.style.display = 'flex';
             if(loadingTextElement) loadingTextElement.style.display = 'none';
+
+            populateTextureSelectors();
 
             initDB().then(() => {
                 console.log("Database ready for use from startGameSequence.");
@@ -1345,13 +2392,22 @@
                 if(loadingTextElement) loadingTextElement.style.display = 'block';
                 console.log("Starting game with autogenerated maze...");
                 preloadTextures(() => {
-                    console.log("Texture preload complete. Starting game...");
+                    selectRandomTextures();
+                    currentPlayingScenarioData = null; // Para juego auto-generado
                     init();
                     finalizeLoadingScreen();
                 });
             });
 
             startCustomGameButton.addEventListener('click', showCustomGameUI);
+
+            cancelNextScenarioBtn.addEventListener('click', () => {
+                nextScenarioSelectionScreen.style.display = 'none';
+                if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
+                if(startOptionsDiv) startOptionsDiv.style.display = 'flex';
+            });
+
+
             if (!window.onresize) window.addEventListener('resize', onWindowResize, false);
         }
         function finalizeLoadingScreen() {
