@@ -255,6 +255,7 @@
         .grid-cell.pittrap { background-color: #8B4513; color: white; }
         .grid-cell.fallingblock { background-color: #708090; color: white; }
         .grid-cell.spikes { background-color: #A9A9A9; color: black; }
+        .grid-cell.minotaur { background-color: #800000; color: #ffdddd; } /* Minotaur Editor Style */
         .grid-cell.border { cursor: not-allowed; background-color: #111 !important; color: #444 !important;}
         #editor-actions { display: flex; gap: 10px; margin-bottom: 15px; display:none; flex-wrap: wrap; justify-content: center;}
         #editor-message { color: #ffc107; margin-left:10px; align-self: center; font-size: 1em; margin-top: 5px; text-align: center;}
@@ -413,6 +414,7 @@
                 <button class="brush-btn" data-type="pittrap">Trampa Foso</button>
                 <button class="brush-btn" data-type="fallingblock">Bloque Cae</button>
                 <button class="brush-btn" data-type="spikes">Pinchos</button>
+                <button class="brush-btn" data-type="minotaur">Minotauro</button> <!-- Minotaur Brush -->
             </div>
              <div id="texture-selectors" style="display:none; margin-top: 15px;">
                 <h4>Selección de Texturas:</h4>
@@ -475,7 +477,7 @@
 
     <script>
         // --- Constantes y Configuración ---
-        const GAME_VERSION = "v1.10.2-specific-exit-name";
+        const GAME_VERSION = "v1.11.0-minotaur";
         const MAX_RESOLUTION_DIMENSION = 1920;
         const MAX_RESOLUTION_DIMENSION_MOBILE = 1280;
         const DEFAULT_MAZE_WIDTH = 12;
@@ -489,8 +491,9 @@
         const MINIMAP_END_LINK_COLOR = '#FF9800';
         const MINIMAP_PITTRAP_INTACT_COLOR = '#D2691E';
         const MINIMAP_PITTRAP_BROKEN_COLOR = '#111111';
-        const MINIMAP_FALLING_BLOCK_COLOR = '#6A5ACD'; // Para minimapa
-        const MINIMAP_SPIKES_COLOR = '#CD5C5C';      // Para minimapa
+        const MINIMAP_FALLING_BLOCK_COLOR = '#6A5ACD';
+        const MINIMAP_SPIKES_COLOR = '#CD5C5C';
+        const MINIMAP_MINOTAUR_COLOR = '#FF0000';
 
         const PLAYER_VISION_RADIUS_CELLS = 4; const MINIMAP_UNSEEN_COLOR = '#181818';
         const FIRST_PERSON_EYE_HEIGHT_FACTOR = 0.85;
@@ -503,6 +506,7 @@
         const BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT = 8;
         const FALLING_BLOCK_TRAP_CELL_TYPE = 9;
         const SPIKE_TRAP_CELL_TYPE = 10;
+        const MINOTAUR_CELL_TYPE = 11;
         const END_CELL_TERMINATE = 6;
         const END_CELL_SPECIFIC_NEXT = 61;
 
@@ -517,6 +521,17 @@
         const SPIKE_RISE_TIME = 200;
         const SPIKE_HEIGHT = PLAYER_HEIGHT * 0.8;
 
+        // --- Minotaur Constants ---
+        const MINOTAUR_HEIGHT = PLAYER_HEIGHT * 1.5;
+        const MINOTAUR_RADIUS = PLAYER_RADIUS * 1.8;
+        const MINOTAUR_PATROL_SPEED = PLAYER_SPEED * 0.6;
+        const MINOTAUR_CHASE_SPEED = PLAYER_SPEED * 1.1;
+        const MINOTAUR_VISION_RANGE_SQ = (CELL_SIZE * 5) * (CELL_SIZE * 5);
+        const MINOTAUR_VISION_ANGLE_DOT = Math.cos( (Math.PI / 2.5) / 2 ); // Half angle for dot product
+        const MINOTAUR_LOSE_SIGHT_TIME = 5000; // ms
+        const MINOTAUR_ATTACK_RANGE_SQUARED = (MINOTAUR_RADIUS + PLAYER_RADIUS + 0.2) * (MINOTAUR_RADIUS + PLAYER_RADIUS + 0.2);
+        const MINOTAUR_PATROL_TURN_CHANCE = 0.1;
+        const MINOTAUR_PATROL_NEW_TARGET_INTERVAL = 5000; // ms
 
         // --- TEXTURAS ---
         const textureBaseURL = 'https://urysoft.github.io/ai.html.games/general/assets/images/';
@@ -558,6 +573,18 @@
         let fallingBlockTrapObjects = [];
         let spikeTrapObjects = [];
         let playerFallingIntoPit = null;
+
+        // --- Minotaur Variables ---
+        let minotaurEnemy = null;
+        let minotaurInitialGridPos = null;
+        let minotaurState = 'patrolling';
+        let minotaurTargetCell = null;
+        let minotaurLastSawPlayerTime = 0;
+        let minotaurPatrolNextTargetTime = 0;
+        const minotaurRaycaster = new THREE.Raycaster();
+        const minotaurToPlayerVec = new THREE.Vector3();
+        const minotaurForwardVec = new THREE.Vector3();
+
 
         const startAutoGameButton = document.getElementById('start-auto-game');
         const startCustomGameButton = document.getElementById('start-custom-game');
@@ -810,8 +837,14 @@
             interactiveObjects = [];
             staticTorches = [];
             pitTrapObjects = [];
-            fallingBlockTrapObjects = []; // Reset
-            spikeTrapObjects = [];      // Reset
+            fallingBlockTrapObjects = [];
+            spikeTrapObjects = [];
+            minotaurEnemy = null;
+            minotaurInitialGridPos = null;
+            minotaurState = 'patrolling';
+            minotaurTargetCell = null;
+            minotaurLastSawPlayerTime = 0;
+            minotaurPatrolNextTargetTime = 0;
             playerFallingIntoPit = null;
 
 
@@ -963,6 +996,8 @@
             pitTrapObjects = [];
             fallingBlockTrapObjects = [];
             spikeTrapObjects = [];
+            minotaurEnemy = null;
+            minotaurInitialGridPos = null;
             endZone = null;
 
             const wallMaterialBase = new THREE.MeshStandardMaterial({
@@ -1010,6 +1045,8 @@
             const pitHoleGeometry = new THREE.BoxGeometry(CELL_SIZE * 0.95, WALL_HEIGHT * 2, CELL_SIZE * 0.95);
             const fallingBlockGeometry = new THREE.BoxGeometry(CELL_SIZE * 0.9, WALL_HEIGHT * 0.7, CELL_SIZE * 0.9);
             const spikeGeometry = new THREE.ConeGeometry(PLAYER_RADIUS * 0.3, SPIKE_HEIGHT, 4);
+            const minotaurGeometry = new THREE.CylinderGeometry(MINOTAUR_RADIUS, MINOTAUR_RADIUS * 0.8, MINOTAUR_HEIGHT, 16);
+            const minotaurMaterial = new THREE.MeshStandardMaterial({ color: 0x8B0000, roughness: 0.5, metalness: 0.2 });
 
 
             const mainFloor = new THREE.Mesh(mainFloorGeometry, mainFloorMaterial);
@@ -1069,7 +1106,7 @@
                     } else if (cellTypeInLayout === FALLING_BLOCK_TRAP_CELL_TYPE) {
                         const block = new THREE.Mesh(fallingBlockGeometry, FALLING_BLOCK_MATERIAL.clone());
                         block.position.set(posX, WALL_HEIGHT + WALL_HEIGHT * 0.35, posZ);
-                        block.visible = false; 
+                        block.visible = false;
                         block.castShadow = true;
                         scene.add(block);
                         fallingBlockTrapObjects.push({
@@ -1097,8 +1134,24 @@
                             triggerCellX: x, triggerCellZ: z, worldX: posX, worldZ: posZ,
                             spikeGroup: spikeGroup, state: 'hidden', hasBeenRevealedByActivation: false
                         });
-                    }
-                     else {
+                    } else if (cellTypeInLayout === MINOTAUR_CELL_TYPE) {
+                        if (!minotaurEnemy) {
+                            minotaurEnemy = new THREE.Mesh(minotaurGeometry, minotaurMaterial);
+                            minotaurEnemy.position.set(posX, MINOTAUR_HEIGHT / 2, posZ);
+                            minotaurEnemy.castShadow = true;
+                            minotaurEnemy.rotation.order = 'YXZ';
+                            minotaurInitialGridPos = { x, z };
+                            minotaurEnemy.userData.gridX = x;
+                            minotaurEnemy.userData.gridZ = z;
+                            scene.add(minotaurEnemy);
+                            collidableObjects.push(minotaurEnemy); // Minotaur is collidable for other entities (not used yet)
+                            console.log("Minotaur spawned at grid:", x, z);
+                            currentMazeLayout[z][x] = 1; // Treat cell as path for player navigation
+                        } else {
+                            console.warn("Multiple Minotaur start points defined, only one used.");
+                            currentMazeLayout[z][x] = 1;
+                        }
+                    } else { // Path (1), Start (5), End (6, 61)
                         if (Math.random() < STATIC_TORCH_FREQUENCY) {
                             let possibleTorchWalls = [];
                             if (z > 0 && layout[z-1][x] === 0) possibleTorchWalls.push({ side: 'N' });
@@ -1222,9 +1275,9 @@
             collisionCheckTempBox.setFromCenterAndSize(verticalCheckCenter, collisionSizeVec);
 
             for (const obj of collidableObjects) {
-                if (obj.userData.isFloor || obj.userData.isCeiling) continue;
+                if (obj.userData.isFloor || obj.userData.isCeiling || obj === minotaurEnemy) continue; // Minotaur collision handled separately
                 if (obj.userData.isPitTrapCover && !obj.userData.isCollidable) continue;
-                if (obj.userData.isFallingBlock && obj.userData.state !== 'landed') continue; // No colisionar con bloques que caen hasta que aterricen
+                if (obj.userData.isFallingBlock && obj.userData.state !== 'landed') continue;
 
                 const oB = new THREE.Box3().setFromObject(obj);
                 if (collisionCheckTempBox.intersectsBox(oB)) {
@@ -1263,7 +1316,7 @@
 
                 let collisionX = false; let collisionZ = false;
                 for (const obj of collidableObjects) {
-                    if (obj.userData.isFloor || obj.userData.isCeiling) continue;
+                    if (obj.userData.isFloor || obj.userData.isCeiling || obj === minotaurEnemy) continue; // Minotaur collision handled separately
                     if (obj.userData.isPitTrapCover && !obj.userData.isCollidable) continue;
                     if (obj.userData.isFallingBlock && obj.userData.state !== 'landed') continue;
 
@@ -1316,14 +1369,14 @@
                             triggerFallingBlockTrap(trap);
                         }
                     } else if (trap.state === 'falling') {
-                        const fallSpeed = WALL_HEIGHT * 3 * deltaTime; // Ajustar velocidad
+                        const fallSpeed = WALL_HEIGHT * 3 * deltaTime;
                         trap.blockMesh.position.y -= fallSpeed;
                         const playerBox = new THREE.Box3().setFromObject(player);
                         const blockBox = new THREE.Box3().setFromObject(trap.blockMesh);
                         if (playerBox.intersectsBox(blockBox)) {
                             loseGame("¡Aplastado!");
                             trap.state = 'landed';
-                            trap.blockMesh.position.y = (WALL_HEIGHT * 0.7) / 2; // Asentar en el suelo
+                            trap.blockMesh.position.y = (WALL_HEIGHT * 0.7) / 2;
                             if (!collidableObjects.includes(trap.blockMesh)) collidableObjects.push(trap.blockMesh);
 
                         }
@@ -1380,7 +1433,7 @@
                     .easing(TWEEN.Easing.Quadratic.In)
                     .onComplete(() => {
                          new TWEEN.Tween(trap.mesh.position)
-                            .to({ y: -1000 }, PIT_TRAP_BREAK_ANIMATION_TIME * 0.7)
+                            .to({ y: -1000 }, PIT_TRAP_BREAK_ANIMATION_TIME * 0.7) // Make it fall far down
                             .easing(TWEEN.Easing.Quadratic.In)
                             .onComplete(() => {
                                 trap.state = 'broken';
@@ -1410,15 +1463,13 @@
             trap.state = 'falling';
             trap.blockMesh.visible = true;
             if (!trap.hasBeenRevealedByActivation) trap.hasBeenRevealedByActivation = true;
-            console.log("Falling block trap activated!");
-            // Sonido: bloque cayendo
         }
 
         function triggerSpikeTrap(trap) {
             if (trap.state !== 'hidden' || !gameActive) return;
             trap.state = 'rising';
             trap.spikeGroup.visible = true;
-            currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT; // Usar esto para el minimapa de momento
+            currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT; // Mark for minimap, might need better type
 
             if (!trap.hasBeenRevealedByActivation) trap.hasBeenRevealedByActivation = true;
 
@@ -1433,20 +1484,144 @@
                             const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
                             const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
                             if (playerGridX === trap.triggerCellX && playerGridZ === trap.triggerCellZ &&
-                                Math.abs(player.position.y - PLAYER_HEIGHT/2) < SPIKE_HEIGHT * 0.7 ) { // Aumentar un poco la tolerancia de altura para ser ensartado
+                                Math.abs(player.position.y - PLAYER_HEIGHT/2) < SPIKE_HEIGHT * 0.7 ) {
                                 loseGame("¡Ensartado por pinchos!");
                             }
                         }
                     })
                     .start();
             });
-            console.log("Spike trap activated!");
-            // Sonido: pinchos
+        }
+
+        // --- Minotaur AI ---
+        function updateMinotaur(deltaTime) {
+            if (!minotaurEnemy || !gameActive || playerFallingIntoPit) return;
+
+            const currentTime = clock.elapsedTime * 1000; // For time-based checks
+
+            // Update Minotaur's current grid position
+            minotaurEnemy.userData.gridX = Math.round(minotaurEnemy.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+            minotaurEnemy.userData.gridZ = Math.round(minotaurEnemy.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+
+            const canSee = canMinotaurSeePlayer();
+
+            if (minotaurState === 'chasing') {
+                if (canSee) {
+                    minotaurLastSawPlayerTime = currentTime;
+                    const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+                    const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+                    minotaurTargetCell = { x: playerGridX, z: playerGridZ };
+                } else {
+                    if (currentTime - minotaurLastSawPlayerTime > MINOTAUR_LOSE_SIGHT_TIME) {
+                        minotaurState = 'patrolling';
+                        minotaurTargetCell = null; // No specific target when starting patrol
+                        minotaurPatrolNextTargetTime = currentTime; // Find new patrol target immediately
+                        console.log("Minotaur lost sight, now patrolling.");
+                    }
+                    // Continue towards last known player position if still chasing but lost sight recently
+                }
+            } else if (minotaurState === 'patrolling') {
+                if (canSee) {
+                    minotaurState = 'chasing';
+                    minotaurLastSawPlayerTime = currentTime;
+                    const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
+                    const playerGridZ = Math.round(player.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
+                    minotaurTargetCell = { x: playerGridX, z: playerGridZ };
+                    console.log("Minotaur saw player, now chasing to:", minotaurTargetCell);
+                } else {
+                    if (!minotaurTargetCell || (minotaurEnemy.userData.gridX === minotaurTargetCell.x && minotaurEnemy.userData.gridZ === minotaurTargetCell.z) || currentTime > minotaurPatrolNextTargetTime) {
+                        minotaurTargetCell = findRandomPatrolTarget(minotaurEnemy.userData.gridX, minotaurEnemy.userData.gridZ);
+                        minotaurPatrolNextTargetTime = currentTime + MINOTAUR_PATROL_NEW_TARGET_INTERVAL * (0.5 + Math.random()); // Add some randomness to interval
+                        if (!minotaurTargetCell) {
+                            // Stuck? Try to go back to initial position or wait
+                            minotaurTargetCell = minotaurInitialGridPos;
+                        }
+                    }
+                }
+            }
+
+            // Movement towards target cell
+            if (minotaurTargetCell) {
+                const targetWorldX = (minotaurTargetCell.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE;
+                const targetWorldZ = (minotaurTargetCell.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE;
+                const targetWorldPos = new THREE.Vector3(targetWorldX, MINOTAUR_HEIGHT / 2, targetWorldZ);
+
+                const direction = targetWorldPos.clone().sub(minotaurEnemy.position);
+                direction.y = 0; // Keep movement on XZ plane
+                const distanceToTarget = direction.length();
+
+                if (distanceToTarget > 0.1) { // Threshold to stop jittering at target
+                    direction.normalize();
+                    const currentSpeed = (minotaurState === 'chasing') ? MINOTAUR_CHASE_SPEED : MINOTAUR_PATROL_SPEED;
+                    minotaurEnemy.position.addScaledVector(direction, currentSpeed * deltaTime);
+
+                    // Orientation
+                    minotaurEnemy.rotation.y = Math.atan2(direction.x, direction.z);
+                } else {
+                    if (minotaurState === 'patrolling') minotaurTargetCell = null; // Arrived at patrol target
+                }
+            }
+
+            // Attack check
+            if (minotaurEnemy.position.distanceToSquared(player.position) < MINOTAUR_ATTACK_RANGE_SQUARED) {
+                loseGame("¡Atrapado por el Minotauro!");
+            }
+        }
+
+        function canMinotaurSeePlayer() {
+            if (!minotaurEnemy || !player || !gameActive) return false;
+
+            minotaurToPlayerVec.subVectors(player.position, minotaurEnemy.position);
+            const distanceSq = minotaurToPlayerVec.lengthSq();
+
+            if (distanceSq > MINOTAUR_VISION_RANGE_SQ) {
+                return false; // Player too far
+            }
+
+            minotaurEnemy.getWorldDirection(minotaurForwardVec);
+            minotaurForwardVec.y = 0; // Ignore Y for cone check
+            minotaurForwardVec.normalize();
+
+            const playerDir = minotaurToPlayerVec.clone().setY(0).normalize();
+            const dot = minotaurForwardVec.dot(playerDir);
+
+            if (dot < MINOTAUR_VISION_ANGLE_DOT) {
+                return false; // Player outside vision cone
+            }
+
+            // Raycast to check for obstructions
+            minotaurRaycaster.set(minotaurEnemy.position, minotaurToPlayerVec.normalize());
+            minotaurRaycaster.far = Math.sqrt(distanceSq); // Only check up to player distance
+            const wallObjects = collidableObjects.filter(obj => obj.userData.isWall);
+            const intersects = minotaurRaycaster.intersectObjects(wallObjects, false);
+
+            if (intersects.length > 0 && intersects[0].distance * intersects[0].distance < distanceSq - 0.1) { // -0.1 to avoid self-intersection issues
+                 return false; // Obstruction found
+            }
+            return true;
+        }
+
+        function findRandomPatrolTarget(currentX, currentZ) {
+            const possibleMoves = [];
+            const directions = [{dx:0, dz:1}, {dx:0, dz:-1}, {dx:1, dz:0}, {dx:-1, dz:0}]; // S, N, E, W
+
+            for (const dir of directions) {
+                const nextX = currentX + dir.dx;
+                const nextZ = currentZ + dir.dz;
+                if (nextX >= 0 && nextX < currentMazeWidth && nextZ >= 0 && nextZ < currentMazeHeight &&
+                    currentMazeLayout[nextZ] && (currentMazeLayout[nextZ][nextX] === 1 || currentMazeLayout[nextZ][nextX] === 5 || currentMazeLayout[nextZ][nextX] === END_CELL_TERMINATE || currentMazeLayout[nextZ][nextX] === END_CELL_SPECIFIC_NEXT || currentMazeLayout[nextZ][nextX] === PIT_TRAP_CELL_TYPE || currentMazeLayout[nextZ][nextX] === FALLING_BLOCK_TRAP_CELL_TYPE || currentMazeLayout[nextZ][nextX] === SPIKE_TRAP_CELL_TYPE )) { // Allow path, start, end, traps
+                    possibleMoves.push({ x: nextX, z: nextZ });
+                }
+            }
+
+            if (possibleMoves.length > 0) {
+                return possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            }
+            return null; // No valid moves
         }
 
 
-
-        function updateCamera() { if (!player || !camera) return; if (isFirstPersonView) { camera.position.copy(player.position); camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR; camera.rotation.order = 'YXZ'; camera.rotation.y = cameraTheta; camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS; camera.rotation.z = 0; camera.updateMatrixWorld(); if (playerTorchLight && playerTorchLight.parent === scene) { lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); camera.localToWorld(lightWorldPosHelper); playerTorchLight.position.copy(lightWorldPosHelper); } for (const obj of currentlyTransparentObjects) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } currentlyTransparentObjects.clear(); } else { const targetPosition = new THREE.Vector3(); const offset = new THREE.Vector3(); offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta); offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET; offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta); targetPosition.copy(player.position).add(offset); const cameraRaycaster = new THREE.Raycaster(); const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize(); const rayLength = rayOrigin.distanceTo(targetPosition); cameraRaycaster.set(rayOrigin, directionToCamera); cameraRaycaster.far = rayLength; const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable && !(obj.userData.isPitTrapCover && !obj.userData.isCollidable) && !(obj.userData.isFallingBlock && obj.userData.state !== 'landed') ); const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false); let objectsToMakeTransparentThisFrame = new Set(); for (const intersect of intersects) { if (intersect.object.userData.isTransparentCapable) { objectsToMakeTransparentThisFrame.add(intersect.object); } } for (const obj of currentlyTransparentObjects) { if (!objectsToMakeTransparentThisFrame.has(obj)) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } } for (const obj of objectsToMakeTransparentThisFrame) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = true; obj.material.opacity = OBSTACLE_OPACITY; } } currentlyTransparentObjects = objectsToMakeTransparentThisFrame; let finalCameraPosition = targetPosition.clone(); if (intersects.length > 0) { let closestDistance = rayLength; for (const intersect of intersects) { if (intersect.distance < closestDistance) { closestDistance = intersect.distance; } } finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3)); } finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND); camera.position.copy(finalCameraPosition); const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); camera.lookAt(lookAtTarget); } }
+        function updateCamera() { if (!player || !camera) return; if (isFirstPersonView) { camera.position.copy(player.position); camera.position.y += PLAYER_HEIGHT * FIRST_PERSON_EYE_HEIGHT_FACTOR; camera.rotation.order = 'YXZ'; camera.rotation.y = cameraTheta; camera.rotation.x = cameraPhi - CAMERA_PITCH_OFFSET_FPS; camera.rotation.z = 0; camera.updateMatrixWorld(); if (playerTorchLight && playerTorchLight.parent === scene) { lightWorldPosHelper.copy(FPS_TORCH_LIGHT_OFFSET); camera.localToWorld(lightWorldPosHelper); playerTorchLight.position.copy(lightWorldPosHelper); } for (const obj of currentlyTransparentObjects) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } currentlyTransparentObjects.clear(); } else { const targetPosition = new THREE.Vector3(); const offset = new THREE.Vector3(); offset.x = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.sin(cameraTheta); offset.y = CAMERA_DISTANCE * Math.cos(cameraPhi) + CAMERA_HEIGHT_OFFSET; offset.z = CAMERA_DISTANCE * Math.sin(cameraPhi) * Math.cos(cameraTheta); targetPosition.copy(player.position).add(offset); const cameraRaycaster = new THREE.Raycaster(); const rayOrigin = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); const directionToCamera = targetPosition.clone().sub(rayOrigin).normalize(); const rayLength = rayOrigin.distanceTo(targetPosition); cameraRaycaster.set(rayOrigin, directionToCamera); cameraRaycaster.far = rayLength; const cameraCheckObjects = collidableObjects.filter(obj => obj !== player && !obj.userData.isFloor && obj.userData.isTransparentCapable && !(obj.userData.isPitTrapCover && !obj.userData.isCollidable) && !(obj.userData.isFallingBlock && obj.userData.state !== 'landed') && obj !== minotaurEnemy ); const intersects = cameraRaycaster.intersectObjects(cameraCheckObjects, false); let objectsToMakeTransparentThisFrame = new Set(); for (const intersect of intersects) { if (intersect.object.userData.isTransparentCapable) { objectsToMakeTransparentThisFrame.add(intersect.object); } } for (const obj of currentlyTransparentObjects) { if (!objectsToMakeTransparentThisFrame.has(obj)) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = false; obj.material.opacity = obj.userData.originalOpacity || 1.0; } } } for (const obj of objectsToMakeTransparentThisFrame) { if (obj.material && typeof obj.material.opacity !== 'undefined' && obj.userData.isTransparentCapable) { obj.material.transparent = true; obj.material.opacity = OBSTACLE_OPACITY; } } currentlyTransparentObjects = objectsToMakeTransparentThisFrame; let finalCameraPosition = targetPosition.clone(); if (intersects.length > 0) { let closestDistance = rayLength; for (const intersect of intersects) { if (intersect.distance < closestDistance) { closestDistance = intersect.distance; } } finalCameraPosition.copy(rayOrigin).addScaledVector(directionToCamera, Math.max(0.5, closestDistance - 0.3)); } finalCameraPosition.y = Math.max(finalCameraPosition.y, player.position.y + MIN_CAMERA_Y_ABOVE_GROUND); camera.position.copy(finalCameraPosition); const lookAtTarget = player.position.clone().add(new THREE.Vector3(0, PLAYER_HEIGHT * 0.3, 0)); camera.lookAt(lookAtTarget); } }
         function drawMinimap() {
             if (!minimapCtx || !player || !currentMazeLayout.length || !visibilityMaze.length || !currentMazeWidth || !currentMazeHeight) return;
             const playerGridX = Math.round(player.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
@@ -1465,7 +1640,7 @@
                             fillColor = MINIMAP_UNSEEN_COLOR;
                         } else {
                             const cellTypeInLayout = currentMazeLayout[checkZ][checkX];
-                            const originalCellType = maze[checkZ][checkX];
+                            const originalCellType = maze[checkZ][checkX]; // Use original maze for some static features
 
                             if (cellTypeInLayout === 0) fillColor = MINIMAP_WALL_COLOR;
                             else if (cellTypeInLayout === BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT) fillColor = MINIMAP_PITTRAP_BROKEN_COLOR;
@@ -1481,15 +1656,18 @@
                             }
                             else if (originalCellType === FALLING_BLOCK_TRAP_CELL_TYPE) {
                                 const trapObject = fallingBlockTrapObjects.find(t => t.triggerCellX === checkX && t.triggerCellZ === checkZ);
-                                if (trapObject && trapObject.state === 'landed') fillColor = MINIMAP_WALL_COLOR; // Bloque caído
+                                if (trapObject && trapObject.state === 'landed') fillColor = MINIMAP_WALL_COLOR;
                                 else if (trapObject && trapObject.hasBeenRevealedByActivation) fillColor = MINIMAP_FALLING_BLOCK_COLOR;
                                 else fillColor = MINIMAP_PATH_COLOR;
                             }
                             else if (originalCellType === SPIKE_TRAP_CELL_TYPE) {
                                 const trapObject = spikeTrapObjects.find(t => t.triggerCellX === checkX && t.triggerCellZ === checkZ);
-                                if (trapObject && trapObject.state === 'risen') fillColor = MINIMAP_SPIKES_COLOR; // Pinchos arriba
-                                else if (trapObject && trapObject.hasBeenRevealedByActivation) fillColor = MINIMAP_PATH_COLOR; // Marcado pero oculto, como camino
+                                if (trapObject && trapObject.state === 'risen') fillColor = MINIMAP_SPIKES_COLOR;
+                                else if (trapObject && trapObject.hasBeenRevealedByActivation) fillColor = MINIMAP_PATH_COLOR;
                                 else fillColor = MINIMAP_PATH_COLOR;
+                            }
+                            else if (originalCellType === MINOTAUR_CELL_TYPE) { // Original minotaur spawn not shown, actual minotaur position shown later
+                                fillColor = MINIMAP_PATH_COLOR;
                             }
                             else fillColor = MINIMAP_PATH_COLOR;
                         }
@@ -1497,6 +1675,12 @@
                     minimapCtx.fillStyle = fillColor;
                     const drawX = relX * cellSizePx - cellSizePx / 2; const drawY = relZ * cellSizePx - cellSizePx / 2;
                     minimapCtx.fillRect(drawX, drawY, cellSizePx, cellSizePx);
+
+                    // Draw Minotaur if visible on minimap
+                    if (minotaurEnemy && minotaurEnemy.userData.gridX === checkX && minotaurEnemy.userData.gridZ === checkZ && visibilityMaze[checkZ] && visibilityMaze[checkZ][checkX]) {
+                        minimapCtx.fillStyle = MINIMAP_MINOTAUR_COLOR;
+                        minimapCtx.fillRect(drawX + cellSizePx * 0.1, drawY + cellSizePx * 0.1, cellSizePx * 0.8, cellSizePx * 0.8);
+                    }
                 }
             }
             minimapCtx.restore(); minimapCtx.beginPath(); const playerMarkerSize = cellSizePx * 0.9; const halfSize = playerMarkerSize / 2; minimapCtx.moveTo(minimapWidth / 2, minimapHeight / 2 - halfSize * 0.8); minimapCtx.lineTo(minimapWidth / 2 - halfSize * 0.6, minimapHeight / 2 + halfSize * 0.5); minimapCtx.lineTo(minimapWidth / 2 + halfSize * 0.6, minimapHeight / 2 + halfSize * 0.5); minimapCtx.closePath(); minimapCtx.fillStyle = MINIMAP_PLAYER_COLOR; minimapCtx.fill();
@@ -1543,6 +1727,7 @@
 
             if (gameActive || playerFallingIntoPit !== null) {
                 updatePlayer(dT);
+                if (minotaurEnemy) updateMinotaur(dT);
             }
 
             if (gameActive) {
@@ -1570,7 +1755,7 @@
 
             if (endCellType === END_CELL_SPECIFIC_NEXT) {
                 showMessage("¡Portal Activado!", 2000);
-                
+
                 const nextScenarioNameToLoad = currentPlayingScenarioData?.specificNextScenarioName;
                 const exitCoordsMatch = currentPlayingScenarioData?.specificExitCoords?.x === endCellX &&
                                       currentPlayingScenarioData?.specificExitCoords?.z === endCellZ;
@@ -1584,11 +1769,11 @@
                             if (nextScenarioSelectionScreen) nextScenarioSelectionScreen.style.display = 'none';
                             if(loadingTextElement) loadingTextElement.style.display = 'block';
                             if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
-                            
+
                             cleanUpScene();
                             preloadTextures(() => {
                                 selectTexturesForScenario(scenarioToPlay.textures);
-                                currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay)); 
+                                currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay));
                                 init(scenarioToPlay);
                                 finalizeLoadingScreen();
                             });
@@ -1602,7 +1787,7 @@
                     showMessage("¡HAS ESCAPADO!", 10000);
                     setTimeout(() => { window.location.reload(); }, 5000);
                 }
-            } else { 
+            } else {
                 showMessage("¡HAS ESCAPADO!", 10000);
                 setTimeout(() => {
                     window.location.reload();
@@ -1612,7 +1797,7 @@
 
 
         function loseGame(reason = "Has perdido.") {
-            if (!gameActive && playerFallingIntoPit === null) return; // Evita múltiples llamadas si no es por caída
+            if (!gameActive && playerFallingIntoPit === null) return;
             gameActive = false;
 
             showMessage(reason, 3000);
@@ -1630,6 +1815,19 @@
                 cameraPhi = Math.PI / 3;
                 cameraTheta = player.rotation.y - Math.PI;
                 updateCamera();
+
+                // Reset Minotaur
+                if (minotaurEnemy && minotaurInitialGridPos) {
+                    const initialWorldX = (minotaurInitialGridPos.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE;
+                    const initialWorldZ = (minotaurInitialGridPos.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE;
+                    minotaurEnemy.position.set(initialWorldX, MINOTAUR_HEIGHT / 2, initialWorldZ);
+                    minotaurEnemy.rotation.y = 0; // Or some default rotation
+                    minotaurState = 'patrolling';
+                    minotaurTargetCell = null;
+                    minotaurLastSawPlayerTime = 0;
+                    minotaurPatrolNextTargetTime = clock.elapsedTime * 1000;
+                }
+
 
                 for (const trap of pitTrapObjects) {
                     if (trap.state === 'broken' || trap.state === 'breaking') {
@@ -1710,7 +1908,6 @@
                 camera.aspect = renderWidth / renderHeight;
                 camera.updateProjectionMatrix();
             }
-            console.log(`Render size: ${renderWidth}x${renderHeight} (Touch: ${isTouchDevice}, Scale: ${scaleFactor.toFixed(2)})`);
         }
 
         function populateTextureSelectors() {
@@ -1750,7 +1947,7 @@
 
         async function populateSpecificNextScenarioSelector() {
             if (!specificNextScenarioSelect) return;
-            
+
             const previouslySelectedId = specificNextScenarioSelect.value;
             specificNextScenarioSelect.innerHTML = '<option value="">-- Seleccionar Escenario --</option>';
 
@@ -1761,7 +1958,7 @@
                         return;
                     }
                     const option = document.createElement('option');
-                    option.value = s.id; 
+                    option.value = s.id;
                     option.textContent = s.name;
                     specificNextScenarioSelect.appendChild(option);
                 });
@@ -1817,6 +2014,7 @@
             pitTrapObjects = [];
             fallingBlockTrapObjects = [];
             spikeTrapObjects = [];
+            minotaurEnemy = null;
         }
 
         async function displayNextScenarioSelection() {
@@ -1843,11 +2041,11 @@
                                 nextScenarioSelectionScreen.style.display = 'none';
                                 if(loadingTextElement) loadingTextElement.style.display = 'block';
                                 if(loadingScreenElement) loadingScreenElement.style.display = 'flex';
-                                
+
                                 cleanUpScene();
                                 preloadTextures(() => {
                                     selectTexturesForScenario(scenarioToPlay.textures);
-                                    currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay)); 
+                                    currentPlayingScenarioData = JSON.parse(JSON.stringify(scenarioToPlay));
                                     init(scenarioToPlay);
                                     finalizeLoadingScreen();
                                 });
@@ -1936,6 +2134,7 @@
                         case BROKEN_PIT_TRAP_CELL_TYPE_LAYOUT: cellColor = MINIMAP_PITTRAP_BROKEN_COLOR; break;
                         case FALLING_BLOCK_TRAP_CELL_TYPE: cellColor = MINIMAP_FALLING_BLOCK_COLOR; break;
                         case SPIKE_TRAP_CELL_TYPE: cellColor = MINIMAP_SPIKES_COLOR; break;
+                        case MINOTAUR_CELL_TYPE: cellColor = MINIMAP_MINOTAUR_COLOR; break;
                     }
                     cellDiv.style.backgroundColor = cellColor;
                     container.appendChild(cellDiv);
@@ -2007,10 +2206,10 @@
                 updateTexturePreview('wall-texture-select', 'wall-texture-preview', currentEditingScenario.textures?.wall ?? -1);
                 updateTexturePreview('floor-texture-select', 'floor-texture-preview', currentEditingScenario.textures?.floor ?? -1);
                 updateTexturePreview('ceiling-texture-select', 'ceiling-texture-preview', currentEditingScenario.textures?.ceiling ?? -1);
-                
+
                 let endTypeToSelect = 'terminate';
                 let specificNextName = currentEditingScenario.specificNextScenarioName || null;
-                
+
                 if (specificNextName && currentEditingScenario.specificExitCoords) {
                     endTypeToSelect = 'specific_next_scenario';
                 } else {
@@ -2024,7 +2223,7 @@
                         }
                     }
                 }
-                
+
                 document.querySelector(`input[name="end-behavior"][value="${endTypeToSelect}"]`).checked = true;
 
                 if (endTypeToSelect === 'specific_next_scenario') {
@@ -2111,7 +2310,7 @@
         function setupEditorGrid(width, height, gridData) { editorGridContainer.innerHTML = ''; editorGridContainer.style.gridTemplateColumns = `repeat(${width}, 1fr)`; editorGridContainer.style.gridTemplateRows = `repeat(${height}, 1fr)`; editorGridData = JSON.parse(JSON.stringify(gridData)); editorCellElements = []; for (let r = 0; r < height; r++) { editorCellElements[r] = []; for (let c = 0; c < width; c++) { const cell = document.createElement('div'); cell.classList.add('grid-cell'); cell.dataset.row = r; cell.dataset.col = c; if (r === 0 || r === height - 1 || c === 0 || c === width - 1) { cell.classList.add('border'); editorGridData[r][c] = 0; } updateCellVisual(cell, editorGridData[r][c]); cell.addEventListener('click', handleGridCellClick); editorGridContainer.appendChild(cell); editorCellElements[r][c] = cell; } } }
 
         function updateCellVisual(cellElement, cellType) {
-            cellElement.classList.remove('path', 'start', 'end', 'wall', 'pittrap', 'fallingblock', 'spikes');
+            cellElement.classList.remove('path', 'start', 'end', 'wall', 'pittrap', 'fallingblock', 'spikes', 'minotaur');
             let symbol = '';
             cellElement.style.fontSize = "12px";
             cellElement.style.color = "rgba(255,255,255,0.8)";
@@ -2122,14 +2321,15 @@
                 case 5: cellElement.classList.add('start'); symbol = 'S'; break;
                 case END_CELL_TERMINATE: cellElement.classList.add('end'); symbol = 'E'; break;
                 case END_CELL_SPECIFIC_NEXT:
-                    cellElement.classList.add('end'); 
-                    symbol = 'E>'; 
+                    cellElement.classList.add('end');
+                    symbol = 'E>';
                     cellElement.style.fontSize = "11px";
                     cellElement.style.color = MINIMAP_END_LINK_COLOR;
                     break;
                 case PIT_TRAP_CELL_TYPE: cellElement.classList.add('pittrap'); symbol = 'T'; break;
                 case FALLING_BLOCK_TRAP_CELL_TYPE: cellElement.classList.add('fallingblock'); symbol = 'B'; break;
                 case SPIKE_TRAP_CELL_TYPE: cellElement.classList.add('spikes'); symbol = 'P'; break;
+                case MINOTAUR_CELL_TYPE: cellElement.classList.add('minotaur'); symbol = 'M'; break;
                 default: cellElement.classList.add('wall'); break;
             }
             cellElement.textContent = symbol;
@@ -2144,7 +2344,7 @@
 
             let newType;
             let newCellTypeForGridData = -1;
-            
+
             switch (selectedBrush) {
                 case 'wall': newType = 0; break;
                 case 'path': newType = 1; break;
@@ -2152,6 +2352,7 @@
                 case 'pittrap': newType = PIT_TRAP_CELL_TYPE; break;
                 case 'fallingblock': newType = FALLING_BLOCK_TRAP_CELL_TYPE; break;
                 case 'spikes': newType = SPIKE_TRAP_CELL_TYPE; break;
+                case 'minotaur': newType = MINOTAUR_CELL_TYPE; break;
                 case 'end':
                     const endBehaviorRadio = document.querySelector('input[name="end-behavior"]:checked');
                     const endBehavior = endBehaviorRadio ? endBehaviorRadio.value : 'terminate';
@@ -2162,10 +2363,10 @@
                         if (targetScenarioIdSelected === null || isNaN(targetScenarioIdSelected) || targetScenarioIdSelected === "") {
                             editorMessageSpan.textContent = "Selecciona un escenario de destino para el fin específico o cambia el comportamiento.";
                             setTimeout(() => editorMessageSpan.textContent = "", 3500);
-                            return; 
+                            return;
                         }
                         currentEditingScenario.specificExitCoords = { x: c, z: r };
-                        currentEditingScenario.specificNextScenarioId_temp = targetScenarioIdSelected; // Temporalmente el ID
+                        currentEditingScenario.specificNextScenarioId_temp = targetScenarioIdSelected;
                     } else {
                         newType = END_CELL_TERMINATE;
                         currentEditingScenario.specificNextScenarioName = null;
@@ -2188,13 +2389,27 @@
                     break;
                 default: return;
             }
-            
-            if (selectedBrush !== 'end') { // Si no es fin, limpiar datos de enlace por si se pinta sobre un fin
+
+            if (selectedBrush !== 'end') {
                  const existingCellType = editorGridData[r][c];
                  if (existingCellType === END_CELL_SPECIFIC_NEXT) {
                     currentEditingScenario.specificNextScenarioName = null;
                     currentEditingScenario.specificExitCoords = null;
                  }
+            }
+
+            // Handle Minotaur placement (only one allowed)
+            if (newType === MINOTAUR_CELL_TYPE) {
+                for (let i = 0; i < editorGridData.length; i++) {
+                    for (let j = 0; j < editorGridData[i].length; j++) {
+                        if (editorGridData[i][j] === MINOTAUR_CELL_TYPE) {
+                            editorGridData[i][j] = 1; // Change previous minotaur cell to path
+                            if (editorCellElements[i] && editorCellElements[i][j]) {
+                                updateCellVisual(editorCellElements[i][j], 1);
+                            }
+                        }
+                    }
+                }
             }
 
             editorGridData[r][c] = (newCellTypeForGridData !== -1 && selectedBrush === 'end') ? newCellTypeForGridData : newType;
@@ -2237,10 +2452,10 @@
         saveScenarioBtn.addEventListener('click', async () => {
             const scenarioName = scenarioNameInput.value.trim();
             if (!scenarioName) { editorMessageSpan.textContent = "Please enter a scenario name."; return; }
-            
+
             currentEditingScenario.specificNextScenarioName = null;
             currentEditingScenario.specificExitCoords = null;
-            
+
             let endCellInGridIsSpecificType = false;
             let coordsOfSpecificEndCell = null;
 
@@ -2259,7 +2474,6 @@
             const endBehavior = selectedEndBehaviorRadio ? selectedEndBehaviorRadio.value : 'terminate';
 
             if (endBehavior === 'specific_next_scenario' && endCellInGridIsSpecificType) {
-                // Usar el ID temporal guardado en handleGridCellClick o el valor actual del select
                 const targetScenarioId = currentEditingScenario.specificNextScenarioId_temp !== undefined ?
                                          currentEditingScenario.specificNextScenarioId_temp :
                                          (specificNextScenarioSelect.value ? parseInt(specificNextScenarioSelect.value) : null);
@@ -2319,7 +2533,7 @@
         function checkEditorStateForPlayability() { const isSaved = (currentEditingScenario && currentEditingScenario.id !== null && currentEditingScenario.id !== undefined); if (hasUnsavedChanges || !isSaved) { playEditedScenarioBtn.disabled = true; if (hasUnsavedChanges) { editorMessageSpan.textContent = "Unsaved changes."; } else if (!isSaved) { editorMessageSpan.textContent = "Save to enable 'Play'."; } if (!hasUnsavedChanges && isSaved && editorMessageSpan.textContent.startsWith("The maze is not valid")) { editorMessageSpan.textContent = ""; } } else { const validation = validateEditorGrid(); playEditedScenarioBtn.disabled = !validation.valid; editorMessageSpan.textContent = validation.valid ? "Ready to play or save." : validation.message; } }
         function validateEditorGrid() {
             if (!editorGridData || editorGridData.length === 0 || !editorGridData[0] || editorGridData[0].length === 0) return {valid: false, message: "The grid is empty."};
-            let startPoint = null, endPointInfo = null;
+            let startPoint = null, endPointInfo = null, minotaurPoint = null;
             const rows = editorGridData.length;
             const cols = editorGridData[0].length;
             for (let r = 0; r < rows; r++) {
@@ -2329,6 +2543,7 @@
                     if (cellValue === undefined || cellValue === null) { console.warn(`Cell [${r}][${c}] is null/undefined, treating as wall (0).`); editorGridData[r][c] = 0; if (editorCellElements && editorCellElements[r] && editorCellElements[r][c]) { updateCellVisual(editorCellElements[r][c], 0); } }
                     if (editorGridData[r][c] === 5) { if (startPoint) return {valid: false, message: "Only one start point (S) is allowed."}; startPoint = {r, c}; }
                     if (editorGridData[r][c] === END_CELL_TERMINATE || editorGridData[r][c] === END_CELL_SPECIFIC_NEXT) { if (endPointInfo) return {valid: false, message: "Only one end point (E or E>) is allowed."}; endPointInfo = {r, c, type: editorGridData[r][c]}; }
+                    if (editorGridData[r][c] === MINOTAUR_CELL_TYPE) { if (minotaurPoint) return {valid: false, message: "Only one Minotaur (M) is allowed."}; minotaurPoint = {r,c};}
                     if (editorGridData[r][c] === PIT_TRAP_CELL_TYPE && (r === 0 || r === rows - 1 || c === 0 || c === cols - 1)) { return { valid: false, message: "Pit traps (T) cannot be on the border." }; }
                 }
             }
@@ -2345,6 +2560,34 @@
             if (editorGridData[endPointInfo.r][endPointInfo.c] === 0 ) return { valid: false, message: "El punto de fin no puede estar sobre una pared." };
             if (startPoint.r === 0 || startPoint.r === rows - 1 || startPoint.c === 0 || startPoint.c === cols - 1) return { valid: false, message: "Start (S) cannot be on the border." };
             if (endPointInfo.r === 0 || endPointInfo.r === rows - 1 || endPointInfo.c === 0 || endPointInfo.c === cols - 1) return { valid: false, message: "End point (E or E>) cannot be on the border." };
+            if (minotaurPoint) {
+                 if (minotaurPoint.r === 0 || minotaurPoint.r === rows - 1 || minotaurPoint.c === 0 || minotaurPoint.c === cols - 1) return { valid: false, message: "Minotaur (M) cannot be on the border." };
+                 if (editorGridData[minotaurPoint.r][minotaurPoint.c] !== MINOTAUR_CELL_TYPE || (editorGridData[minotaurPoint.r][minotaurPoint.c] === MINOTAUR_CELL_TYPE && ( maze[minotaurPoint.r]?.[minotaurPoint.c] === 0 ))) {
+                      // Ensure Minotaur is on a path conceptually, even though its type is MINOTAUR_CELL_TYPE
+                      // Check original maze type under minotaur if it's a path
+                      let isMinotaurOnPath = false;
+                      for (let r_bfs = 0; r_bfs < rows; r_bfs++) {
+                        for (let c_bfs = 0; c_bfs < cols; c_bfs++) {
+                            if(editorGridData[r_bfs][c_bfs] === MINOTAUR_CELL_TYPE){
+                                // Check if neighbours are paths
+                                const dr = [-1, 1, 0, 0]; const dc = [0, 0, -1, 1];
+                                for(let i=0; i<4; ++i){
+                                    const nr = r_bfs + dr[i]; const nc = c_bfs + dc[i];
+                                    if(nr >=0 && nr < rows && nc >=0 && nc < cols){
+                                        if(editorGridData[nr][nc] === 1 || editorGridData[nr][nc] === 5 || editorGridData[nr][nc] === END_CELL_TERMINATE || editorGridData[nr][nc] === END_CELL_SPECIFIC_NEXT){
+                                            isMinotaurOnPath = true; break;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        if(isMinotaurOnPath) break;
+                      }
+                     if (!isMinotaurOnPath) return { valid: false, message: "Minotaur (M) must be placed on a path-like cell (not a wall)." };
+                 }
+            }
+
 
             const queue = [[startPoint.r, startPoint.c]];
             const visited = Array(rows).fill(null).map(() => Array(cols).fill(false));
@@ -2357,7 +2600,7 @@
                 for (let i = 0; i < 4; i++) {
                     const nr = r_bfs + dr[i]; const nc = c_bfs + dc[i];
                     if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                        if (!visited[nr][nc] && (editorGridData[nr][nc] === 1 || editorGridData[nr][nc] === PIT_TRAP_CELL_TYPE || editorGridData[nr][nc] === 5 || editorGridData[nr][nc] === END_CELL_TERMINATE || editorGridData[nr][nc] === END_CELL_SPECIFIC_NEXT || editorGridData[nr][nc] === FALLING_BLOCK_TRAP_CELL_TYPE || editorGridData[nr][nc] === SPIKE_TRAP_CELL_TYPE )) { // Incluir nuevas trampas como transitables
+                        if (!visited[nr][nc] && (editorGridData[nr][nc] === 1 || editorGridData[nr][nc] === PIT_TRAP_CELL_TYPE || editorGridData[nr][nc] === 5 || editorGridData[nr][nc] === END_CELL_TERMINATE || editorGridData[nr][nc] === END_CELL_SPECIFIC_NEXT || editorGridData[nr][nc] === FALLING_BLOCK_TRAP_CELL_TYPE || editorGridData[nr][nc] === SPIKE_TRAP_CELL_TYPE || editorGridData[nr][nc] === MINOTAUR_CELL_TYPE )) {
                              visited[nr][nc] = true; queue.push([nr, nc]);
                         }
                     }
@@ -2393,7 +2636,7 @@
                 console.log("Starting game with autogenerated maze...");
                 preloadTextures(() => {
                     selectRandomTextures();
-                    currentPlayingScenarioData = null; // Para juego auto-generado
+                    currentPlayingScenarioData = null;
                     init();
                     finalizeLoadingScreen();
                 });
