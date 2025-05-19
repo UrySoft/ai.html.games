@@ -480,26 +480,43 @@
 
     <script>
         // --- Constantes y Configuración ---
-        const GAME_VERSION = "v1.12.3-minotaur_model_debug"; 
+        const GAME_VERSION = "v1.12.7-minotaur_scale_debug_logs"; 
         const MAX_RESOLUTION_DIMENSION = 1920;
         const MAX_RESOLUTION_DIMENSION_MOBILE = 1280;
         const DEFAULT_MAZE_WIDTH = 12;
         const DEFAULT_MAZE_HEIGHT = 12;
         const CELL_SIZE = 4; const WALL_HEIGHT = 7;
         const PLAYER_HEIGHT = 2.4; 
-        const PLAYER_RADIUS = 0.4; const PLAYER_SPEED = 4.5; const SPRINT_SPEED = 8.0; const SPRINT_THRESHOLD = 0.9; const JUMP_VELOCITY = 10.5; const GRAVITY = -18.0; const CAMERA_DISTANCE = 6; const CAMERA_HEIGHT_OFFSET = 2.5; const PUSH_DISTANCE = 0.8; const JOYSTICK_VISUAL_RADIUS = 60; const JOYSTICK_EFFECTIVE_RADIUS = 50; const JOYSTICK_DEADZONE = 0.1; 
+        const PLAYER_RADIUS = 0.4; 
+		const PLAYER_SPEED = 4.5; 
+		const SPRINT_SPEED = 8.0; 
+		const SPRINT_THRESHOLD = 0.9; 
+		const JUMP_VELOCITY = 10.5; 
+		const GRAVITY = -18.0; 
+		const CAMERA_DISTANCE = 6; 
+		const CAMERA_HEIGHT_OFFSET = 2.5; 
+		const PUSH_DISTANCE = 0.8; 
+		const JOYSTICK_VISUAL_RADIUS = 60; 
+		const JOYSTICK_EFFECTIVE_RADIUS = 50; 
+		const JOYSTICK_DEADZONE = 0.1; 
         const CAMERA_SENSITIVITY = 0.002; 
         const CAMERA_SENSITIVITY_MOBILE_MULTIPLIER = 2.0; 
         const OBSTACLE_OPACITY = 0.20; 
-        
+		
+       
         const TORCH_COLOR = 0xffa545; 
-        const SPEAR_LIGHT_INTENSITY = 1.8; 
-        const SPEAR_LIGHT_DISTANCE = 12; 
-        const SPEAR_LIGHT_DECAY = 1.5;
+        const SPEAR_LIGHT_INTENSITY = 5.0; 
+        const SPEAR_LIGHT_DISTANCE = 30; 
+        const SPEAR_LIGHT_DECAY = 15;
         const SPEAR_FLAME_SIZE = 0.15; 
 
-        const TORCH_STATIC_INTENSITY = 1.8; const TORCH_STATIC_DISTANCE = 12; const TORCH_STATIC_DECAY = 1.8;
+        const TORCH_STATIC_INTENSITY = 10.0; 
+		const TORCH_STATIC_DISTANCE = 20; 
+		const TORCH_STATIC_DECAY = 8;
         const STATIC_TORCH_FREQUENCY = 0.45;
+		
+		
+		
         const TORCH_FLICKER_AMOUNT = 0.25; const TORCH_WALL_OFFSET = 0.25; 
         const FLAME_BASE_OPACITY = 0.8; 
         const FLAME_OPACITY_VAR = 0.3; 
@@ -541,19 +558,19 @@
         const SPIKE_HEIGHT = PLAYER_HEIGHT * 0.8;
         const LAVA_SURFACE_OFFSET_Y = -0.15; 
         const LAVA_LIGHT_COLOR = 0xff4500;
-        const LAVA_LIGHT_INTENSITY = 0.8;
-        const LAVA_LIGHT_DISTANCE = CELL_SIZE * 2.5;
+        const LAVA_LIGHT_INTENSITY = 1.5;
+        const LAVA_LIGHT_DISTANCE = CELL_SIZE * 1.5;
         const LAVA_FLOW_SPEED_U = 0.0007;
         const LAVA_FLOW_SPEED_V = 0.0005;
 
 
         // --- Minotaur Constants --- 
-        const MINOTAUR_TARGET_HEIGHT = PLAYER_HEIGHT * 1.2; 
-        const MINOTAUR_COLLISION_HEIGHT = PLAYER_HEIGHT * 1.0; 
-        const MINOTAUR_COLLISION_RADIUS = PLAYER_RADIUS * 1.0; 
+        const MINOTAUR_TARGET_HEIGHT = PLAYER_HEIGHT * 1.1; // MODIFIED FOR TESTING - Make it same height as player
+        const MINOTAUR_COLLISION_HEIGHT = PLAYER_HEIGHT * 1.6; 
+        const MINOTAUR_COLLISION_RADIUS = PLAYER_RADIUS * 1.6; 
         
         const MINOTAUR_PATROL_SPEED = PLAYER_SPEED * 0.6;
-        const MINOTAUR_CHASE_SPEED = PLAYER_SPEED * 1.1;
+        const MINOTAUR_CHASE_SPEED = PLAYER_SPEED * 0.8;
         const MINOTAUR_TURN_SPEED = Math.PI * 1.5; 
         const MINOTAUR_VISION_RANGE_SQ = (CELL_SIZE * 5) * (CELL_SIZE * 5);
         const MINOTAUR_VISION_ANGLE_DOT = Math.cos( (Math.PI / 2.5) / 2 ); 
@@ -563,20 +580,21 @@
         const MINOTAUR_PATROL_TURN_CHANCE = 0.1;
         const MINOTAUR_PATROL_NEW_TARGET_INTERVAL = 5000; // ms
         const MINOTAUR_TORCH_COLOR = 0xff8c00; 
-        const MINOTAUR_TORCH_LIGHT_INTENSITY = 1.6;
-        const MINOTAUR_TORCH_LIGHT_DISTANCE = 10;
-        const MINOTAUR_TORCH_LIGHT_DECAY = 1.7;
+		
+        const MINOTAUR_TORCH_LIGHT_INTENSITY = 15.0;
+        const MINOTAUR_TORCH_LIGHT_DISTANCE = 50;
+        const MINOTAUR_TORCH_LIGHT_DECAY = 35.0;
         const MINOTAUR_TORCH_FLAME_SIZE = 0.35;
         const MINOTAUR_TORCH_OFFSET = new THREE.Vector3(MINOTAUR_COLLISION_RADIUS * 0.8, MINOTAUR_COLLISION_HEIGHT * 0.7, MINOTAUR_COLLISION_RADIUS * 0.4); 
 
         // --- Smoke Particle Constants --- 
-        const MAX_SMOKE_PARTICLES = 80; 
-        const SMOKE_SPAWN_INTERVAL = 0.06; 
+        const MAX_SMOKE_PARTICLES = 0; 
+        const SMOKE_SPAWN_INTERVAL = 0.02; 
         const SMOKE_PARTICLE_MIN_LIFE = 1.5; 
-        const SMOKE_PARTICLE_MAX_LIFE = 3.2; 
-        const SMOKE_PARTICLE_START_SIZE = 0.08;
-        const SMOKE_PARTICLE_END_SIZE = 0.8; 
-        const SMOKE_PARTICLE_START_OPACITY = 0.75; 
+        const SMOKE_PARTICLE_MAX_LIFE = 2.5; 
+        const SMOKE_PARTICLE_START_SIZE = 0.1;
+        const SMOKE_PARTICLE_END_SIZE = 1.0; 
+        const SMOKE_PARTICLE_START_OPACITY = 0.90; 
         const SMOKE_PARTICLE_COLOR = 0x050505; 
 
         // --- TEXTURAS ---
@@ -877,7 +895,7 @@
             );
 
             const playerModelURL = 'https://urysoft.github.io/ai.html.games/general/assets/modelos/greek_warrior.glb';
-            const minotaurModelURL = 'https://urysoft.github.io/ai.html.games/general/assets/modelos/minotaurio2.glb'; 
+            const minotaurModelURL = 'https://urysoft.github.io/ai.html.games/general/assets/modelos/greek_warrior.glb';
             const gltfLoader = new THREE.GLTFLoader();
 
             gltfLoader.load(playerModelURL,
@@ -905,20 +923,11 @@
             gltfLoader.load(minotaurModelURL,
                 (gltf) => {
                     minotaurModelGLB = gltf.scene;
-                    console.log("Minotaur model (minotaurio2.glb) raw loaded. Scene structure:");
+                    console.log("Minotaur model (monster1.glb) raw loaded.");
                     minotaurModelGLB.traverse(function (node) {
-                        let path = node.name;
-                        let current = node.parent;
-                        while(current && current !== scene) { // Build path up to scene root
-                            path = current.name + " > " + path;
-                            current = current.parent;
-                        }
-                         console.log(`  Node: ${path} (Type: ${node.type})`);
                         if (node.isMesh) {
                             node.castShadow = true; 
                             node.receiveShadow = true; 
-                            // TEMPORARY: Override material for debugging visibility
-                            // node.material = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
                         }
                     });
                     minotaurModelAssetLoaded = true;
@@ -926,8 +935,8 @@
                 },
                 undefined,
                 (error) => {
-                    console.error('Error loading Minotaur model (minotaurio2.glb):', minotaurModelURL, error);
-                    console.error('Full error object:', error); // Log the full error object
+                    console.error('Error loading Minotaur model (monster1.glb):', minotaurModelURL, error);
+                    console.error('Full error object:', error); 
                     minotaurModelGLB = null;
                     minotaurModelAssetLoaded = true;
                     checkCompletion();
@@ -1574,37 +1583,37 @@
                         } else if (cellTypeInLayout === MINOTAUR_CELL_TYPE) {
                              if (!minotaurEnemy) { 
                                 if (minotaurModelGLB) { 
-                                    minotaurEnemy = minotaurModelGLB.clone();
-                                    
-                                    const initialBBox = new THREE.Box3().setFromObject(minotaurEnemy);
-                                    const initialSize = new THREE.Vector3();
-                                    initialBBox.getSize(initialSize);
-                                    console.log("Minotaur GLB original size:", initialSize.x, initialSize.y, initialSize.z);
-                                    console.log("Minotaur GLB original BBox min/max:", initialBBox.min, initialBBox.max);
+                                    minotaurEnemy = minotaurModelGLB.clone(); 
 
+                                    const tempModelForBBox = minotaurModelGLB.clone();
+                                    const originalBBox = new THREE.Box3().setFromObject(tempModelForBBox);
+                                    const originalSize = new THREE.Vector3();
+                                    originalBBox.getSize(originalSize);
+                                    const originalMinY = originalBBox.min.y;
 
-                                    let scaleToSet = 1;
-                                    if (initialSize.y > 0.001) {
-                                        scaleToSet = MINOTAUR_TARGET_HEIGHT / initialSize.y;
+                                    console.log(`%cBUILD: Minotaur (monster1.glb) Original - Size: W ${originalSize.x.toFixed(3)}, H ${originalSize.y.toFixed(3)}, D ${originalSize.z.toFixed(3)} | MinY: ${originalMinY.toFixed(3)}`, "color:lightblue;");
+                                    console.log(`%cBUILD: MINOTAUR_TARGET_HEIGHT: ${MINOTAUR_TARGET_HEIGHT.toFixed(3)}`, "color:lightgreen;");
+
+                                    let scaleFactor = 1.0;
+                                    if (originalSize.y > 0.01) {
+                                        scaleFactor = MINOTAUR_TARGET_HEIGHT / originalSize.y;
                                     } else {
-                                        scaleToSet = 1; // Fallback if model has no height
-                                        console.warn("Minotaur GLB model has zero height. Using scale 1.");
+                                        console.warn("BUILD: Minotaur model original height is very small or zero. Using scale factor 1.");
                                     }
-                                    minotaurEnemy.scale.set(scaleToSet, scaleToSet, scaleToSet);
+                                    console.log(`%cBUILD: Calculated scaleFactor: ${scaleFactor.toFixed(3)}`, "color:lightgreen;");
+                                    minotaurEnemy.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                                    console.log(`%cBUILD: Minotaur scaled. Actual minotaurEnemy.scale: (${minotaurEnemy.scale.x.toFixed(3)}, ${minotaurEnemy.scale.y.toFixed(3)}, ${minotaurEnemy.scale.z.toFixed(3)})`, "color:orange;");
                                     
-                                    // After scaling, recalculate BBox to find the correct offset to place its "feet" at y=0
-                                    const scaledBBox = new THREE.Box3().setFromObject(minotaurEnemy);
-                                    const offsetY = -scaledBBox.min.y; // This should put the lowest point of the model at y=0 in its local coords
-                                    
-                                    minotaurEnemy.position.set(posX, offsetY, posZ); // Place its base at the cell's y=0
-                                    console.log("Minotaur scaled by:", scaleToSet, "Final position:", minotaurEnemy.position);
+                                    const worldPosYForMinotaurOrigin = -(originalMinY * scaleFactor);
+                                    minotaurEnemy.position.set(posX, worldPosYForMinotaurOrigin, posZ);
+                                    console.log(`%cBUILD: Minotaur placed. Model origin at world Y: ${worldPosYForMinotaurOrigin.toFixed(3)}. Expected visual base at Y=0. (Cell: X ${posX.toFixed(2)}, Z ${posZ.toFixed(2)})`, "color:orange;");
                                    
                                 } else { 
                                     console.warn("Modelo del Minotauro no cargado, usando cilindro.");
                                     const minoGeom = new THREE.CylinderGeometry(MINOTAUR_COLLISION_RADIUS, MINOTAUR_COLLISION_RADIUS * 0.8, MINOTAUR_COLLISION_HEIGHT, 16); 
                                     const minoMat = new THREE.MeshStandardMaterial({ color: 0x8B0000, roughness: 0.5, metalness: 0.2 });
                                     minotaurEnemy = new THREE.Mesh(minoGeom, minoMat);
-                                    minotaurEnemy.position.set(posX, MINOTAUR_COLLISION_HEIGHT / 2, posZ);
+                                    minotaurEnemy.position.set(posX, MINOTAUR_COLLISION_HEIGHT / 2, posZ); 
                                 }
                                 
                                 minotaurEnemy.castShadow = true;
@@ -1620,17 +1629,9 @@
                                 minotaurEnemy.userData.gridZ = z_grid;
                                 scene.add(minotaurEnemy);
 
-                                // The minotaurCollisionCylinder is now primarily for wall collision logic for the Minotaur,
-                                // attack detection will use the more accurate bounding box of the visual model.
                                 const collisionCylinderGeom = new THREE.CylinderGeometry(MINOTAUR_COLLISION_RADIUS, MINOTAUR_COLLISION_RADIUS, MINOTAUR_COLLISION_HEIGHT, 8);
                                 minotaurCollisionCylinder = new THREE.Mesh(collisionCylinderGeom, new THREE.MeshBasicMaterial({visible: false, transparent: true, opacity: 0.3, color:0x00ff00})); 
-                                // Position this cylinder relative to the Minotaur's *base* position plus half its collision height
-                                if(minotaurEnemy){
-                                    const minotaurActualBaseY = minotaurEnemy.position.y - (-new THREE.Box3().setFromObject(minotaurEnemy).min.y); // Should be close to 0 if offsetY was correct
-                                    minotaurCollisionCylinder.position.set(minotaurEnemy.position.x, minotaurActualBaseY + MINOTAUR_COLLISION_HEIGHT / 2, minotaurEnemy.position.z);
-                                } else {
-                                     minotaurCollisionCylinder.position.set(posX, MINOTAUR_COLLISION_HEIGHT / 2, posZ); // Fallback if minotaurEnemy not yet set
-                                }
+                                minotaurCollisionCylinder.position.set(posX, MINOTAUR_COLLISION_HEIGHT / 2, posZ);
                                 scene.add(minotaurCollisionCylinder); 
                                 collidableObjects.push(minotaurCollisionCylinder);
 
@@ -1651,8 +1652,8 @@
                                 mTorchGroup.add(mFlameMesh);
                                 
                                 let handBone = null;
-                                const minotaurHandBoneNames = ["Hand.R", "mixamorig_RightHand", "Bip01_R_Hand", "mano_d", "hand_r", "Hand_R", "RightHand", "joint_HandRT", "Weapon", "Bip001_R_Hand"]; 
-                                if (minotaurModelGLB) { 
+                                const minotaurHandBoneNames = ["Hand.R", "mixamorig_RightHand", "mixamorig:RightHand", "mixamorig:righthand", "Bip01_R_Hand", "mano_d", "hand_r", "Hand_R", "RightHand", "joint_HandRT", "Weapon", "Bip001_R_Hand", "monster_hand_r", "RightHandBone", "r_hand_weapon", "weapon_joint", "Object_Weapon", "weapon_bone_r"]; 
+                                if (minotaurEnemy) { 
                                     minotaurEnemy.traverse((node) => { 
                                         if ((node.isBone || node.isObject3D) && minotaurHandBoneNames.some(name => node.name.toLowerCase().includes(name.toLowerCase()))) {
                                             handBone = node;
@@ -2161,12 +2162,10 @@
             minotaurEnemy.userData.gridX = Math.round(minotaurEnemy.position.x / CELL_SIZE + currentMazeWidth / 2 - 0.5);
             minotaurEnemy.userData.gridZ = Math.round(minotaurEnemy.position.z / CELL_SIZE + currentMazeHeight / 2 - 0.5);
 
-            // Update the collision cylinder's position based on the visual model's current base and collision height
             if (minotaurCollisionCylinder) {
-                const minotaurVisualBaseY = minotaurEnemy.position.y - (-new THREE.Box3().setFromObject(minotaurEnemy).min.y);
                 minotaurCollisionCylinder.position.set(
                     minotaurEnemy.position.x,
-                    minotaurVisualBaseY + MINOTAUR_COLLISION_HEIGHT / 2, 
+                    minotaurEnemy.position.y + MINOTAUR_COLLISION_HEIGHT / 2, 
                     minotaurEnemy.position.z
                 );
                 minotaurCollisionCylinder.rotation.copy(minotaurEnemy.rotation);
@@ -2211,7 +2210,7 @@
             let finalTargetPos; 
             if (minotaurState === 'chasing' && canSee && player) { 
                 finalTargetPos = player.position.clone();
-                finalTargetPos.y = minotaurEnemy.position.y; 
+                 finalTargetPos.y = minotaurEnemy.position.y; 
             } else if (minotaurTargetCell) { 
                 const targetWorldX = (minotaurTargetCell.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE;
                 const targetWorldZ = (minotaurTargetCell.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE;
@@ -2262,17 +2261,12 @@
             }
 
             // Attack Check using Bounding Boxes
-            if (player && minotaurEnemy && gameActive) { // Ensure gameActive for attack
+            if (player && minotaurEnemy && gameActive) { 
                 playerCollisionBox.setFromCenterAndSize(player.position, new THREE.Vector3(PLAYER_RADIUS * 2, PLAYER_HEIGHT, PLAYER_RADIUS * 2));
                 
-                // Update Minotaur's BBox based on its visual model each frame
                 minotaurCollisionBox.setFromObject(minotaurEnemy); 
-                // Adjust its Y to match the conceptual collision volume if model's pivot isn't at its base
-                const minotaurVisualBaseY = minotaurEnemy.position.y + minotaurCollisionBox.min.y; // min.y is often negative if pivot is at center
-                const correctedMinY = minotaurEnemy.position.y - (-minotaurCollisionBox.min.y + minotaurEnemy.position.y); // This should give the actual world Y of the model's lowest point
-                
-                minotaurCollisionBox.min.y = correctedMinY;
-                minotaurCollisionBox.max.y = correctedMinY + MINOTAUR_COLLISION_HEIGHT; // Use defined collision height
+                minotaurCollisionBox.min.y = minotaurEnemy.position.y; 
+                minotaurCollisionBox.max.y = minotaurEnemy.position.y + MINOTAUR_COLLISION_HEIGHT;
 
                 if (playerCollisionBox.intersectsBox(minotaurCollisionBox)) {
                     loseGame("¡Atrapado por el Minotauro!");
@@ -2752,15 +2746,38 @@
                     const initialWorldX = (minotaurInitialGridPos.x - currentMazeWidth / 2 + 0.5) * CELL_SIZE;
                     const initialWorldZ = (minotaurInitialGridPos.z - currentMazeHeight / 2 + 0.5) * CELL_SIZE;
                     
-                    const scaledBBox = new THREE.Box3().setFromObject(minotaurEnemy); // Get BBox of the ALREADY scaled model
-                    const offsetY = -scaledBBox.min.y; // Offset to place its calculated base at y=0
+                    if (minotaurModelGLB) { 
+                        const tempModelForBBoxReset = minotaurModelGLB.clone(); 
+                        const originalBBoxReset = new THREE.Box3().setFromObject(tempModelForBBoxReset);
+                        const originalSizeReset = new THREE.Vector3();
+                        originalBBoxReset.getSize(originalSizeReset);
+                        const originalMinYReset = originalBBoxReset.min.y;
 
-                    minotaurEnemy.position.set(initialWorldX, offsetY, initialWorldZ);
+                        console.log(`%cRESET: Minotaur (monster1.glb) Original - Size: W ${originalSizeReset.x.toFixed(3)}, H ${originalSizeReset.y.toFixed(3)}, D ${originalSizeReset.z.toFixed(3)} | MinY: ${originalMinYReset.toFixed(3)}`, "color:lightblue;");
+                        console.log(`%cRESET: MINOTAUR_TARGET_HEIGHT: ${MINOTAUR_TARGET_HEIGHT.toFixed(3)}`, "color:lightgreen;");
+
+                        let scaleFactorReset = 1.0;
+                        if (originalSizeReset.y > 0.01) {
+                            scaleFactorReset = MINOTAUR_TARGET_HEIGHT / originalSizeReset.y;
+                        } else {
+                             console.warn("RESET: Minotaur model original height is very small or zero. Using scale factor 1.");
+                        }
+                        console.log(`%cRESET: Calculated scaleFactor: ${scaleFactorReset.toFixed(3)}`, "color:lightgreen;");
+                        minotaurEnemy.scale.set(scaleFactorReset, scaleFactorReset, scaleFactorReset); // Apply scale to the existing minotaurEnemy instance
+                        console.log(`%cRESET: Minotaur re-scaled. Actual minotaurEnemy.scale: (${minotaurEnemy.scale.x.toFixed(3)}, ${minotaurEnemy.scale.y.toFixed(3)}, ${minotaurEnemy.scale.z.toFixed(3)})`, "color:orange;");
+
+                        const worldPosYForMinotaurOriginReset = -(originalMinYReset * scaleFactorReset);
+                        minotaurEnemy.position.set(initialWorldX, worldPosYForMinotaurOriginReset, initialWorldZ);
+                        console.log(`%cRESET: Minotaur re-positioned. Model origin at world Y: ${worldPosYForMinotaurOriginReset.toFixed(3)}`, "color:orange;");
+                    } else { 
+                        minotaurEnemy.position.set(initialWorldX, MINOTAUR_COLLISION_HEIGHT / 2, initialWorldZ); 
+                    }
+
                     minotaurEnemy.rotation.y = 0; 
                     minotaurState = 'patrolling';
                     minotaurTargetCell = null;
                     minotaurLastSawPlayerTime = 0;
-                    minotaurPatrolNextTargetTime = clock.elapsedTime * 1000; // current time
+                    minotaurPatrolNextTargetTime = clock.elapsedTime * 1000;
                 }
 
                 // Reset Traps
@@ -2790,7 +2807,7 @@
                             trap.holeMesh.visible = false;
                         }
                     }
-                     trap.hasBeenRevealedByActivation = false; // Reset reveal status
+                     trap.hasBeenRevealedByActivation = false; 
                 }
                 for (const trap of fallingBlockTrapObjects) {
                      if (trap.state === 'falling' || trap.state === 'landed') {
@@ -2803,7 +2820,7 @@
                         }
                          currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = FALLING_BLOCK_TRAP_CELL_TYPE;
                     }
-                    trap.hasBeenRevealedByActivation = false; // Reset reveal status
+                    trap.hasBeenRevealedByActivation = false; 
                 }
                 for (const trap of spikeTrapObjects) {
                      if (trap.state === 'rising' || trap.state === 'risen') {
@@ -2816,13 +2833,13 @@
                         }
                          currentMazeLayout[trap.triggerCellZ][trap.triggerCellX] = SPIKE_TRAP_CELL_TYPE;
                     }
-                    trap.hasBeenRevealedByActivation = false; // Reset reveal status
+                    trap.hasBeenRevealedByActivation = false; 
                 }
                 TWEEN.removeAll();
 
 
-                gameActive = true; // Reactivate game logic
-                if (!animationFrameId && TWEEN.getAll().length === 0) { // Restart animation loop if stopped
+                gameActive = true; 
+                if (!animationFrameId && TWEEN.getAll().length === 0) { 
                      animate();
                 }
                 showMessage("Inténtalo de nuevo...", 2000);
