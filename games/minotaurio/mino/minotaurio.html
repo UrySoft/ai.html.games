@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minotaurio - Laberinto Subterráneo</title>
+    <!-- Enlace al archivo CSS externo -->
+    <link rel="stylesheet" href="minotaurio.css">
+</head>
+<body>
+    <div id="loading-screen">
+        <h1>Minotaurio</h1>
+        <p class="credits">
+            por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer">Oriol Badia Campanera</a>
+        </p>
+        <p class="version">Versión <span id="game-version"></span></p>
+
+        <p class="legend-text">
+            En el corazón de la antigua Creta, reinaba el Rey Minos, pero la oscuridad acechaba.
+            Nacido de una unión impía, el Minotauro, una bestia de hombre y toro, exigía sacrificio.
+            Encerrado en un vasto e ineludible Laberinto diseñado por el ingenioso Dédalo,
+            se alimentaba de la juventud de Atenas. Cada año, jóvenes valientes y doncellas
+            eran enviados a las retorcidas profundidades, nunca para regresar, perdidos
+            ante la bestia o el laberinto mismo. El miedo se apoderó de la tierra,
+            pues ¿quién podría navegar la oscuridad? ¿Quién podría enfrentar el rugiente terror en su centro?
+        </p>
+
+        <div id="start-options">
+            <button id="start-predefined-maps" class="menu-button">Jugar (Mapas Predeterminados)</button>
+            <button id="start-custom-game" class="menu-button">Juego Personalizado</button>
+            <button id="fullscreen-btn" class="menu-button">Pantalla Completa</button>
+        </div>
+        <p class="loading-text" id="loading-text-element" style="display: none;">Cargando texturas y laberinto...</p>
+    </div>
+
+    <div id="predefined-maps-screen">
+        <h2>Mapas Predeterminados</h2>
+        <div id="predefined-map-list-container">
+            <p id="no-predefined-maps">No hay mapas predeterminados disponibles o no se pudieron cargar.</p>
+            <ul id="predefined-map-list"></ul>
+        </div>
+        <button id="back-to-main-from-predefined" class="menu-button" style="background-color: #6c757d;">Volver al Menú Principal</button>
+    </div>
+
+    <div id="custom-game-screen">
+        <h2>Juego Personalizado</h2>
+        <div id="custom-scenario-list-container">
+            <p id="no-custom-scenarios">No tienes escenarios guardados.</p>
+            <ul id="custom-scenario-list"></ul>
+        </div>
+        <div id="custom-game-actions" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <button id="create-new-scenario-btn" class="menu-button">Crear Nuevo Escenario</button>
+            <button id="import-scenario-btn" class="menu-button">Importar Escenario</button>
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+        </div>
+        <button id="back-to-main-menu-btn" class="menu-button" style="background-color: #6c757d;">Volver al Menú Principal</button>
+    </div>
+
+    <div id="scenario-editor-screen">
+        <h2>Editor de Escenarios</h2>
+        <div id="editor-controls">
+            <div id="dimension-selector">
+                <label for="scenario-size-select">Tamaño del Laberinto:</label>
+                <select id="scenario-size-select">
+                    <option value="7x7">Pequeño (7x7)</option>
+                    <option value="12x12" selected>Mediano (12x12)</option>
+                    <option value="17x17">Grande (17x17)</option>
+                </select>
+                <button id="confirm-size-btn" class="menu-button small-padding">Confirmar Tamaño</button>
+            </div>
+            <input type="text" id="scenario-name-input" placeholder="Nombre del Escenario">
+            <div id="brush-tools">
+                <span>Herramienta: </span>
+                <button class="brush-btn active" data-type="wall">Pared</button>
+                <button class="brush-btn" data-type="path">Camino</button>
+                <button class="brush-btn" data-type="start">Inicio</button>
+                <button class="brush-btn" data-type="end">Fin</button>
+                <button class="brush-btn" data-type="pittrap">Trampa Foso</button>
+                <button class="brush-btn" data-type="fallingblock">Bloque Cae</button>
+                <button class="brush-btn" data-type="spikes">Pinchos</button>
+                <button class="brush-btn" data-type="minotaur">Minotauro</button> 
+                <button class="brush-btn" data-type="lava">Lava</button> 
+                <button class="brush-btn" data-type="doorh">Puerta H</button> 
+                <button class="brush-btn" data-type="doorv">Puerta V</button> 
+                <button class="brush-btn" data-type="movingplatform">Plataforma</button> <!-- NEW PLATFORM BUTTON -->
+            </div>
+             <div id="texture-selectors" style="display:none; margin-top: 15px;">
+                <h4>Selección de Texturas:</h4>
+                <div class="texture-selector-row">
+                    <label for="wall-texture-select">Pared:</label>
+                    <select id="wall-texture-select"></select>
+                    <img id="wall-texture-preview" class="texture-preview-img" alt="Pared Preview">
+                </div>
+                <div class="texture-selector-row">
+                    <label for="floor-texture-select">Suelo:</label>
+                    <select id="floor-texture-select"></select>
+                    <img id="floor-texture-preview" class="texture-preview-img" alt="Suelo Preview">
+                </div>
+                <div class="texture-selector-row">
+                    <label for="ceiling-texture-select">Techo:</label>
+                    <select id="ceiling-texture-select"></select>
+                    <img id="ceiling-texture-preview" class="texture-preview-img" alt="Techo Preview">
+                </div>
+            </div>
+            <div id="end-cell-options" style="display:none; margin-top: 10px; padding: 10px; border: 1px solid #555; background-color: rgba(255,255,255,0.05);">
+                <h4>Comportamiento de Casilla Final:</h4>
+                <label><input type="radio" name="end-behavior" value="terminate" checked> Terminar Partida</label>
+                <label><input type="radio" name="end-behavior" value="specific_next_scenario"> Cargar Escenario Específico:</label>
+                <select id="specific-next-scenario-select" style="display:none; margin-left: 5px;"></select>
+            </div>
+        </div>
+        <div id="editor-grid-container"></div>
+        <div id="editor-actions">
+            <button id="save-scenario-btn" class="menu-button small-padding">Guardar</button>
+            <button id="play-edited-scenario-btn" class="menu-button small-padding" disabled>Jugar</button>
+            <span id="editor-message"></span>
+        </div>
+        <button id="back-to-custom-screen-btn" class="menu-button" style="background-color: #6c757d;">Volver a Escenarios</button>
+    </div>
+
+
+    <div id="pointer-lock-info">Haz clic para controlar la cámara con el ratón. Presiona ESC para liberar.</div>
+    <div id="container"></div>
+    <div id="joystick-area"><div id="joystick-thumb"></div></div>
+    <div id="action-buttons">
+        <div id="jump-button" class="action-button">SALTAR</div>
+        <div id="action-button" class="action-button">VISTA</div>
+        <div id="game-menu-action-button" class="action-button">MENÚ</div> <!-- NEW MENU BUTTON -->
+    </div>
+    <div id="message"></div>
+    <canvas id="minimapCanvas"></canvas>
+
+    <div id="death-screen-overlay">
+        <img id="death-image" src="" alt="Game Over">
+    </div>
+
+    <div id="next-scenario-selection-screen">
+        <h2>Elige el Siguiente Laberinto</h2>
+        <div id="next-scenario-list-container">
+            <p id="no-next-scenarios">No hay otros escenarios guardados.</p>
+            <ul id="next-scenario-list"></ul>
+        </div>
+        <button id="cancel-next-scenario" class="menu-button" style="background-color: #6c757d;">Cancelar y Volver al Menú</button>
+    </div>
+
+    <!-- NEW: In-game menu overlay -->
+    <div id="game-menu-overlay">
+        <h2>Menú del Juego</h2>
+        <div>
+            <button id="resume-game-btn" class="menu-button">Reanudar</button>
+            <button id="main-menu-from-game-btn" class="menu-button" style="background-color: #dc3545;">Volver al Menú Principal</button>
+            <button id="fullscreen-toggle-btn" class="menu-button">Pantalla Completa</button>
+            <div style="margin-top: 15px; text-align: center;">
+                <label for="camera-sensitivity-slider" style="display: block; margin-bottom: 10px;">Sensibilidad de la Cámara:</label>
+                <input type="range" id="camera-sensitivity-slider" min="0.0005" max="0.005" step="0.0001" value="0.002" style="width: 80%; max-width: 300px;">
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+    <!-- Enlace a los archivos JavaScript externos (orden IMPORTANTE) -->
+    <script src="game_engine.js"></script>
+    <script src="game_objects.js"></script>
+    <script src="ui_and_data.js"></script>
+</body>
+</html>
