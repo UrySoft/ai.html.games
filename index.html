@@ -1,45 +1,155 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juegos Reunidos</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>UrySoft - Portfolio de Juegos IA de Oriol Badia</title>
+    <script>
+        // --- ¡IMPORTANTE! MODIFICA ESTA LÍNEA ---
+        // Reemplaza la URL de ejemplo con la URL de tu sitio en GitHub Pages.
+        // Ejemplo: const GITHUB_BASE_URL = "https://oriolbadia.github.io/juegos-reunidos/";
+        const GITHUB_BASE_URL = "https://urysoft.github.io/ai.html.games/"; 
+    </script>
+    <style>
+        :root {
+            --bg-dark: #121212; --bg-card: #1E1E1E; --bg-card-hover: #2a2a2a;
+            --primary-text: #E0E0E0; --secondary-text: #B3B3B3;
+            --accent-color: #03DAC6; --accent-hover: #018786; --border-color: #333333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--primary-text); line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+        h1, h2, h3 { color: var(--primary-text); font-weight: 600; }
+        h1 { font-size: 2.8rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-bottom: 2rem; text-align: center; border-bottom: 2px solid var(--accent-color); padding-bottom: 0.5rem; display: inline-block; }
+        p { color: var(--secondary-text); margin-bottom: 1rem; }
+        a { color: var(--accent-color); text-decoration: none; transition: color 0.3s ease; }
+        a:hover { color: var(--accent-hover); }
+        .hero-header { text-align: center; padding: 4rem 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 3rem; }
+        .brand-name { font-weight: 300; color: var(--secondary-text); }
+        .hero-header .subtitle { font-size: 1.2rem; max-width: 700px; margin: 1rem auto; color: var(--primary-text); }
+        .ai-highlight { background: linear-gradient(90deg, var(--accent-color), #018786); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; font-weight: bold; }
+        .social-links { margin-top: 1.5rem; }
+        .social-links a { margin: 0 10px; display: inline-block; transition: transform 0.3s ease; }
+        .social-links a:hover { transform: translateY(-3px); }
+        .social-links svg { width: 28px; height: 28px; fill: var(--secondary-text); transition: fill 0.3s ease; }
+        .social-links a:hover svg { fill: var(--accent-color); }
+        .games-section { text-align: center; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .game-card { background-color: var(--bg-card); border-radius: 12px; overflow: hidden; text-align: left; border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; }
+        .game-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); background-color: var(--bg-card-hover); }
+        .game-card img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid var(--border-color); }
+        .card-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-content h3 { font-size: 1.4rem; color: var(--accent-color); margin-bottom: 0.5rem; }
+        .card-content p { font-size: 0.9rem; margin-top: auto; padding-top: 1rem; color: var(--secondary-text); }
+        .site-footer { text-align: center; padding: 2rem 1rem; margin-top: 4rem; border-top: 1px solid var(--border-color); color: var(--secondary-text); font-size: 0.9rem; }
+        @media (max-width: 768px) { h1 { font-size: 2.2rem; } h2 { font-size: 1.8rem; } .container { padding: 1.5rem 1rem; } }
+    </style>
 </head>
 <body>
-    <div class="contenedor">
-        <h1>Juegos Reunidos</h1>
-        <p>Juegos realizados completamente con IA desde el móvil por <a href="https://www.linkedin.com/in/oriol-badia">Oriol Badia Campanera</a></p>
-        <h2>Versión 1.1</h2>
 
-        <!-- Botones de selección de juegos con imágenes -->
-        <div class="selector-juegos">
-            <button class="boton-juego" onclick="location.href='games/tresenralla/index.html'">
-                <img src="games/tresenralla/icono.webp" alt="Tres en Raya">
-                Tres en Raya
-            </button>
-            <button class="boton-juego" onclick="location.href='games/mastermind/index.html'">
-                <img src="games/mastermind/icono.webp" alt="Mastermind">
-                Mastermind
-            </button>          
-            <button class="boton-juego" onclick="location.href='games/moonlanding/moonlanding.v0.1.html'">
-                <img src="games/moonlanding/icono.webp" alt="Moon Landing">
-                Moon Landing
-            </button>       
-            <button class="boton-juego" onclick="location.href='games/numericwars/numericwars.v0.1.html'">
-                <img src="games/numericwars/icono.webp" alt="Numeric Wars">
-                Numeric Wars
-            </button> 
-            <button class="boton-juego" onclick="location.href='games/spaceconquest/spaceconquest.v0.1.html'">
-                <img src="games/spaceconquest/icono.webp" alt="Space Conquest">
-                Space Conquest (MVP)
-            </button>    
-            <button class="boton-juego" onclick="location.href='games/minotaurio/minotaurio.v0.7.html'">
-                <img src="games/minotaurio/icono.webp" alt="Minotaurio">
-                Minotaurio
-            </button>      
+    <header class="hero-header">
+        <div class="container">
+            <h1>Oriol Badia Campanera</h1>
+            <p class="brand-name">presenta</p>
+            <h1 style="color:var(--accent-color); font-weight: 700;">UrySoft</h1>
+            <p class="subtitle">Actualmente estudiante de másters en Inteligencia Artificial. Este espacio es mi laboratorio personal, donde pongo a prueba diferentes motores de <span class="ai-highlight">IA generativa</span> para la creación de código y assets.</p>
+            <p class="subtitle" style="font-size: 1rem;">Cada uno de estos juegos ha sido desarrollado íntegramente con IA desde un dispositivo móvil, como un desafío para explorar los límites de la creación de software asistida.</p>
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer" title="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+            </div>
         </div>
-    </div>
+    </header>
+
+    <main class="container">
+        <section class="games-section">
+            <h2>Portfolio de Juegos <span style="font-weight: 300;">(v1.1)</span></h2>
+            <div id="game-grid" class="game-grid">
+                <!-- El contenido se generará aquí con las URLs completas -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2024 UrySoft - Un proyecto de Oriol Badia Campanera.</p>
+        <p>Creado con la asistencia de Inteligencia Artificial como un experimento de desarrollo de software.</p>
+    </footer>
+
+    <script>
+        // Array con la información de los juegos, usando las rutas EXACTAS de tu fichero original.
+        const games = [
+            {
+                name: "Tres en Raya",
+                url: "games/tresenralla/index.html",
+                icon: "games/tresenralla/icono.webp",
+                description: "El clásico atemporal. Un buen punto de partida para experimentar con lógica de juego básica y eventos de usuario."
+            },
+            {
+                name: "Mastermind",
+                url: "games/mastermind/index.html",
+                icon: "games/mastermind/icono.webp",
+                description: "Un desafío de lógica y deducción. Ideal para probar la generación de algoritmos y la gestión de estados complejos."
+            },
+            {
+                name: "Moon Landing",
+                url: "games/moonlanding/moonlanding.v0.1.html",
+                icon: "games/moonlanding/icono.webp",
+                description: "Simulación de físicas sencillas. Un ejercicio para controlar variables como la gravedad y el empuje en tiempo real."
+            },
+            {
+                name: "Numeric Wars",
+                url: "games/numericwars/numericwars.v0.1.html",
+                icon: "games/numericwars/icono.webp",
+                description: "Un juego de estrategia por turnos basado en números. Explora la lógica de una IA oponente simple y la toma de decisiones."
+            },
+            {
+                name: "Space Conquest (MVP)",
+                url: "games/spaceconquest/spaceconquest.v0.1.html",
+                icon: "games/spaceconquest/icono.webp",
+                description: "Prototipo de un juego de conquista espacial. Un experimento más ambicioso sobre gestión de recursos y expansión."
+            },
+            {
+                name: "Minotaurio",
+                url: "games/minotaurio/minotaurio.v0.7.html",
+                icon: "games/minotaurio/icono.webp",
+                description: "Exploración de laberintos y algoritmos de pathfinding. Un reto para la IA en la generación de niveles y navegación de NPCs."
+            }
+        ];
+
+        // Función para generar las tarjetas de juego con URLs absolutas
+        function createGameCards() {
+            const grid = document.getElementById('game-grid');
+            if (!grid) return; // Salir si el elemento no existe
+
+            // Verificar si la URL base fue modificada
+            if (GITHUB_BASE_URL === "https://TU_USUARIO.github.io/TU_REPOSITORIO/") {
+                grid.innerHTML = `<p style="color: #ffcc00; background-color: #332a00; padding: 1rem; border-radius: 8px;">Por favor, edita este fichero HTML y reemplaza "https://TU_USUARIO.github.io/TU_REPOSITORIO/" por tu URL real de GitHub Pages en la etiqueta <script> de la cabecera.</p>`;
+                return;
+            }
+
+            let cardsHtml = '';
+            games.forEach(game => {
+                // Construimos las URLs completas (absolutas)
+                const fullGameUrl = GITHUB_BASE_URL + game.url;
+                const fullIconUrl = GITHUB_BASE_URL + game.icon;
+
+                cardsHtml += `
+                    <a href="${fullGameUrl}" class="game-card" target="_blank" rel="noopener noreferrer">
+                        <img src="${fullIconUrl}" alt="Icono del juego ${game.name}">
+                        <div class="card-content">
+                            <h3>${game.name}</h3>
+                            <p>${game.description}</p>
+                        </div>
+                    </a>
+                `;
+            });
+            grid.innerHTML = cardsHtml;
+        }
+
+        // Llamamos a la función cuando el documento esté listo
+        document.addEventListener('DOMContentLoaded', createGameCards);
+    </script>
+
 </body>
 </html>
