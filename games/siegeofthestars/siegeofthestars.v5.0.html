@@ -16,6 +16,9 @@
             --glow-danger: 0 0 5px var(--color-danger), 0 0 10px var(--color-danger);
             --glow-warning: 0 0 5px var(--color-warning), 0 0 10px var(--color-warning);
         }
+        html {
+            font-size: 16px;
+        }
         body {
             margin: 0;
             overflow: hidden;
@@ -152,7 +155,7 @@
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .ui-panel {
             background-color: rgba(10, 20, 40, 0.4);
-            padding: 10px;
+            padding: 0.6rem;
             border: 1px solid var(--color-primary);
             box-shadow: var(--glow-primary), inset 0 0 10px rgba(137, 221, 255, 0.2);
             pointer-events: all;
@@ -190,8 +193,8 @@
             color: #777; border-color: #555; box-shadow: none; text-shadow: none; cursor: not-allowed; opacity: 0.6;
         }
         .build-btn > canvas { pointer-events: none; }
-        .build-name { font-size: 10px; font-weight: bold; line-height: 1; text-transform: uppercase; }
-        .build-cost { font-size: 9px; line-height: 1; pointer-events: none; }
+        .build-name { font-size: 0.6rem; font-weight: bold; line-height: 1; text-transform: uppercase; }
+        .build-cost { font-size: 0.55rem; line-height: 1; pointer-events: none; }
 
         #game-controls { display: flex; flex-direction: column; gap: 8px; width: 150px; }
         #game-controls .build-btn { text-align: center; width: 100%; height: auto; justify-content: center; }
@@ -209,11 +212,11 @@
         #selection-panel { position: absolute; bottom: 10px; left: 10px; width: 260px; display: none; }
         #selection-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--color-primary); padding-bottom: 5px; margin-bottom: 5px; }
         #selection-icon { width: 40px; height: 40px; flex-shrink: 0; }
-        #selection-panel h4 { margin: 0; border-bottom: none; padding-bottom: 0; color: #fff; }
-        #selection-panel p { margin: 5px 0; font-size: 14px; }
+        #selection-panel h4 { margin: 0; border-bottom: none; padding-bottom: 0; color: #fff; font-size: 1rem; }
+        #selection-panel p { margin: 5px 0; font-size: 0.85rem; }
         #upgrade-buttons-container { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
         .upgrade-btn {
-            width: 100%; height: auto; font-size: 12px; padding: 6px; box-sizing: border-box;
+            width: 100%; height: auto; font-size: 0.75rem; padding: 6px; box-sizing: border-box;
             border-color: var(--color-warning); color: var(--color-warning); box-shadow: var(--glow-warning); text-shadow: 0 0 3px var(--color-warning);
         }
         .upgrade-btn:hover:not(:disabled) { background: rgba(255, 238, 127, 0.1); box-shadow: 0 0 8px var(--color-warning), 0 0 15px var(--color-warning); }
@@ -221,7 +224,7 @@
         
         #destroy-btn { 
             border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); text-shadow: 0 0 3px var(--color-danger); 
-            width: 100%; height: auto; margin-top: 10px;
+            width: 100%; height: auto; margin-top: 10px; font-size: 0.8rem;
         }
         #destroy-btn:hover { background: rgba(255, 102, 102, 0.1); box-shadow: 0 0 8px var(--color-danger), 0 0 15px var(--color-danger); }
 
@@ -237,23 +240,23 @@
         #build-confirm-info { display: flex; gap: 10px; align-items: center; }
         #build-confirm-icon { width: 50px; height: 50px; flex-shrink: 0; }
         #build-confirm-text { text-align: left; overflow: hidden; }
-        #build-confirm-text h5 { margin: 0 0 5px 0; font-size: 16px; color: #fff; }
-        #build-confirm-text p { margin: 0; font-size: 12px; }
+        #build-confirm-text h5 { margin: 0 0 5px 0; font-size: 1rem; color: #fff; }
+        #build-confirm-text p { margin: 0; font-size: 0.75rem; }
         .build-confirm-description {
-            font-size: 11px;
+            font-size: 0.7rem;
             opacity: 0.8;
             margin-top: 5px;
             line-height: 1.2;
         }
         #build-confirm-buttons { display: flex; gap: 10px; }
         #build-confirm-buttons .build-btn {
-            flex-grow: 1; height: auto; padding: 10px; font-size: 14px;
+            flex-grow: 1; height: auto; padding: 10px; font-size: 0.9rem;
         }
         #confirm-build-btn { border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); }
         #cancel-build-btn { border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); }
         
         #game-over { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 40px; text-align: center; font-size: 2em; display: none; z-index: 100; border: 2px solid var(--color-danger); color: var(--color-danger); text-shadow: var(--glow-danger); box-shadow: var(--glow-danger), inset 0 0 20px var(--color-danger); background: rgba(20,0,0,0.8); }
-        #tooltip { position: absolute; display: none; padding: 8px; background-color: rgba(0, 0, 0, 0.9); border: 1px solid var(--color-primary); box-shadow: var(--glow-primary); max-width: 250px; font-size: 12px; pointer-events: none; z-index: 1000; }
+        #tooltip { position: absolute; display: none; padding: 8px; background-color: rgba(0, 0, 0, 0.9); border: 1px solid var(--color-primary); box-shadow: var(--glow-primary); max-width: 250px; font-size: 0.75rem; pointer-events: none; z-index: 1000; }
         
         #wave-flash {
             position: fixed;
@@ -273,14 +276,21 @@
             100% { opacity: 0; }
         }
 
-        /* --- MOBILE PORTRAIT LAYOUT --- */
-        @media (max-width: 768px) and (orientation: portrait) {
-            #resources { flex-direction: column; align-items: flex-start; }
-            #wave-info-container { top: 90px; }
+        @media (max-width: 768px) {
+            html { font-size: 14px; }
             #top-right-ui { align-items: flex-end; }
             #game-controls { flex-direction: row; width: auto; gap: 5px;}
             #game-controls .build-btn { width: auto; min-width: 65px; padding: 8px 5px; font-size: 11px; }
             
+            /* Default mobile layout (horizontal, used for landscape) */
+            #build-menu { 
+                flex-direction: row; 
+                bottom: 10px; 
+                right: 10px; 
+                left: 10px; 
+                width: auto; 
+                justify-content: space-around; 
+            }
             #build-menu .build-btn { width: 65px; height: 65px; }
             #build-menu .build-name { font-size: 9px; }
             #build-menu .build-cost { font-size: 8px; }
@@ -291,37 +301,46 @@
             }
 
             #selection-panel { width: 220px; }
-            #upgrade-buttons-container { flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 5px; }
-            #selection-panel .upgrade-btn { flex: 1 0 48%; height: auto; width: auto; padding: 4px; line-height: 1.3; font-size: 11px; }
         }
 
-        /* --- PC / LANDSCAPE LAYOUT --- */
+        /* REQ CORREGIDO: Only apply vertical layout on mobile if orientation is portrait */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #build-menu {
+                flex-direction: column; /* Vertical */
+                right: 10px;
+                bottom: 10px;
+                left: auto; /* Unset left from the general mobile rule */
+                width: auto;
+                justify-content: flex-start;
+                gap: 5px;
+            }
+        }
+        
         @media (min-width: 769px) {
             #resources { flex-direction: row; align-items: center; gap: 20px;}
-            #wave-info-container { top: 10px; left: auto; right: 180px; max-width: none; }
+            #wave-info-container { top: 10px; left: 180px; max-width: none; }
             #game-controls { flex-direction: row; width: auto; gap: 10px; }
             #game-controls .build-btn { width: 120px; font-size: 1rem;}
 
-            #selection-panel { width: 300px; }
+            #selection-panel { width: 300px; bottom: 20px; left: 20px;}
 
             #build-menu {
                 flex-direction: row;
                 right: 50%;
+                bottom: 20px;
                 transform: translateX(50%);
                 width: auto;
-            }
-            #build-menu .build-btn {
-                width: 85px; height: 85px;
             }
             #build-confirm-panel {
                 flex-direction: row;
                 width: auto;
+                max-width: 600px;
                 right: 50%;
+                bottom: 20px;
                 transform: translateX(50%);
                 align-items: center;
             }
         }
-
     </style>
 </head>
 <body>
@@ -436,7 +455,7 @@
 
     <div id="game-over">
         <span data-lang-key="game_over_mission_failed">MISIÓN FALLIDA</span><br><span data-lang-key="game_over_base_destroyed">BASE ESTELAR DESTRUIDA</span><br>
-        <button id="restart-button" style="margin-top:20px; padding: 15px 30px; font-size: 20px;" class="build-btn" data-lang-key="restart_mission_button">REINICIAR MISIÓN</button>
+        <button id="restart-button" style="margin-top:20px; padding: 15px 30px; font-size: 20px;" class="build-btn" data-lang-key="restart_mission_button">REINICIAR MISSIÓ</button>
     </div>
 
 <script>
@@ -444,6 +463,7 @@
 const UI_COLORS = {};
 const MAX_UPGRADE_LEVEL = 5;
 const MAX_SAVE_SLOTS = 5;
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // Sistema de Internacionalización (i18n)
 const LANG_STRINGS = {
@@ -952,7 +972,7 @@ window.addEventListener('load', function() {
     }
     class Grunt extends Enemy { constructor(x,y){ super(x,y,'Grunt'); } }
     class Flier extends Enemy { constructor(x,y){ super(x,y,'Flier'); } }
-    class Projectile { constructor(x,y,target,damage,color){ this.x=x; this.y=y; this.target=target; this.damage=damage; this.color=color; this.speed=400; this.size=3; this.shouldBeRemoved=false; } update(dt){ if(!this.target||(this.target.health<=0 && this.target.shieldHealth <= 0)){ this.shouldBeRemoved=true; return; } const dx=this.target.x-this.x, dy=this.target.y-this.y; const dist=Math.sqrt(dx*dx+dy*dy); if(dist<this.size+this.target.size){ this.target.takeDamage(this.damage); this.shouldBeRemoved=true; } else { this.x += dx/dist * this.speed * dt/1000; this.y += dy/dist * this.speed * dt/1000; } } draw(ctx){ ctx.beginPath(); ctx.fillStyle=this.color; ctx.shadowColor=this.color; ctx.shadowBlur=10; ctx.arc(this.x,this.y,this.size,0,2*Math.PI); ctx.fill(); ctx.shadowBlur=0; } }
+    class Projectile { constructor(x,y,target,damage,color){ this.x=x; this.y=y; this.target=target; this.damage=damage; this.speed=400; this.size=3; this.shouldBeRemoved=false; } update(dt){ if(!this.target||(this.target.health<=0 && this.target.shieldHealth <= 0)){ this.shouldBeRemoved=true; return; } const dx=this.target.x-this.x, dy=this.target.y-this.y; const dist=Math.sqrt(dx*dx+dy*dy); if(dist<this.size+this.target.size){ this.target.takeDamage(this.damage); this.shouldBeRemoved=true; } else { this.x += dx/dist * this.speed * dt/1000; this.y += dy/dist * this.speed * dt/1000; } } draw(ctx){ ctx.beginPath(); ctx.fillStyle=this.color; ctx.shadowColor=this.color; ctx.shadowBlur=10; ctx.arc(this.x,this.y,this.size,0,2*Math.PI); ctx.fill(); ctx.shadowBlur=0; } }
     
     class AsteroidField { 
         constructor(x, y, size, amount) { 
@@ -1229,7 +1249,9 @@ window.addEventListener('load', function() {
         drawBuildPlacementAids() { ctx.save(); ctx.globalAlpha = 0.15; this.buildings.forEach(b => { if (b.specs.connectionRange > 0) { const canProvideRange = b.isPowered || ['Pylon', 'SolarPanel', 'Starbase', 'Core'].includes(b.type); if(canProvideRange) { ctx.fillStyle = b.specs.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.specs.connectionRange, 0, 2 * Math.PI); ctx.fill(); } } }); ctx.restore(); }
         
         drawBuildGhost() {
-            const ghostDetails = this.buildConfirmationDetails || { type: this.buildingToPlace.type, x: this.mouse.worldX, y: this.mouse.worldY };
+            const ghostDetails = this.buildConfirmationDetails || this.buildingToPlace && { type: this.buildingToPlace.type, x: this.mouse.worldX, y: this.mouse.worldY };
+            if (!ghostDetails) return;
+
             const { type, x, y } = ghostDetails;
             const isValid = this.isValidPlacement(x, y, type);
             const ghostColor = isValid ? UI_COLORS.success : UI_COLORS.danger;
@@ -1254,11 +1276,17 @@ window.addEventListener('load', function() {
             gameCanvas.addEventListener("wheel", e => { e.preventDefault(); this.handleWheel(e); });
             document.addEventListener("keydown", e => { if (e.key === "Escape") this.cancelAllActions(); });
             document.querySelectorAll(".ui-panel").forEach(el => { el.addEventListener("pointerdown", e => e.stopPropagation()); });
+            
             document.querySelectorAll("#build-menu .build-btn[data-type]").forEach(btn => {
-                btn.addEventListener("click", () => { const type = btn.dataset.type; this.setBuildingToPlace({ type: type, specs: BUILDING_SPECS[type] }); });
+                // REQ 2: Change click handler to immediately show the confirmation panel.
+                btn.addEventListener("click", () => {
+                    const type = btn.dataset.type;
+                    this.showBuildConfirmation(type, this.mouse.worldX, this.mouse.worldY);
+                });
                 btn.addEventListener("mouseenter", e => this.showTooltip(e, btn.dataset.type));
                 btn.addEventListener("mouseleave", () => this.hideTooltip());
             });
+
             document.getElementById("menuBtn").addEventListener("click", () => this.togglePause());
             document.getElementById("fullscreenBtn").addEventListener("click", () => this.toggleFullscreen());
             document.getElementById("destroy-btn").addEventListener("click", () => {
@@ -1285,7 +1313,6 @@ window.addEventListener('load', function() {
             const world = this.screenToWorld(e.clientX, e.clientY); 
             this.mouse.worldX = world.x; this.mouse.worldY = world.y;
             
-            // FIX: Allow repositioning while confirmation panel is open
             if (this.buildConfirmationDetails) {
                  this.buildConfirmationDetails.x = this.mouse.worldX;
                  this.buildConfirmationDetails.y = this.mouse.worldY;
@@ -1315,58 +1342,51 @@ window.addEventListener('load', function() {
             this.clampCamera();
         }
         
-        // FIX: Completely reworked click logic for clarity and correctness
         handleClick() {
-            // Priority 1: Placing a new building
+            if (this.buildConfirmationDetails) {
+                return;
+            }
+
             if (this.buildingToPlace) {
                 this.tryPlaceBuilding();
-                return; // Stop further processing
+                return;
             }
 
-            // If we are in confirmation mode, a click on the map should not do anything
-            // except maybe finalize position, but we handle that with buttons.
-            if (this.buildConfirmationDetails) {
-                 return;
-            }
-
-            // Priority 2: Interacting with an existing building
             const clickedBuilding = this.buildings.find(b => distance(this.mouse.worldX, this.mouse.worldY, b.x, b.y) < b.size + 3);
             if (clickedBuilding) {
                 if (clickedBuilding.type === 'Barracks' && this.selectedObject === clickedBuilding) {
                     clickedBuilding.rallyPoint = { x: this.mouse.worldX, y: this.mouse.worldY };
                 }
                 this.setSelectedObject(clickedBuilding);
-                return; // Stop further processing
+                return;
             }
-
-            // Priority 3: Interacting with an asteroid field
+            
             const clickedAsteroid = this.asteroidFields.find(a => distance(this.mouse.worldX, this.mouse.worldY, a.x, a.y) < a.size * 1.6);
             if (clickedAsteroid) {
                 this.setSelectedObject(clickedAsteroid);
-                return; // Stop further processing
+                return;
             }
             
-            // If nothing was clicked, deselect everything
             this.setSelectedObject(null);
+            this.cancelAllActions();
         }
 
         cancelAllActions() { 
-            this.setSelectedObject(null);
             this.setBuildingToPlace(null);
+            this.hideBuildConfirmation();
         }
         
         setBuildingToPlace(b) {
             this.hideBuildConfirmation(); 
-            this.buildingToPlace = b;
             this.setSelectedObject(null);
+            this.buildingToPlace = b;
             document.querySelectorAll("#build-menu .build-btn.selected").forEach(btn => btn.classList.remove("selected"));
             if (b) {
                 document.querySelector(`#build-menu .build-btn[data-type="${b.type}"]`)?.classList.add("selected");
             }
         }
         setSelectedObject(obj) { 
-            if (this.buildingToPlace) return; // Don't allow selection while placing a new building
-            this.hideBuildConfirmation();
+            if (this.buildConfirmationDetails) return;
             this.selectedObject = obj; 
             this.updateSelectionPanel(); 
         }
@@ -1398,7 +1418,9 @@ window.addEventListener('load', function() {
         showBuildConfirmation(type, x, y) {
             const specs = BUILDING_SPECS[type];
             this.buildConfirmationDetails = { type, x, y, specs };
-            this.buildingToPlace = null; // Exit "placing" mode
+            
+            this.buildingToPlace = null;
+            this.setSelectedObject(null);
             document.querySelectorAll("#build-menu .build-btn.selected").forEach(btn => btn.classList.remove("selected"));
             
             document.getElementById('build-confirm-icon').innerHTML = '';
@@ -1408,12 +1430,16 @@ window.addEventListener('load', function() {
             document.getElementById('build-confirm-desc').textContent = t(specs.descKey);
             
             buildMenu.style.display = 'none';
+            document.getElementById('selection-panel').style.display = 'none';
             buildConfirmPanel.style.display = 'flex';
         }
+
         hideBuildConfirmation(showBuildMenu = true) {
             this.buildConfirmationDetails = null;
             buildConfirmPanel.style.display = 'none';
-            if (showBuildMenu) buildMenu.style.display = 'flex';
+            if (showBuildMenu) {
+                buildMenu.style.display = 'flex';
+            }
         }
         confirmBuild() {
             if (this.buildConfirmationDetails) {
