@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Siege of the Stars v6.8</title>
+    <title>Siege of the Stars v7.0</title>
     <style>
         :root {
             --color-primary: #89ddff; /* Starfleet Blue */
@@ -199,6 +199,24 @@
         .build-btn > canvas { pointer-events: none; }
         .build-name { font-size: 0.6rem; font-weight: bold; line-height: 1; text-transform: uppercase; }
         .build-cost { font-size: 0.55rem; line-height: 1; pointer-events: none; display: flex; gap: 6px; align-items: center; justify-content: center; }
+
+        .build-btn-compact {
+            width: 55px !important;
+            height: 55px !important;
+            padding: 2px 1px !important;
+        }
+        .build-btn-compact .build-name {
+            font-size: 8px !important;
+        }
+        .build-btn-compact .build-cost {
+            font-size: 7px !important;
+            gap: 3px !important;
+        }
+         .build-btn-compact .build-cost svg {
+            width: 0.7em !important;
+            height: 0.7em !important;
+        }
+
 
         #game-controls { display: flex; flex-direction: column; gap: 8px; width: 150px; }
         #game-controls .build-btn { text-align: center; width: 100%; height: auto; justify-content: center; }
@@ -465,6 +483,7 @@
         <div id="build-menu" class="ui-panel">
             <button class="build-btn" data-type="PhaserTurret"></button>
             <button class="build-btn" data-type="Miner"></button>
+            <button class="build-btn" data-type="StorageDepot"></button>
             <button class="build-btn" data-type="SolarPanel"></button>
             <button class="build-btn" data-type="Pylon"></button>
             <button class="build-btn" data-type="Barracks"></button>
@@ -493,7 +512,7 @@
     <div id="wave-flash"></div>
 
     <div id="game-over">
-        <span data-lang-key="game_over_mission_failed">MISIÓN FALLIDA</span><br><span data-lang-key="game_over_base_destroyed">BASE ESTELAR DESTRUIDA</span><br>
+        <span data-lang-key="game_over_mission_failed">MISIÓN FALLIDA</span><br><span data-lang-key="game_over_base_destroyed">BASE ESTEL·LAR DESTRUÏDA</span><br>
         <button id="restart-button" style="margin-top:20px; padding: 15px 30px; font-size: 20px;" class="build-btn" data-lang-key="restart_mission_button">REINICIAR MISSIÓ</button>
     </div>
 
@@ -504,6 +523,7 @@ const MAX_UPGRADE_LEVEL = 5;
 const MAX_SAVE_SLOTS = 5;
 const MAX_UNIT_SLOTS = 5;
 const MAX_CONSTRUCTION_DRONE_SLOTS = 3;
+const MAX_DRONES_PER_JOB = 3; // New constant for drone task distribution
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // --- SVG Icons ---
@@ -633,20 +653,11 @@ function createIconValueHTML(icon, value, total) {
     return text;
 }
 
-function getStatValueForLevel(baseValue, upgradeType, level) {
-    if (level <= 1) return baseValue;
-    if (upgradeType === 'storage') {
-        return baseValue + 250 * (level - 1);
-    } else if (upgradeType === 'passiveIncome'){
-        return baseValue * Math.pow(2, level - 1);
-    } else {
-        const factor = 1 + (level - 1) * 0.25;
-        if (['fireRate', 'spawnRate', 'droneSpawnRate'].includes(upgradeType)) {
-            return baseValue / factor;
-        } else {
-            return baseValue * factor;
-        }
+function getStatValueForLevel(baseValuesArray, level) {
+    if (!Array.isArray(baseValuesArray) || level < 1 || level > baseValuesArray.length) {
+        return baseValuesArray && baseValuesArray.length > 0 ? baseValuesArray[0] : 0; 
     }
+    return baseValuesArray[level - 1];
 }
 
 
@@ -665,7 +676,8 @@ window.addEventListener('load', function() {
     const gameCanvas = document.getElementById('gameCanvas');
     const uiContainer = document.getElementById('ui');
     const startWaveBtn = document.getElementById('start-wave-btn');
-    const buildMenu = document.getElementById('build-menu');
+    const buildMenuEl = document.getElementById('build-menu'); 
+    const topRightUiEl = document.getElementById('top-right-ui'); 
     const buildConfirmPanel = document.getElementById('build-confirm-panel');
     const confirmBuildBtn = document.getElementById('confirm-build-btn');
     const cancelBuildBtn = document.getElementById('cancel-build-btn');
@@ -685,24 +697,24 @@ window.addEventListener('load', function() {
     const NUM_STARS = 1500;
 
     const BUILDING_SPECS = {
-        Core:         { nameKey: 'core_name', shortNameKey: 'core_short', descKey: 'core_desc', cost: 0, size: 50, health: 10000, color: '#f0f8ff', power: 50, connectionRange: 150, droneSpawnRate: 10000, storage: 500, passiveIncome: 0.5, upgrades:['passiveIncome', 'storage'], upgradeCosts:{passiveIncome: 2000, storage: 1000}, unitSlotCost: 500, unitBuildCost: 50 },
-        PhaserTurret: { nameKey: 'phaserturret_name', shortNameKey: 'phaserturret_short', descKey: 'phaserturret_desc', cost: 50, size: 10, health: 50, color: '#ff8f8f', power: -10, range: 150, fireRate: 1000, damage: 10, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:25, fireRate:35, range:20}, conversionCost: 50 },
-        LaserTurret:  { nameKey: 'laserturret_name', shortNameKey: 'laserturret_short', descKey: 'laserturret_desc', cost: 100, size: 10, health: 50, color: '#ff8f8f', power: -25, range: 160, fireRate: 100, damage: 2, upgrades:['damage', 'range'], upgradeCosts:{damage:75, range:50}, conversionCost: 100 },
-        PlasmaTurret: { nameKey: 'plasmatorret_name', shortNameKey: 'plasmatorret_short', descKey: 'plasmatorret_desc', cost: 150, size: 10, health: 50, color: '#ff8f8f', power: -20, range: 220, fireRate: 3000, damage: 50, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:100, fireRate: 150, range:40}, conversionCost: 150 },
-        Miner:        { nameKey: 'miner_name', shortNameKey: 'miner_short', descKey: 'miner_desc', cost: 75, size: 15, health: 150, color: '#8fff7f', power: -25, range: 100, droneSpawnRate: 6000, upgrades:['range'], upgradeCosts:{range:30}, unitSlotCost: 75, unitBuildCost: 25, conversionCost: 150 },
-        StorageDepot: { nameKey: 'storagedepot_name', shortNameKey: 'storagedepot_short', descKey: 'storagedepot_desc', cost: 0, size: 25, health: 150, color: '#8fff7f', power: -5, storage: 250, upgrades: ['storage'], upgradeCosts: { storage: 50 }},
-        SolarPanel:   { nameKey: 'solarpanel_name', shortNameKey: 'solarpanel_short', descKey: 'solarpanel_desc', cost: 100, size: 20, health: 100, color: '#89ddff', power: 50, connectionRange: 150, upgrades:['power'], upgradeCosts:{power:75} },
-        Pylon:        { nameKey: 'pylon_name', shortNameKey: 'pylon_short', descKey: 'pylon_desc', cost: 25, size: 5, health: 25, color: '#ffffff', power: -5, connectionRange: 150, upgrades:['connectionRange'], upgradeCosts:{connectionRange:15} },
-        SwarmTower:   { nameKey: 'swarmtower_name', shortNameKey: 'swarmtower_short', descKey: 'swarmtower_desc', cost: 200, size: 25, health: 150, color: '#00e5e5', power: -100, range: 150, droneSpawnRate: 5000, repairRate: 4, upgrades:['range', 'repairRate'], upgradeCosts:{range:100, repairRate:125}, unitSlotCost: 200, unitBuildCost: 40 },
-        Barracks:     { nameKey: 'barracks_name', shortNameKey: 'barracks_short', descKey: 'barracks_desc', cost: 200, size: 25, health: 150, color: '#af8fff', power: -100, spawnRate: 5000, range: 400, upgrades:['range'], upgradeCosts:{range: 100}, unitSlotCost: 150, unitBuildCost: 50 },
-        Starbase:     { nameKey: 'starbase_name', shortNameKey: 'starbase_short', descKey: 'starbase_desc', cost: 2500, size: 40, health: 1000, color: '#d8a4ff', power: 25, connectionRange: 150, droneSpawnRate: 10000, storage: 500, passiveIncome: 0.5, upgrades:['passiveIncome', 'connectionRange', 'storage'], upgradeCosts:{passiveIncome: 2000, connectionRange: 150, storage: 1000}, unitSlotCost: 500, unitBuildCost: 50 },
-        ShieldGenerator: { nameKey: 'shieldgenerator_name', shortNameKey: 'shieldgenerator_short', descKey: 'shieldgenerator_desc', cost: 500, size: 20, health: 50, color: '#4d94ff', power: -200, range: 150, shieldAmount: 200, shieldRegenRate: 10, shieldRegenDelay: 3000, upgrades:['shieldAmount', 'range', 'shieldRegenRate'], upgradeCosts:{shieldAmount:125, range:100, shieldRegenRate:150} },
-        Infantry:     { nameKey: 'infantry_name', size: 6, health: 30, color: '#00ff7f', speed: 100, range: 200, fireRate: 500, damage: 5 },
-        RepairDrone:  { nameKey: 'repairdrone_name', size: 7, health: 15, color: '#39ff14', speed: 30, repairRate: 5, isFlying: true },
-        CollectorDrone: { nameKey: 'collectordrone_name', size: 8, health: 20, color: '#ffff7f', speed: 30, carryCapacity: 5, isFlying: true },
-        ConstructionDrone: { nameKey: 'constructiondrone_name', size: 8, health: 20, color: '#ffee7f', speed: 70, buildRate: 20 },
-        Grunt:        { nameKey: 'grunt_name', size: 6, health: 75, color: '#ff6666', speed: 30, damage: 15, range: 50, fireRate: 2000, points: 3 },
-        Flier:        { nameKey: 'flier_name', size: 8, health: 35, color: '#ffdd00', speed: 60, damage: 5, range: 150, fireRate: 500, isFlying: true, points: 4 }
+        Core:         { nameKey: 'core_name', shortNameKey: 'core_short', descKey: 'core_desc', cost: 0, size: 50, health: 10000, color: '#f0f8ff', power: 50, connectionRange: 150, droneSpawnRate: 10000, storage: 500, passiveIncome: 0.5, upgrades:['passiveIncome', 'storage'], upgradeCosts:{passiveIncome: 2000, storage: 1000}, unitSlotCost: 500, unitBuildCost: 50, passiveIncome_values: [0.5, 0.75, 1.0, 1.25, 1.5], storage_values: [500, 1000, 1500, 2000, 2500] },
+        PhaserTurret: { nameKey: 'phaserturret_name', shortNameKey: 'phaserturret_short', descKey: 'phaserturret_desc', cost: 50, size: 10, health: 50, color: '#ff8f8f', power: -10, range: 150, fireRate: 1000, damage: 10, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:25, fireRate:50, range:25}, conversionCost: 50, damage_values: [10, 15, 20, 25, 30], fireRate_values: [1000, 800, 700, 600, 500], range_values: [150, 200, 250, 300, 350] },
+        LaserTurret:  { nameKey: 'laserturret_name', shortNameKey: 'laserturret_short', descKey: 'laserturret_desc', cost: 100, size: 10, health: 50, color: '#ff8f8f', power: -25, range: 160, fireRate: 100, damage: 2, upgrades:['damage', 'range'], upgradeCosts:{damage:100, range:50}, conversionCost: 100, damage_values: [2, 2.5, 3, 3.5, 4], range_values: [160, 180, 200, 220, 240] },
+        PlasmaTurret: { nameKey: 'plasmatorret_name', shortNameKey: 'plasmatorret_short', descKey: 'plasmatorret_desc', cost: 150, size: 10, health: 50, color: '#ff8f8f', power: -20, range: 400, fireRate: 10000, damage: 50, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:200, fireRate:200, range:100}, conversionCost: 150, damage_values: [50, 100, 150, 200, 250], fireRate_values: [10000, 8750, 7500, 6250, 5000], range_values: [400, 500, 600, 700, 800] }, // Range now matches Barracks
+        Miner:        { nameKey: 'miner_name', shortNameKey: 'miner_short', descKey: 'miner_desc', cost: 75, size: 15, health: 150, color: '#8fff7f', power: -25, range: 100, droneSpawnRate: 8000, upgrades:['range'], upgradeCosts:{range:100}, unitSlotCost: 75, unitBuildCost: 25, conversionCost: 100, range_values: [100, 125, 150, 175, 200] }, // Conversion cost to StorageDepot defined as 100
+        StorageDepot: { nameKey: 'storagedepot_name', shortNameKey: 'storagedepot_short', descKey: 'storagedepot_desc', cost: 100, size: 25, health: 150, color: '#8fff7f', power: -5, storage: 200, upgrades: ['storage'], upgradeCosts: { storage: 200 }, storage_values: [200, 400, 600, 800, 1000]},
+        SolarPanel:   { nameKey: 'solarpanel_name', shortNameKey: 'solarpanel_short', descKey: 'solarpanel_desc', cost: 100, size: 20, health: 100, color: '#89ddff', power: 50, connectionRange: 150, upgrades:['power'], upgradeCosts:{power:75}, power_values: [50, 75, 100, 125, 150] },
+        Pylon:        { nameKey: 'pylon_name', shortNameKey: 'pylon_short', descKey: 'pylon_desc', cost: 25, size: 5, health: 25, color: '#ffffff', power: -5, connectionRange: 200, upgrades:['connectionRange'], upgradeCosts:{connectionRange:20}, connectionRange_values: [200, 250, 300, 350, 400] },
+        SwarmTower:   { nameKey: 'swarmtower_name', shortNameKey: 'swarmtower_short', descKey: 'swarmtower_desc', cost: 200, size: 25, health: 150, color: '#00e5e5', power: -100, range: 200, droneSpawnRate: 4000, repairRate: 2, upgrades:['range', 'repairRate'], upgradeCosts:{range:200, repairRate:100}, unitSlotCost: 200, unitBuildCost: 40, range_values: [200, 250, 300, 350, 400], repairRate_values: [2, 4, 6, 8, 10] },
+        Barracks:     { nameKey: 'barracks_name', shortNameKey: 'barracks_short', descKey: 'barracks_desc', cost: 200, size: 25, health: 150, color: '#af8fff', power: -100, spawnRate: 10000, range: 400, upgrades:['range'], upgradeCosts:{range: 100}, unitSlotCost: 150, unitBuildCost: 50, range_values: [400, 500, 600, 700, 800] },
+        Starbase:     { nameKey: 'starbase_name', shortNameKey: 'starbase_short', descKey: 'starbase_desc', cost: 2500, size: 40, health: 1000, color: '#d8a4ff', power: 25, connectionRange: 200, droneSpawnRate: 10000, storage: 500, passiveIncome: 0.5, upgrades:['passiveIncome', 'connectionRange', 'storage'], upgradeCosts:{passiveIncome: 2000, connectionRange: 200, storage: 1000}, unitSlotCost: 500, unitBuildCost: 50, passiveIncome_values: [0.5, 0.75, 1.0, 1.25, 1.5], connectionRange_values: [200, 250, 300, 350, 400], storage_values: [500, 1000, 1500, 2000, 2500] },
+        ShieldGenerator: { nameKey: 'shieldgenerator_name', shortNameKey: 'shieldgenerator_short', descKey: 'shieldgenerator_desc', cost: 500, size: 20, health: 50, color: '#4d94ff', power: -200, range: 200, shieldAmount: 200, shieldRegenRate: 5, shieldRegenDelay: 3000, upgrades:['shieldAmount', 'range', 'shieldRegenRate'], upgradeCosts:{shieldAmount:100, range:200, shieldRegenRate:100}, shieldAmount_values: [200, 250, 300, 350, 400], range_values: [200, 250, 300, 350, 400], shieldRegenRate_values: [5, 10, 15, 20, 25] },
+        Infantry:     { nameKey: 'infantry_name', size: 6, health: 50, color: '#00ff7f', speed: 100, range: 150, fireRate: 500, damage: 5, isFlying: false },
+        RepairDrone:  { nameKey: 'repairdrone_name', size: 7, health: 20, color: '#39ff14', speed: 40, repairRate: 5, isFlying: true },
+        CollectorDrone: { nameKey: 'collectordrone_name', size: 8, health: 20, color: '#ffff7f', speed: 80, carryCapacity: 5, isFlying: true },
+        ConstructionDrone: { nameKey: 'constructiondrone_name', size: 8, health: 20, color: '#ffee7f', speed: 80, buildRate: 20 },
+        Grunt:        { nameKey: 'grunt_name', size: 6, health: 50, color: '#ff6666', speed: 100, damage: 10, range: 50, fireRate: 2000, points: 5, isFlying: false },
+        Flier:        { nameKey: 'flier_name', size: 16, health: 150, color: '#ffdd00', speed: 50, damage: 10, range: 200, fireRate: 1000, isFlying: true, points: 10 } // Size doubled
     };
     const UPGRADE_KEYS = { damage: 'upgrade_damage', fireRate: 'upgrade_fireRate', range: 'upgrade_range', power: 'upgrade_power', connectionRange: 'upgrade_connectionRange', repairRate: 'upgrade_repairRate', shieldAmount: 'upgrade_shieldAmount', shieldRegenRate: 'upgrade_shieldRegenRate', passiveIncome: 'upgrade_passiveIncome', unitSlots: 'upgrade_unitSlots', storage: 'upgrade_storage', energy: 'stat_energy' };
     
@@ -771,14 +783,21 @@ window.addEventListener('load', function() {
             this.shieldHealth = 0; this.maxShieldHealth = 0; this.shieldRegenTimer = 0;
             this.applyLevelStats();
         }
+        
         applyLevelStats() {
-            this.specs = { ...this.baseSpecs }; this.size = this.specs.size;
-            this.maxHealth = this.baseSpecs.health;
+            this.specs = { ...this.baseSpecs }; 
+            this.size = this.baseSpecs.size; 
+            this.maxHealth = this.baseSpecs.health; 
             if (!this.health) { this.health = this.maxHealth; }
-            for (const upg in this.upgradeLevels) {
-                this.specs[upg] = getStatValueForLevel(this.baseSpecs[upg], upg, this.upgradeLevels[upg]);
+
+            for (const upgKey in this.upgradeLevels) {
+                const valuesArray = this.baseSpecs[upgKey + "_values"];
+                if (valuesArray) {
+                    this.specs[upgKey] = getStatValueForLevel(valuesArray, this.upgradeLevels[upgKey]);
+                }
             }
         }
+
         takeDamage(damage) {
             this.shieldRegenTimer = this.specs.shieldRegenDelay || 3000;
             if (this.shieldHealth > 0) {
@@ -791,13 +810,11 @@ window.addEventListener('load', function() {
         draw(ctx, shapeDrawer) {
             ctx.save();
             
-            // 1. Black backing for contrast
             ctx.lineWidth = 4;
             ctx.strokeStyle = "rgba(0,0,0,0.5)";
             shapeDrawer();
             ctx.stroke();
             
-            // 2. Neon glow and semitransparent fill
             const c = this.specs.color;
             ctx.lineWidth = 2;
             ctx.strokeStyle = c;
@@ -887,13 +904,14 @@ window.addEventListener('load', function() {
             costInfo.innerHTML = costHtml;
             btn.appendChild(costInfo);
         }); 
+        adjustBuildMenuLayout(); 
     }
 
     class Building extends GameEntity {
         constructor(x,y,type) { 
             super(x,y,type);
             this.isPowered=false; this.isConstructing = true; this.health = 1; this.assignedDrones = [];
-            this.task = null; // { type: 'upgrade'/'convert', progress: 0, total: X, details: {} }
+            this.task = null; 
         }
 
         update(game,dt){
@@ -954,19 +972,33 @@ window.addEventListener('load', function() {
         
         completeTask() {
             if (!this.task) return;
+            const wasSelected = game.selectedObject === this;
+
             if (this.task.type === 'upgrade') {
                 const { upgradeType } = this.task.details;
                 this.upgradeLevels[upgradeType]++; 
                 this.applyLevelStats();
+                this.task = null; // Clear task
             } else if (this.task.type === 'convert') {
                 const { newType } = this.task.details;
+                this.task = null; // Clear task BEFORE conversion, as 'this' might be replaced
                 game.convertBuilding(this, newType);
+                // If convertBuilding replaced 'this', 'this' is no longer valid.
+                // The selection panel update should be handled by convertBuilding or by checking if selectedObject is still valid.
+                if (wasSelected && !(game.selectedObject instanceof Building && game.selectedObject.type === newType && game.selectedObject.x === this.x && game.selectedObject.y === this.y) ) {
+                     // If it was selected but is no longer the same (or exists)
+                    game.setSelectedObject(null);
+                } else if (wasSelected) {
+                    game.buildSelectionPanel(); // Rebuild for the new converted building
+                }
+                this.assignedDrones.forEach(d => d.targetBuilding = null); // Drones become idle
+                this.assignedDrones = [];
+                return; // Return early as 'this' might be invalid
             }
             
-            this.task = null;
             this.assignedDrones.forEach(d => d.targetBuilding = null);
             this.assignedDrones = [];
-            if (game.selectedObject === this || !this.health) {
+            if (wasSelected && this.health > 0) { 
                 game.buildSelectionPanel();
             }
         }
@@ -978,7 +1010,7 @@ window.addEventListener('load', function() {
                 this.task = {
                     type: 'upgrade',
                     progress: 0,
-                    total: cost * 2,
+                    total: cost * 2, 
                     details: { upgradeType }
                 };
                 game.dispatchConstructionDrones(this);
@@ -988,16 +1020,22 @@ window.addEventListener('load', function() {
         }
 
         startConversion(newType) {
-            const cost = BUILDING_SPECS[this.type].conversionCost || 0;
+            const targetSpecs = BUILDING_SPECS[newType];
+            let cost = targetSpecs.conversionCost !== undefined ? targetSpecs.conversionCost : (this.baseSpecs.conversionCost || 0);
+            
+            if (this.type === 'Miner' && newType === 'StorageDepot') { 
+                cost = 100; // Specific cost for Miner to StorageDepot
+            }
+
             if (game.minerals >= cost && !this.task) {
                 game.minerals -= cost;
                 if (this instanceof UnitProducer && this.units) {
-                    this.units.forEach(u => u.health = 0);
+                    this.units.forEach(u => u.health = 0); 
                 }
                 this.task = {
                     type: 'convert',
                     progress: 0,
-                    total: cost * 2,
+                    total: cost * 2, 
                     details: { newType }
                 };
                 game.dispatchConstructionDrones(this);
@@ -1009,14 +1047,11 @@ window.addEventListener('load', function() {
         getUpgradeCost(upgradeType) { 
             const baseCost = this.baseSpecs.upgradeCosts[upgradeType]; 
             const level = this.upgradeLevels[upgradeType]; 
-            if(upgradeType === 'storage') {
-                 return Math.floor(baseCost * Math.pow(2, level - 1));
-            }
-            return Math.floor(baseCost * Math.pow(1.8, level - 1));
+            return Math.floor(baseCost * Math.pow(2, level - 1));
         }
         draw(ctx) {
             super.draw(ctx, () => {
-                if (this.isConstructing || this.task) { 
+                if (this.isConstructing || (this.task && !this.isConstructing)) { // Show alpha change for tasks only if not constructing
                     const totalTime = this.isConstructing ? (this.baseSpecs.cost || 50) * 50 : this.task.total;
                     const progress = this.isConstructing ? (this.health / this.maxHealth) * totalTime : this.task.progress;
                     ctx.globalAlpha = 0.2 + 0.8 * (progress / totalTime);
@@ -1024,6 +1059,19 @@ window.addEventListener('load', function() {
                 drawBuildingPath(ctx, this.type, this.size, this.x, this.y);
                 ctx.globalAlpha = 1;
             });
+            
+            // Task progress arc (upgrade/convert) - shown if NOT constructing
+            if (this.task && !this.isConstructing) {
+                const progress = this.task.progress / this.task.total;
+                ctx.save();
+                ctx.strokeStyle = UI_COLORS.warning; // Use warning color for tasks
+                ctx.lineWidth = 4 / game.camera.zoom;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size + 5, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * progress);
+                ctx.stroke();
+                ctx.restore();
+            }
+
 
             const isUnpoweredConsumer = !this.isPowered && this.specs.power < 0 && !this.isConstructing;
             if (isUnpoweredConsumer && Math.floor(Date.now()/250)%2===0) { 
@@ -1082,32 +1130,28 @@ window.addEventListener('load', function() {
         }
 
         update(game, dt) {
-            super.update(game, dt);
-            if (this.isConstructing || (!this.isPowered && this.specs.power < 0) || this.task) {
+            super.update(game, dt); // Handles construction and tasks
+            if (this.isConstructing || (!this.isPowered && this.specs.power < 0) || this.task) { // If upgrading/converting, don't build units
                 this.isBuildingUnit = false;
                 this.buildProgress = 0;
                 return;
             }
             this.units = this.units.filter(u => u.health > 0);
 
-            // Check if we should start building a new unit
             if (!this.isBuildingUnit && this.units.length < this.unlockedSlots) {
                 const cost = this.baseSpecs.unitBuildCost;
-                
-                // Special case: The very first drone for a Core or Starbase is free.
                 const isFirstCommandCenterDrone = (this.type === 'Core' || this.type === 'Starbase') && this.units.length === 0;
 
                 if (isFirstCommandCenterDrone) {
-                    this.isBuildingUnit = true; // Start for free
+                    this.isBuildingUnit = true; 
                     this.buildProgress = 0;
                 } else if (game.minerals >= cost) {
-                    game.minerals -= cost; // Pay the cost
+                    game.minerals -= cost; 
                     this.isBuildingUnit = true;
                     this.buildProgress = 0;
                 }
             }
 
-            // If building, advance progress
             if (this.isBuildingUnit) {
                 this.buildProgress += dt;
                 const buildTime = this.specs.droneSpawnRate || this.specs.spawnRate;
@@ -1132,7 +1176,7 @@ window.addEventListener('load', function() {
             if (game.minerals >= cost) {
                 game.minerals -= cost;
                 this.unlockedSlots++;
-                game.buildSelectionPanel(); // Rebuild to show new slot state
+                game.buildSelectionPanel(); 
                 return true;
             }
             return false;
@@ -1140,12 +1184,13 @@ window.addEventListener('load', function() {
         
         draw(ctx) {
             super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y));
-            if ((this.isBuildingUnit || this.task) && !this.isConstructing) {
-                const total = this.isBuildingUnit ? (this.specs.droneSpawnRate || this.specs.spawnRate) : this.task.total;
-                const progress = this.isBuildingUnit ? this.buildProgress : this.task.progress;
+            // Only draw unit production progress if NOT currently doing a task (upgrade/convert)
+            if (this.isBuildingUnit && !this.task && !this.isConstructing) {
+                const total = this.specs.droneSpawnRate || this.specs.spawnRate;
+                const progress = this.buildProgress;
                 
                 ctx.save();
-                ctx.strokeStyle = UI_COLORS.warning;
+                ctx.strokeStyle = UI_COLORS.warning; 
                 ctx.lineWidth = 4 / game.camera.zoom;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size + 5, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * (progress / total));
@@ -1307,7 +1352,7 @@ window.addEventListener('load', function() {
                         this.collectionTimer = this.collectionTime;
                     }
                 } else {
-                    this.state = 'returning'; // No targets found, go home
+                    this.state = 'returning'; 
                 }
             } else if (this.state === 'collecting') {
                 if (storageFull || !this.target || this.target.minerals <= 0) {
@@ -1330,11 +1375,8 @@ window.addEventListener('load', function() {
                         this.heldMinerals = 0;
                     }
                     this.target = null;
-                    // Only start seeking again if there's power and space
                     if (this.parentPowered && !storageFull) {
                         this.state = 'seeking';
-                    } else {
-                        // Otherwise, stay here (idle)
                     }
                 } else {
                     this.moveTo(this.parentBuilding.x, this.parentBuilding.y, dt);
@@ -1351,11 +1393,16 @@ window.addEventListener('load', function() {
         update(game, dt) {
             applySeparation(this, game.units, game.enemies, dt);
             if (!this.parentBuilding || this.parentBuilding.health <= 0) { this.targetBuilding = null; this.health = 0; return; }
-            if (this.targetBuilding) {
-                if (this.targetBuilding.health <= 0 || (!this.targetBuilding.isConstructing && !this.targetBuilding.task)) {
-                     this.targetBuilding = null;
-                     return;
+            
+            // If current target is done or invalid, clear it
+            if (this.targetBuilding && (this.targetBuilding.health <= 0 || (!this.targetBuilding.isConstructing && !this.targetBuilding.task))) {
+                if(this.targetBuilding.assignedDrones) { // Remove self from old target's drone list
+                    this.targetBuilding.assignedDrones = this.targetBuilding.assignedDrones.filter(d => d !== this);
                 }
+                this.targetBuilding = null;
+            }
+
+            if (this.targetBuilding) {
                 const d = distance(this.x, this.y, this.targetBuilding.x, this.targetBuilding.y);
                 if (d > this.targetBuilding.size + 2) { 
                     const dx = (this.targetBuilding.x - this.x) / d; 
@@ -1364,13 +1411,17 @@ window.addEventListener('load', function() {
                     this.y += dy * this.specs.speed * dt / 1000; 
                 }
             } else { 
-                const dp = distance(this.x, this.y, this.parentBuilding.x, this.parentBuilding.y); 
-                if (dp > 50) { 
-                    const dx = (this.parentBuilding.x - this.x) / dp; 
-                    const dy = (this.parentBuilding.y - this.y) / dp; 
-                    this.x += dx * this.specs.speed * 0.5 * dt / 1000; 
-                    this.y += dy * this.specs.speed * 0.5 * dt / 1000; 
-                } 
+                // No current target, try to get a new one from the dispatcher or return home
+                game.dispatchConstructionDrones(); // This might assign this drone a new target
+                if (!this.targetBuilding) { // If still no target after dispatch, go home
+                    const dp = distance(this.x, this.y, this.parentBuilding.x, this.parentBuilding.y); 
+                    if (dp > 50) { 
+                        const dx = (this.parentBuilding.x - this.x) / dp; 
+                        const dy = (this.parentBuilding.y - this.y) / dp; 
+                        this.x += dx * this.specs.speed * 0.5 * dt / 1000; 
+                        this.y += dy * this.specs.speed * 0.5 * dt / 1000; 
+                    } 
+                }
             }
         }
         draw(ctx) { super.draw(ctx); if (this.targetBuilding) { ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.targetBuilding.x, this.targetBuilding.y); ctx.strokeStyle = this.specs.color; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.shadowColor = this.specs.color; ctx.shadowBlur = 10; ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0; } }
@@ -1454,7 +1505,6 @@ window.addEventListener('load', function() {
             this.asteroids.forEach(a => {
                 ctx.save();
                 
-                // Black outline for contrast
                 ctx.lineWidth = 5;
                 ctx.strokeStyle = "rgba(0,0,0,0.7)";
                 ctx.beginPath();
@@ -1465,7 +1515,6 @@ window.addEventListener('load', function() {
                 ctx.closePath();
                 ctx.stroke();
 
-                // Actual rock drawing
                 ctx.fillStyle = a.c;
                 ctx.strokeStyle = '#444';
                 ctx.lineWidth = 2;
@@ -1575,7 +1624,7 @@ window.addEventListener('load', function() {
         updateMaxMinerals() {
             this.maxMinerals = 0;
             this.buildings.forEach(b => {
-                if (b.specs.storage) {
+                if (b.specs.storage) { 
                     this.maxMinerals += b.specs.storage;
                 }
             });
@@ -1622,6 +1671,9 @@ window.addEventListener('load', function() {
                         if(entity instanceof Unit && entity.parentBuilding && entity.parentBuilding.units) {
                            entity.parentBuilding.units = entity.parentBuilding.units.filter(u => u !== entity);
                         }
+                        if(entity instanceof Building && entity.assignedDrones){ // Make sure drones are unassigned if building is destroyed
+                            entity.assignedDrones.forEach(d => d.targetBuilding = null);
+                        }
                         list.splice(i, 1);
                     }
                 }
@@ -1652,16 +1704,53 @@ window.addEventListener('load', function() {
                 }
             });
         }
-        dispatchConstructionDrones(target = null) { 
+        
+        dispatchConstructionDrones(prioritizedJob = null) {
             const idleDrones = this.units.filter(u => u.type === 'ConstructionDrone' && !u.targetBuilding);
-            if (idleDrones.length === 0) return; 
+            if (idleDrones.length === 0) return;
 
-            const job = target || this.constructionQueue.find(b => b.assignedDrones.length === 0) || this.buildings.find(b => b.task && b.assignedDrones.length === 0);
-            if(job) { 
-                idleDrones.forEach(drone => {
-                    job.assignedDrones.push(drone);
-                    drone.targetBuilding = job;
+            let dronesToAssign = [...idleDrones];
+
+            // 1. Assign to prioritized job first
+            if (prioritizedJob && (prioritizedJob.isConstructing || prioritizedJob.task)) {
+                const dronesNeeded = MAX_DRONES_PER_JOB - prioritizedJob.assignedDrones.length;
+                const dronesForPrioritized = dronesToAssign.splice(0, dronesNeeded);
+                dronesForPrioritized.forEach(drone => {
+                    prioritizedJob.assignedDrones.push(drone);
+                    drone.targetBuilding = prioritizedJob;
                 });
+            }
+            
+            // 2. Get all pending jobs (construction or tasks)
+            const pendingJobs = [
+                ...this.constructionQueue.filter(b => b !== prioritizedJob && b.assignedDrones.length < MAX_DRONES_PER_JOB),
+                ...this.buildings.filter(b => b.task && b !== prioritizedJob && b.assignedDrones.length < MAX_DRONES_PER_JOB)
+            ];
+            
+            // Sort jobs: construction first, then by distance to a core (heuristic for importance/closeness)
+            pendingJobs.sort((a, b) => {
+                if (a.isConstructing && !b.isConstructing) return -1;
+                if (!a.isConstructing && b.isConstructing) return 1;
+                const core = this.buildings.find(bld => bld.type === 'Core');
+                if (core) {
+                    return distance(a.x, a.y, core.x, core.y) - distance(b.x, b.y, core.x, core.y);
+                }
+                return 0;
+            });
+
+
+            // 3. Distribute remaining drones among other jobs
+            for (const job of pendingJobs) {
+                if (dronesToAssign.length === 0) break; // No more drones to assign
+
+                const dronesNeededForThisJob = MAX_DRONES_PER_JOB - job.assignedDrones.length;
+                if (dronesNeededForThisJob > 0) {
+                    const dronesForThisJob = dronesToAssign.splice(0, dronesNeededForThisJob);
+                    dronesForThisJob.forEach(drone => {
+                        job.assignedDrones.push(drone);
+                        drone.targetBuilding = job;
+                    });
+                }
             }
         }
         
@@ -1702,7 +1791,7 @@ window.addEventListener('load', function() {
 
             this.enemies.forEach(enemy => {
                 if (enemy.x > view.left && enemy.x < view.right && enemy.y > view.top && enemy.y < view.bottom) {
-                    return; // Skip enemies on screen
+                    return; 
                 }
                 
                 const angle = Math.atan2(enemy.y - cam.y, enemy.x - cam.x);
@@ -1729,19 +1818,14 @@ window.addEventListener('load', function() {
         }
 
         draw(){
-            // 1. Fill base color.
             ctx.fillStyle = '#03030A';
             ctx.fillRect(0, 0, this.width, this.height);
 
-            // 2. Apply the single, primary camera transform for the entire world.
             ctx.save();
             ctx.translate(this.width / 2, this.height / 2);
             ctx.scale(this.camera.zoom, this.camera.zoom);
             ctx.translate(-this.camera.x, -this.camera.y);
-
-            // --- START OF WORLD-SPACE DRAWING ---
             
-            // 3. Draw all game entities on top of the background.
             if (this.buildConfirmationDetails) { this.drawBuildPlacementAids(); } 
             this.drawPowerNetwork();
             this.asteroidFields.forEach(p=>p.draw(ctx));
@@ -1751,7 +1835,6 @@ window.addEventListener('load', function() {
             this.projectiles.forEach(p=>p.draw(ctx));
             this.particles.forEach(p => p.draw(ctx));
             
-            // Draw UI elements tied to world objects
             this.buildings.forEach(b => {
                 if(b instanceof UnitProducer && !b.isConstructing && (b.type === 'Core' || b.type === 'Starbase')) {
                     const base = (b.type === 'Core' || b.type === 'Starbase');
@@ -1783,26 +1866,20 @@ window.addEventListener('load', function() {
             }
             if(this.buildConfirmationDetails) this.drawBuildGhost();
             
-            // --- END OF WORLD-SPACE DRAWING ---
-
-            // 5. Restore the context, removing the camera transform.
             ctx.restore();
 
-            // 6. Draw elements that are in SCREEN SPACE (like the parallax stars).
             this.drawStars(); 
             this.drawOffscreenIndicators();
         }
 
         drawContrastingCircle(ctx, x, y, radius, color, lineWidth) {
             ctx.save();
-            // Black backing
             ctx.strokeStyle = 'rgba(0,0,0,0.7)';
             ctx.lineWidth = (lineWidth + 2) / this.camera.zoom;
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, 2 * Math.PI);
             ctx.stroke();
 
-            // Colored circle
             ctx.strokeStyle = color;
             ctx.lineWidth = lineWidth / this.camera.zoom;
             ctx.shadowColor = color;
@@ -1918,6 +1995,8 @@ window.addEventListener('load', function() {
             cancelBuildBtn.addEventListener("click", () => this.cancelBuild());
             document.getElementById('restart-button').addEventListener('click', () => { window.location.reload(); });
             startWaveBtn.addEventListener('click', () => { if (this.waveManager) this.waveManager.forceNextWave(); });
+            
+            adjustBuildMenuLayout(); 
         }
         handlePointerDown(e) { e.preventDefault(); if (this.isPaused) return; this.mouse.down = true; this.mouse.lastDownTime = Date.now(); this.pointers.push(e); this.mouse.startX = e.clientX; this.mouse.startY = e.clientY; this.mouse.lastMoveX = e.clientX; this.mouse.lastMoveY = e.clientY; }
         
@@ -2010,8 +2089,6 @@ window.addEventListener('load', function() {
         setSelectedObject(obj) { 
             if (this.buildConfirmationDetails) return;
             this.selectedObject = obj;
-            // Retrasamos la construcción del panel 1 milisegundo.
-            // Esto rompe la cadena del evento de clic y evita el "clic fantasma".
             setTimeout(() => this.buildSelectionPanel(), 1);
         }
 
@@ -2050,7 +2127,7 @@ window.addEventListener('load', function() {
 
             document.getElementById('build-confirm-desc').textContent = t(specs.descKey);
             
-            buildMenu.style.display = 'none';
+            buildMenuEl.style.display = 'none';
             document.getElementById('selection-panel').style.display = 'none';
             buildConfirmPanel.style.display = 'flex';
         }
@@ -2059,7 +2136,7 @@ window.addEventListener('load', function() {
             this.buildConfirmationDetails = null;
             buildConfirmPanel.style.display = 'none';
             if (showBuildMenu) {
-                buildMenu.style.display = 'flex';
+                buildMenuEl.style.display = 'flex';
             }
         }
         confirmBuild() {
@@ -2072,7 +2149,7 @@ window.addEventListener('load', function() {
                         const newBuilding = new BuildingClass(x, y);
                         this.buildings.push(newBuilding);
                         this.constructionQueue.push(newBuilding);
-                        this.dispatchConstructionDrones(newBuilding);
+                        this.dispatchConstructionDrones(newBuilding); // Prioritize this new building
                     }
                     this.hideBuildConfirmation();
                 } else {
@@ -2219,13 +2296,13 @@ window.addEventListener('load', function() {
                         convertContainer.appendChild(btn);
                     }
                 } else if (this.selectedObject instanceof AsteroidField) {
-                    document.getElementById('selection-icon').innerHTML = '';
+                    document.getElementById('selection-icon').innerHTML = ''; 
                     document.getElementById("selection-type").textContent = t('asteroid_field_name');
                 }
             } else { 
                 panel.style.display = "none";
             }
-            this.updateDynamicSelectionUI(); // Initial dynamic update
+            this.updateDynamicSelectionUI(); 
         }
         
         updateDynamicSelectionUI() {
@@ -2252,13 +2329,13 @@ window.addEventListener('load', function() {
                 }
                 let statusText = "";
                 if (b.isConstructing) { statusText = `${t('status_label')}: <span style="color:var(--color-warning)">${t('status_constructing')}</span>`; }
-                else if (b.task) { statusText = `${t('status_label')}: <span style="color:var(--color-warning)">${t('status_upgrading')}</span>`; }
+                else if (b.task) { statusText = `${t('status_label')}: <span style="color:var(--color-warning)">${t('status_upgrading')}</span>`; } // Changed to use generic "Upgrading" for any task
                 else if (b.specs.power < 0 && !b.isPowered) { statusText = `${t('status_label')}: <span style="color:var(--color-danger)">${t('status_no_power')}</span>`; } 
                 else { statusText = `${t('status_label')}: <span style="color:var(--color-success)">${t('status_operational')}</span>`; }
                 statusEl.innerHTML = statusText; statusEl.style.display = 'block';
                 
                 const energyStatLine = document.querySelector(`#selection-details [data-stat="energy"]`);
-                if(energyStatLine && b.specs.power) {
+                if(energyStatLine && b.specs.power !== undefined) { 
                     const powerVal = b.specs.power;
                     const powerColor = powerVal > 0 ? 'var(--color-primary)' : (powerVal < 0 ? 'var(--color-danger)' : 'white');
                     energyStatLine.innerHTML = `<span>${t('stat_energy')}:</span><span class="stat-value" style="color: ${powerColor};">${createIconValueHTML(ENERGY_ICON_SVG, powerVal)}</span>`;
@@ -2273,7 +2350,8 @@ window.addEventListener('load', function() {
                         let value = b.specs[upgType];
                         let formattedValue = '';
                         if (['fireRate', 'spawnRate', 'droneSpawnRate'].includes(upgType)) { formattedValue = `${(1000 / value).toFixed(2)}/s`; } 
-                        else if (['range', 'connectionRange', 'storage'].includes(upgType)) { formattedValue = `${Math.round(value)}`; } 
+                        else if (['range', 'connectionRange', 'storage', 'power', 'shieldAmount'].includes(upgType)) { formattedValue = `${Math.round(value)}`; } 
+                        else if (upgType === 'passiveIncome') { formattedValue = `${value.toFixed(2)}/s`;}
                         else { formattedValue = Number.isInteger(value) ? value : value.toFixed(1); }
                         statLine.innerHTML = `<span>${t(UPGRADE_KEYS[upgType])}:</span><span class="stat-value">${formattedValue}</span>`;
 
@@ -2282,10 +2360,11 @@ window.addEventListener('load', function() {
                             btn.innerHTML = `${t(UPGRADE_KEYS[upgType])}<br>(MAX)`; btn.disabled = true;
                         } else {
                             const cost = b.getUpgradeCost(upgType);
-                            const nextValue = getStatValueForLevel(b.baseSpecs[upgType], upgType, level + 1);
+                            const nextValue = getStatValueForLevel(b.baseSpecs[upgType+"_values"], level + 1);
                             const diff = nextValue - value;
                             let improvementText = `(+${Number.isInteger(diff) ? diff : diff.toFixed(1)})`;
                             if (['fireRate', 'spawnRate', 'droneSpawnRate'].includes(upgType)) { improvementText = `(${(1000/nextValue).toFixed(2)}/s)`; }
+                            else if (upgType === 'passiveIncome') { improvementText = `(${nextValue.toFixed(2)}/s)`; }
 
                             btn.innerHTML = `${t(UPGRADE_KEYS[upgType])} (${level}) <span class="upgrade-improvement">${improvementText}</span><div class="upgrade-cost">${createIconValueHTML(MINERAL_ICON_SVG, cost)}</div>`;
                             btn.disabled = this.minerals < cost || !!b.task;
@@ -2298,14 +2377,14 @@ window.addEventListener('load', function() {
                         for (let i = 0; i < b.maxSlots; i++) {
                             const pip = slotPips[i];
                             if (!pip) continue;
-                            pip.className = 'unit-slot'; // Reset
-                            pip.querySelector('.progress-bar').style.width = '0%'; // Reset progress bar
+                            pip.className = 'unit-slot'; 
+                            pip.querySelector('.progress-bar').style.width = '0%'; 
 
                             if (i < b.unlockedSlots) {
                                 pip.classList.add('unlocked');
                                 if (i < b.units.length) {
                                     pip.classList.add('active');
-                                } else if (i === b.units.length && b.isBuildingUnit) {
+                                } else if (i === b.units.length && b.isBuildingUnit && !b.task) { // Only show unit building if no other task
                                     pip.classList.add('building');
                                     const buildTime = b.specs.droneSpawnRate || b.specs.spawnRate;
                                     const progress = b.buildProgress / buildTime;
@@ -2330,9 +2409,13 @@ window.addEventListener('load', function() {
 
                     document.querySelectorAll('#convert-buttons-container .convert-btn').forEach(btn => {
                         const convertType = btn.dataset.convert;
-                        const specs = BUILDING_SPECS[convertType];
-                        const conversionCost = (b.baseSpecs.conversionCost) ? b.baseSpecs.conversionCost : 0;
-                        btn.innerHTML = `${t('convert_button')} ${t(specs.shortNameKey)}<br>${createIconValueHTML(MINERAL_ICON_SVG, conversionCost)}`;
+                        const targetSpecs = BUILDING_SPECS[convertType];
+                        let conversionCost = targetSpecs.conversionCost !== undefined ? targetSpecs.conversionCost : (b.baseSpecs.conversionCost || 0);
+                        if (b.type === 'Miner' && convertType === 'StorageDepot') {
+                            conversionCost = 100; 
+                        }
+
+                        btn.innerHTML = `${t('convert_button')} ${t(targetSpecs.shortNameKey)}<br>${createIconValueHTML(MINERAL_ICON_SVG, conversionCost)}`;
                         btn.disabled = !!b.task || this.minerals < conversionCost;
                     });
                 }
@@ -2351,14 +2434,20 @@ window.addEventListener('load', function() {
             const NewBuildingClass = AllClasses[newType];
             const newBuilding = new NewBuildingClass(oldBuilding.x, oldBuilding.y);
             
-            newBuilding.isConstructing = false;
-            newBuilding.health = oldBuilding.health; // Preserve health
+            newBuilding.isConstructing = false; // Converted buildings are immediately operational (after build time)
+            newBuilding.health = oldBuilding.health; // Preserve health proportionally if max health changes or just keep current. For now, keep current.
+                                                // If new building has different max health, this might need adjustment.
+            // Reset assigned drones from old building
+            oldBuilding.assignedDrones.forEach(d => d.targetBuilding = null);
+            oldBuilding.assignedDrones = [];
             
             this.buildings.splice(index, 1, newBuilding);
 
             if(this.selectedObject === oldBuilding) {
-                this.setSelectedObject(newBuilding);
+                this.setSelectedObject(newBuilding); // Select the new building
             }
+            // Any drones assigned to the oldBuilding's task should now be idle,
+            // dispatchConstructionDrones will pick them up for the newBuilding's "construction" (which is the conversion task time)
         }
         
         gameOver(){ if(!this.isGameOver){ this.isGameOver = true; document.getElementById("game-over").style.display="flex"; } }
@@ -2412,7 +2501,7 @@ window.addEventListener('load', function() {
             buildingsToRender.forEach(b => {
                 tCtx.fillStyle = b.isPowered || b.specs.power >= 0 ? b.specs.color : '#555';
                 tCtx.beginPath();
-                tCtx.arc(b.x, b.y, b.size, 0, 2*Math.PI);
+                drawBuildingPath(tCtx, b.type, b.size, b.x, b.y); 
                 tCtx.fill();
             });
             tCtx.restore();
@@ -2427,6 +2516,10 @@ window.addEventListener('load', function() {
                 if (entity.isConstructing !== undefined) data.isConstructing = entity.isConstructing;
                 if (entity.rallyPoint) data.rallyPoint = entity.rallyPoint;
                 if (entity.unlockedSlots) data.unlockedSlots = entity.unlockedSlots;
+                if (entity.task) data.task = entity.task; 
+                if (entity.isBuildingUnit) data.isBuildingUnit = entity.isBuildingUnit;
+                if (entity.buildProgress) data.buildProgress = entity.buildProgress;
+                // Note: assignedDrones are not saved directly, they are reassigned on load based on tasks
                 return data;
             };
             const gameState = {
@@ -2434,6 +2527,7 @@ window.addEventListener('load', function() {
                 waveManager: { waveNumber: this.waveManager.waveNumber, timeToNextWave: this.waveManager.timeToNextWave, waveInProgress: this.waveManager.waveInProgress, baseTimeToNextWave: this.waveManager.baseTimeToNextWave },
                 buildings: this.buildings.map(getEntityData), enemies: this.enemies.map(getEntityData),
                 asteroidFields: this.asteroidFields.map(a => ({ x: a.x, y: a.y, minerals: a.minerals, size: a.size, initialMinerals: a.initialMinerals })),
+                constructionQueue: this.constructionQueue.map(b => this.buildings.indexOf(b)).filter(idx => idx !== -1), 
             };
             
             const saveIndex = JSON.parse(localStorage.getItem('sots_save_index') || '[]');
@@ -2462,7 +2556,6 @@ window.addEventListener('load', function() {
             try {
                 const savedState = JSON.parse(savedStateJSON);
                 
-                // Reiniciar el estado del juego manualmente, replicando la estructura de init()
                 Object.assign(this, { buildings: [], units: [], enemies: [], projectiles: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
                 
                 for (let i = 0; i < NUM_STARS; i++) {
@@ -2470,7 +2563,6 @@ window.addEventListener('load', function() {
                 }
                 this.stars.sort((a, b) => a.depth - b.depth);
                 
-                // Cargar estado desde el archivo
                 this.minerals = savedState.minerals; 
                 this.camera = savedState.camera;
                 this.waveManager = new WaveManager(this, savedState.waveManager.baseTimeToNextWave);
@@ -2485,16 +2577,25 @@ window.addEventListener('load', function() {
                         newBuilding.health = bData.health; newBuilding.shieldHealth = bData.shieldHealth || 0; newBuilding.isConstructing = bData.isConstructing; newBuilding.upgradeLevels = bData.upgradeLevels || {};
                         if (bData.rallyPoint) newBuilding.rallyPoint = bData.rallyPoint;
                         if (bData.unlockedSlots) newBuilding.unlockedSlots = bData.unlockedSlots;
-                        newBuilding.applyLevelStats();
-                        if (newBuilding.isConstructing) { this.constructionQueue.push(newBuilding); }
+                        if (bData.task) newBuilding.task = bData.task;
+                        if (bData.isBuildingUnit) newBuilding.isBuildingUnit = bData.isBuildingUnit;
+                        if (bData.buildProgress) newBuilding.buildProgress = bData.buildProgress;
+
+                        newBuilding.applyLevelStats(); 
                         this.buildings.push(newBuilding);
                     }
                 });
+                
+                if (savedState.constructionQueue) {
+                    this.constructionQueue = savedState.constructionQueue.map(idx => this.buildings[idx]).filter(b => b);
+                }
+                // Drones will be rebuilt by UnitProducers. Task assignment will be handled by dispatchConstructionDrones.
+
                 savedState.enemies.forEach(eData => {
                     const EnemyClass = AllClasses[eData.type];
                     if(EnemyClass) {
                         const enemy = new EnemyClass(eData.x, eData.y);
-                        enemy.applyWaveBonus(this.waveManager.waveNumber);
+                        enemy.applyWaveBonus(this.waveManager.waveNumber); 
                         enemy.health = eData.health; enemy.shieldHealth = eData.shieldHealth || 0;
                         this.enemies.push(enemy);
                     }
@@ -2504,12 +2605,12 @@ window.addEventListener('load', function() {
                     field.minerals = aData.minerals; this.asteroidFields.push(field);
                 });
 
-                // Actualizar todo DESPUÉS de cargar
                 this.updateMaxMinerals();
                 this.updatePowerGrid(); 
                 this.updateUI(); 
                 this.setSelectedObject(null); 
                 this.clampCamera();
+                this.dispatchConstructionDrones(); // Dispatch drones to any loaded tasks/constructions
                 return true;
             } catch (e) {
                 console.error("Failed to load game from local storage:", e);
@@ -2549,7 +2650,7 @@ window.addEventListener('load', function() {
             success = game.loadGameFromLocalStorage(loadId);
         }
         
-        if (!success) {
+        if (!success) { 
             const gameSettings = { 
                 peaceTime: parseInt(peaceTimeSelect.value, 10),
             };
@@ -2569,7 +2670,7 @@ window.addEventListener('load', function() {
             if (!text) return;
             
             if (el.tagName === 'BUTTON' || el.tagName === 'H1' || el.tagName === 'H5') {
-                 if (el.id !== 'play-button' || playButton.disabled === false) {
+                 if (el.id !== 'play-button' || playButton.disabled === false) { 
                     el.textContent = text;
                  }
             } else if (!el.dataset.langDynamic) {
@@ -2578,9 +2679,30 @@ window.addEventListener('load', function() {
         });
         document.documentElement.lang = currentLanguage;
         if(game) { 
-            populateUiIcons();
-            game.updateUI();
-            game.buildSelectionPanel();
+            populateUiIcons(); 
+            game.updateUI(); 
+            game.buildSelectionPanel(); 
+        }
+    }
+
+    function adjustBuildMenuLayout() {
+        if (!buildMenuEl || !topRightUiEl) return;
+
+        const isMobilePortraitColumn = window.innerWidth <= 768 && getComputedStyle(buildMenuEl).flexDirection === 'column';
+        const buildButtons = buildMenuEl.querySelectorAll('.build-btn');
+
+        if (isMobilePortraitColumn) {
+            const buildMenuRect = buildMenuEl.getBoundingClientRect();
+            const topRightUiRect = topRightUiEl.getBoundingClientRect();
+            const overlapMargin = 10; 
+
+            if (buildMenuRect.top < (topRightUiRect.bottom + overlapMargin)) {
+                buildButtons.forEach(btn => btn.classList.add('build-btn-compact'));
+            } else {
+                buildButtons.forEach(btn => btn.classList.remove('build-btn-compact'));
+            }
+        } else {
+            buildButtons.forEach(btn => btn.classList.remove('build-btn-compact'));
         }
     }
     
@@ -2675,12 +2797,14 @@ window.addEventListener('load', function() {
         game.calculateMinZoom();
         game.camera.zoom = Math.max(game.minZoomToFitWorld, game.camera.zoom);
         game.clampCamera();
+        adjustBuildMenuLayout(); 
     });
 
     // --- INITIAL PAGE LOAD ---
     languageSelect.value = currentLanguage;
     peaceTimeSelect.value = localStorage.getItem('sots_peaceTime') || '300000';
     updateLanguageUI();
+    adjustBuildMenuLayout(); 
 });
 </script>
 </body>
