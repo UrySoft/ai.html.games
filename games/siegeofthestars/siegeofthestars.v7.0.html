@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Siege of the Stars v6.8</title>
+    <style>
+        :root {
+            --color-primary: #89ddff; /* Starfleet Blue */
+            --color-accent: #ff8f8f; /* Starfleet Red */
+            --color-success: #8fff7f; /* Soft Green */
+            --color-danger: #ff6666; /* Alert Red */
+            --color-warning: #ffee7f; /* Warning Yellow */
+            --glow-primary: 0 0 5px var(--color-primary), 0 0 10px var(--color-primary);
+            --glow-success: 0 0 5px var(--color-success), 0 0 10px var(--color-success);
+            --glow-danger: 0 0 5px var(--color-danger), 0 0 10px var(--color-danger);
+            --glow-warning: 0 0 5px var(--color-warning), 0 0 10px var(--color-warning);
+        }
+        html {
+            font-size: 16px;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: var(--color-primary);
+            font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+            text-shadow: 0 0 3px var(--color-primary);
+            overscroll-behavior: none;
+        }
+        
+        .fullscreen-menu {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease-out;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #splash-screen.paused {
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+        }
+        .fullscreen-menu h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            margin: 0;
+            color: #fff;
+            text-shadow: var(--glow-primary), 0 0 20px var(--color-primary);
+        }
+        .epic-description {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            max-width: 600px;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .menu-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #game-settings {
+            margin-top: 25px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .settings-group label {
+            font-size: 1rem;
+        }
+        .settings-group select {
+            background-color: #000;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            padding: 5px 10px;
+            font-family: inherit;
+            box-shadow: var(--glow-primary);
+        }
+        .settings-group.toggle-item {
+            flex-direction: row;
+        }
+
+        .credits {
+            font-size: 1rem;
+            color: var(--color-warning);
+            text-shadow: var(--glow-warning);
+            margin-top: 40px;
+        }
+        .credits a { color: inherit; text-decoration: none; transition: all 0.2s; }
+        .credits a:hover { color: #fff; text-shadow: 0 0 5px #fff; }
+        
+        .menu-btn-lrg { 
+            padding: 15px 20px; 
+            font-size: 1.5rem; 
+            width: auto;
+            min-width: 250px;
+            height: auto; 
+            min-height: 60px;
+            justify-content: center;
+        }
+        
+        #mainMenuButton, #saveGameButton {
+            border-color: var(--color-warning); color: var(--color-warning); box-shadow: var(--glow-warning);
+        }
+        #loadGameButton {
+            border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success);
+        }
+        
+        #load-game-screen { display: none; }
+        #save-slots-container {
+            width: 100%;
+            max-width: 700px;
+            max-height: 60vh;
+            overflow-y: auto;
+            border: 1px solid var(--color-primary);
+            box-shadow: var(--glow-primary);
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .save-slot {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-bottom: 1px solid rgba(137, 221, 255, 0.3);
+        }
+        .save-slot:last-child { border-bottom: none; }
+        .save-thumbnail {
+            width: 128px; height: 128px;
+            background-color: #050510;
+            border: 1px solid var(--color-primary);
+            flex-shrink: 0;
+            image-rendering: pixelated;
+        }
+        .save-info { text-align: left; flex-grow: 1; }
+        .save-date { font-size: 1.2rem; color: #fff; }
+        .save-actions { display: flex; flex-direction: column; gap: 8px; }
+        .save-actions .build-btn { width: auto; min-width: 120px; height: auto; font-size: 1rem; padding: 8px; }
+
+        canvas, #ui { display: none; }
+        
+        canvas { display: block; background-color: #000; cursor: crosshair; touch-action: none; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .ui-panel {
+            background-color: rgba(10, 20, 40, 0.4);
+            padding: 0.6rem;
+            border: 1px solid var(--color-primary);
+            box-shadow: var(--glow-primary), inset 0 0 10px rgba(137, 221, 255, 0.2);
+            pointer-events: all;
+            backdrop-filter: blur(3px);
+        }
+        #resources { position: absolute; top: 10px; left: 10px; }
+        #wave-info-container {
+            position: absolute; top: 60px; left: 10px;
+            display: flex; align-items: center; gap: 5px;
+            max-width: calc(100vw - 180px);
+        }
+        
+        #top-right-ui {
+            position: absolute; top: 10px; right: 10px;
+            display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+        }
+        #top-right-ui > * { pointer-events: all; }
+        
+        #build-menu { position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .build-btn {
+            cursor: pointer; border: 1px solid var(--color-primary); background: transparent; color: var(--color-primary);
+            font-family: inherit; text-shadow: inherit; transition: all 0.2s ease; box-shadow: var(--glow-primary);
+            width: 80px; height: 80px; box-sizing: border-box; text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 4px 2px;
+        }
+        .build-btn:hover:not(:disabled) {
+            background: rgba(137, 221, 255, 0.1); color: #fff; text-shadow: 0 0 5px #fff;
+            box-shadow: 0 0 8px var(--color-primary), 0 0 15px var(--color-primary);
+        }
+        .build-btn.selected {
+            border-color: var(--color-success); color: var(--color-success);
+            text-shadow: 0 0 5px var(--color-success); box-shadow: var(--glow-success), 0 0 15px var(--color-success);
+        }
+        .build-btn:disabled {
+            color: #777; border-color: #555; box-shadow: none; text-shadow: none; cursor: not-allowed; opacity: 0.6;
+        }
+        .build-btn > canvas { pointer-events: none; }
+        .build-name { font-size: 0.6rem; font-weight: bold; line-height: 1; text-transform: uppercase; }
+        .build-cost { font-size: 0.55rem; line-height: 1; pointer-events: none; display: flex; gap: 6px; align-items: center; justify-content: center; }
+
+        #game-controls { display: flex; flex-direction: column; gap: 8px; width: 150px; }
+        #game-controls .build-btn { text-align: center; width: 100%; height: auto; justify-content: center; }
+
+        #start-wave-btn {
+            width: 36px; height: 36px; padding: 0; font-size: 1.5rem;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 4px; border-color: var(--color-danger); color: var(--color-danger);
+            box-shadow: var(--glow-danger);
+            flex-shrink: 0;
+            pointer-events: all;
+        }
+        #start-wave-btn:disabled { opacity: 0.3; }
+        
+        #selection-panel { 
+            position: absolute !important; 
+            bottom: 10px !important; 
+            left: 10px !important; 
+            width: 260px; 
+            display: none; 
+            right: auto !important;
+            transform: none !important;
+        }
+        #selection-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--color-primary); padding-bottom: 5px; margin-bottom: 5px; }
+        #selection-icon { width: 40px; height: 40px; flex-shrink: 0; }
+        #selection-panel h4 { margin: 0; border-bottom: none; padding-bottom: 0; color: #fff; font-size: 1rem; }
+        #selection-panel p { margin: 5px 0; font-size: 0.85rem; }
+        #selection-details { font-size: 0.8rem; margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+        .stat-line { display: flex; justify-content: space-between; }
+        .stat-line .stat-value { color: #fff; font-weight: bold; }
+        #unit-slots-container { display: flex; gap: 4px; margin-top: 8px; }
+        .unit-slot { width: 100%; height: 6px; background-color: #222; border: 1px solid #555; box-sizing: border-box; position: relative; overflow: hidden;}
+        .unit-slot.unlocked { background-color: #444; }
+        .unit-slot.active { background-color: var(--color-success); }
+        .unit-slot.building .progress-bar { height: 100%; background-color: var(--color-warning); position: absolute; }
+        .unit-slot.pending { background-color: #403030; }
+
+
+        #upgrade-buttons-container, #convert-buttons-container { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+        .upgrade-btn, .convert-btn {
+            width: 100%; height: auto; font-size: 0.7rem; padding: 6px; box-sizing: border-box; line-height: 1.2;
+        }
+        .upgrade-btn .upgrade-improvement { color: var(--color-success); font-weight: bold; }
+        .upgrade-btn .upgrade-cost { margin-top: 2px; }
+
+        .upgrade-btn {
+             border-color: var(--color-warning); color: var(--color-warning); box-shadow: var(--glow-warning); text-shadow: 0 0 3px var(--color-warning);
+        }
+        .convert-btn {
+            border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); text-shadow: 0 0 3px var(--color-success);
+        }
+        .upgrade-btn:hover:not(:disabled) { background: rgba(255, 238, 127, 0.1); box-shadow: 0 0 8px var(--color-warning), 0 0 15px var(--color-warning); }
+        .convert-btn:hover:not(:disabled) { background: rgba(143, 255, 127, 0.1); box-shadow: 0 0 8px var(--color-success), 0 0 15px var(--color-success); }
+        .upgrade-btn:disabled, .convert-btn:disabled { color: #777; border-color: #555; box-shadow: none; text-shadow: none; cursor: not-allowed; opacity: 0.6; }
+        
+        #destroy-btn { 
+            border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); text-shadow: 0 0 3px var(--color-danger); 
+            width: 100%; height: auto; margin-top: 10px; font-size: 0.8rem;
+        }
+        #destroy-btn:hover { background: rgba(255, 102, 102, 0.1); box-shadow: 0 0 8px var(--color-danger), 0 0 15px var(--color-danger); }
+
+        #build-confirm-panel {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 250px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #build-confirm-info { display: flex; gap: 10px; align-items: center; }
+        #build-confirm-icon { width: 50px; height: 50px; flex-shrink: 0; }
+        #build-confirm-text { text-align: left; overflow: hidden; }
+        #build-confirm-text h5 { margin: 0 0 5px 0; font-size: 1rem; color: #fff; }
+        #build-confirm-text p { margin: 0; font-size: 0.75rem; display: flex; gap: 8px; align-items: center; }
+        .build-confirm-description {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-top: 5px;
+            line-height: 1.2;
+        }
+        #build-confirm-buttons { display: flex; gap: 10px; }
+        #build-confirm-buttons .build-btn {
+            flex-grow: 1; height: auto; padding: 10px; font-size: 0.9rem;
+        }
+        #confirm-build-btn { border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); }
+        #cancel-build-btn { border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); }
+        
+        .icon-value { display: inline-flex; align-items: center; gap: 2px; }
+        .icon-value svg { width: 0.8em; height: 0.8em; fill: currentColor; }
+        #resources .icon-value svg { width: 1em; height: 1em; }
+        
+        #game-over { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 40px; text-align: center; font-size: 2em; display: none; z-index: 100; border: 2px solid var(--color-danger); color: var(--color-danger); text-shadow: var(--glow-danger); box-shadow: var(--glow-danger), inset 0 0 20px var(--color-danger); background: rgba(20,0,0,0.8); }
+        
+        #wave-flash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--color-danger);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 3000;
+        }
+        #wave-flash.active {
+            animation: wave-flash-anim 0.4s ease-out;
+        }
+        @keyframes wave-flash-anim {
+            0% { opacity: 0; }
+            50% { opacity: 0.3; }
+            100% { opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            html { font-size: 14px; }
+            #top-right-ui { align-items: flex-end; }
+            #game-controls { flex-direction: row; width: auto; gap: 5px;}
+            #game-controls .build-btn { width: auto; min-width: 65px; padding: 8px 5px; font-size: 11px; }
+            
+            #build-menu { 
+                flex-direction: row; 
+                bottom: 10px; 
+                right: 10px; 
+                left: 10px; 
+                width: auto; 
+                justify-content: space-around; 
+            }
+            #build-menu .build-btn { width: 65px; height: 65px; }
+            #build-menu .build-name { font-size: 9px; }
+            #build-menu .build-cost { font-size: 8px; }
+            
+            #build-confirm-panel {
+                width: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            #selection-panel { width: 220px; }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            #build-menu {
+                flex-direction: column;
+                right: 10px;
+                bottom: 10px;
+                left: auto;
+                width: auto;
+                justify-content: flex-start;
+                gap: 5px;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            #resources { flex-direction: row; align-items: center; gap: 20px;}
+            #wave-info-container { top: 10px; left: 250px; max-width: none; }
+            #game-controls { flex-direction: row; width: auto; gap: 10px; }
+            #game-controls .build-btn { width: 120px; font-size: 1rem;}
+
+            #selection-panel { 
+                width: 300px; 
+                bottom: 20px !important; 
+                left: 20px !important;
+            }
+
+            #build-menu {
+                flex-direction: row;
+                right: 50%;
+                bottom: 20px;
+                transform: translateX(50%);
+                width: auto;
+            }
+            #build-confirm-panel {
+                flex-direction: row;
+                width: auto;
+                max-width: 600px;
+                right: 50%;
+                bottom: 20px;
+                transform: translateX(50%);
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="splash-screen" class="fullscreen-menu">
+        <div id="main-menu-content">
+            <h1 data-lang-key="game_title">Siege of the Stars</h1>
+            <p class="epic-description" data-lang-key="epic_description">En la vasta oscuridad del cosmos, tu base es el último bastión de la humanidad. Resiste las oleadas incesantes del enemigo. Construye, defiende, sobrevive.</p>
+            
+            <div id="game-settings">
+                <div class="settings-group">
+                    <label for="language-select" data-lang-key="setting_language">Idioma</label>
+                    <select id="language-select">
+                        <option value="ca">Català</option>
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="peace-time-select" data-lang-key="setting_peace_time">Pau entre Onades</label>
+                    <select id="peace-time-select">
+                        <option value="60000" data-lang-key="time_1min">1 min</option>
+                        <option value="300000" data-lang-key="time_5min" selected>5 min</option>
+                        <option value="600000" data-lang-key="time_10min">10 min</option>
+                        <option value="-1" data-lang-key="time_infinite">Infinita</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="menu-buttons-container">
+                <button id="play-button" class="build-btn menu-btn-lrg" data-lang-key="play_button">Nova Partida</button>
+                <button id="loadGameButton" class="build-btn menu-btn-lrg" data-lang-key="load_game_button">CARREGAR PARTIDA</button>
+                <button id="resume-button" class="build-btn menu-btn-lrg" data-lang-key="resume_button" style="display: none;">Reanudar</button>
+                <button id="saveGameButton" class="build-btn menu-btn-lrg" data-lang-key="save_game_button" style="display: none;">Guardar Partida</button>
+                <button id="mainMenuButton" class="build-btn menu-btn-lrg" data-lang-key="main_menu_button" style="display: none;">Volver al Menú</button>
+            </div>
+            <p class="credits"><span data-lang-key="credits_by">Un juego creado por</span> <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
+        </div>
+    </div>
+    
+    <div id="load-game-screen" class="fullscreen-menu">
+        <h1 data-lang-key="load_game_title">Cargar Partida</h1>
+        <div id="save-slots-container">
+            <!-- Save slots will be dynamically inserted here -->
+        </div>
+        <div class="menu-buttons-container">
+            <button id="backToMenuButton" class="build-btn menu-btn-lrg" data-lang-key="back_button">Atrás</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui">
+        <div id="resources" class="ui-panel">
+            <span id="minerals"></span>
+        </div>
+        <div id="selection-panel" class="ui-panel">
+            <div id="selection-header">
+                <div id="selection-icon"></div>
+                <h4 id="selection-type"></h4>
+            </div>
+            <p id="selection-health"></p>
+            <p id="selection-shield"></p>
+            <p id="selection-status"></p>
+            <div id="unit-slots-container"></div>
+            <div id="selection-details"></div>
+            <div id="upgrade-buttons-container"></div>
+            <div id="convert-buttons-container"></div>
+            <button id="destroy-btn" class="build-btn" data-lang-key="dismantle_button">Desmantelar</button>
+        </div>
+        
+        <div id="top-right-ui">
+            <div id="game-controls" class="ui-panel">
+                <button id="menuBtn" class="build-btn" data-lang-key="menu_button">Menú</button>
+                <button id="fullscreenBtn" class="build-btn" data-lang-key="fullscreen_button">P. Completa</button>
+            </div>
+        </div>
+        
+        <div id="wave-info-container">
+            <div id="wave-info" class="ui-panel">
+                <span id="wave-timer"></span>
+            </div>
+            <button id="start-wave-btn" class="build-btn" title="Lanzar oleada ahora">››</button>
+        </div>
+        
+        <div id="build-menu" class="ui-panel">
+            <button class="build-btn" data-type="PhaserTurret"></button>
+            <button class="build-btn" data-type="Miner"></button>
+            <button class="build-btn" data-type="SolarPanel"></button>
+            <button class="build-btn" data-type="Pylon"></button>
+            <button class="build-btn" data-type="Barracks"></button>
+            <button class="build-btn" data-type="SwarmTower"></button>
+            <button class="build-btn" data-type="ShieldGenerator"></button>
+            <button class="build-btn" data-type="Starbase"></button> 
+        </div>
+
+        <div id="build-confirm-panel" class="ui-panel">
+            <div id="build-confirm-info">
+                <div id="build-confirm-icon"></div>
+                <div id="build-confirm-text">
+                    <h5 id="build-confirm-name"></h5>
+                    <p id="build-confirm-details"></p>
+                    <p id="build-confirm-desc" class="build-confirm-description"></p>
+                </div>
+            </div>
+            <div id="build-confirm-buttons">
+                <button id="confirm-build-btn" class="build-btn" data-lang-key="confirm_build_button">Construir</button>
+                <button id="cancel-build-btn" class="build-btn" data-lang-key="cancel_build_button">Cancelar</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <div id="wave-flash"></div>
+
+    <div id="game-over">
+        <span data-lang-key="game_over_mission_failed">MISIÓN FALLIDA</span><br><span data-lang-key="game_over_base_destroyed">BASE ESTELAR DESTRUIDA</span><br>
+        <button id="restart-button" style="margin-top:20px; padding: 15px 30px; font-size: 20px;" class="build-btn" data-lang-key="restart_mission_button">REINICIAR MISSIÓ</button>
+    </div>
+
+<script>
+// --- START OF SCRIPT ---
+const UI_COLORS = {};
+const MAX_UPGRADE_LEVEL = 5;
+const MAX_SAVE_SLOTS = 5;
+const MAX_UNIT_SLOTS = 5;
+const MAX_CONSTRUCTION_DRONE_SLOTS = 3;
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+// --- SVG Icons ---
+const MINERAL_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+const ENERGY_ICON_SVG = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2L17 12L12 12L12 22L7 12L2 12L7 2Z"/></svg>`;
+
+// Sistema de Internacionalización (i18n)
+const LANG_STRINGS = {
+    'ca': {
+        // --- Splash & General UI ---
+        'game_title': 'Setge Estel·lar',
+        'epic_description': 'A la vasta foscor del cosmos, la teva base és l\'últim bastió de la humanitat. Resisteix les onades incessants de l\'enemic. Construeix, defensa, sobreviu.',
+        'setting_language': 'Idioma',
+        'setting_peace_time': 'Pau entre Onades',
+        'time_1min': '1 min', 'time_5min': '5 min', 'time_10min': '10 min', 'time_infinite': 'Infinita',
+        'play_button': 'Nova Partida', 'load_game_button': 'Carregar Partida', 'save_game_button': 'Guardar Partida', 'resume_button': 'Reprendre', 'main_menu_button': 'Menú Principal', 'credits_by': 'Un joc creat per',
+        'menu_button': 'Menú', 'fullscreen_button': 'P. Completa',
+        'confirm_exit': 'Segur que vols tornar al menú principal? El progrés no guardat es perdrà.',
+        'load_game_title': 'Carregar Partida', 'back_button': 'Enrere', 'load_button': 'Carregar', 'delete_button': 'Esborrar', 'confirm_delete': 'Segur que vols esborrar aquesta partida guardada?', 'game_saved_feedback': 'Partida Guardada!', 'no_saves_found': 'No s\'han trobat partides guardades.',
+        'confirm_build_button': 'Construir', 'cancel_build_button': 'Cancel·lar',
+        // --- Game UI ---
+        'minerals_resource': 'Minerals', 'wave_incoming': '> ONADA HOSTIL <', 'hostiles_remaining': 'Hostils', 'next_wave_in': 'Següent onada en',
+        'dismantle_button': 'Desmantellar',
+        // --- Selection Panel ---
+        'health_stat': 'Integritat', 'shield_stat': 'Escut', 'status_label': 'Estat',
+        'status_constructing': 'En construcció', 'status_upgrading': 'Millorant', 'status_online': 'En línia', 'status_no_power': 'Sense energia', 'status_generating': 'Generant', 'status_operational': 'Operatiu',
+        'upgrade_damage': 'Dany', 'upgrade_fireRate': 'Cadència', 'upgrade_range': 'Abast', 'upgrade_power': 'Energia', 'upgrade_connectionRange': 'Abast Xarxa', 'upgrade_repairRate': 'Taxa Rep.', 'upgrade_shieldAmount': 'Pot. Escut', 'upgrade_shieldRegenRate': 'Regen. Escut', 'upgrade_passiveIncome': 'Generació', 'upgrade_unitSlots': 'Ranures Unitats', 'upgrade_storage': 'Magatzem', 'stat_energy': 'Energia',
+        'buy_unit_slot_button': 'Comprar Ranura',
+        'convert_button': 'Converteix a',
+        'asteroid_field_name': 'Camp d\'Asteroides', 'remaining_minerals': 'Minerals Restants',
+        // --- Game Over ---
+        'game_over_mission_failed': 'MISSIÓ FALLIDA', 'game_over_base_destroyed': 'BASE ESTEL·LAR DESTRUÏDA', 'restart_mission_button': 'REINICIAR MISSIÓ',
+        // --- Building Names & Descriptions ---
+        'core_name': 'Base Principal', 'core_short': 'PRINCIPAL', 'core_desc': 'El centre de comandament. Reconstrueix drons de construcció amb un cost.',
+        'phaserturret_name': 'Torreta Fàser', 'phaserturret_short': 'FÀSER', 'phaserturret_desc': 'Dispara raigs fàser a naus hostils.',
+        'laserturret_name': 'Torreta Làser', 'laserturret_short': 'LÀSER', 'laserturret_desc': 'Emet un raig continu que causa un alt dany per segon.',
+        'plasmatorret_name': 'Torreta de Plasma', 'plasmatorret_short': 'PLASMA', 'plasmatorret_desc': 'Llança boles de plasma lentes però devastadores.',
+        'miner_name': 'Estació Minera', 'miner_short': 'MINER', 'miner_desc': 'Reconstrueix drons destruïts amb un cost. Compra ranures per augmentar el límit.',
+        'solarpanel_name': 'Reactor de Fusió', 'solarpanel_short': 'REACTOR', 'solarpanel_desc': 'Genera energia per a la xarxa de la base.',
+        'pylon_name': 'Relé Subespacial', 'pylon_short': 'RELÉ', 'pylon_desc': 'Estén l\'abast de la xarxa d\'energia.',
+        'swarmtower_name': 'Badia de Reparació', 'swarmtower_short': 'REPARADOR', 'swarmtower_desc': 'Reconstrueix drons de reparació amb un cost. Compra més ranures per a més drons.',
+        'barracks_name': 'Hangar de Caces', 'barracks_short': 'HANGAR', 'barracks_desc': 'Reconstrueix caces destruïts amb un cost. Compra ranures per augmentar la teva flota.',
+        'starbase_name': 'Base Secundària', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centre de comandament avançat. Reconstrueix drons de construcció amb un cost.',
+        'shieldgenerator_name': 'Generador d\'Escut', 'shieldgenerator_short': 'ESCUT', 'shieldgenerator_desc': 'Projecta un escut d\'energia sobre les unitats i estructures properes.',
+        'storagedepot_name': 'Magatzem de Recursos', 'storagedepot_short': 'MAGATZEM', 'storagedepot_desc': 'Augmenta la capacitat màxima de minerals.',
+        // --- Tooltip ---
+        'tooltip_cost': 'Cost', 'tooltip_power': 'Energia'
+    },
+    'es': {
+        'game_title': 'Asedio de las Estrellas',
+        'epic_description': 'En la vasta oscuridad del cosmos, tu base es el último bastión de la humanidad. Resiste las oleadas incesantes del enemigo. Construye, defiende, sobrevive.',
+        'setting_language': 'Idioma',
+        'setting_peace_time': 'Paz entre Oleadas',
+        'time_1min': '1 min', 'time_5min': '5 min', 'time_10min': '10 min', 'time_infinite': 'Infinita',
+        'play_button': 'Nueva Partida', 'load_game_button': 'Cargar Partida', 'save_game_button': 'Guardar Partida', 'resume_button': 'Reanudar', 'main_menu_button': 'Menú Principal', 'credits_by': 'Un juego creado por',
+        'menu_button': 'Menú', 'fullscreen_button': 'P. Completa',
+        'confirm_exit': '¿Seguro que quieres volver al menú principal? El progreso no guardado se perderá.',
+        'load_game_title': 'Cargar Partida', 'back_button': 'Atrás', 'load_button': 'Cargar', 'delete_button': 'Borrar', 'confirm_delete': '¿Seguro que quieres borrar esta partida guardada?', 'game_saved_feedback': '¡Partida Guardada!', 'no_saves_found': 'No se encontraron partidas guardadas.',
+        'confirm_build_button': 'Construir', 'cancel_build_button': 'Cancelar',
+        'minerals_resource': 'Minerales', 'wave_incoming': '> OLEADA HOSTIL <', 'hostiles_remaining': 'Hostiles', 'next_wave_in': 'Siguiente oleada en',
+        'dismantle_button': 'Desmantelar',
+        'health_stat': 'Integridad', 'shield_stat': 'Escudo', 'status_label': 'Estado',
+        'status_constructing': 'En construcción', 'status_upgrading': 'Mejorando', 'status_online': 'En línea', 'status_no_power': 'Sin energía', 'status_generating': 'Generando', 'status_operational': 'Operativo',
+        'upgrade_damage': 'Daño', 'upgrade_fireRate': 'Cadencia', 'upgrade_range': 'Alcance', 'upgrade_power': 'Energía', 'upgrade_connectionRange': 'Alcance Red', 'upgrade_repairRate': 'Tasa Rep.', 'upgrade_shieldAmount': 'Pot. Escudo', 'upgrade_shieldRegenRate': 'Regen. Escudo', 'upgrade_passiveIncome': 'Generación', 'upgrade_unitSlots': 'Ranuras Unidades', 'upgrade_storage': 'Almacén', 'stat_energy': 'Energía',
+        'buy_unit_slot_button': 'Comprar Ranura',
+        'convert_button': 'Convertir a',
+        'asteroid_field_name': 'Campo de Asteroides', 'remaining_minerals': 'Minerales Restantes',
+        'game_over_mission_failed': 'MISSIÓN FALLIDA', 'game_over_base_destroyed': 'BASE ESTELAR DESTRUIDA', 'restart_mission_button': 'REINICIAR MISIÓN',
+        'core_name': 'Base Principal', 'core_short': 'PRINCIPAL', 'core_desc': 'El centro de mando. Reconstruye drones de construcción con un coste.',
+        'phaserturret_name': 'Torreta Fáser', 'phaserturret_short': 'FÁSER', 'phaserturret_desc': 'Dispara rayos fáser a naves hostiles.',
+        'laserturret_name': 'Torreta Láser', 'laserturret_short': 'LÁSER', 'laserturret_desc': 'Emite un rayo continuo que causa un alto daño por segundo.',
+        'plasmatorret_name': 'Torreta de Plasma', 'plasmatorret_short': 'PLASMA', 'plasmatorret_desc': 'Lanza bolas de plasma lentas pero devastadoras.',
+        'miner_name': 'Estación Minera', 'miner_short': 'MINERO', 'miner_desc': 'Reconstruye drones destruidos con un coste. Compra ranuras para aumentar el límite.',
+        'solarpanel_name': 'Reactor de Fusión', 'solarpanel_short': 'REACTOR', 'solarpanel_desc': 'Genera energía para la red de la base.',
+        'pylon_name': 'Relé Subespacial', 'pylon_short': 'RELÉ', 'pylon_desc': 'Extiende el alcance de la red de energía.',
+        'swarmtower_name': 'Bahía de Reparación', 'swarmtower_short': 'REPARADOR', 'swarmtower_desc': 'Reconstruye drones de reparación con un coste. Compra más ranuras para más drones.',
+        'barracks_name': 'Hangar de Cazas', 'barracks_short': 'HANGAR', 'barracks_desc': 'Reconstruye cazas destruidos con un coste. Compra ranuras para aumentar tu flota.',
+        'starbase_name': 'Base Secundaria', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centro de mando avanzado. Reconstruye drones de construcción con un coste.',
+        'shieldgenerator_name': 'Generador de Escudo', 'shieldgenerator_short': 'ESCUDO', 'shieldgenerator_desc': 'Proyecta un escudo de energía sobre las unidades y estructuras cercanas.',
+        'storagedepot_name': 'Depósito de Recursos', 'storagedepot_short': 'ALMACÉN', 'storagedepot_desc': 'Aumenta la capacidad máxima de minerales.',
+        'tooltip_cost': 'Coste', 'tooltip_power': 'Energía'
+    },
+    'en': {
+        'game_title': 'Siege of the Stars',
+        'epic_description': 'In the vast darkness of the cosmos, your base is humanity\'s last bastion. Withstand the relentless enemy waves. Build, defend, survive.',
+        'setting_language': 'Language',
+        'setting_peace_time': 'Peace Between Waves',
+        'time_1min': '1 min', 'time_5min': '5 min', 'time_10min': '10 min', 'time_infinite': 'Infinite',
+        'play_button': 'New Game', 'load_game_button': 'Load Game', 'save_game_button': 'Save Game', 'resume_button': 'Resume', 'main_menu_button': 'Main Menu', 'credits_by': 'A game created by',
+        'menu_button': 'Menu', 'fullscreen_button': 'Fullscreen',
+        'confirm_exit': 'Are you sure you want to return to the main menu? Unsaved progress will be lost.',
+        'load_game_title': 'Load Game', 'back_button': 'Back', 'load_button': 'Load', 'delete_button': 'Delete', 'confirm_delete': 'Are you sure you want to delete this saved game?', 'game_saved_feedback': 'Game Saved!', 'no_saves_found': 'No saved games found.',
+        'confirm_build_button': 'Build', 'cancel_build_button': 'Cancel',
+        'minerals_resource': 'Minerals', 'wave_incoming': '> HOSTILE WAVE <', 'hostiles_remaining': 'Hostiles', 'next_wave_in': 'Next wave in',
+        'dismantle_button': 'Dismantle',
+        'health_stat': 'Integrity', 'shield_stat': 'Shield', 'status_label': 'Status',
+        'status_constructing': 'Constructing', 'status_upgrading': 'Upgrading', 'status_online': 'Online', 'status_no_power': 'No Power', 'status_generating': 'Generating', 'status_operational': 'Operational',
+        'upgrade_damage': 'Damage', 'upgrade_fireRate': 'Fire Rate', 'upgrade_range': 'Range', 'upgrade_power': 'Power', 'upgrade_connectionRange': 'Grid Range', 'upgrade_repairRate': 'Repair Rate', 'upgrade_shieldAmount': 'Shield Str.', 'upgrade_shieldRegenRate': 'Shield Regen', 'upgrade_passiveIncome': 'Generation', 'upgrade_unitSlots': 'Unit Slots', 'upgrade_storage': 'Storage', 'stat_energy': 'Energy',
+        'buy_unit_slot_button': 'Buy Slot',
+        'convert_button': 'Convert to',
+        'asteroid_field_name': 'Asteroid Field', 'remaining_minerals': 'Remaining Minerals',
+        'game_over_mission_failed': 'MISSION FAILED', 'game_over_base_destroyed': 'STARBASE DESTROYED', 'restart_mission_button': 'RESTART MISSION',
+        'core_name': 'Main Base', 'core_short': 'MAIN BASE', 'core_desc': 'The command center. Rebuilds construction drones for a cost.',
+        'phaserturret_name': 'Phaser Turret', 'phaserturret_short': 'PHASER', 'phaserturret_desc': 'Fires phaser beams at hostile ships.',
+        'laserturret_name': 'Laser Turret', 'laserturret_short': 'LASER', 'laserturret_desc': 'Emits a continuous beam, dealing high damage per second.',
+        'plasmatorret_name': 'Plasma Turret', 'plasmatorret_short': 'PLASMA', 'plasmatorret_desc': 'Launches slow but devastating plasma balls.',
+        'miner_name': 'Mining Station', 'miner_short': 'MINER', 'miner_desc': 'Rebuilds destroyed drones for a cost. Buy slots to increase the limit.',
+        'solarpanel_name': 'Fusion Reactor', 'solarpanel_short': 'REACTOR', 'solarpanel_desc': 'Generates power for the base\'s grid.',
+        'pylon_name': 'Subspace Relay', 'pylon_short': 'RELAY', 'pylon_desc': 'Extends the range of the power grid.',
+        'swarmtower_name': 'Repair Bay', 'swarmtower_short': 'REPAIR BAY', 'swarmtower_desc': 'Rebuilds repair drones for a cost. Buy more slots for more drones.',
+        'barracks_name': 'Fighter Hangar', 'barracks_short': 'HANGAR', 'barracks_desc': 'Rebuilds destroyed fighters for a cost. Buy slots to increase your fleet size.',
+        'starbase_name': 'Forward Base', 'starbase_short': 'FWD BASE', 'starbase_desc': 'Advanced command center. Rebuilds construction drones for a cost.',
+        'shieldgenerator_name': 'Shield Generator', 'shieldgenerator_short': 'SHIELD', 'shieldgenerator_desc': 'Projects an energy shield over nearby units and structures.',
+        'storagedepot_name': 'Resource Depot', 'storagedepot_short': 'DEPOT', 'storagedepot_desc': 'Increases your maximum mineral storage capacity.',
+        'tooltip_cost': 'Cost', 'tooltip_power': 'Power'
+    }
+};
+let currentLanguage = localStorage.getItem('sots_language') || 'ca';
+const t = (key) => LANG_STRINGS[currentLanguage][key] || key;
+
+function createIconValueHTML(icon, value, total) {
+    let text = `<span class="icon-value">${icon}<span>${value}`;
+    if(total !== undefined) {
+        text += ` / ${total}`;
+    }
+    text += `</span></span>`;
+    return text;
+}
+
+function getStatValueForLevel(baseValue, upgradeType, level) {
+    if (level <= 1) return baseValue;
+    if (upgradeType === 'storage') {
+        return baseValue + 250 * (level - 1);
+    } else if (upgradeType === 'passiveIncome'){
+        return baseValue * Math.pow(2, level - 1);
+    } else {
+        const factor = 1 + (level - 1) * 0.25;
+        if (['fireRate', 'spawnRate', 'droneSpawnRate'].includes(upgradeType)) {
+            return baseValue / factor;
+        } else {
+            return baseValue * factor;
+        }
+    }
+}
+
+
+window.addEventListener('load', function() {
+    // --- ELEMENT SELECTORS ---
+    const splashScreen = document.getElementById('splash-screen');
+    const loadGameScreen = document.getElementById('load-game-screen');
+    const playButton = document.getElementById('play-button');
+    const loadGameButton = document.getElementById('loadGameButton');
+    const resumeButton = document.getElementById('resume-button');
+    const saveGameButton = document.getElementById('saveGameButton');
+    const mainMenuButton = document.getElementById('mainMenuButton');
+    const backToMenuButton = document.getElementById('backToMenuButton');
+    const languageSelect = document.getElementById('language-select');
+    const peaceTimeSelect = document.getElementById('peace-time-select');
+    const gameCanvas = document.getElementById('gameCanvas');
+    const uiContainer = document.getElementById('ui');
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    const buildMenu = document.getElementById('build-menu');
+    const buildConfirmPanel = document.getElementById('build-confirm-panel');
+    const confirmBuildBtn = document.getElementById('confirm-build-btn');
+    const cancelBuildBtn = document.getElementById('cancel-build-btn');
+    const waveFlash = document.getElementById('wave-flash');
+
+    // --- INITIALIZATION ---
+    const computedStyles = getComputedStyle(document.body);
+    UI_COLORS.primary = computedStyles.getPropertyValue('--color-primary').trim();
+    UI_COLORS.success = computedStyles.getPropertyValue('--color-success').trim();
+    UI_COLORS.danger = computedStyles.getPropertyValue('--color-danger').trim();
+    UI_COLORS.warning = computedStyles.getPropertyValue('--color-warning').trim();
+
+    const ctx = gameCanvas.getContext('2d');
+    
+    const WORLD_WIDTH = 3000;
+    const WORLD_HEIGHT = 3000;
+    const NUM_STARS = 1500;
+
+    const BUILDING_SPECS = {
+        Core:         { nameKey: 'core_name', shortNameKey: 'core_short', descKey: 'core_desc', cost: 0, size: 50, health: 10000, color: '#f0f8ff', power: 50, connectionRange: 150, droneSpawnRate: 10000, storage: 500, passiveIncome: 0.5, upgrades:['passiveIncome', 'storage'], upgradeCosts:{passiveIncome: 2000, storage: 1000}, unitSlotCost: 500, unitBuildCost: 50 },
+        PhaserTurret: { nameKey: 'phaserturret_name', shortNameKey: 'phaserturret_short', descKey: 'phaserturret_desc', cost: 50, size: 10, health: 50, color: '#ff8f8f', power: -10, range: 150, fireRate: 1000, damage: 10, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:25, fireRate:35, range:20}, conversionCost: 50 },
+        LaserTurret:  { nameKey: 'laserturret_name', shortNameKey: 'laserturret_short', descKey: 'laserturret_desc', cost: 100, size: 10, health: 50, color: '#ff8f8f', power: -25, range: 160, fireRate: 100, damage: 2, upgrades:['damage', 'range'], upgradeCosts:{damage:75, range:50}, conversionCost: 100 },
+        PlasmaTurret: { nameKey: 'plasmatorret_name', shortNameKey: 'plasmatorret_short', descKey: 'plasmatorret_desc', cost: 150, size: 10, health: 50, color: '#ff8f8f', power: -20, range: 220, fireRate: 3000, damage: 50, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:100, fireRate: 150, range:40}, conversionCost: 150 },
+        Miner:        { nameKey: 'miner_name', shortNameKey: 'miner_short', descKey: 'miner_desc', cost: 75, size: 15, health: 150, color: '#8fff7f', power: -25, range: 100, droneSpawnRate: 6000, upgrades:['range'], upgradeCosts:{range:30}, unitSlotCost: 75, unitBuildCost: 25, conversionCost: 150 },
+        StorageDepot: { nameKey: 'storagedepot_name', shortNameKey: 'storagedepot_short', descKey: 'storagedepot_desc', cost: 0, size: 25, health: 150, color: '#8fff7f', power: -5, storage: 250, upgrades: ['storage'], upgradeCosts: { storage: 50 }},
+        SolarPanel:   { nameKey: 'solarpanel_name', shortNameKey: 'solarpanel_short', descKey: 'solarpanel_desc', cost: 100, size: 20, health: 100, color: '#89ddff', power: 50, connectionRange: 150, upgrades:['power'], upgradeCosts:{power:75} },
+        Pylon:        { nameKey: 'pylon_name', shortNameKey: 'pylon_short', descKey: 'pylon_desc', cost: 25, size: 5, health: 25, color: '#ffffff', power: -5, connectionRange: 150, upgrades:['connectionRange'], upgradeCosts:{connectionRange:15} },
+        SwarmTower:   { nameKey: 'swarmtower_name', shortNameKey: 'swarmtower_short', descKey: 'swarmtower_desc', cost: 200, size: 25, health: 150, color: '#00e5e5', power: -100, range: 150, droneSpawnRate: 5000, repairRate: 4, upgrades:['range', 'repairRate'], upgradeCosts:{range:100, repairRate:125}, unitSlotCost: 200, unitBuildCost: 40 },
+        Barracks:     { nameKey: 'barracks_name', shortNameKey: 'barracks_short', descKey: 'barracks_desc', cost: 200, size: 25, health: 150, color: '#af8fff', power: -100, spawnRate: 5000, range: 400, upgrades:['range'], upgradeCosts:{range: 100}, unitSlotCost: 150, unitBuildCost: 50 },
+        Starbase:     { nameKey: 'starbase_name', shortNameKey: 'starbase_short', descKey: 'starbase_desc', cost: 2500, size: 40, health: 1000, color: '#d8a4ff', power: 25, connectionRange: 150, droneSpawnRate: 10000, storage: 500, passiveIncome: 0.5, upgrades:['passiveIncome', 'connectionRange', 'storage'], upgradeCosts:{passiveIncome: 2000, connectionRange: 150, storage: 1000}, unitSlotCost: 500, unitBuildCost: 50 },
+        ShieldGenerator: { nameKey: 'shieldgenerator_name', shortNameKey: 'shieldgenerator_short', descKey: 'shieldgenerator_desc', cost: 500, size: 20, health: 50, color: '#4d94ff', power: -200, range: 150, shieldAmount: 200, shieldRegenRate: 10, shieldRegenDelay: 3000, upgrades:['shieldAmount', 'range', 'shieldRegenRate'], upgradeCosts:{shieldAmount:125, range:100, shieldRegenRate:150} },
+        Infantry:     { nameKey: 'infantry_name', size: 6, health: 30, color: '#00ff7f', speed: 100, range: 200, fireRate: 500, damage: 5 },
+        RepairDrone:  { nameKey: 'repairdrone_name', size: 7, health: 15, color: '#39ff14', speed: 30, repairRate: 5, isFlying: true },
+        CollectorDrone: { nameKey: 'collectordrone_name', size: 8, health: 20, color: '#ffff7f', speed: 30, carryCapacity: 5, isFlying: true },
+        ConstructionDrone: { nameKey: 'constructiondrone_name', size: 8, health: 20, color: '#ffee7f', speed: 70, buildRate: 20 },
+        Grunt:        { nameKey: 'grunt_name', size: 6, health: 75, color: '#ff6666', speed: 30, damage: 15, range: 50, fireRate: 2000, points: 3 },
+        Flier:        { nameKey: 'flier_name', size: 8, health: 35, color: '#ffdd00', speed: 60, damage: 5, range: 150, fireRate: 500, isFlying: true, points: 4 }
+    };
+    const UPGRADE_KEYS = { damage: 'upgrade_damage', fireRate: 'upgrade_fireRate', range: 'upgrade_range', power: 'upgrade_power', connectionRange: 'upgrade_connectionRange', repairRate: 'upgrade_repairRate', shieldAmount: 'upgrade_shieldAmount', shieldRegenRate: 'upgrade_shieldRegenRate', passiveIncome: 'upgrade_passiveIncome', unitSlots: 'upgrade_unitSlots', storage: 'upgrade_storage', energy: 'stat_energy' };
+    
+    function getRandomEdgePosition(worldW, worldH) { const margin = 50; const side = Math.floor(Math.random() * 4); switch (side) { case 0: return { x: Math.random() * worldW, y: -margin }; case 1: return { x: worldW + margin, y: Math.random() * worldH }; case 2: return { x: Math.random() * worldW, y: worldH + margin }; case 3: return { x: -margin, y: Math.random() * worldH }; } }
+    function distance(x1, y1, x2, y2) { const dx = x2 - x1, dy = y2 - y1; return Math.sqrt(dx*dx + dy*dy); }
+    
+    function applySeparation(unit, allUnits, allEnemies, dt) {
+        const separationForce = 0.5;
+        let separationVector = { x: 0, y: 0 };
+        const checkSeparation = (other) => {
+            if (unit === other) return;
+            const dist = distance(unit.x, unit.y, other.x, other.y);
+            const desiredSeparation = unit.size + other.size + 2; 
+            if (dist > 0 && dist < desiredSeparation) {
+                const pushForce = 1 - (dist / desiredSeparation);
+                separationVector.x += (unit.x - other.x) / dist * pushForce;
+                separationVector.y += (unit.y - other.y) / dist * pushForce;
+            }
+        };
+        allUnits.forEach(checkSeparation);
+        allEnemies.forEach(checkSeparation);
+        if (separationVector.x !== 0 || separationVector.y !== 0) {
+            const moveSpeed = unit.specs.speed * separationForce * (dt / 1000);
+            unit.x += separationVector.x * moveSpeed;
+            unit.y += separationVector.y * moveSpeed;
+        }
+    }
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y; this.color = color;
+            this.size = Math.random() * 2 + 1;
+            this.initialLife = Math.random() * 800 + 400; 
+            this.life = this.initialLife;
+            const angle = Math.random() * 2 * Math.PI;
+            const power = Math.random() * 100 + 50;
+            this.vx = Math.cos(angle) * power / 1000;
+            this.vy = Math.sin(angle) * power / 1000;
+        }
+        update(dt) {
+            this.life -= dt;
+            this.x += this.vx * dt;
+            this.y += this.vy * dt;
+            this.vx *= 0.98;
+            this.vy *= 0.98;
+        }
+        draw(ctx) {
+            ctx.save();
+            ctx.globalAlpha = this.life / this.initialLife;
+            ctx.fillStyle = this.color;
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+    
+    class GameEntity {
+        constructor(x, y, type) {
+            this.x = x; this.y = y; this.type = type;
+            this.baseSpecs = {...BUILDING_SPECS[type]}; this.attackers = 0;
+            this.upgradeLevels = {};
+            if (this.baseSpecs.upgrades) { this.baseSpecs.upgrades.forEach(upg => { this.upgradeLevels[upg] = 1; }); }
+            this.shieldHealth = 0; this.maxShieldHealth = 0; this.shieldRegenTimer = 0;
+            this.applyLevelStats();
+        }
+        applyLevelStats() {
+            this.specs = { ...this.baseSpecs }; this.size = this.specs.size;
+            this.maxHealth = this.baseSpecs.health;
+            if (!this.health) { this.health = this.maxHealth; }
+            for (const upg in this.upgradeLevels) {
+                this.specs[upg] = getStatValueForLevel(this.baseSpecs[upg], upg, this.upgradeLevels[upg]);
+            }
+        }
+        takeDamage(damage) {
+            this.shieldRegenTimer = this.specs.shieldRegenDelay || 3000;
+            if (this.shieldHealth > 0) {
+                const damageToShield = Math.min(damage, this.shieldHealth);
+                this.shieldHealth -= damageToShield;
+                damage -= damageToShield;
+            }
+            if (damage > 0) { this.health -= damage; }
+        }
+        draw(ctx, shapeDrawer) {
+            ctx.save();
+            
+            // 1. Black backing for contrast
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "rgba(0,0,0,0.5)";
+            shapeDrawer();
+            ctx.stroke();
+            
+            // 2. Neon glow and semitransparent fill
+            const c = this.specs.color;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = c;
+            ctx.fillStyle = c.startsWith('#') ? c + '2A' : c.replace('rgb','rgba').replace(')',',0.15)');
+            ctx.shadowColor = c;
+            ctx.shadowBlur = 15;
+
+            shapeDrawer();
+            ctx.fill();
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            this.drawHealthBar(ctx);
+            this.drawShield(ctx);
+        }
+        
+        drawShield(ctx) {
+            if (this.shieldHealth > 0 && this.maxShieldHealth > 0) {
+                ctx.save();
+                const shieldPct = this.shieldHealth / this.maxShieldHealth;
+                ctx.globalAlpha = 0.2 + 0.5 * shieldPct;
+                ctx.beginPath();
+                ctx.strokeStyle = UI_COLORS.primary;
+                ctx.lineWidth = 1 + 2 * shieldPct;
+                ctx.shadowColor = UI_COLORS.primary;
+                ctx.shadowBlur = 10 + 5 * shieldPct;
+                ctx.arc(this.x, this.y, this.size + 4, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+        
+        drawHealthBar(ctx) {
+            if (this.health < this.maxHealth) {
+                const hp = this.health/this.maxHealth; const barY = this.y - this.size - 10;
+                ctx.fillStyle='#333'; ctx.fillRect(this.x-this.size, barY, this.size*2, 4);
+                ctx.fillStyle = hp>0.5 ? UI_COLORS.success : hp>0.2 ? UI_COLORS.warning : UI_COLORS.danger;
+                ctx.fillRect(this.x-this.size, barY, this.size*2*hp, 4);
+            }
+        }
+    }
+
+    function drawBuildingPath(ctx, type, size, x, y) {
+        const s = size;
+        ctx.beginPath();
+        switch (type) {
+            case 'Pylon': ctx.rect(x - s, y - s, s * 2, s * 2); break;
+            case 'SolarPanel': ctx.moveTo(x, y - s); ctx.lineTo(x - s, y + s * 0.8); ctx.lineTo(x + s, y + s * 0.8); ctx.closePath(); break;
+            case 'PhaserTurret': ctx.moveTo(x, y - s); ctx.lineTo(x + s, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s, y); ctx.closePath(); break;
+            case 'LaserTurret': const armL = s*0.8; ctx.moveTo(x,y-s); ctx.lineTo(x-s,y+armL); ctx.lineTo(x,y); ctx.lineTo(x+s,y+armL); ctx.closePath(); break;
+            case 'PlasmaTurret': for(let i=0;i<6;i++){ const a = i/6 * Math.PI*2; ctx.arc(x,y,s,a,a+Math.PI/6,false); ctx.closePath(); ctx.moveTo(x+s*Math.cos(a+Math.PI/6), y+s*Math.sin(a+Math.PI/6));} break;
+            case 'Miner': for (let i = 0; i < 6; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 6), y + s * Math.sin(i * 2 * Math.PI / 6)); } ctx.closePath(); break;
+            case 'Barracks': for (let i = 0; i < 8; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 8), y + s * Math.sin(i * 2 * Math.PI / 8)); } ctx.closePath(); break;
+            case 'Core': case 'Starbase': for (let i = 0; i < 10; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 10), y + s * Math.sin(i * 2 * Math.PI / 10)); } ctx.closePath(); break;
+            case 'StorageDepot': ctx.rect(x - s, y - s, s * 2, s * 2); break;
+            case 'SwarmTower': const armS = s * 0.35; ctx.moveTo(x - armS, y - s); ctx.lineTo(x + armS, y - s); ctx.lineTo(x + armS, y - armS); ctx.lineTo(x + s, y - armS); ctx.lineTo(x + s, y + armS); ctx.lineTo(x + armS, y + armS); ctx.lineTo(x + armS, y + s); ctx.lineTo(x - armS, y + s); ctx.lineTo(x - armS, y + armS); ctx.lineTo(x - s, y + armS); ctx.lineTo(x - s, y - armS); ctx.lineTo(x - armS, y - armS); ctx.closePath(); break;
+            case 'ShieldGenerator': for (let i = 0; i < 3; i++) { const angle = i * 2 * Math.PI / 3; ctx.moveTo(x, y); ctx.arc(x, y, s, angle, angle + Math.PI / 3); } ctx.closePath(); break;
+            default: ctx.arc(x, y, s, 0, 2 * Math.PI);
+        }
+    }
+    function createIconCanvas(type, width, height) { const c = document.createElement('canvas'); c.width = width; c.height = height; const iCtx = c.getContext('2d'); const s = BUILDING_SPECS[type]; if (!s) return c; const col = s.color; iCtx.strokeStyle=col; iCtx.fillStyle=col.startsWith('#')?col+'2A':col.replace('rgb','rgba').replace(')',',0.15)'); iCtx.lineWidth=2; iCtx.shadowColor=col; iCtx.shadowBlur=8; const sSize = Math.min(width, height) * 0.4; drawBuildingPath(iCtx, type, sSize, width / 2, height / 2); iCtx.stroke(); iCtx.fill(); return c; }
+    
+    function populateUiIcons() { 
+        document.querySelectorAll('#build-menu .build-btn[data-type]').forEach(btn => { 
+            btn.innerHTML = ''; 
+            const type = btn.dataset.type; 
+            const specs = BUILDING_SPECS[type];
+            if (!specs) return;
+
+            const canvas = createIconCanvas(type, 38, 38); 
+            btn.appendChild(canvas); 
+
+            const nameInfo = document.createElement('div');
+            nameInfo.className = 'build-name';
+            nameInfo.dataset.langKey = specs.shortNameKey;
+            nameInfo.textContent = t(specs.shortNameKey) || '';
+            btn.appendChild(nameInfo);
+
+            const costInfo = document.createElement('div');
+            costInfo.className = 'build-cost';
+            let costHtml = createIconValueHTML(MINERAL_ICON_SVG, specs.cost);
+            if (specs.power) {
+                const powerColor = specs.power > 0 ? 'var(--color-primary)' : 'var(--color-danger)';
+                costHtml += `<span style="color:${powerColor}">${createIconValueHTML(ENERGY_ICON_SVG, specs.power)}</span>`;
+            }
+            costInfo.innerHTML = costHtml;
+            btn.appendChild(costInfo);
+        }); 
+    }
+
+    class Building extends GameEntity {
+        constructor(x,y,type) { 
+            super(x,y,type);
+            this.isPowered=false; this.isConstructing = true; this.health = 1; this.assignedDrones = [];
+            this.task = null; // { type: 'upgrade'/'convert', progress: 0, total: X, details: {} }
+        }
+
+        update(game,dt){
+            if (this.isConstructing) {
+                this.updateConstruction(dt);
+            } else if (this.task) {
+                this.updateTask(dt);
+            } else if (this.specs.passiveIncome && this.isPowered) {
+                game.addMinerals(this.specs.passiveIncome * (dt / 1000));
+            }
+        }
+        
+        updateConstruction(dt) {
+            let totalBuildRate = 0;
+            this.assignedDrones.forEach(d => {
+                if(distance(d.x, d.y, this.x, this.y) < this.size + d.size + 5) {
+                    totalBuildRate += d.specs.buildRate;
+                }
+            });
+
+            if (totalBuildRate > 0) {
+                this.health += totalBuildRate * (dt / 1000);
+            }
+
+            if (this.health >= this.maxHealth) {
+                this.health = this.maxHealth;
+                const wasConstructing = this.isConstructing;
+                this.isConstructing = false;
+                
+                game.constructionQueue = game.constructionQueue.filter(b => b !== this);
+                
+                if (wasConstructing) {
+                    if (game.selectedObject === this) {
+                        game.buildSelectionPanel();
+                    }
+                }
+                
+                this.assignedDrones.forEach(d => d.targetBuilding = null);
+                this.assignedDrones = [];
+            }
+        }
+
+        updateTask(dt) {
+            if (!this.task || this.assignedDrones.length === 0) return;
+            
+            let totalBuildRate = 0;
+            this.assignedDrones.forEach(d => {
+                if(distance(d.x, d.y, this.x, this.y) < this.size + d.size + 5) {
+                    totalBuildRate += d.specs.buildRate
+                }
+            });
+            this.task.progress += totalBuildRate * (dt / 1000);
+
+            if (this.task.progress >= this.task.total) {
+                this.completeTask();
+            }
+        }
+        
+        completeTask() {
+            if (!this.task) return;
+            if (this.task.type === 'upgrade') {
+                const { upgradeType } = this.task.details;
+                this.upgradeLevels[upgradeType]++; 
+                this.applyLevelStats();
+            } else if (this.task.type === 'convert') {
+                const { newType } = this.task.details;
+                game.convertBuilding(this, newType);
+            }
+            
+            this.task = null;
+            this.assignedDrones.forEach(d => d.targetBuilding = null);
+            this.assignedDrones = [];
+            if (game.selectedObject === this || !this.health) {
+                game.buildSelectionPanel();
+            }
+        }
+        
+        startUpgrade(upgradeType) {
+            const cost = this.getUpgradeCost(upgradeType);
+            if (game.minerals >= cost && !this.task) {
+                game.minerals -= cost;
+                this.task = {
+                    type: 'upgrade',
+                    progress: 0,
+                    total: cost * 2,
+                    details: { upgradeType }
+                };
+                game.dispatchConstructionDrones(this);
+                return true;
+            }
+            return false;
+        }
+
+        startConversion(newType) {
+            const cost = BUILDING_SPECS[this.type].conversionCost || 0;
+            if (game.minerals >= cost && !this.task) {
+                game.minerals -= cost;
+                if (this instanceof UnitProducer && this.units) {
+                    this.units.forEach(u => u.health = 0);
+                }
+                this.task = {
+                    type: 'convert',
+                    progress: 0,
+                    total: cost * 2,
+                    details: { newType }
+                };
+                game.dispatchConstructionDrones(this);
+                return true;
+            }
+            return false;
+        }
+
+        getUpgradeCost(upgradeType) { 
+            const baseCost = this.baseSpecs.upgradeCosts[upgradeType]; 
+            const level = this.upgradeLevels[upgradeType]; 
+            if(upgradeType === 'storage') {
+                 return Math.floor(baseCost * Math.pow(2, level - 1));
+            }
+            return Math.floor(baseCost * Math.pow(1.8, level - 1));
+        }
+        draw(ctx) {
+            super.draw(ctx, () => {
+                if (this.isConstructing || this.task) { 
+                    const totalTime = this.isConstructing ? (this.baseSpecs.cost || 50) * 50 : this.task.total;
+                    const progress = this.isConstructing ? (this.health / this.maxHealth) * totalTime : this.task.progress;
+                    ctx.globalAlpha = 0.2 + 0.8 * (progress / totalTime);
+                }
+                drawBuildingPath(ctx, this.type, this.size, this.x, this.y);
+                ctx.globalAlpha = 1;
+            });
+
+            const isUnpoweredConsumer = !this.isPowered && this.specs.power < 0 && !this.isConstructing;
+            if (isUnpoweredConsumer && Math.floor(Date.now()/250)%2===0) { 
+                ctx.save();
+                ctx.translate(this.x, this.y - this.size - 12);
+                const iconSize = this.size > 15 ? 12 : 8;
+                ctx.scale(iconSize / 22, iconSize / 22);
+                ctx.fillStyle = UI_COLORS.warning;
+                ctx.shadowColor = UI_COLORS.warning;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.moveTo(7-11, 2-12); ctx.lineTo(17-11, 12-12); ctx.lineTo(12-11, 12-12);
+                ctx.lineTo(12-11, 22-12); ctx.lineTo(7-11, 12-12); ctx.lineTo(2-11, 12-12);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+    }
+    class Unit extends GameEntity { 
+        constructor(x,y,type){ super(x,y,type); this.target=null; this.health = this.maxHealth; } 
+        update(game,dt){} 
+        draw(ctx){ 
+            super.draw(ctx, () => {
+                const shape = this.specs.isFlying ? 'diamond' : 'circle';
+                if (this.type === 'RepairDrone') {
+                    const s = this.size * 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - s, this.y); ctx.lineTo(this.x + s, this.y);
+                    ctx.moveTo(this.x, this.y - s); ctx.lineTo(this.x, this.y + s);
+                    ctx.stroke();
+                } else if (shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+                } else { // diamond
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - this.size);
+                    ctx.lineTo(this.x + this.size * 0.7, this.y);
+                    ctx.lineTo(this.x, this.y + this.size);
+                    ctx.lineTo(this.x - this.size * 0.7, this.y);
+                    ctx.closePath();
+                }
+            });
+        }
+    }
+    
+    class UnitProducer extends Building {
+        constructor(x, y, type) {
+            super(x, y, type);
+            this.units = [];
+            this.unitType = '';
+            this.unlockedSlots = 1;
+            this.buildProgress = 0;
+            this.isBuildingUnit = false;
+            this.maxSlots = (type === 'Core' || type === 'Starbase') ? MAX_CONSTRUCTION_DRONE_SLOTS : MAX_UNIT_SLOTS;
+        }
+
+        update(game, dt) {
+            super.update(game, dt);
+            if (this.isConstructing || (!this.isPowered && this.specs.power < 0) || this.task) {
+                this.isBuildingUnit = false;
+                this.buildProgress = 0;
+                return;
+            }
+            this.units = this.units.filter(u => u.health > 0);
+
+            // Check if we should start building a new unit
+            if (!this.isBuildingUnit && this.units.length < this.unlockedSlots) {
+                const cost = this.baseSpecs.unitBuildCost;
+                
+                // Special case: The very first drone for a Core or Starbase is free.
+                const isFirstCommandCenterDrone = (this.type === 'Core' || this.type === 'Starbase') && this.units.length === 0;
+
+                if (isFirstCommandCenterDrone) {
+                    this.isBuildingUnit = true; // Start for free
+                    this.buildProgress = 0;
+                } else if (game.minerals >= cost) {
+                    game.minerals -= cost; // Pay the cost
+                    this.isBuildingUnit = true;
+                    this.buildProgress = 0;
+                }
+            }
+
+            // If building, advance progress
+            if (this.isBuildingUnit) {
+                this.buildProgress += dt;
+                const buildTime = this.specs.droneSpawnRate || this.specs.spawnRate;
+                if (this.buildProgress >= buildTime) {
+                    const UnitClass = AllClasses[this.unitType];
+                    const unit = new UnitClass(this.x, this.y);
+                    unit.parentBuilding = this;
+                    this.units.push(unit);
+                    game.units.push(unit);
+                    
+                    if(unit.type === 'Infantry') unit.rallyPoint = {...this.rallyPoint};
+
+                    this.isBuildingUnit = false;
+                    this.buildProgress = 0;
+                }
+            }
+        }
+        
+        buyUnitSlot() {
+            if (this.unlockedSlots >= this.maxSlots) return false;
+            const cost = this.baseSpecs.unitSlotCost;
+            if (game.minerals >= cost) {
+                game.minerals -= cost;
+                this.unlockedSlots++;
+                game.buildSelectionPanel(); // Rebuild to show new slot state
+                return true;
+            }
+            return false;
+        }
+        
+        draw(ctx) {
+            super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y));
+            if ((this.isBuildingUnit || this.task) && !this.isConstructing) {
+                const total = this.isBuildingUnit ? (this.specs.droneSpawnRate || this.specs.spawnRate) : this.task.total;
+                const progress = this.isBuildingUnit ? this.buildProgress : this.task.progress;
+                
+                ctx.save();
+                ctx.strokeStyle = UI_COLORS.warning;
+                ctx.lineWidth = 4 / game.camera.zoom;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size + 5, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * (progress / total));
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+    }
+
+    class Core extends UnitProducer { 
+        constructor(x, y) { 
+            super(x, y, 'Core');
+            this.isConstructing = false; 
+            this.health = this.maxHealth;
+            this.unitType = 'ConstructionDrone';
+        }
+    }
+    class Starbase extends UnitProducer { 
+        constructor(x, y) { 
+            super(x, y, 'Starbase');
+            this.unitType = 'ConstructionDrone';
+        } 
+    }
+    
+    class Pylon extends Building { constructor(x,y){ super(x,y,'Pylon'); } }
+    class SolarPanel extends Building { constructor(x,y){ super(x,y,'SolarPanel'); } }
+    class ShieldGenerator extends Building { constructor(x,y) { super(x,y,'ShieldGenerator');} }
+    
+    class Miner extends UnitProducer { constructor(x,y){ super(x,y,'Miner'); this.unitType = 'CollectorDrone'; } draw(ctx) { super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if (!this.isConstructing && (game.selectedObject === this || game.buildConfirmationDetails?.type === 'Miner')) { game.drawContrastingCircle(ctx, this.x, this.y, this.specs.range, this.specs.color + '40', 1); } } }
+    class StorageDepot extends Building { constructor(x,y){ super(x,y,'StorageDepot'); } }
+    
+    class Turret extends Building { constructor(x,y,type='PhaserTurret'){ super(x,y,type); this.cooldown=0; this.target=null; } update(game,dt){ super.update(game,dt); if(this.isConstructing || !this.isPowered || this.task){ this.target=null; return; } this.cooldown -= dt; if(!this.target || (this.target.health<=0 && this.target.shieldHealth <= 0) || distance(this.x,this.y,this.target.x,this.target.y)>this.specs.range){ this.findTarget(game.enemies); } } findTarget(enemies){ this.target = null; let dmax = this.specs.range; for(const e of enemies){ const d = distance(this.x,this.y,e.x,e.y); if(d<dmax){ dmax = d; this.target = e; } } } }
+    class PhaserTurret extends Turret { constructor(x,y){ super(x,y,'PhaserTurret'); } update(game,dt){ super.update(game,dt); if(this.target && this.cooldown<=0){ game.projectiles.push(new PhaserShot(this.x,this.y,this.target,this.specs.damage,this.specs.color)); this.cooldown = this.specs.fireRate; } } }
+    class LaserTurret extends Turret { constructor(x,y){ super(x,y,'LaserTurret'); this.beamActive = false; } update(game,dt){ super.update(game,dt); this.beamActive = false; if(this.target && this.cooldown<=0 && !this.task){ this.beamActive = true; this.target.takeDamage(this.specs.damage * (dt / 1000) * 20); } } draw(ctx){ super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if (this.beamActive && this.target) { ctx.save(); ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.target.x, this.target.y); ctx.strokeStyle = this.specs.color; ctx.lineWidth = 3; ctx.globalAlpha = 0.8; ctx.shadowColor = this.specs.color; ctx.shadowBlur = 15; ctx.stroke(); ctx.restore(); } } }
+    class PlasmaTurret extends Turret { constructor(x,y){ super(x,y,'PlasmaTurret'); } update(game,dt){ super.update(game,dt); if(this.target && this.cooldown<=0){ game.projectiles.push(new PlasmaBall(this.x,this.y,this.target,this.specs.damage,'#89ddff')); this.cooldown = this.specs.fireRate; } } }
+
+    class Barracks extends UnitProducer { 
+        constructor(x,y){ super(x,y,'Barracks'); this.unitType = 'Infantry'; this.rallyPoint={x,y:y+50}; } 
+        draw(ctx){ super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if(!this.isConstructing && game.selectedObject===this){ ctx.beginPath(); ctx.strokeStyle = '#00ff7f'; ctx.setLineDash([5,5]); ctx.moveTo(this.x,this.y); ctx.lineTo(this.rallyPoint.x,this.rallyPoint.y); ctx.stroke(); ctx.setLineDash([]); game.drawContrastingCircle(ctx, this.rallyPoint.x,this.rallyPoint.y,10, '#00ff7f', 2); } } 
+    }
+    class SwarmTower extends UnitProducer { constructor(x,y){ super(x,y,'SwarmTower'); this.unitType = 'RepairDrone'; } }
+    
+    class Infantry extends Unit {
+        constructor(x, y) {
+            super(x, y, 'Infantry');
+            this.cooldown = 0;
+            this.rallyPoint = { x, y };
+            this.parentBuilding = null;
+            this.state = 'movingToRally';
+        }
+        update(game, dt) {
+            applySeparation(this, game.units, game.enemies, dt);
+            if (!this.parentBuilding || this.parentBuilding.health <= 0) {
+                if(this.target) this.target.attackers--;
+                this.health = 0;
+                return;
+            }
+            this.cooldown -= dt;
+            const operationalRange = this.parentBuilding.specs.range;
+
+            if (this.target) {
+                const targetIsInvalid = this.target.health <= 0 && this.target.shieldHealth <= 0;
+                const targetOutOfRange = distance(this.target.x, this.target.y, this.parentBuilding.x, this.parentBuilding.y) > operationalRange + 50;
+                if (targetIsInvalid || targetOutOfRange) {
+                    this.target.attackers--;
+                    this.target = null;
+                    this.state = 'movingToRally';
+                }
+            }
+
+            if (!this.target) {
+                const enemiesInOpRange = game.enemies
+                    .filter(e => distance(e.x, e.y, this.parentBuilding.x, this.parentBuilding.y) <= operationalRange)
+                    .sort((a, b) => distance(this.x, this.y, a.x, a.y) - distance(this.x, this.y, b.x, b.y));
+                
+                let bestTarget = enemiesInOpRange.find(e => e.attackers < 2);
+                if (!bestTarget && enemiesInOpRange.length > 0) {
+                    bestTarget = enemiesInOpRange[0];
+                }
+
+                if (bestTarget) {
+                    this.target = bestTarget;
+                    this.target.attackers++;
+                    this.state = 'fighting';
+                }
+            }
+
+            if (this.state === 'fighting' && this.target) {
+                const distToTarget = distance(this.x, this.y, this.target.x, this.target.y);
+                if (distToTarget > this.specs.range) {
+                    const dx = (this.target.x - this.x) / distToTarget;
+                    const dy = (this.target.y - this.y) / distToTarget;
+                    this.x += dx * this.specs.speed * dt / 1000;
+                    this.y += dy * this.specs.speed * dt / 1000;
+                }
+                else if (this.cooldown <= 0) {
+                    game.projectiles.push(new PhaserShot(this.x, this.y, this.target, this.specs.damage, this.specs.color));
+                    this.cooldown = this.specs.fireRate;
+                }
+            } else { 
+                this.state = 'movingToRally';
+                const distToRally = distance(this.x, this.y, this.rallyPoint.x, this.rallyPoint.y);
+                if (distToRally > 10) {
+                    const dx = (this.rallyPoint.x - this.x) / distToRally;
+                    const dy = (this.rallyPoint.y - this.y) / distToRally;
+                    this.x += dx * this.specs.speed * dt / 1000;
+                    this.y += dy * this.specs.speed * dt / 1000;
+                } else {
+                    this.state = 'patrolling';
+                }
+            }
+        }
+    }
+    
+    class RepairDrone extends Unit { 
+        constructor(x,y){ super(x,y,'RepairDrone'); this.parentBuilding=null; this.parentPowered=true; } 
+        update(game,dt){ 
+            applySeparation(this, game.units, game.enemies, dt);
+            if (!this.parentBuilding || this.parentBuilding.health <= 0) { this.health = 0; return; }
+            this.parentPowered = this.parentBuilding.isPowered;
+            if(!this.parentPowered){ this.target=null; return; } 
+            if(!this.target || this.target.health>=this.target.maxHealth || this.target.health<=0){ this.findTarget(game); } 
+            if(this.target){ 
+                const d = distance(this.x,this.y,this.target.x,this.target.y); 
+                if(d> this.target.size+10){ const dx = (this.target.x - this.x)/d; const dy = (this.target.y - this.y)/d; this.x += dx * this.specs.speed * dt/1000; this.y += dy * this.specs.speed * dt/1000; } 
+                else { this.target.health += this.specs.repairRate * dt/1000; if(this.target.health > this.target.maxHealth) this.target.health = this.target.maxHealth; } 
+            } else { 
+                const dp = distance(this.x,this.y,this.parentBuilding.x,this.parentBuilding.y); 
+                if(dp>50){ const dx = (this.parentBuilding.x - this.x)/dp; const dy = (this.parentBuilding.y - this.y)/dp; this.x += dx * this.specs.speed*0.5 * dt/1000; this.y += dy * this.specs.speed*0.5 * dt/1000; } 
+            } 
+        } 
+        findTarget(game){ this.target=null; let lowPct=1; const all = [...game.buildings,...game.units]; for(const t of all){ if(t.health > 0 && t.health < t.maxHealth && distance(this.parentBuilding.x,this.parentBuilding.y,t.x,t.y)<this.parentBuilding.specs.range){ const pct = t.health/t.maxHealth; if(pct<lowPct){ lowPct=pct; this.target=t; } } } } 
+        draw(ctx){ super.draw(ctx); if(this.target && this.parentPowered){ ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.lineTo(this.target.x,this.target.y); ctx.strokeStyle=this.specs.color; ctx.lineWidth=1; ctx.setLineDash([2,2]); ctx.shadowColor=this.specs.color; ctx.shadowBlur=10; ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur=0; } } 
+    }
+
+    class CollectorDrone extends Unit { 
+        constructor(x, y) { super(x, y, 'CollectorDrone'); this.parentBuilding = null; this.parentPowered = true; this.state = 'seeking'; this.heldMinerals = 0; this.collectionTime = 1000; this.collectionTimer = 0; } 
+        update(game, dt) { 
+            applySeparation(this, game.units, game.enemies, dt);
+            if (!this.parentBuilding || this.parentBuilding.health <= 0) { this.health = 0; return; }
+            this.parentPowered = this.parentBuilding.isPowered;
+
+            const storageFull = game.minerals >= game.maxMinerals;
+
+            if (!this.parentPowered || (storageFull && this.heldMinerals === 0)) {
+                this.state = 'returning';
+            }
+
+            if (this.state === 'seeking') {
+                if (storageFull) {
+                    this.state = 'returning';
+                    return;
+                }
+                if (!this.target || this.target.minerals <= 0) this.findTarget(game);
+                if (this.target) {
+                    this.moveTo(this.target.x, this.target.y, dt);
+                    if (distance(this.x, this.y, this.target.x, this.target.y) < this.target.size) {
+                        this.state = 'collecting';
+                        this.collectionTimer = this.collectionTime;
+                    }
+                } else {
+                    this.state = 'returning'; // No targets found, go home
+                }
+            } else if (this.state === 'collecting') {
+                if (storageFull || !this.target || this.target.minerals <= 0) {
+                    this.state = 'returning';
+                    return;
+                }
+                this.collectionTimer -= dt;
+                const mineralsToTake = (this.specs.carryCapacity / (this.collectionTime / 1000)) * (dt / 1000);
+                const actualTaken = Math.min(mineralsToTake, this.target.minerals);
+                this.heldMinerals += actualTaken;
+                this.target.minerals -= actualTaken;
+                if (this.collectionTimer <= 0 || this.heldMinerals >= this.specs.carryCapacity) {
+                    this.state = 'returning';
+                }
+            } else if (this.state === 'returning') {
+                const distToParent = distance(this.x, this.y, this.parentBuilding.x, this.parentBuilding.y);
+                if (distToParent < this.parentBuilding.size) {
+                    if (this.heldMinerals > 0) {
+                        game.addMinerals(this.heldMinerals);
+                        this.heldMinerals = 0;
+                    }
+                    this.target = null;
+                    // Only start seeking again if there's power and space
+                    if (this.parentPowered && !storageFull) {
+                        this.state = 'seeking';
+                    } else {
+                        // Otherwise, stay here (idle)
+                    }
+                } else {
+                    this.moveTo(this.parentBuilding.x, this.parentBuilding.y, dt);
+                }
+            }
+        } 
+        moveTo(tx, ty, dt) { const d = distance(this.x, this.y, tx, ty); if (d < 1) return; const dx = (tx - this.x) / d; const dy = (ty - this.y) / d; this.x += dx * this.specs.speed * dt / 1000; this.y += dy * this.specs.speed * dt / 1000; } 
+        findTarget(game) { this.target = null; let closestDist = this.parentBuilding.specs.range; for (const well of game.asteroidFields) { if (well.minerals > 0) { const d = distance(this.parentBuilding.x, this.parentBuilding.y, well.x, well.y); if (d < closestDist) { closestDist = d; this.target = well; } } } } 
+        draw(ctx) { super.draw(ctx); if (this.heldMinerals > 0) { ctx.fillStyle = '#ffff00'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * 0.5 * (this.heldMinerals / this.specs.carryCapacity), 0, 2 * Math.PI); ctx.fill(); } } 
+    }
+    
+    class ConstructionDrone extends Unit {
+        constructor(x, y, parentBase) { super(x, y, 'ConstructionDrone'); this.parentBuilding = parentBase; this.targetBuilding = null; }
+        update(game, dt) {
+            applySeparation(this, game.units, game.enemies, dt);
+            if (!this.parentBuilding || this.parentBuilding.health <= 0) { this.targetBuilding = null; this.health = 0; return; }
+            if (this.targetBuilding) {
+                if (this.targetBuilding.health <= 0 || (!this.targetBuilding.isConstructing && !this.targetBuilding.task)) {
+                     this.targetBuilding = null;
+                     return;
+                }
+                const d = distance(this.x, this.y, this.targetBuilding.x, this.targetBuilding.y);
+                if (d > this.targetBuilding.size + 2) { 
+                    const dx = (this.targetBuilding.x - this.x) / d; 
+                    const dy = (this.targetBuilding.y - this.y) / d; 
+                    this.x += dx * this.specs.speed * dt / 1000; 
+                    this.y += dy * this.specs.speed * dt / 1000; 
+                }
+            } else { 
+                const dp = distance(this.x, this.y, this.parentBuilding.x, this.parentBuilding.y); 
+                if (dp > 50) { 
+                    const dx = (this.parentBuilding.x - this.x) / dp; 
+                    const dy = (this.parentBuilding.y - this.y) / dp; 
+                    this.x += dx * this.specs.speed * 0.5 * dt / 1000; 
+                    this.y += dy * this.specs.speed * 0.5 * dt / 1000; 
+                } 
+            }
+        }
+        draw(ctx) { super.draw(ctx); if (this.targetBuilding) { ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.targetBuilding.x, this.targetBuilding.y); ctx.strokeStyle = this.specs.color; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.shadowColor = this.specs.color; ctx.shadowBlur = 10; ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0; } }
+    }
+    class Enemy extends Unit {
+        constructor(x, y, type) { super(x, y, type); this.baseHealth = this.specs.health; this.baseDamage = this.specs.damage; this.cooldown = Math.random() * 1000; }
+        applyWaveBonus(n) { const hb = 1 + (n - 1) * 0.08, db = 1 + (n - 1) * 0.05; this.maxHealth = Math.floor(this.baseHealth * hb); this.health = this.maxHealth; this.specs.damage = Math.floor(this.baseDamage * db); }
+        update(game, dt) { 
+            applySeparation(this, game.units, game.enemies, dt);
+            if (this.target && (this.target.health <= 0 && this.target.shieldHealth <= 0)) { this.target.attackers--; this.target = null; } if (!this.target) this.findTarget(game); this.cooldown -= dt; if (this.target) { const d = distance(this.x, this.y, this.target.x, this.target.y); if (d > this.specs.range) { const dx = (this.target.x - this.x) / d, dy = (this.target.y - this.y) / d; this.x += dx * this.specs.speed * dt / 1000; this.y += dy * this.specs.speed * dt / 1000; } else if (this.cooldown <= 0) { game.projectiles.push(new PhaserShot(this.x, this.y, this.target, this.specs.damage, this.specs.color)); this.cooldown = this.specs.fireRate; } } 
+        }
+        findTarget(game) { const all = [...game.buildings, ...game.units].filter(t => !t.isConstructing); if(all.length === 0) return; const core = game.buildings.find(b => b.type === 'Core'); if (!core) return; all.sort((a, b) => distance(this.x, this.y, a.x, a.y) - distance(this.x, this.y, b.x, b.y)); let best = null; for (let i = 0; i < all.length && i < 5; i++) { const t = all[i]; if (t.attackers < 3) { best = t; break; } if (Math.random() > 0.75) { best = t; break; } } if (!best) best = all[0] || core; if (this.target) this.target.attackers--; this.target = best; if (this.target) this.target.attackers++; }
+    }
+    class Grunt extends Enemy { constructor(x,y){ super(x,y,'Grunt'); } }
+    class Flier extends Enemy { constructor(x,y){ super(x,y,'Flier'); } }
+    
+    class Projectile extends GameEntity { 
+        constructor(x,y,target,damage,color, size=3){ 
+            super(x, y, 'Projectile');
+            this.specs.color = color; this.size = size;
+            this.target=target; this.damage=damage; this.speed=400; this.shouldBeRemoved=false; 
+        } 
+        update(dt){ if(!this.target||(this.target.health<=0 && this.target.shieldHealth <= 0)){ this.shouldBeRemoved=true; return; } const dx=this.target.x-this.x, dy=this.target.y-this.y; const dist=Math.sqrt(dx*dx+dy*dy); if(dist<this.size+this.target.size){ this.target.takeDamage(this.damage); this.shouldBeRemoved=true; } else { this.x += dx/dist * this.speed * dt/1000; this.y += dy/dist * this.speed * dt/1000; } } 
+        draw(ctx){ 
+            super.draw(ctx, () => {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+            });
+        } 
+    }
+    class PhaserShot extends Projectile {}
+    class PlasmaBall extends Projectile {
+        constructor(x, y, target, damage, color) {
+            super(x, y, target, damage, color, 6);
+            this.speed = 200;
+            this.particles = [];
+        }
+        update(dt) {
+            super.update(dt);
+            this.particles.push(new Particle(this.x, this.y, this.specs.color));
+            this.particles.forEach(p => p.update(dt));
+            this.particles = this.particles.filter(p => p.life > 0);
+        }
+        draw(ctx) {
+            this.particles.forEach(p => p.draw(ctx));
+            super.draw(ctx, () => {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+            });
+        }
+    }
+    
+    class AsteroidField { 
+        constructor(x, y, size, amount) { 
+            this.x = x; this.y = y; this.size = size; this.initialMinerals = amount; this.minerals = amount; 
+            this.asteroids = [];
+            const numRocks = 5 + Math.floor(size / 8);
+            for (let i = 0; i < numRocks; i++) {
+                const rockSize = Math.random() * (size / 3) + (size / 4);
+                const ox = (Math.random() - 0.5) * size * 1.5;
+                const oy = (Math.random() - 0.5) * size * 1.5;
+                const vertices = [];
+                const numVertices = Math.floor(Math.random() * 4) + 5;
+                for (let j = 0; j < numVertices; j++) {
+                    const angle = (j / numVertices) * 2 * Math.PI;
+                    const radius = rockSize * (0.8 + Math.random() * 0.4);
+                    vertices.push({
+                        x: ox + Math.cos(angle) * radius,
+                        y: oy + Math.sin(angle) * radius
+                    });
+                }
+                const gray = 90 + Math.random() * 20;
+                this.asteroids.push({ vertices, c: `rgb(${gray}, ${gray-5}, ${gray-10})` });
+            }
+        } 
+        draw(ctx) {
+            const op = (this.minerals / this.initialMinerals) * 0.7 + 0.3;
+            ctx.save();
+            ctx.globalAlpha = op;
+            ctx.translate(this.x, this.y);
+            this.asteroids.forEach(a => {
+                ctx.save();
+                
+                // Black outline for contrast
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = "rgba(0,0,0,0.7)";
+                ctx.beginPath();
+                ctx.moveTo(a.vertices[0].x, a.vertices[0].y);
+                for (let i = 1; i < a.vertices.length; i++) {
+                    ctx.lineTo(a.vertices[i].x, a.vertices[i].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                // Actual rock drawing
+                ctx.fillStyle = a.c;
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            });
+            ctx.translate(-this.x, -this.y);
+
+            const pulse = Math.sin(Date.now() / 500) * 5 + 5;
+            ctx.shadowColor = '#ffffaa';
+            ctx.shadowBlur = pulse + 10;
+            ctx.fillStyle = `rgba(200, 200, 150, ${op*0.1})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size * 1.6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+        } 
+    }
+    
+    class WaveManager { 
+        constructor(game, peaceTime = 300000){ 
+            this.game=game; this.waveNumber=0; 
+            this.baseTimeToNextWave = peaceTime;
+            this.timeReductionPerWave=2000; 
+            this.minTimeBetweenWaves=45000; 
+            this.timeToNextWave = this.baseTimeToNextWave === -1 ? Infinity : this.baseTimeToNextWave;
+            this.waveInProgress=false; 
+        } 
+        update(dt){ 
+            if(this.waveInProgress){ 
+                if(this.game.enemies.length===0) this.endWave(); 
+            } else {
+                if (this.timeToNextWave !== Infinity) {
+                    this.timeToNextWave -= dt;
+                }
+                if(this.timeToNextWave <= 0) {
+                    this.startNextWave(); 
+                }
+            } 
+        } 
+        startNextWave(){ 
+            if (this.waveInProgress) return;
+            waveFlash.classList.add('active');
+            waveFlash.addEventListener('animationend', () => waveFlash.classList.remove('active'), { once: true });
+            this.waveNumber++; this.waveInProgress=true; this.timeToNextWave = 0; const comp = this.calculateWaveComposition(); for(const t of comp){ const pos = getRandomEdgePosition(this.game.worldWidth, this.game.worldHeight); let ne=null; if(t==='Grunt') ne=new Grunt(pos.x,pos.y); if(t==='Flier') ne=new Flier(pos.x,pos.y); if(ne){ ne.applyWaveBonus(this.waveNumber); this.game.enemies.push(ne); } } } 
+        endWave(){ this.waveInProgress=false; this.game.addMinerals(100 + this.waveNumber*25); if (this.baseTimeToNextWave !== -1) { this.timeToNextWave = Math.max(this.minTimeBetweenWaves, this.baseTimeToNextWave - (this.waveNumber * this.timeReductionPerWave)); } else { this.timeToNextWave = Infinity; } } 
+        calculateWaveComposition(){ let comp=[]; let points = this.waveNumber*5 + Math.pow(this.waveNumber,1.8)*0.8; let types = [{type:'Grunt',cost:3},{type:'Flier',cost:4}]; if(this.waveNumber<3) types.pop(); while(points>0){ const avail = types.filter(e=>e.cost<=points); if(!avail.length) break; const e = avail[Math.floor(Math.random()*avail.length)]; comp.push(e.type); points -= e.cost; } return comp; }
+        
+        forceNextWave() {
+            if (this.waveInProgress) return;
+            this.startNextWave();
+        }
+    }
+    
+    const AllClasses = { Core, Starbase, Pylon, SolarPanel, ShieldGenerator, Miner, StorageDepot, PhaserTurret, LaserTurret, PlasmaTurret, Barracks, SwarmTower, Infantry, RepairDrone, CollectorDrone, ConstructionDrone, Grunt, Flier, Projectile, PhaserShot, PlasmaBall, UnitProducer };
+
+    class Game {
+        constructor(width,height){
+            this.width = width;
+            this.height = height;
+            this.worldWidth = WORLD_WIDTH;
+            this.worldHeight = WORLD_HEIGHT;
+            this.isPaused = false;
+            this.minZoomToFitWorld = 0.1;
+            this.maxMinerals = 0;
+        }
+        
+        init(isReload = false, settings = {}){
+            Object.assign(this, { minerals: 250, buildings: [], units: [], enemies: [], projectiles: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, camera: { x: this.worldWidth/2, y: this.worldHeight/2, zoom:1 }, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
+            
+            this.calculateMinZoom();
+            this.camera.zoom = Math.max(this.minZoomToFitWorld, 1.0);
+            
+            for (let i = 0; i < NUM_STARS; i++) {
+                this.stars.push({ x: Math.random() * this.worldWidth, y: Math.random() * this.worldHeight, depth: 0.05 + Math.random() * 0.75, size: 0.7 + Math.random() * 1.2, alpha: 0.5 + Math.random() * 0.4 });
+            }
+            this.stars.sort((a, b) => a.depth - b.depth);
+
+            this.waveManager = new WaveManager(this, settings.peaceTime);
+            if (isReload) return;
+            document.getElementById('game-over').style.display='none';
+            const core = new Core(this.worldWidth/2, this.worldHeight/2); this.buildings.push(core);
+            
+            this.updateMaxMinerals();
+            
+            const numPatches = 50, safeZone = 400;
+            for(let i=0; i<numPatches; i++){ 
+                let x, y, d, size, amount; 
+                do { x = Math.random() * this.worldWidth; y = Math.random() * this.worldHeight; d = distance(x, y, core.x, core.y); } while (d < safeZone); 
+                const typeRand = Math.random();
+                if(typeRand < 0.6) { size = 20 + Math.random() * 10; amount = 1500 + Math.random() * 1000;
+                } else if (typeRand < 0.9) { size = 35 + Math.random() * 15; amount = 3000 + Math.random() * 2000;
+                } else { size = 55 + Math.random() * 10; amount = 6000 + Math.random() * 2000; }
+                this.asteroidFields.push(new AsteroidField(x, y, size, amount)); 
+            }
+            this.updatePowerGrid();
+            this.setSelectedObject(null);
+            this.clampCamera();
+        }
+
+        addMinerals(amount) {
+            this.minerals = Math.min(this.maxMinerals, this.minerals + amount);
+        }
+
+        updateMaxMinerals() {
+            this.maxMinerals = 0;
+            this.buildings.forEach(b => {
+                if (b.specs.storage) {
+                    this.maxMinerals += b.specs.storage;
+                }
+            });
+        }
+
+        calculateMinZoom() {
+            const zoomFitW = this.width / this.worldWidth;
+            const zoomFitH = this.height / this.worldHeight;
+            this.minZoomToFitWorld = Math.max(zoomFitW, zoomFitH);
+        }
+
+        clampCamera() {
+            const halfViewWidth = this.width / (2 * this.camera.zoom);
+            const halfViewHeight = this.height / (2 * this.camera.zoom);
+            const minX = halfViewWidth; const maxX = this.worldWidth - halfViewWidth;
+            const minY = halfViewHeight; const maxY = this.worldHeight - halfViewHeight;
+            if (maxX < minX) { this.camera.x = this.worldWidth / 2; } 
+            else { this.camera.x = Math.max(minX, Math.min(this.camera.x, maxX)); }
+            if (maxY < minY) { this.camera.y = this.worldHeight / 2; }
+            else { this.camera.y = Math.max(minY, Math.min(this.camera.y, maxY)); }
+        }
+
+        createExplosion(x, y, color, baseCount = 10, sizeFactor = 1) {
+            const count = baseCount + Math.floor(sizeFactor * 2);
+            for (let i = 0; i < count; i++) this.particles.push(new Particle(x, y, color));
+        }
+
+        update(dt, timestamp){
+            if(this.isGameOver || !dt) return;
+            
+            this.buildings.forEach(b => { b.update(this, dt) });
+            
+            this.updateShields(dt);
+            this.dispatchConstructionDrones(); this.waveManager.update(dt);
+            this.updateMaxMinerals();
+            
+            const updateAndFilter = (list) => {
+                for (let i = list.length - 1; i >= 0; i--) {
+                    const entity = list[i];
+                    entity.update(this, dt);
+                    if (entity.health <= 0) {
+                        this.createExplosion(entity.x, entity.y, entity.specs.color, 10, entity.size);
+                        if(entity.target && entity.target.attackers) entity.target.attackers--;
+                        if(entity instanceof Unit && entity.parentBuilding && entity.parentBuilding.units) {
+                           entity.parentBuilding.units = entity.parentBuilding.units.filter(u => u !== entity);
+                        }
+                        list.splice(i, 1);
+                    }
+                }
+            };
+            
+            updateAndFilter(this.buildings); updateAndFilter(this.units); updateAndFilter(this.enemies);
+            this.projectiles.forEach(p => p.update(dt)); this.projectiles = this.projectiles.filter(p=>!p.shouldBeRemoved);
+            this.particles.forEach(p => p.update(dt)); this.particles = this.particles.filter(p => p.life > 0);
+
+            this.asteroidFields = this.asteroidFields.filter(w=>w.minerals>0 || this.selectedObject === w);
+            this.updatePowerGrid();
+            if(this.selectedObject instanceof Building && !this.buildings.includes(this.selectedObject)) this.setSelectedObject(null);
+            if(!this.buildings.some(b => b.type === 'Core')) this.gameOver();
+            this.updateUI();
+        }
+        updateShields(dt) {
+            const allEntities = [...this.buildings, ...this.units];
+            allEntities.forEach(e => e.maxShieldHealth = 0);
+            const shieldGens = this.buildings.filter(b => b.type === 'ShieldGenerator' && b.isPowered && !b.isConstructing && !b.task);
+            for (const gen of shieldGens) { for (const entity of allEntities) { if (distance(gen.x, gen.y, entity.x, entity.y) < gen.specs.range) { entity.maxShieldHealth = Math.max(entity.maxShieldHealth, gen.specs.shieldAmount); } } }
+            allEntities.forEach(e => {
+                if (e.maxShieldHealth === 0) { e.shieldHealth = 0; return; }
+                if (e.shieldHealth > e.maxShieldHealth) { e.shieldHealth = e.maxShieldHealth; }
+                if (e.shieldRegenTimer > 0) { e.shieldRegenTimer -= dt; }
+                else if (e.shieldHealth < e.maxShieldHealth) {
+                    const gen = shieldGens.find(g => distance(g.x, g.y, e.x, e.y) < g.specs.range);
+                    if (gen) { e.shieldHealth += gen.specs.shieldRegenRate * (dt / 1000); if (e.shieldHealth > e.maxShieldHealth) e.shieldHealth = e.maxShieldHealth; }
+                }
+            });
+        }
+        dispatchConstructionDrones(target = null) { 
+            const idleDrones = this.units.filter(u => u.type === 'ConstructionDrone' && !u.targetBuilding);
+            if (idleDrones.length === 0) return; 
+
+            const job = target || this.constructionQueue.find(b => b.assignedDrones.length === 0) || this.buildings.find(b => b.task && b.assignedDrones.length === 0);
+            if(job) { 
+                idleDrones.forEach(drone => {
+                    job.assignedDrones.push(drone);
+                    drone.targetBuilding = job;
+                });
+            }
+        }
+        
+        drawStars() {
+            ctx.save();
+            ctx.fillStyle = 'white';
+            this.stars.forEach(star => {
+                const screenX = (star.x - this.camera.x * star.depth) * this.camera.zoom + this.width / 2;
+                const screenY = (star.y - this.camera.y * star.depth) * this.camera.zoom + this.height / 2;
+                const alphaScale = Math.max(0.25, Math.min(1.0, this.camera.zoom * 1.2));
+                ctx.globalAlpha = star.alpha * alphaScale * (1 - star.depth * 0.5);
+                const sizeScale = Math.max(0.6, Math.min(1.5, this.camera.zoom * 1.0));
+                const finalSize = star.size * sizeScale;
+                if (screenX >= -finalSize && screenX <= this.width + finalSize &&
+                    screenY >= -finalSize && screenY <= this.height + finalSize) {
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, finalSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+            ctx.restore();
+        }
+        
+        drawOffscreenIndicators() {
+            const padding = 20;
+            const cam = this.camera;
+            const view = {
+                left: cam.x - (this.width / 2) / cam.zoom,
+                right: cam.x + (this.width / 2) / cam.zoom,
+                top: cam.y - (this.height / 2) / cam.zoom,
+                bottom: cam.y + (this.height / 2) / cam.zoom,
+            };
+            
+            ctx.save();
+            ctx.fillStyle = UI_COLORS.danger;
+            ctx.shadowColor = UI_COLORS.danger;
+            ctx.shadowBlur = 10;
+
+            this.enemies.forEach(enemy => {
+                if (enemy.x > view.left && enemy.x < view.right && enemy.y > view.top && enemy.y < view.bottom) {
+                    return; // Skip enemies on screen
+                }
+                
+                const angle = Math.atan2(enemy.y - cam.y, enemy.x - cam.x);
+                
+                let x = this.width / 2 + (this.width / 2 - padding) * Math.cos(angle);
+                let y = this.height / 2 + (this.height / 2 - padding) * Math.sin(angle);
+
+                x = Math.max(padding, Math.min(x, this.width - padding));
+                y = Math.max(padding, Math.min(y, this.height - padding));
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(-10, -6);
+                ctx.lineTo(-10, 6);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
+
+            ctx.restore();
+        }
+
+        draw(){
+            // 1. Fill base color.
+            ctx.fillStyle = '#03030A';
+            ctx.fillRect(0, 0, this.width, this.height);
+
+            // 2. Apply the single, primary camera transform for the entire world.
+            ctx.save();
+            ctx.translate(this.width / 2, this.height / 2);
+            ctx.scale(this.camera.zoom, this.camera.zoom);
+            ctx.translate(-this.camera.x, -this.camera.y);
+
+            // --- START OF WORLD-SPACE DRAWING ---
+            
+            // 3. Draw all game entities on top of the background.
+            if (this.buildConfirmationDetails) { this.drawBuildPlacementAids(); } 
+            this.drawPowerNetwork();
+            this.asteroidFields.forEach(p=>p.draw(ctx));
+            this.buildings.forEach(b=>b.draw(ctx));
+            this.units.forEach(u=>u.draw(ctx));
+            this.enemies.forEach(e=>e.draw(ctx));
+            this.projectiles.forEach(p=>p.draw(ctx));
+            this.particles.forEach(p => p.draw(ctx));
+            
+            // Draw UI elements tied to world objects
+            this.buildings.forEach(b => {
+                if(b instanceof UnitProducer && !b.isConstructing && (b.type === 'Core' || b.type === 'Starbase')) {
+                    const base = (b.type === 'Core' || b.type === 'Starbase');
+                    if(base && b.gridProduction !== undefined) {
+                        ctx.save();
+                        const textY = b.y - b.size - 20;
+                        const powerText = `${b.gridConsumption || 0} / ${b.gridProduction || 0}`;
+                        const color = ((b.gridConsumption || 0) > (b.gridProduction || 0)) ? UI_COLORS.danger : UI_COLORS.primary;
+                        ctx.fillStyle = color;
+                        ctx.font = `${14 / this.camera.zoom}px 'Consolas', 'Menlo', 'Monaco', monospace`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 10;
+                        ctx.fillText(powerText, b.x, textY);
+                        ctx.restore();
+                    }
+                }
+            });
+
+            if(this.selectedObject){
+                this.drawContrastingCircle(ctx, this.selectedObject.x, this.selectedObject.y, this.selectedObject.size * (this.selectedObject instanceof AsteroidField ? 1.6 : 1) + 5, UI_COLORS.primary, 2);
+                if(this.selectedObject instanceof Building) {
+                    const specs = this.selectedObject.specs; const radius = specs.connectionRange || specs.range;
+                    if (radius > 0 && !this.selectedObject.isConstructing) { 
+                        this.drawContrastingCircle(ctx, this.selectedObject.x, this.selectedObject.y, radius, 'rgba(137, 221, 255, 0.4)', 1);
+                    }
+                }
+            }
+            if(this.buildConfirmationDetails) this.drawBuildGhost();
+            
+            // --- END OF WORLD-SPACE DRAWING ---
+
+            // 5. Restore the context, removing the camera transform.
+            ctx.restore();
+
+            // 6. Draw elements that are in SCREEN SPACE (like the parallax stars).
+            this.drawStars(); 
+            this.drawOffscreenIndicators();
+        }
+
+        drawContrastingCircle(ctx, x, y, radius, color, lineWidth) {
+            ctx.save();
+            // Black backing
+            ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+            ctx.lineWidth = (lineWidth + 2) / this.camera.zoom;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Colored circle
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth / this.camera.zoom;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        updatePowerGrid() {
+            this.buildings.forEach(b => {
+                b.isPowered = false;
+                if (b instanceof UnitProducer && (b.type === 'Core' || b.type === 'Starbase')) {
+                    b.gridProduction = 0; b.gridConsumption = 0;
+                }
+            });
+            const gridStarters = this.buildings.filter(b => (b.type === 'Core' || b.type === 'Starbase') && !b.isConstructing);
+            const allProviders = this.buildings.filter(b => b.specs.connectionRange > 0 && !b.isConstructing);
+            const visitedInAnyGrid = new Set();
+            for (const startNode of gridStarters) {
+                if (visitedInAnyGrid.has(startNode)) continue;
+                const localNetworkNodes = new Set(); const queue = [startNode]; const localVisited = new Set(queue);
+                visitedInAnyGrid.add(startNode);
+                while (queue.length > 0) {
+                    const current = queue.shift(); localNetworkNodes.add(current);
+                    for (const otherProvider of allProviders) {
+                        if (!localVisited.has(otherProvider)) {
+                            const d = distance(current.x, current.y, otherProvider.x, otherProvider.y);
+                            if (d < current.specs.connectionRange || d < otherProvider.specs.connectionRange) {
+                                localVisited.add(otherProvider); visitedInAnyGrid.add(otherProvider); queue.push(otherProvider);
+                            }
+                        }
+                    }
+                }
+                let localProduction = 0; let localDemand = 0; const localConsumers = new Set();
+                localNetworkNodes.forEach(node => { if (node.specs.power > 0) localProduction += node.specs.power; });
+                this.buildings.forEach(b => { if (b.specs.power < 0 && !b.isConstructing) { for (const provider of localNetworkNodes) { if (distance(b.x, b.y, provider.x, provider.y) < provider.specs.connectionRange) { localConsumers.add(b); break; } } } });
+                localConsumers.forEach(c => { localDemand -= c.specs.power });
+                
+                if(startNode instanceof UnitProducer) {
+                    startNode.gridProduction = localProduction; startNode.gridConsumption = localDemand;
+                }
+
+                if (localProduction >= localDemand) { localNetworkNodes.forEach(node => node.isPowered = true); localConsumers.forEach(node => node.isPowered = true); }
+            }
+        }
+        
+        drawPowerNetwork() {
+            ctx.save(); ctx.lineWidth = 2.5 / this.camera.zoom; ctx.shadowBlur = 10; ctx.globalAlpha = 0.7;
+            const providers = this.buildings.filter(b => b.specs.connectionRange > 0 && !b.isConstructing);
+            const consumers = this.buildings.filter(b => b.specs.power < 0 && !b.isConstructing);
+            for (let i = 0; i < providers.length; i++) { for (let j = i + 1; j < providers.length; j++) { const p1 = providers[i]; const p2 = providers[j]; const d = distance(p1.x, p1.y, p2.x, p2.y); if (d < p1.specs.connectionRange || d < p2.specs.connectionRange) { const lineColor = (p1.isPowered && p2.isPowered) ? UI_COLORS.primary : '#FFFFFF'; ctx.strokeStyle = lineColor; ctx.shadowColor = lineColor; ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }
+            consumers.forEach(consumer => {
+                let closestProvider = null; let minDist = Infinity;
+                providers.forEach(provider => { const d = distance(consumer.x, consumer.y, provider.x, provider.y); if (d < provider.specs.connectionRange && d < minDist) { minDist = d; closestProvider = provider; } });
+                if (closestProvider) { const lineColor = consumer.isPowered ? UI_COLORS.primary : '#FFFFFF'; ctx.strokeStyle = lineColor; ctx.shadowColor = lineColor; ctx.beginPath(); ctx.moveTo(consumer.x, consumer.y); ctx.lineTo(closestProvider.x, closestProvider.y); ctx.stroke(); }
+            });
+            ctx.restore();
+        }
+
+        drawBuildPlacementAids() { ctx.save(); ctx.globalAlpha = 0.15; this.buildings.forEach(b => { if (b.specs.connectionRange > 0) { const canProvideRange = b.isPowered || ['Pylon', 'SolarPanel', 'Starbase', 'Core'].includes(b.type); if(canProvideRange) { ctx.fillStyle = b.specs.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.specs.connectionRange, 0, 2 * Math.PI); ctx.fill(); } } }); ctx.restore(); }
+        
+        drawBuildGhost() {
+            const ghostDetails = this.buildConfirmationDetails;
+            if (!ghostDetails) return;
+
+            const { type, x, y } = ghostDetails;
+            const isValid = this.isValidPlacement(x, y, type);
+            const ghostColor = isValid ? UI_COLORS.success : UI_COLORS.danger;
+            const specs = BUILDING_SPECS[type];
+            ctx.save();
+            const radius = specs.range || specs.connectionRange;
+            if (radius > 0) { 
+                this.drawContrastingCircle(ctx, x, y, radius, 'rgba(255, 255, 255, 0.4)', 1);
+            }
+            ctx.globalAlpha = 0.6; ctx.fillStyle = ghostColor; ctx.strokeStyle = ghostColor; ctx.lineWidth = 2; ctx.shadowColor = ghostColor; ctx.shadowBlur = 15;
+            drawBuildingPath(ctx, type, specs.size, x, y);
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
+
+        screenToWorld(x, y) { const rect = gameCanvas.getBoundingClientRect(); return { x: (x - rect.left - this.width / 2) / this.camera.zoom + this.camera.x, y: (y - rect.top - this.height / 2) / this.camera.zoom + this.camera.y }; }
+        worldToScreen(x, y) { return { x: (x - this.camera.x) * this.camera.zoom + this.width / 2, y: (y - this.camera.y) * this.camera.zoom + this.height / 2 }; }
+        
+        setupInputHandlers() {
+            gameCanvas.addEventListener("pointerdown", e => this.handlePointerDown(e));
+            gameCanvas.addEventListener("pointermove", e => this.handlePointerMove(e));
+            gameCanvas.addEventListener("pointerup", e => this.handlePointerUp(e));
+            gameCanvas.addEventListener("pointercancel", e => this.handlePointerUp(e));
+            gameCanvas.addEventListener("wheel", e => { e.preventDefault(); this.handleWheel(e); });
+            document.addEventListener("keydown", e => { if (e.key === "Escape") this.cancelAllActions(); });
+            document.querySelectorAll(".ui-panel").forEach(el => { el.addEventListener("pointerdown", e => e.stopPropagation()); });
+            
+            document.querySelectorAll("#build-menu .build-btn[data-type]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const type = btn.dataset.type;
+                    this.showBuildConfirmation(type, this.mouse.worldX, this.mouse.worldY);
+                });
+            });
+
+            document.getElementById("menuBtn").addEventListener("click", () => this.togglePause());
+            document.getElementById("fullscreenBtn").addEventListener("click", () => this.toggleFullscreen());
+            document.getElementById("destroy-btn").addEventListener("click", () => {
+                if(!(this.selectedObject instanceof Building)) return; 
+                const b = this.selectedObject; 
+                const refund = b.isConstructing ? b.baseSpecs.cost : 0.5 * b.baseSpecs.cost; 
+                this.addMinerals(refund);
+                if(b.isConstructing) { this.constructionQueue = this.constructionQueue.filter(j => j !== b); if(b.assignedDrones) b.assignedDrones.forEach(d => d.targetBuilding = null); }
+                if(b.units) { b.units.forEach(u => u.health = 0); }
+                b.health = 0; 
+                this.setSelectedObject(null);
+            });
+            confirmBuildBtn.addEventListener("click", () => this.confirmBuild());
+            cancelBuildBtn.addEventListener("click", () => this.cancelBuild());
+            document.getElementById('restart-button').addEventListener('click', () => { window.location.reload(); });
+            startWaveBtn.addEventListener('click', () => { if (this.waveManager) this.waveManager.forceNextWave(); });
+        }
+        handlePointerDown(e) { e.preventDefault(); if (this.isPaused) return; this.mouse.down = true; this.mouse.lastDownTime = Date.now(); this.pointers.push(e); this.mouse.startX = e.clientX; this.mouse.startY = e.clientY; this.mouse.lastMoveX = e.clientX; this.mouse.lastMoveY = e.clientY; }
+        
+        handlePointerMove(e) { 
+            e.preventDefault(); if (this.isPaused) return; const pIndex = this.pointers.findIndex(p => p.pointerId === e.pointerId); 
+            if (pIndex >= 0) this.pointers[pIndex] = e; 
+            const world = this.screenToWorld(e.clientX, e.clientY); 
+            this.mouse.worldX = world.x; this.mouse.worldY = world.y;
+            
+            if (this.buildConfirmationDetails && !this.buildConfirmationDetails.isPositionLocked) {
+                 this.buildConfirmationDetails.x = this.mouse.worldX;
+                 this.buildConfirmationDetails.y = this.mouse.worldY;
+            }
+            
+            if (this.pointers.length === 1 && this.mouse.down && !this.buildConfirmationDetails) { 
+                const dx = e.clientX - this.mouse.lastMoveX; const dy = e.clientY - this.mouse.lastMoveY; 
+                this.camera.x -= dx / this.camera.zoom; this.camera.y -= dy / this.camera.zoom; 
+                this.clampCamera();
+            } else if (this.pointers.length === 2) { 
+                const p1 = this.pointers[0]; const p2 = this.pointers[1]; 
+                const pinchDist = distance(p1.clientX, p1.clientY, p2.clientX, p2.clientY); 
+                if (this.initialPinchDistance != null) this.zoomAtPoint((p1.clientX + p2.clientX) / 2, (p1.clientY + p2.clientY) / 2, pinchDist / this.initialPinchDistance); 
+                this.initialPinchDistance = pinchDist; 
+            }
+            this.mouse.lastMoveX = e.clientX; this.mouse.lastMoveY = e.clientY; 
+        }
+
+        handlePointerUp(e) {
+            e.preventDefault(); if (this.isPaused) return;
+            const dist = distance(this.mouse.startX, this.mouse.startY, e.clientX, e.clientY);
+            if (this.mouse.down && Date.now() - this.mouse.lastDownTime < 250 && dist < 10) {
+                this.handleClick(e);
+            }
+            this.mouse.down = false;
+            const pIndex = this.pointers.findIndex(p => p.pointerId === e.pointerId);
+            if (pIndex >= 0) this.pointers.splice(pIndex, 1);
+            if (this.pointers.length < 2) this.initialPinchDistance = null;
+        }
+
+        handleWheel(e) { if (this.isPaused) return; this.zoomAtPoint(e.clientX, e.clientY, 1 - 0.001 * e.deltaY); }
+        
+        zoomAtPoint(x, y, factor) {
+            const worldPos1 = this.screenToWorld(x, y);
+            const currentZoom = this.camera.zoom;
+            const newZoom = Math.max(this.minZoomToFitWorld, Math.min(2.5, currentZoom * factor));
+            
+            if (newZoom === currentZoom) return;
+
+            this.camera.zoom = newZoom;
+            const worldPos2 = this.screenToWorld(x, y);
+            this.camera.x += worldPos1.x - worldPos2.x; this.camera.y += worldPos1.y - worldPos2.y;
+            this.clampCamera();
+        }
+        
+        handleClick(e) {
+            if (this.buildConfirmationDetails && e.pointerType === 'mouse') {
+                this.buildConfirmationDetails.isPositionLocked = true;
+                this.buildConfirmationDetails.x = this.mouse.worldX;
+                this.buildConfirmationDetails.y = this.mouse.worldY;
+                return;
+            }
+
+            if (this.buildConfirmationDetails) {
+                return;
+            }
+
+            const clickedBuilding = this.buildings.find(b => distance(this.mouse.worldX, this.mouse.worldY, b.x, b.y) < b.size + 3);
+            if (clickedBuilding) {
+                if (clickedBuilding.type === 'Barracks' && this.selectedObject === clickedBuilding) {
+                    clickedBuilding.rallyPoint = { x: this.mouse.worldX, y: this.mouse.worldY };
+                }
+                this.setSelectedObject(clickedBuilding);
+                return;
+            }
+            
+            const clickedAsteroid = this.asteroidFields.find(a => distance(this.mouse.worldX, this.mouse.worldY, a.x, a.y) < a.size * 1.6);
+            if (clickedAsteroid) {
+                this.setSelectedObject(clickedAsteroid);
+                return;
+            }
+            
+            this.setSelectedObject(null);
+            this.cancelAllActions();
+        }
+
+        cancelAllActions() { 
+            this.hideBuildConfirmation();
+        }
+        
+        setSelectedObject(obj) { 
+            if (this.buildConfirmationDetails) return;
+            this.selectedObject = obj;
+            // Retrasamos la construcción del panel 1 milisegundo.
+            // Esto rompe la cadena del evento de clic y evita el "clic fantasma".
+            setTimeout(() => this.buildSelectionPanel(), 1);
+        }
+
+        isValidPlacement(x, y, type) {
+            const specs = BUILDING_SPECS[type];
+            if (this.minerals < specs.cost) return false;
+            for (const b of this.buildings) { if (distance(x, y, b.x, b.y) < specs.size + b.size + 5) return false; }
+            if (type === 'Starbase') return true;
+            let isInRange = false;
+            
+            const allProviders = this.buildings.filter(b => b.specs.connectionRange > 0);
+            for (const b of allProviders) {
+                if (distance(x, y, b.x, b.y) < b.specs.connectionRange) {
+                     isInRange = true; break;
+                }
+            }
+            return isInRange;
+        }
+
+        showBuildConfirmation(type, x, y) {
+            const specs = BUILDING_SPECS[type];
+            this.buildConfirmationDetails = { type, x, y, specs, isPositionLocked: false };
+            
+            this.setSelectedObject(null);
+            
+            document.getElementById('build-confirm-icon').innerHTML = '';
+            document.getElementById('build-confirm-icon').appendChild(createIconCanvas(type, 50, 50));
+            document.getElementById('build-confirm-name').textContent = t(specs.nameKey);
+            
+            let detailsHtml = createIconValueHTML(MINERAL_ICON_SVG, specs.cost);
+            if (specs.power) {
+                const powerColor = specs.power > 0 ? 'var(--color-primary)' : 'var(--color-danger)';
+                detailsHtml += `<span style="color:${powerColor}; margin-left:10px;">${createIconValueHTML(ENERGY_ICON_SVG, specs.power)}</span>`;
+            }
+            document.getElementById('build-confirm-details').innerHTML = detailsHtml;
+
+            document.getElementById('build-confirm-desc').textContent = t(specs.descKey);
+            
+            buildMenu.style.display = 'none';
+            document.getElementById('selection-panel').style.display = 'none';
+            buildConfirmPanel.style.display = 'flex';
+        }
+
+        hideBuildConfirmation(showBuildMenu = true) {
+            this.buildConfirmationDetails = null;
+            buildConfirmPanel.style.display = 'none';
+            if (showBuildMenu) {
+                buildMenu.style.display = 'flex';
+            }
+        }
+        confirmBuild() {
+            if (this.buildConfirmationDetails) {
+                const { type, x, y } = this.buildConfirmationDetails;
+                if(this.isValidPlacement(x, y, type)) {
+                    this.minerals -= BUILDING_SPECS[type].cost;
+                    const BuildingClass = AllClasses[type];
+                    if (BuildingClass) {
+                        const newBuilding = new BuildingClass(x, y);
+                        this.buildings.push(newBuilding);
+                        this.constructionQueue.push(newBuilding);
+                        this.dispatchConstructionDrones(newBuilding);
+                    }
+                    this.hideBuildConfirmation();
+                } else {
+                     console.log("Cannot build in invalid location");
+                }
+            }
+        }
+        cancelBuild() { this.hideBuildConfirmation(); }
+
+        toggleFullscreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => { alert(`Error al activar pantalla completa: ${err.message} (${err.name})`); }); } else { if (document.exitFullscreen) { document.exitFullscreen(); } } }
+        
+        togglePause() {
+            this.isPaused = !this.isPaused;
+            const mainMenuContent = document.getElementById('main-menu-content');
+
+            if (this.isPaused) {
+                splashScreen.style.display = 'flex';
+                splashScreen.style.opacity = '1';
+                splashScreen.classList.add('paused');
+
+                mainMenuContent.querySelector('h1').style.display = 'none';
+                mainMenuContent.querySelector('.epic-description').style.display = 'none';
+                document.getElementById('game-settings').style.display = 'none';
+                mainMenuContent.querySelector('.credits').style.display = 'none';
+                playButton.style.display = 'none';
+                loadGameButton.style.display = 'none';
+
+                resumeButton.style.display = 'flex';
+                saveGameButton.style.display = 'flex';
+                mainMenuButton.style.display = 'flex';
+            } else {
+                splashScreen.style.opacity = '0';
+                splashScreen.addEventListener('transitionend', () => {
+                    if (!this.isPaused) {
+                        splashScreen.style.display = 'none';
+                        mainMenuContent.querySelector('h1').style.display = 'block';
+                        mainMenuContent.querySelector('.epic-description').style.display = 'block';
+                        document.getElementById('game-settings').style.display = 'flex';
+                        mainMenuContent.querySelector('.credits').style.display = 'block';
+                        playButton.style.display = 'flex';
+                        loadGameButton.style.display = 'flex';
+                        
+                        resumeButton.style.display = 'none';
+                        saveGameButton.style.display = 'none';
+                        mainMenuButton.style.display = 'none';
+                    }
+                }, { once: true });
+            }
+        }
+
+        updateUI() { 
+            document.getElementById("minerals").innerHTML = createIconValueHTML(MINERAL_ICON_SVG, Math.floor(this.minerals), this.maxMinerals); 
+            const waveEl = document.getElementById("wave-timer"); 
+            startWaveBtn.disabled = this.waveManager.waveInProgress;
+            if (this.waveManager.waveInProgress) { 
+                waveEl.innerHTML = `${t('wave_incoming')} <span style="color:var(--color-danger)">${this.waveManager.waveNumber}</span> | ${t('hostiles_remaining')}: ${this.enemies.length}`; 
+            } else if (this.waveManager.timeToNextWave === Infinity) {
+                waveEl.textContent = '∞';
+            } else { 
+                waveEl.textContent = `${t('next_wave_in')}: ${Math.ceil(this.waveManager.timeToNextWave / 1000)}s`; 
+            } 
+            document.querySelectorAll('#build-menu .build-btn[data-type]').forEach(btn => { const type = btn.dataset.type; const cost = BUILDING_SPECS[type].cost; btn.disabled = this.minerals < cost; });
+            this.updateDynamicSelectionUI();
+        }
+        
+        buildSelectionPanel() {
+            const panel = document.getElementById("selection-panel"); 
+            const detailsContainer = document.getElementById("selection-details");
+            const upgradeContainer = document.getElementById("upgrade-buttons-container");
+            const convertContainer = document.getElementById("convert-buttons-container");
+            const slotsContainer = document.getElementById("unit-slots-container");
+
+            upgradeContainer.innerHTML = ''; 
+            convertContainer.innerHTML = '';
+            detailsContainer.innerHTML = '';
+            slotsContainer.innerHTML = '';
+            
+            if (this.selectedObject) {
+                panel.style.display = "block";
+                document.getElementById('selection-icon').innerHTML = ''; 
+                document.getElementById("selection-type").textContent = '';
+
+                if(this.selectedObject instanceof Building) {
+                    const b = this.selectedObject;
+                    document.getElementById('selection-icon').appendChild(createIconCanvas(b.type, 40, 40));
+                    document.getElementById("selection-type").textContent = `${t(b.baseSpecs.nameKey)}`;
+
+                    const energyStat = document.createElement('div');
+                    energyStat.className = 'stat-line';
+                    energyStat.dataset.stat = 'energy';
+                    detailsContainer.appendChild(energyStat);
+
+                    if (b.baseSpecs.upgrades && !b.isConstructing) {
+                        b.baseSpecs.upgrades.forEach(upgType => {
+                            const statLine = document.createElement('div');
+                            statLine.className = 'stat-line';
+                            statLine.dataset.stat = upgType;
+                            detailsContainer.appendChild(statLine);
+
+                            const btn = document.createElement('button');
+                            btn.classList.add('build-btn', 'upgrade-btn');
+                            btn.dataset.upgrade = upgType;
+                            btn.onclick = (e) => { e.stopPropagation(); b.startUpgrade(upgType); };
+                            upgradeContainer.appendChild(btn);
+                        });
+                    }
+                    
+                    if (b instanceof UnitProducer && !b.isConstructing) {
+                        for (let i = 0; i < b.maxSlots; i++) {
+                            const slotPip = document.createElement('div');
+                            slotPip.className = 'unit-slot';
+                            slotPip.innerHTML = `<div class="progress-bar"></div>`;
+                            slotsContainer.appendChild(slotPip);
+                        }
+
+                        const btn = document.createElement('button');
+                        btn.classList.add('build-btn', 'upgrade-btn');
+                        btn.dataset.upgrade = "unitSlot";
+                        btn.onclick = (e) => { e.stopPropagation(); b.buyUnitSlot(); };
+                        upgradeContainer.appendChild(btn);
+                    }
+                    
+                    if (b instanceof Turret && !b.isConstructing) {
+                        convertContainer.style.display = 'block';
+                        const turretTypes = ['PhaserTurret', 'LaserTurret', 'PlasmaTurret'];
+                        turretTypes.forEach(turretType => {
+                            if (b.type !== turretType) {
+                                const specs = BUILDING_SPECS[turretType];
+                                const btn = document.createElement('button');
+                                btn.classList.add('build-btn', 'convert-btn');
+                                btn.dataset.convert = turretType;
+                                btn.onclick = (e) => { e.stopPropagation(); b.startConversion(turretType); };
+                                convertContainer.appendChild(btn);
+                            }
+                        });
+                    }
+                     if (b instanceof Miner && !b.isConstructing) {
+                        convertContainer.style.display = 'block';
+                        const specs = BUILDING_SPECS['StorageDepot'];
+                        const btn = document.createElement('button');
+                        btn.classList.add('build-btn', 'convert-btn');
+                        btn.dataset.convert = 'StorageDepot';
+                        btn.onclick = (e) => { e.stopPropagation(); b.startConversion('StorageDepot'); };
+                        convertContainer.appendChild(btn);
+                    }
+                } else if (this.selectedObject instanceof AsteroidField) {
+                    document.getElementById('selection-icon').innerHTML = '';
+                    document.getElementById("selection-type").textContent = t('asteroid_field_name');
+                }
+            } else { 
+                panel.style.display = "none";
+            }
+            this.updateDynamicSelectionUI(); // Initial dynamic update
+        }
+        
+        updateDynamicSelectionUI() {
+            if (!this.selectedObject) return;
+            const healthEl = document.getElementById("selection-health"); 
+            const shieldEl = document.getElementById("selection-shield");
+            const statusEl = document.getElementById("selection-status"); 
+            const destroyBtn = document.getElementById("destroy-btn");
+            const slotsContainer = document.getElementById("unit-slots-container");
+            
+            healthEl.style.display = 'none'; 
+            shieldEl.style.display = 'none'; 
+            statusEl.style.display = 'none'; 
+            destroyBtn.style.display = 'none';
+            slotsContainer.style.display = 'none';
+
+            if (this.selectedObject instanceof Building) {
+                const b = this.selectedObject;
+                healthEl.textContent = `${t('health_stat')}: ${Math.ceil(b.health)} / ${b.maxHealth}`; 
+                healthEl.style.display = 'block';
+                if (b.maxShieldHealth > 0 || b.type === "ShieldGenerator") { 
+                    shieldEl.textContent = `${t('shield_stat')}: ${Math.ceil(b.shieldHealth)} / ${Math.ceil(b.maxShieldHealth)}`; 
+                    shieldEl.style.display = 'block'; 
+                }
+                let statusText = "";
+                if (b.isConstructing) { statusText = `${t('status_label')}: <span style="color:var(--color-warning)">${t('status_constructing')}</span>`; }
+                else if (b.task) { statusText = `${t('status_label')}: <span style="color:var(--color-warning)">${t('status_upgrading')}</span>`; }
+                else if (b.specs.power < 0 && !b.isPowered) { statusText = `${t('status_label')}: <span style="color:var(--color-danger)">${t('status_no_power')}</span>`; } 
+                else { statusText = `${t('status_label')}: <span style="color:var(--color-success)">${t('status_operational')}</span>`; }
+                statusEl.innerHTML = statusText; statusEl.style.display = 'block';
+                
+                const energyStatLine = document.querySelector(`#selection-details [data-stat="energy"]`);
+                if(energyStatLine && b.specs.power) {
+                    const powerVal = b.specs.power;
+                    const powerColor = powerVal > 0 ? 'var(--color-primary)' : (powerVal < 0 ? 'var(--color-danger)' : 'white');
+                    energyStatLine.innerHTML = `<span>${t('stat_energy')}:</span><span class="stat-value" style="color: ${powerColor};">${createIconValueHTML(ENERGY_ICON_SVG, powerVal)}</span>`;
+                }
+
+                if (!b.isConstructing) {
+                    b.baseSpecs.upgrades?.forEach(upgType => {
+                        const statLine = document.querySelector(`#selection-details [data-stat="${upgType}"]`);
+                        const btn = document.querySelector(`#upgrade-buttons-container [data-upgrade="${upgType}"]`);
+                        if(!statLine || !btn) return;
+                        
+                        let value = b.specs[upgType];
+                        let formattedValue = '';
+                        if (['fireRate', 'spawnRate', 'droneSpawnRate'].includes(upgType)) { formattedValue = `${(1000 / value).toFixed(2)}/s`; } 
+                        else if (['range', 'connectionRange', 'storage'].includes(upgType)) { formattedValue = `${Math.round(value)}`; } 
+                        else { formattedValue = Number.isInteger(value) ? value : value.toFixed(1); }
+                        statLine.innerHTML = `<span>${t(UPGRADE_KEYS[upgType])}:</span><span class="stat-value">${formattedValue}</span>`;
+
+                        const level = b.upgradeLevels[upgType];
+                        if (level >= MAX_UPGRADE_LEVEL) {
+                            btn.innerHTML = `${t(UPGRADE_KEYS[upgType])}<br>(MAX)`; btn.disabled = true;
+                        } else {
+                            const cost = b.getUpgradeCost(upgType);
+                            const nextValue = getStatValueForLevel(b.baseSpecs[upgType], upgType, level + 1);
+                            const diff = nextValue - value;
+                            let improvementText = `(+${Number.isInteger(diff) ? diff : diff.toFixed(1)})`;
+                            if (['fireRate', 'spawnRate', 'droneSpawnRate'].includes(upgType)) { improvementText = `(${(1000/nextValue).toFixed(2)}/s)`; }
+
+                            btn.innerHTML = `${t(UPGRADE_KEYS[upgType])} (${level}) <span class="upgrade-improvement">${improvementText}</span><div class="upgrade-cost">${createIconValueHTML(MINERAL_ICON_SVG, cost)}</div>`;
+                            btn.disabled = this.minerals < cost || !!b.task;
+                        }
+                    });
+
+                    if (b instanceof UnitProducer) {
+                        slotsContainer.style.display = 'flex';
+                        const slotPips = slotsContainer.querySelectorAll('.unit-slot');
+                        for (let i = 0; i < b.maxSlots; i++) {
+                            const pip = slotPips[i];
+                            if (!pip) continue;
+                            pip.className = 'unit-slot'; // Reset
+                            pip.querySelector('.progress-bar').style.width = '0%'; // Reset progress bar
+
+                            if (i < b.unlockedSlots) {
+                                pip.classList.add('unlocked');
+                                if (i < b.units.length) {
+                                    pip.classList.add('active');
+                                } else if (i === b.units.length && b.isBuildingUnit) {
+                                    pip.classList.add('building');
+                                    const buildTime = b.specs.droneSpawnRate || b.specs.spawnRate;
+                                    const progress = b.buildProgress / buildTime;
+                                    pip.querySelector('.progress-bar').style.width = `${progress * 100}%`;
+                                } else {
+                                    pip.classList.add('pending');
+                                }
+                            }
+                        }
+
+                        const btn = document.querySelector(`#upgrade-buttons-container [data-upgrade="unitSlot"]`);
+                        if(btn) {
+                           if (b.unlockedSlots >= b.maxSlots) {
+                               btn.innerHTML = `${t('buy_unit_slot_button')}<br>(MAX)`; btn.disabled = true;
+                           } else {
+                               const cost = b.baseSpecs.unitSlotCost;
+                               btn.innerHTML = `${t('buy_unit_slot_button')} (${b.unlockedSlots}/${b.maxSlots})<div class="upgrade-cost">${createIconValueHTML(MINERAL_ICON_SVG, cost)}</div>`;
+                               btn.disabled = this.minerals < cost || !!b.task;
+                           }
+                        }
+                    }
+
+                    document.querySelectorAll('#convert-buttons-container .convert-btn').forEach(btn => {
+                        const convertType = btn.dataset.convert;
+                        const specs = BUILDING_SPECS[convertType];
+                        const conversionCost = (b.baseSpecs.conversionCost) ? b.baseSpecs.conversionCost : 0;
+                        btn.innerHTML = `${t('convert_button')} ${t(specs.shortNameKey)}<br>${createIconValueHTML(MINERAL_ICON_SVG, conversionCost)}`;
+                        btn.disabled = !!b.task || this.minerals < conversionCost;
+                    });
+                }
+                destroyBtn.style.display = (b.type !== 'Core') ? 'block' : 'none';
+
+            } else if (this.selectedObject instanceof AsteroidField) {
+                const a = this.selectedObject;
+                healthEl.textContent = `${t('remaining_minerals')}: ${Math.floor(a.minerals)}`; healthEl.style.display = 'block';
+            }
+        }
+
+        convertBuilding(oldBuilding, newType) {
+            const index = this.buildings.indexOf(oldBuilding);
+            if (index === -1) return;
+
+            const NewBuildingClass = AllClasses[newType];
+            const newBuilding = new NewBuildingClass(oldBuilding.x, oldBuilding.y);
+            
+            newBuilding.isConstructing = false;
+            newBuilding.health = oldBuilding.health; // Preserve health
+            
+            this.buildings.splice(index, 1, newBuilding);
+
+            if(this.selectedObject === oldBuilding) {
+                this.setSelectedObject(newBuilding);
+            }
+        }
+        
+        gameOver(){ if(!this.isGameOver){ this.isGameOver = true; document.getElementById("game-over").style.display="flex"; } }
+
+        generateThumbnail(width, height) {
+            const thumbCanvas = document.createElement('canvas');
+            thumbCanvas.width = width; thumbCanvas.height = height;
+            const tCtx = thumbCanvas.getContext('2d');
+            
+            const buildingsToRender = this.buildings.filter(b => !b.isConstructing);
+            let cam = { x: this.worldWidth / 2, y: this.worldHeight / 2, zoom: 0.3 };
+
+            if (buildingsToRender.length > 0) {
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                let maxRange = 0;
+                
+                buildingsToRender.forEach(b => {
+                    minX = Math.min(minX, b.x - b.size); maxX = Math.max(maxX, b.x + b.size);
+                    minY = Math.min(minY, b.y - b.size); maxY = Math.max(maxY, b.y + b.size);
+                    if (b.specs.connectionRange > maxRange) {
+                        maxRange = b.specs.connectionRange;
+                    }
+                });
+
+                minX -= maxRange; maxX += maxRange;
+                minY -= maxRange; maxY += maxRange;
+
+                const baseWidth = (maxX - minX) || 200;
+                const baseHeight = (maxY - minY) || 200;
+                const camX = minX + baseWidth / 2;
+                const camY = minY + baseHeight / 2;
+                
+                const visualPadding = 1.1;
+                const zoomX = width / (baseWidth * visualPadding);
+                const zoomY = height / (baseHeight * visualPadding);
+                const camZoom = Math.min(zoomX, zoomY, 1.0);
+
+                cam = { x: camX, y: camY, zoom: camZoom };
+            }
+
+            tCtx.fillStyle = '#050510'; tCtx.fillRect(0, 0, width, height);
+            tCtx.save(); tCtx.translate(width/2, height/2); tCtx.scale(cam.zoom, cam.zoom); tCtx.translate(-cam.x, -cam.y);
+            
+            tCtx.lineWidth = 2.5 / cam.zoom; tCtx.globalAlpha = 0.7;
+            const providers = buildingsToRender.filter(b => b.specs.connectionRange > 0);
+            const consumers = buildingsToRender.filter(b => b.specs.power < 0);
+            
+            providers.forEach(p1 => { providers.forEach(p2 => { if (p1 === p2) return; const d = distance(p1.x, p1.y, p2.x, p2.y); if (d < p1.specs.connectionRange || d < p2.specs.connectionRange) { const lineColor = (p1.isPowered && p2.isPowered) ? UI_COLORS.primary : '#FFFFFF'; tCtx.strokeStyle = lineColor; tCtx.beginPath(); tCtx.moveTo(p1.x, p1.y); tCtx.lineTo(p2.x, p2.y); tCtx.stroke(); } }); });
+            consumers.forEach(consumer => { let closestProvider = null; let minDist = Infinity; providers.forEach(provider => { const d = distance(consumer.x, consumer.y, provider.x, provider.y); if (d < provider.specs.connectionRange && d < minDist) { minDist = d; closestProvider = provider; } }); if (closestProvider) { const lineColor = consumer.isPowered ? UI_COLORS.primary : '#FFFFFF'; tCtx.strokeStyle = lineColor; tCtx.beginPath(); ctx.moveTo(consumer.x, consumer.y); tCtx.lineTo(closestProvider.x, closestProvider.y); tCtx.stroke(); } });
+
+            buildingsToRender.forEach(b => {
+                tCtx.fillStyle = b.isPowered || b.specs.power >= 0 ? b.specs.color : '#555';
+                tCtx.beginPath();
+                tCtx.arc(b.x, b.y, b.size, 0, 2*Math.PI);
+                tCtx.fill();
+            });
+            tCtx.restore();
+            return thumbCanvas.toDataURL();
+        }
+
+        saveGameToLocalStorage() {
+            if (this.isGameOver) return;
+            const saveId = Date.now();
+            const getEntityData = (entity) => {
+                const data = { type: entity.type, x: entity.x, y: entity.y, health: entity.health, shieldHealth: entity.shieldHealth, upgradeLevels: entity.upgradeLevels, };
+                if (entity.isConstructing !== undefined) data.isConstructing = entity.isConstructing;
+                if (entity.rallyPoint) data.rallyPoint = entity.rallyPoint;
+                if (entity.unlockedSlots) data.unlockedSlots = entity.unlockedSlots;
+                return data;
+            };
+            const gameState = {
+                saveId: saveId, minerals: this.minerals, camera: this.camera,
+                waveManager: { waveNumber: this.waveManager.waveNumber, timeToNextWave: this.waveManager.timeToNextWave, waveInProgress: this.waveManager.waveInProgress, baseTimeToNextWave: this.waveManager.baseTimeToNextWave },
+                buildings: this.buildings.map(getEntityData), enemies: this.enemies.map(getEntityData),
+                asteroidFields: this.asteroidFields.map(a => ({ x: a.x, y: a.y, minerals: a.minerals, size: a.size, initialMinerals: a.initialMinerals })),
+            };
+            
+            const saveIndex = JSON.parse(localStorage.getItem('sots_save_index') || '[]');
+            
+            if (saveIndex.length >= MAX_SAVE_SLOTS) {
+                saveIndex.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const oldestSave = saveIndex.shift();
+                if (oldestSave) {
+                    localStorage.removeItem(`sots_save_${oldestSave.id}`);
+                }
+            }
+
+            const thumbnail = this.generateThumbnail(128, 128);
+            saveIndex.push({ id: saveId, date: new Date().toISOString(), thumbnail: thumbnail });
+
+            localStorage.setItem(`sots_save_${saveId}`, JSON.stringify(gameState));
+            localStorage.setItem('sots_save_index', JSON.stringify(saveIndex));
+            
+            saveGameButton.textContent = t('game_saved_feedback');
+            setTimeout(() => { saveGameButton.textContent = t('save_game_button'); }, 2000);
+        }
+
+        loadGameFromLocalStorage(saveId) {
+            const savedStateJSON = localStorage.getItem(`sots_save_${saveId}`);
+            if (!savedStateJSON) return false;
+            try {
+                const savedState = JSON.parse(savedStateJSON);
+                
+                // Reiniciar el estado del juego manualmente, replicando la estructura de init()
+                Object.assign(this, { buildings: [], units: [], enemies: [], projectiles: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
+                
+                for (let i = 0; i < NUM_STARS; i++) {
+                    this.stars.push({ x: Math.random() * this.worldWidth, y: Math.random() * this.worldHeight, depth: 0.05 + Math.random() * 0.75, size: 0.7 + Math.random() * 1.2, alpha: 0.5 + Math.random() * 0.4 });
+                }
+                this.stars.sort((a, b) => a.depth - b.depth);
+                
+                // Cargar estado desde el archivo
+                this.minerals = savedState.minerals; 
+                this.camera = savedState.camera;
+                this.waveManager = new WaveManager(this, savedState.waveManager.baseTimeToNextWave);
+                this.waveManager.waveNumber = savedState.waveManager.waveNumber; 
+                this.waveManager.timeToNextWave = savedState.waveManager.timeToNextWave; 
+                this.waveManager.waveInProgress = savedState.waveManager.waveInProgress;
+                
+                savedState.buildings.forEach(bData => {
+                    const BuildingClass = AllClasses[bData.type];
+                    if (BuildingClass) {
+                        const newBuilding = new BuildingClass(bData.x, bData.y);
+                        newBuilding.health = bData.health; newBuilding.shieldHealth = bData.shieldHealth || 0; newBuilding.isConstructing = bData.isConstructing; newBuilding.upgradeLevels = bData.upgradeLevels || {};
+                        if (bData.rallyPoint) newBuilding.rallyPoint = bData.rallyPoint;
+                        if (bData.unlockedSlots) newBuilding.unlockedSlots = bData.unlockedSlots;
+                        newBuilding.applyLevelStats();
+                        if (newBuilding.isConstructing) { this.constructionQueue.push(newBuilding); }
+                        this.buildings.push(newBuilding);
+                    }
+                });
+                savedState.enemies.forEach(eData => {
+                    const EnemyClass = AllClasses[eData.type];
+                    if(EnemyClass) {
+                        const enemy = new EnemyClass(eData.x, eData.y);
+                        enemy.applyWaveBonus(this.waveManager.waveNumber);
+                        enemy.health = eData.health; enemy.shieldHealth = eData.shieldHealth || 0;
+                        this.enemies.push(enemy);
+                    }
+                });
+                savedState.asteroidFields.forEach(aData => {
+                    const field = new AsteroidField(aData.x, aData.y, aData.size, aData.initialMinerals);
+                    field.minerals = aData.minerals; this.asteroidFields.push(field);
+                });
+
+                // Actualizar todo DESPUÉS de cargar
+                this.updateMaxMinerals();
+                this.updatePowerGrid(); 
+                this.updateUI(); 
+                this.setSelectedObject(null); 
+                this.clampCamera();
+                return true;
+            } catch (e) {
+                console.error("Failed to load game from local storage:", e);
+                return false;
+            }
+        }
+    }
+
+    let game; 
+    let lastTime = 0;
+
+    function gameLoop(timestamp){ 
+        if (!game) { requestAnimationFrame(gameLoop); return; }
+        if (!lastTime) lastTime = timestamp;
+        if (game.isPaused) {
+            game.draw(); lastTime = timestamp;
+            requestAnimationFrame(gameLoop); return;
+        }
+        const deltaTime = timestamp - lastTime; lastTime = timestamp; 
+        if (!game.isGameOver) { game.update(deltaTime, timestamp); game.draw(); } 
+        requestAnimationFrame(gameLoop); 
+    }
+    
+    function startGame(loadId = null) {
+        splashScreen.style.display = 'none';
+        loadGameScreen.style.display = 'none';
+        gameCanvas.style.display = 'block';
+        uiContainer.style.display = 'block';
+        
+        gameCanvas.width = window.innerWidth;
+        gameCanvas.height = window.innerHeight;
+
+        game = new Game(gameCanvas.width, gameCanvas.height);
+        
+        let success = false;
+        if (loadId) {
+            success = game.loadGameFromLocalStorage(loadId);
+        }
+        
+        if (!success) {
+            const gameSettings = { 
+                peaceTime: parseInt(peaceTimeSelect.value, 10),
+            };
+            game.init(false, gameSettings);
+        }
+        
+        populateUiIcons(); 
+        game.setupInputHandlers();
+        lastTime = 0;
+        requestAnimationFrame(gameLoop); 
+    }
+    
+    function updateLanguageUI() {
+        document.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.dataset.langKey;
+            const text = t(key);
+            if (!text) return;
+            
+            if (el.tagName === 'BUTTON' || el.tagName === 'H1' || el.tagName === 'H5') {
+                 if (el.id !== 'play-button' || playButton.disabled === false) {
+                    el.textContent = text;
+                 }
+            } else if (!el.dataset.langDynamic) {
+                 el.textContent = text;
+            }
+        });
+        document.documentElement.lang = currentLanguage;
+        if(game) { 
+            populateUiIcons();
+            game.updateUI();
+            game.buildSelectionPanel();
+        }
+    }
+    
+    function showLoadScreen() {
+        splashScreen.style.display = 'none';
+        loadGameScreen.style.display = 'flex';
+        populateLoadScreen();
+    }
+    
+    function showMainMenu() {
+        loadGameScreen.style.display = 'none';
+        splashScreen.style.display = 'flex';
+    }
+    
+    function populateLoadScreen() {
+        const container = document.getElementById('save-slots-container');
+        container.innerHTML = '';
+        const saveIndex = JSON.parse(localStorage.getItem('sots_save_index') || '[]');
+        
+        if (saveIndex.length === 0) {
+            container.innerHTML = `<p>${t('no_saves_found')}</p>`;
+            return;
+        }
+        
+        saveIndex.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        saveIndex.forEach(save => {
+            const slot = document.createElement('div');
+            slot.className = 'save-slot';
+            const date = new Date(save.date);
+            const dateString = date.toLocaleString(currentLanguage, {dateStyle: 'long', timeStyle: 'short'});
+
+            slot.innerHTML = `
+                <img class="save-thumbnail" src="${save.thumbnail}" alt="Base thumbnail">
+                <div class="save-info">
+                    <div class="save-date">${dateString}</div>
+                </div>
+                <div class="save-actions">
+                    <button class="build-btn load-btn" data-id="${save.id}">${t('load_button')}</button>
+                    <button class="build-btn delete-btn" data-id="${save.id}" style="border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger);">${t('delete_button')}</button>
+                </div>
+            `;
+            container.appendChild(slot);
+        });
+
+        container.querySelectorAll('.load-btn').forEach(btn => {
+            btn.addEventListener('click', () => startGame(btn.dataset.id));
+        });
+        
+        container.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (confirm(t('confirm_delete'))) {
+                    const id = btn.dataset.id;
+                    const newIndex = JSON.parse(localStorage.getItem('sots_save_index') || '[]').filter(s => s.id != id);
+                    localStorage.removeItem(`sots_save_${id}`);
+                    localStorage.setItem('sots_save_index', JSON.stringify(newIndex));
+                    populateLoadScreen();
+                }
+            });
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    languageSelect.addEventListener('change', (e) => {
+        currentLanguage = e.target.value;
+        localStorage.setItem('sots_language', currentLanguage);
+        updateLanguageUI();
+    });
+    
+    peaceTimeSelect.addEventListener('change', (e) => {
+        localStorage.setItem('sots_peaceTime', e.target.value);
+    });
+
+    playButton.addEventListener('click', () => startGame(null));
+    loadGameButton.addEventListener('click', showLoadScreen);
+    backToMenuButton.addEventListener('click', showMainMenu);
+    resumeButton.addEventListener('click', () => game.togglePause());
+    saveGameButton.addEventListener('click', () => game.saveGameToLocalStorage());
+
+    mainMenuButton.addEventListener('click', () => {
+        if (confirm(t('confirm_exit'))) {
+            window.location.reload();
+        }
+    });
+
+    window.addEventListener('resize',()=>{ 
+        if (!game) return;
+        gameCanvas.width = window.innerWidth;
+        gameCanvas.height = window.innerHeight;
+        game.width = gameCanvas.width; 
+        game.height = gameCanvas.height; 
+        game.calculateMinZoom();
+        game.camera.zoom = Math.max(game.minZoomToFitWorld, game.camera.zoom);
+        game.clampCamera();
+    });
+
+    // --- INITIAL PAGE LOAD ---
+    languageSelect.value = currentLanguage;
+    peaceTimeSelect.value = localStorage.getItem('sots_peaceTime') || '300000';
+    updateLanguageUI();
+});
+</script>
+</body>
+</html>
