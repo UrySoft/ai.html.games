@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Siege of the Stars v7.0</title>
+    <title>Siege of the Stars v8.2 Sprite UI</title>
     <style>
         :root {
-            --color-primary: #89ddff; /* Starfleet Blue */
-            --color-accent: #ff8f8f; /* Starfleet Red */
-            --color-success: #8fff7f; /* Soft Green */
-            --color-danger: #ff6666; /* Alert Red */
-            --color-warning: #ffee7f; /* Warning Yellow */
+            --color-primary: #89ddff;
+            --color-accent: #ff8f8f;
+            --color-success: #8fff7f;
+            --color-danger: #ff6666;
+            --color-warning: #ffee7f;
             --glow-primary: 0 0 5px var(--color-primary), 0 0 10px var(--color-primary);
             --glow-success: 0 0 5px var(--color-success), 0 0 10px var(--color-success);
             --glow-danger: 0 0 5px var(--color-danger), 0 0 10px var(--color-danger);
@@ -172,43 +171,98 @@
             display: flex; align-items: center; gap: 5px;
             max-width: calc(100vw - 180px);
         }
-        
+                
+        /* --- START: UI CONTROLS & LAYOUT V8.2 --- */
         #top-right-ui {
-            position: absolute; top: 10px; right: 10px;
-            display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
-        }
-        #top-right-ui > * { pointer-events: all; }
-        
-        #build-menu { 
-            position: absolute; 
-            bottom: 10px; 
-            display: flex; 
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            display: flex;
             gap: 8px;
-            transition: all 0.3s ease;
         }
-        .build-btn {
-            cursor: pointer; border: 1px solid var(--color-primary); background: transparent; color: var(--color-primary);
-            font-family: inherit; text-shadow: inherit; transition: all 0.2s ease; box-shadow: var(--glow-primary);
-            width: 80px; height: 80px; box-sizing: border-box; text-align: center;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 4px 2px;
+
+        #build-menu {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            display: grid;
+            gap: 8px;
         }
-        .build-btn:hover:not(:disabled) {
-            background: rgba(137, 221, 255, 0.1); color: #fff; text-shadow: 0 0 5px #fff;
-            box-shadow: 0 0 8px var(--color-primary), 0 0 15px var(--color-primary);
+        /* Layout variants: Will be toggled by JS */
+        .layout-9x1 { grid-template-columns: repeat(9, auto); grid-template-rows: 1fr; }
+        .layout-1x9 { grid-template-columns: 1fr; grid-template-rows: repeat(9, auto); }
+        .layout-3x3 { grid-template-columns: repeat(3, auto); grid-template-rows: repeat(3, auto); }
+        .hidden { display: none !important; }
+
+        .build-btn, .upgrade-btn, .convert-btn, .menu-btn-lrg {
+            cursor: pointer;
+            border: 1px solid var(--color-primary);
+            background: transparent;
+            color: var(--color-primary);
+            font-family: inherit;
+            text-shadow: inherit;
+            transition: all 0.2s ease;
+            box-shadow: var(--glow-primary);
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 4px 2px;
+            text-align: center;
         }
+        .build-btn:hover:not(:disabled), .upgrade-btn:hover:not(:disabled), .convert-btn:hover:not(:disabled) {
+            background: rgba(137, 221, 255, 0.1);
+            color: #fff;
+            text-shadow: 0 0 5px #fff;
+        }
+        .build-btn:hover:not(:disabled) { box-shadow: 0 0 8px var(--color-primary), 0 0 15px var(--color-primary); }
+        .upgrade-btn:hover:not(:disabled) { box-shadow: 0 0 8px var(--color-warning), 0 0 15px var(--color-warning); }
+        .convert-btn:hover:not(:disabled) { box-shadow: 0 0 8px var(--color-success), 0 0 15px var(--color-success); }
+        
         .build-btn.selected {
-            border-color: var(--color-success); color: var(--color-success);
-            text-shadow: 0 0 5px var(--color-success); box-shadow: var(--glow-success), 0 0 15px var(--color-success);
+            border-color: var(--color-success);
+            color: var(--color-success);
+            text-shadow: 0 0 5px var(--color-success);
+            box-shadow: var(--glow-success), 0 0 15px var(--color-success);
         }
-        .build-btn:disabled {
+        .build-btn:disabled, .upgrade-btn:disabled, .convert-btn:disabled {
             color: #777; border-color: #555; box-shadow: none; text-shadow: none; cursor: not-allowed; opacity: 0.6;
         }
-        .build-btn > canvas { pointer-events: none; }
-        .build-name { font-size: 0.6rem; font-weight: bold; line-height: 1; text-transform: uppercase; }
+        .build-btn > canvas, .upgrade-btn > canvas, .convert-btn > canvas { pointer-events: none; }
+        
+        .build-name, .upgrade-word, .convert-name { font-size: 0.6rem; font-weight: bold; line-height: 1; text-transform: uppercase; }
         .build-cost { font-size: 0.55rem; line-height: 1; pointer-events: none; display: flex; gap: 6px; align-items: center; justify-content: center; }
+        
+        .upgrade-btn { border-color: var(--color-warning); color: var(--color-warning); box-shadow: var(--glow-warning); }
+        .convert-btn { border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); }
+        #destroy-btn { border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); }
+        #destroy-btn:hover { background: rgba(255, 102, 102, 0.1); box-shadow: 0 0 8px var(--color-danger), 0 0 15px var(--color-danger); }
 
-        #game-controls { display: flex; flex-direction: column; gap: 8px; width: 150px; }
-        #game-controls .build-btn { text-align: center; width: 100%; height: auto; justify-content: center; }
+        .control-btn {
+            border: 1px solid var(--color-primary);
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            width: clamp(40px, 8vw, 50px);
+            height: clamp(40px, 8vw, 50px);
+            box-sizing: border-box;
+            cursor: pointer;
+            box-shadow: var(--glow-primary);
+        }
+        .control-btn svg { width: 70%; height: 70%; fill: var(--color-primary); transition: all 0.2s; }
+        .control-btn:hover { background: rgba(137, 221, 255, 0.1); }
+        .control-btn:hover svg { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
+        #menuBtn { border-color: var(--color-warning); }
+        #menuBtn svg { fill: var(--color-warning); }
+        #menuBtn:hover svg { fill: #fff; filter: drop-shadow(0 0 5px var(--color-warning)); }
+        #confirm-build-btn { border-color: var(--color-success); }
+        #confirm-build-btn svg { fill: var(--color-success); }
+        #cancel-build-btn { border-color: var(--color-danger); }
+        #cancel-build-btn svg { fill: var(--color-danger); stroke: var(--color-danger); stroke-width: 1.5; }
+        /* --- END: UI CONTROLS & LAYOUT V8.2 --- */
 
         #start-wave-btn {
             width: 36px; height: 36px; padding: 0; font-size: 1.5rem;
@@ -225,7 +279,6 @@
             bottom: 10px !important; 
             left: 10px !important; 
             width: 260px; 
-            display: none; 
             right: auto !important;
             transform: none !important;
         }
@@ -250,84 +303,25 @@
             margin-top: 10px; 
         }
         
-        .upgrade-btn {
-            border-color: var(--color-warning); color: var(--color-warning); box-shadow: var(--glow-warning); text-shadow: 0 0 3px var(--color-warning);
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1;
-            padding: 4px;
-            box-sizing: border-box;
-        }
-        .upgrade-btn .upgrade-word {
-            font-size: 0.6rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1;
-            margin-top: 2px;
-        }
+        .upgrade-btn .upgrade-word { margin-top: 2px; }
         .upgrade-btn .upgrade-spec-line {
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 2px;
-            white-space: nowrap;
+            font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+            gap: 5px; margin-top: 2px; white-space: nowrap;
         }
-        .upgrade-btn .upgrade-spec-line .upgrade-improvement-value {
-             font-weight: bold;
-             color: var(--color-success);
-        }
-        .upgrade-btn .upgrade-spec-line .icon-value svg {
-            width: 0.9em; height: 0.9em;
-        }
-        .upgrade-btn .max-level-text {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .convert-btn {
-            width: 100%; height: auto; font-size: 0.7rem; padding: 4px; box-sizing: border-box; line-height: 1.2;
-            border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); text-shadow: 0 0 3px var(--color-success);
-            aspect-ratio: 1 / 1;
-            justify-content: space-around;
-        }
-        .convert-btn .convert-name {
-            font-size: 0.6rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1;
-            margin-top: 2px;
-        }
+        .upgrade-btn .upgrade-spec-line .upgrade-improvement-value { font-weight: bold; color: var(--color-success); }
+        .upgrade-btn .upgrade-spec-line .icon-value svg { width: 0.9em; height: 0.9em; }
+        .upgrade-btn .max-level-text { font-size: 1.2rem; font-weight: bold; }
+        .convert-btn .convert-name { margin-top: 2px; }
         .convert-btn .convert-spec-line {
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 2px;
-            white-space: nowrap;
+            font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+            gap: 5px; margin-top: 2px; white-space: nowrap;
         }
-        .convert-btn .convert-spec-line .icon-value svg {
-            width: 0.9em; height: 0.9em;
-        }
-
-        .upgrade-btn:hover:not(:disabled) { background: rgba(255, 238, 127, 0.1); box-shadow: 0 0 8px var(--color-warning), 0 0 15px var(--color-warning); }
-        .convert-btn:hover:not(:disabled) { background: rgba(143, 255, 127, 0.1); box-shadow: 0 0 8px var(--color-success), 0 0 15px var(--color-success); }
-        .upgrade-btn:disabled, .convert-btn:disabled { color: #777; border-color: #555; box-shadow: none; text-shadow: none; cursor: not-allowed; opacity: 0.6; }
-        
-        #destroy-btn { 
-            border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); text-shadow: 0 0 3px var(--color-danger); 
-            width: 100%; height: auto; margin-top: 10px; font-size: 0.8rem;
-        }
-        #destroy-btn:hover { background: rgba(255, 102, 102, 0.1); box-shadow: 0 0 8px var(--color-danger), 0 0 15px var(--color-danger); }
+        .convert-btn .convert-spec-line .icon-value svg { width: 0.9em; height: 0.9em; }
 
         #build-confirm-panel {
             position: absolute;
             bottom: 10px;
             right: 10px;
-            width: 250px;
-            display: none;
             flex-direction: column;
             gap: 10px;
         }
@@ -337,17 +331,10 @@
         #build-confirm-text h5 { margin: 0 0 5px 0; font-size: 1rem; color: #fff; }
         #build-confirm-text p { margin: 0; font-size: 0.75rem; display: flex; gap: 8px; align-items: center; }
         .build-confirm-description {
-            font-size: 0.7rem;
-            opacity: 0.8;
-            margin-top: 5px;
-            line-height: 1.2;
+            font-size: 0.7rem; opacity: 0.8; margin-top: 5px; line-height: 1.2;
         }
         #build-confirm-buttons { display: flex; gap: 10px; }
-        #build-confirm-buttons .build-btn {
-            flex-grow: 1; height: auto; padding: 10px; font-size: 0.9rem;
-        }
-        #confirm-build-btn { border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); }
-        #cancel-build-btn { border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); }
+        #build-confirm-buttons .control-btn { width: 60px; height: 60px; }
         
         .icon-value { display: inline-flex; align-items: center; gap: 2px; }
         .icon-value svg { width: 0.8em; height: 0.8em; fill: currentColor; }
@@ -373,47 +360,10 @@
             100% { opacity: 0; }
         }
 
-        /* --- CORRECTED MEDIA QUERIES --- */
-        
-        /* Default layout for Portrait / Small Screens */
-        @media (orientation: portrait) {
-            #build-menu {
-                flex-direction: column;
-                right: 10px;
-                left: auto;
-                width: auto;
-                transform: none;
-                justify-content: flex-start;
-            }
-             #build-menu.build-menu-grid {
-                 display: flex;
-                 width: auto;
-             }
-        }
-        
-        /* Default layout for Landscape Screens */
-        @media (orientation: landscape) {
-            #build-menu {
-                display: grid !important; /* Force grid layout */
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
-                right: 10px;
-                bottom: 10px;
-                left: auto;
-                transform: none;
-                width: calc(3 * 80px + 2 * 8px); /* 3 buttons + 2 gaps */
-            }
-             #build-menu .build-btn {
-                width: 80px; /* Force consistent size */
-                height: 80px;
-             }
-        }
-        
         @media (min-width: 1024px) {
             #resources { flex-direction: row; align-items: center; gap: 20px;}
-            #wave-info-container { top: 10px; left: 250px; max-width: none; }
-            #game-controls { flex-direction: row; width: auto; gap: 10px; }
-            #game-controls .build-btn { width: 120px; font-size: 1rem;}
+            #wave-info-container { top: 10px; left: 10px; max-width: none; }
+            #top-right-ui .build-btn, #top-right-ui .control-btn { width: 60px; height: 60px; }
 
             #selection-panel { 
                 width: 300px; 
@@ -421,17 +371,7 @@
                 left: 20px !important;
             }
             #upgrade-buttons-container, #convert-buttons-container { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
-
-            /* For very large screens, override landscape to center the menu again */
-            #build-menu {
-                display: flex !important;
-                flex-direction: row;
-                grid-template-columns: none;
-                right: 50%;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
-            }
+            
             #build-confirm-panel {
                 flex-direction: row;
                 width: auto;
@@ -497,7 +437,7 @@
         <div id="resources" class="ui-panel">
             <span id="minerals"></span>
         </div>
-        <div id="selection-panel" class="ui-panel">
+        <div id="selection-panel" class="ui-panel hidden">
             <div id="selection-header">
                 <div id="selection-icon"></div>
                 <h4 id="selection-type"></h4>
@@ -513,10 +453,12 @@
         </div>
         
         <div id="top-right-ui">
-            <div id="game-controls" class="ui-panel">
-                <button id="menuBtn" class="build-btn" data-lang-key="menu_button">Menú</button>
-                <button id="fullscreenBtn" class="build-btn" data-lang-key="fullscreen_button">P. Completa</button>
-            </div>
+             <button id="fullscreenBtn" class="control-btn" aria-label="Pantalla completa">
+                <svg viewBox="0 0 24 24"><path d="M6 16h2v2h-4v-4h2v2zm0-8v2h-2v-4h4v2h-2zm12 8v-2h2v4h-4v-2h2zm0-10h-2v-2h4v4h-2v-2z"/></svg>
+             </button>
+             <button id="menuBtn" class="control-btn" aria-label="Menú">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
+             </button>
         </div>
         
         <div id="wave-info-container">
@@ -538,7 +480,7 @@
             <button class="build-btn" data-type="Starbase"></button> 
         </div>
 
-        <div id="build-confirm-panel" class="ui-panel">
+        <div id="build-confirm-panel" class="ui-panel hidden">
             <div id="build-confirm-info">
                 <div id="build-confirm-icon"></div>
                 <div id="build-confirm-text">
@@ -548,8 +490,12 @@
                 </div>
             </div>
             <div id="build-confirm-buttons">
-                <button id="confirm-build-btn" class="build-btn" data-lang-key="confirm_build_button">Construir</button>
-                <button id="cancel-build-btn" class="build-btn" data-lang-key="cancel_build_button">Cancelar</button>
+                <button id="confirm-build-btn" class="control-btn" aria-label="Confirmar construcción">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17l-3.5-3.5 1.42-1.42L9 13.34l7.09-7.09 1.41 1.41L9 16.17z"/></svg>
+                </button>
+                <button id="cancel-build-btn" class="control-btn" aria-label="Cancelar construcción">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
         </div>
 
@@ -814,6 +760,8 @@ window.addEventListener('load', function() {
     const confirmBuildBtn = document.getElementById('confirm-build-btn');
     const cancelBuildBtn = document.getElementById('cancel-build-btn');
     const waveFlash = document.getElementById('wave-flash');
+    const menuBtn = document.getElementById('menuBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     // --- INITIALIZATION ---
     const computedStyles = getComputedStyle(document.body);
@@ -2090,7 +2038,7 @@ window.addEventListener('load', function() {
             gameCanvas.addEventListener("pointerup", e => this.handlePointerUp(e));
             gameCanvas.addEventListener("pointercancel", e => this.handlePointerUp(e));
             gameCanvas.addEventListener("wheel", e => { e.preventDefault(); this.handleWheel(e); });
-            document.addEventListener("keydown", e => { if (e.key === "Escape") this.cancelAllActions(); });
+            document.addEventListener("keydown", e => { if (e.key === "Escape") this.togglePause(); });
             document.querySelectorAll(".ui-panel").forEach(el => { el.addEventListener("pointerdown", e => e.stopPropagation()); });
             
             document.querySelectorAll("#build-menu .build-btn[data-type]").forEach(btn => {
@@ -2100,8 +2048,8 @@ window.addEventListener('load', function() {
                 });
             });
 
-            document.getElementById("menuBtn").addEventListener("click", () => this.togglePause());
-            document.getElementById("fullscreenBtn").addEventListener("click", () => this.toggleFullscreen());
+            menuBtn.addEventListener("click", () => this.togglePause());
+            fullscreenBtn.addEventListener("click", () => this.toggleFullscreen());
             document.getElementById("destroy-btn").addEventListener("click", () => {
                 if(!(this.selectedObject instanceof Building)) return; 
                 const b = this.selectedObject; 
@@ -2248,17 +2196,16 @@ window.addEventListener('load', function() {
 
             document.getElementById('build-confirm-desc').textContent = t(specs.descKey);
             
-            buildMenuEl.style.display = 'none';
-            selectionPanelEl.style.display = 'none';
-            buildConfirmPanel.style.display = 'flex';
+            buildMenuEl.classList.add('hidden');
+            selectionPanelEl.classList.add('hidden');
+            buildConfirmPanel.classList.remove('hidden');
         }
 
         hideBuildConfirmation(showBuildMenu = true) {
             this.buildConfirmationDetails = null;
-            buildConfirmPanel.style.display = 'none';
+            buildConfirmPanel.classList.add('hidden');
             if (showBuildMenu) {
-                // CORRECTION: Set display to empty string to let CSS media queries take over.
-                buildMenuEl.style.display = ''; 
+                buildMenuEl.classList.remove('hidden');
             }
         }
         confirmBuild() {
@@ -2347,7 +2294,8 @@ window.addEventListener('load', function() {
             slotsContainer.innerHTML = '';
             
             if (this.selectedObject) {
-                selectionPanelEl.style.display = "block";
+                selectionPanelEl.classList.remove('hidden');
+                buildMenuEl.classList.add('hidden');
                 document.getElementById('selection-icon').innerHTML = ''; 
                 document.getElementById("selection-type").textContent = '';
 
@@ -2405,7 +2353,8 @@ window.addEventListener('load', function() {
                     document.getElementById("selection-type").textContent = t('asteroid_field_name');
                 }
             } else { 
-                selectionPanelEl.style.display = "none";
+                selectionPanelEl.classList.add('hidden');
+                buildMenuEl.classList.remove('hidden');
             }
             this.updateDynamicSelectionUI(); 
         }
@@ -2614,7 +2563,7 @@ window.addEventListener('load', function() {
             const consumers = buildingsToRender.filter(b => b.specs.power < 0);
             
             providers.forEach(p1 => { providers.forEach(p2 => { if (p1 === p2) return; const d = distance(p1.x, p1.y, p2.x, p2.y); if (d < p1.specs.connectionRange || d < p2.specs.connectionRange) { const lineColor = (p1.isPowered && p2.isPowered) ? UI_COLORS.primary : '#FFFFFF'; tCtx.strokeStyle = lineColor; tCtx.beginPath(); tCtx.moveTo(p1.x, p1.y); tCtx.lineTo(p2.x, p2.y); tCtx.stroke(); } }); });
-            consumers.forEach(consumer => { let closestProvider = null; let minDist = Infinity; providers.forEach(provider => { const d = distance(consumer.x, consumer.y, provider.x, provider.y); if (d < provider.specs.connectionRange && d < minDist) { minDist = d; closestProvider = provider; } }); if (closestProvider) { const lineColor = consumer.isPowered ? UI_COLORS.primary : '#FFFFFF'; tCtx.strokeStyle = lineColor; tCtx.beginPath(); ctx.moveTo(consumer.x, consumer.y); tCtx.lineTo(closestProvider.x, closestProvider.y); tCtx.stroke(); } });
+            consumers.forEach(consumer => { let closestProvider = null; let minDist = Infinity; providers.forEach(provider => { const d = distance(consumer.x, consumer.y, provider.x, provider.y); if (d < provider.specs.connectionRange && d < minDist) { minDist = d; closestProvider = provider; } }); if (closestProvider) { const lineColor = consumer.isPowered ? UI_COLORS.primary : '#FFFFFF'; tCtx.strokeStyle = lineColor; tCtx.beginPath(); ctx.moveTo(consumer.x, consumer.y); tCtx.lineTo(closestProvider.x, closestProvider.y); ctx.stroke(); } });
 
             buildingsToRender.forEach(b => {
                 tCtx.fillStyle = b.isPowered || b.specs.power >= 0 ? b.specs.color : '#555';
@@ -2784,12 +2733,14 @@ window.addEventListener('load', function() {
             const key = el.dataset.langKey;
             const text = t(key);
             if (!text) return;
+
+            const isControlIcon = el.classList.contains('control-btn');
             
-            if (el.tagName === 'BUTTON' || el.tagName === 'H1' || el.tagName === 'H5') {
+            if (el.tagName === 'BUTTON' && !isControlIcon) {
                  if (el.id !== 'play-button' || playButton.disabled === false) { 
                     el.textContent = text;
                  }
-            } else if (!el.dataset.langDynamic) {
+            } else if (el.tagName !== 'BUTTON') {
                  el.textContent = text;
             }
         });
@@ -2801,11 +2752,32 @@ window.addEventListener('load', function() {
         }
     }
 
-    // This function is no longer needed for layout changes and can be removed or simplified.
-    // CSS media queries handle this automatically now.
     function adjustBuildMenuLayout() {
-      // This function can be kept for other specific adjustments if needed in the future,
-      // but the grid/flex layout is now purely CSS-driven.
+        const btn = buildMenuEl.querySelector('.build-btn');
+        if (!btn || buildMenuEl.classList.contains('hidden')) return;
+
+        const btnWidth = btn.offsetWidth;
+        const btnHeight = btn.offsetHeight;
+        const gap = 8;
+        const numButtons = buildMenuEl.children.length;
+
+        const vw = window.innerWidth - 40; // available width with padding
+        const vh = window.innerHeight - 40; // available height with padding
+
+        const reqW9x1 = btnWidth * numButtons + gap * (numButtons - 1);
+        const reqH1x9 = btnHeight * numButtons + gap * (numButtons - 1);
+        const reqW3x3 = btnWidth * 3 + gap * 2;
+        const reqH3x3 = btnHeight * 3 + gap * 2;
+
+        buildMenuEl.className = "ui-panel"; // Keep the base class
+        
+        if (reqW9x1 <= vw) {
+            buildMenuEl.classList.add('layout-9x1');
+        } else if (reqH1x9 <= vh) {
+            buildMenuEl.classList.add('layout-1x9');
+        } else {
+            buildMenuEl.classList.add('layout-3x3');
+        }
     }
     
     function showLoadScreen() {
@@ -2890,8 +2862,6 @@ window.addEventListener('load', function() {
         }
     });
 
-    // We no longer need JavaScript to adjust the layout on resize/orientationchange
-    // CSS media queries handle this automatically and more reliably.
     window.addEventListener('resize',()=>{ 
         if (!game) return;
         gameCanvas.width = window.innerWidth;
@@ -2901,12 +2871,14 @@ window.addEventListener('load', function() {
         game.calculateMinZoom();
         game.camera.zoom = Math.max(game.minZoomToFitWorld, game.camera.zoom);
         game.clampCamera();
+        adjustBuildMenuLayout();
     });
 
     // --- INITIAL PAGE LOAD ---
     languageSelect.value = currentLanguage;
     peaceTimeSelect.value = localStorage.getItem('sots_peaceTime') || '300000';
     updateLanguageUI();
+    adjustBuildMenuLayout();
     
 });
 </script>
