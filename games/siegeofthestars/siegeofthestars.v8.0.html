@@ -165,20 +165,30 @@
             pointer-events: all;
             backdrop-filter: blur(3px);
         }
-        #resources { position: absolute; top: 10px; left: 10px; }
+        
+        #top-left-ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+            pointer-events: all;
+        }
+
         #wave-info-container {
-            position: absolute; top: 60px; left: 10px;
             display: flex; align-items: center; gap: 5px;
             max-width: calc(100vw - 180px);
         }
                 
-        /* --- START: UI CONTROLS & LAYOUT V8.2 --- */
         #top-right-ui {
             position: absolute;
             right: 10px;
             top: 10px;
             display: flex;
             gap: 8px;
+            pointer-events: all;
         }
 
         #build-menu {
@@ -188,7 +198,6 @@
             display: grid;
             gap: 8px;
         }
-        /* Layout variants: Will be toggled by JS */
         .layout-9x1 { grid-template-columns: repeat(9, auto); grid-template-rows: 1fr; }
         .layout-1x9 { grid-template-columns: 1fr; grid-template-rows: repeat(9, auto); }
         .layout-3x3 { grid-template-columns: repeat(3, auto); grid-template-rows: repeat(3, auto); }
@@ -238,8 +247,18 @@
         
         .upgrade-btn { border-color: var(--color-warning); color: var(--color-warning); box-shadow: var(--glow-warning); }
         .convert-btn { border-color: var(--color-success); color: var(--color-success); box-shadow: var(--glow-success); }
-        #destroy-btn { border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger); }
+        #destroy-btn {
+            border-color: var(--color-danger); color: var(--color-danger); box-shadow: var(--glow-danger);
+            width: 100%;
+            height: 48px;
+            flex-direction: row;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
         #destroy-btn:hover { background: rgba(255, 102, 102, 0.1); box-shadow: 0 0 8px var(--color-danger), 0 0 15px var(--color-danger); }
+        #destroy-btn > canvas { width: 24px; height: 24px; flex-shrink: 0; }
 
         .control-btn {
             border: 1px solid var(--color-primary);
@@ -258,11 +277,10 @@
         #menuBtn { border-color: var(--color-warning); }
         #menuBtn svg { fill: var(--color-warning); }
         #menuBtn:hover svg { fill: #fff; filter: drop-shadow(0 0 5px var(--color-warning)); }
-        #confirm-build-btn { border-color: var(--color-success); }
+        #confirm-build-btn { border-color: var(--color-success); color: var(--color-success); text-shadow: var(--glow-success); }
         #confirm-build-btn svg { fill: var(--color-success); }
-        #cancel-build-btn { border-color: var(--color-danger); }
+        #cancel-build-btn { border-color: var(--color-danger); color: var(--color-danger); text-shadow: var(--glow-danger); }
         #cancel-build-btn svg { fill: var(--color-danger); stroke: var(--color-danger); stroke-width: 1.5; }
-        /* --- END: UI CONTROLS & LAYOUT V8.2 --- */
 
         #start-wave-btn {
             width: 36px; height: 36px; padding: 0; font-size: 1.5rem;
@@ -278,7 +296,9 @@
             position: absolute !important; 
             bottom: 10px !important; 
             left: 10px !important; 
-            width: 260px; 
+            display: inline-flex; /* FIXED: Shrink-to-fit width */
+            flex-direction: column; /* FIXED: Arrange items vertically */
+            min-width: 260px;
             right: auto !important;
             transform: none !important;
         }
@@ -301,6 +321,7 @@
             grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
             gap: 8px;
             margin-top: 10px; 
+            justify-content: start;
         }
         
         .upgrade-btn .upgrade-word { margin-top: 2px; }
@@ -323,7 +344,7 @@
             bottom: 10px;
             right: 10px;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px; /* FIXED: Increased spacing */
         }
         #build-confirm-info { display: flex; gap: 10px; align-items: center; }
         #build-confirm-icon { width: 50px; height: 50px; flex-shrink: 0; }
@@ -333,8 +354,28 @@
         .build-confirm-description {
             font-size: 0.7rem; opacity: 0.8; margin-top: 5px; line-height: 1.2;
         }
-        #build-confirm-buttons { display: flex; gap: 10px; }
-        #build-confirm-buttons .control-btn { width: 60px; height: 60px; }
+        #build-confirm-buttons { 
+            display: flex; 
+            gap: 10px; 
+            width: 100%;
+        }
+        #build-confirm-buttons .control-btn {
+            flex: 1;
+            width: auto;
+            height: auto;
+            padding: 10px;
+            font-size: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        #build-confirm-buttons .control-btn svg {
+            width: 1.2em;
+            height: 1.2em;
+            flex-shrink: 0;
+        }
         
         .icon-value { display: inline-flex; align-items: center; gap: 2px; }
         .icon-value svg { width: 0.8em; height: 0.8em; fill: currentColor; }
@@ -361,12 +402,17 @@
         }
 
         @media (min-width: 1024px) {
-            #resources { flex-direction: row; align-items: center; gap: 20px;}
-            #wave-info-container { top: 10px; left: 10px; max-width: none; }
-            #top-right-ui .build-btn, #top-right-ui .control-btn { width: 60px; height: 60px; }
+            #top-left-ui {
+                flex-direction: row;
+                align-items: center;
+            }
+            #wave-info-container { max-width: none; }
+            #top-right-ui .control-btn { 
+                width: 60px; height: 60px;
+            }
 
             #selection-panel { 
-                width: 300px; 
+                min-width: 300px;
                 bottom: 20px !important; 
                 left: 20px !important;
             }
@@ -425,7 +471,6 @@
     <div id="load-game-screen" class="fullscreen-menu">
         <h1 data-lang-key="load_game_title">Cargar Partida</h1>
         <div id="save-slots-container">
-            <!-- Save slots will be dynamically inserted here -->
         </div>
         <div class="menu-buttons-container">
             <button id="backToMenuButton" class="build-btn menu-btn-lrg" data-lang-key="back_button">Atrás</button>
@@ -434,9 +479,18 @@
 
     <canvas id="gameCanvas"></canvas>
     <div id="ui">
-        <div id="resources" class="ui-panel">
-            <span id="minerals"></span>
+        <div id="top-left-ui">
+            <div id="resources" class="ui-panel">
+                <span id="minerals"></span>
+            </div>
+            <div id="wave-info-container">
+                <div id="wave-info" class="ui-panel">
+                    <span id="wave-timer"></span>
+                </div>
+                <button id="start-wave-btn" class="build-btn" title="Lanzar oleada ahora">››</button>
+            </div>
         </div>
+
         <div id="selection-panel" class="ui-panel hidden">
             <div id="selection-header">
                 <div id="selection-icon"></div>
@@ -449,7 +503,7 @@
             <div id="selection-details"></div>
             <div id="upgrade-buttons-container"></div>
             <div id="convert-buttons-container"></div>
-            <button id="destroy-btn" class="build-btn" data-lang-key="dismantle_button">Desmantelar</button>
+            <button id="destroy-btn" class="build-btn"><span data-lang-key="dismantle_button">Desmantelar</span></button>
         </div>
         
         <div id="top-right-ui">
@@ -459,13 +513,6 @@
              <button id="menuBtn" class="control-btn" aria-label="Menú">
                 <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
              </button>
-        </div>
-        
-        <div id="wave-info-container">
-            <div id="wave-info" class="ui-panel">
-                <span id="wave-timer"></span>
-            </div>
-            <button id="start-wave-btn" class="build-btn" title="Lanzar oleada ahora">››</button>
         </div>
         
         <div id="build-menu" class="ui-panel">
@@ -490,11 +537,13 @@
                 </div>
             </div>
             <div id="build-confirm-buttons">
-                <button id="confirm-build-btn" class="control-btn" aria-label="Confirmar construcción">
+                <button id="confirm-build-btn" class="control-btn">
                     <svg viewBox="0 0 24 24"><path d="M9 16.17l-3.5-3.5 1.42-1.42L9 13.34l7.09-7.09 1.41 1.41L9 16.17z"/></svg>
+                    <span data-lang-key="confirm_build_button">Confirmar</span>
                 </button>
-                <button id="cancel-build-btn" class="control-btn" aria-label="Cancelar construcción">
+                <button id="cancel-build-btn" class="control-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    <span data-lang-key="cancel_build_button">Cancelar</span>
                 </button>
             </div>
         </div>
@@ -524,17 +573,17 @@ const ENERGY_ICON_SVG = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M
 
 // --- Upgrade Details Object ---
 const UPGRADE_DETAILS = {
-    damage: { word: 'POTENCIA' },
-    fireRate: { word: 'FRECUENCIA' },
-    range: { word: 'PROYECCIÓN' },
-    power: { word: 'RENDIMIENTO' },
-    connectionRange: { word: 'ENLACE' },
-    repairRate: { word: 'RESTAURACIÓN' },
-    shieldAmount: { word: 'DENSIDAD' },
-    shieldRegenRate: { word: 'RECARGA' },
-    passiveIncome: { word: 'FLUJO' },
-    storage: { word: 'CAPACIDAD' },
-    unitSlot: { word: 'EXPANSIÓN' }
+    damage: { wordKey: 'upgrade_word_damage' },
+    fireRate: { wordKey: 'upgrade_word_firerate' },
+    range: { wordKey: 'upgrade_word_range' },
+    power: { wordKey: 'upgrade_power' },
+    connectionRange: { wordKey: 'upgrade_connectionRange' },
+    repairRate: { wordKey: 'upgrade_repairRate' },
+    shieldAmount: { wordKey: 'upgrade_shieldAmount' },
+    shieldRegenRate: { wordKey: 'upgrade_shieldRegenRate' },
+    passiveIncome: { wordKey: 'upgrade_passiveIncome' },
+    storage: { wordKey: 'upgrade_storage' },
+    unitSlot: { wordKey: 'upgrade_unitSlots' }
 };
 
 // Sistema de Internacionalización (i18n)
@@ -554,7 +603,8 @@ const LANG_STRINGS = {
         'dismantle_button': 'Desmantellar',
         'health_stat': 'Integritat', 'shield_stat': 'Escut', 'status_label': 'Estat',
         'status_constructing': 'En construcció', 'status_upgrading': 'Millorant', 'status_online': 'En línia', 'status_no_power': 'Sense energia', 'status_generating': 'Generant', 'status_operational': 'Operatiu',
-        'upgrade_damage': 'Potència', 'upgrade_fireRate': 'Freqüència', 'upgrade_range': 'Projecció', 'upgrade_power': 'Rendiment', 'upgrade_connectionRange': 'Enllaç', 'upgrade_repairRate': 'Restauració', 'upgrade_shieldAmount': 'Densitat', 'upgrade_shieldRegenRate': 'Recarrega', 'upgrade_passiveIncome': 'Flux', 'upgrade_unitSlots': 'Expansió', 'upgrade_storage': 'Capacitat', 'stat_energy': 'Energia',
+        'upgrade_word_damage': 'Dany', 'upgrade_word_firerate': 'Cadència', 'upgrade_word_range': 'Abast',
+        'upgrade_power': 'Rendiment', 'upgrade_connectionRange': 'Enllaç', 'upgrade_repairRate': 'Restauració', 'upgrade_shieldAmount': 'Densitat', 'upgrade_shieldRegenRate': 'Recarrega', 'upgrade_passiveIncome': 'Flux', 'upgrade_unitSlots': 'Expansió', 'upgrade_storage': 'Capacitat', 'stat_energy': 'Energia',
         'buy_unit_slot_button': 'Comprar Ranura',
         'convert_button': 'Convertir',
         'asteroid_field_name': 'Camp d\'Asteroides', 'remaining_minerals': 'Minerals Restants',
@@ -588,7 +638,8 @@ const LANG_STRINGS = {
         'dismantle_button': 'Desmantelar',
         'health_stat': 'Integridad', 'shield_stat': 'Escudo', 'status_label': 'Estado',
         'status_constructing': 'En construcción', 'status_upgrading': 'Mejorando', 'status_online': 'En línea', 'status_no_power': 'Sin energía', 'status_generating': 'Generando', 'status_operational': 'Operativo',
-        'upgrade_damage': 'Potencia', 'upgrade_fireRate': 'Frecuencia', 'upgrade_range': 'Proyección', 'upgrade_power': 'Rendimiento', 'upgrade_connectionRange': 'Enlace', 'upgrade_repairRate': 'Restauración', 'upgrade_shieldAmount': 'Densidad', 'upgrade_shieldRegenRate': 'Recarga', 'upgrade_passiveIncome': 'Flujo', 'upgrade_unitSlots': 'Expansión', 'upgrade_storage': 'Capacidad', 'stat_energy': 'Energía',
+        'upgrade_word_damage': 'Daño', 'upgrade_word_firerate': 'Cadencia', 'upgrade_word_range': 'Alcance',
+        'upgrade_power': 'Rendimiento', 'upgrade_connectionRange': 'Enlace', 'upgrade_repairRate': 'Restauración', 'upgrade_shieldAmount': 'Densidad', 'upgrade_shieldRegenRate': 'Recarga', 'upgrade_passiveIncome': 'Flujo', 'upgrade_unitSlots': 'Expansión', 'upgrade_storage': 'Capacidad', 'stat_energy': 'Energía',
         'buy_unit_slot_button': 'Comprar Ranura',
         'convert_button': 'Convertir',
         'asteroid_field_name': 'Campo de Asteroides', 'remaining_minerals': 'Minerales Restantes',
@@ -602,7 +653,7 @@ const LANG_STRINGS = {
         'pylon_name': 'Relé Subespacial', 'pylon_short': 'RELÉ', 'pylon_desc': 'Extiende el alcance de la red de energía.',
         'swarmtower_name': 'Bahía de Reparación', 'swarmtower_short': 'REPARADOR', 'swarmtower_desc': 'Reconstruye drones de reparación con un coste. Compra más ranuras para más drones.',
         'barracks_name': 'Hangar de Cazas', 'barracks_short': 'HANGAR', 'barracks_desc': 'Reconstruye cazas destruidos con un coste. Compra ranuras para aumentar tu flota.',
-        'starbase_name': 'Base Secundaria', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centro de mando avanzado. Reconstruye drones de construcción con un coste.',
+        'starbase_name': 'Base Secundaria', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centro de mando avanzado. Reconstrueix drons de construcció amb un cost.',
         'shieldgenerator_name': 'Generador de Escudo', 'shieldgenerator_short': 'ESCUDO', 'shieldgenerator_desc': 'Proyecta un escudo de energía sobre las unidades y estructuras cercanas.',
         'storagedepot_name': 'Depósito de Recursos', 'storagedepot_short': 'ALMACÉN', 'storagedepot_desc': 'Aumenta la capacidad máxima de minerales.',
         'tooltip_cost': 'Coste', 'tooltip_power': 'Energía'
@@ -622,7 +673,8 @@ const LANG_STRINGS = {
         'dismantle_button': 'Dismantle',
         'health_stat': 'Integrity', 'shield_stat': 'Shield', 'status_label': 'Status',
         'status_constructing': 'Constructing', 'status_upgrading': 'Upgrading', 'status_online': 'Online', 'status_no_power': 'No Power', 'status_generating': 'Generating', 'status_operational': 'Operational',
-        'upgrade_damage': 'Power', 'upgrade_fireRate': 'Frequency', 'upgrade_range': 'Projection', 'upgrade_power': 'Yield', 'upgrade_connectionRange': 'Link', 'upgrade_repairRate': 'Restore', 'upgrade_shieldAmount': 'Density', 'upgrade_shieldRegenRate': 'Recharge', 'upgrade_passiveIncome': 'Flow', 'upgrade_unitSlots': 'Expansion', 'upgrade_storage': 'Capacity', 'stat_energy': 'Energy',
+        'upgrade_word_damage': 'Damage', 'upgrade_word_firerate': 'Rate', 'upgrade_word_range': 'Range',
+        'upgrade_power': 'Yield', 'upgrade_connectionRange': 'Link', 'upgrade_repairRate': 'Restore', 'upgrade_shieldAmount': 'Density', 'upgrade_shieldRegenRate': 'Recharge', 'upgrade_passiveIncome': 'Flow', 'upgrade_unitSlots': 'Expansion', 'upgrade_storage': 'Capacity', 'stat_energy': 'Energy',
         'buy_unit_slot_button': 'Buy Slot',
         'convert_button': 'Convert',
         'asteroid_field_name': 'Asteroid Field', 'remaining_minerals': 'Remaining Minerals',
@@ -661,7 +713,6 @@ function getStatValueForLevel(baseValuesArray, level) {
     return baseValuesArray[level - 1];
 }
 
-// Draws programmatic icons for upgrades
 function createUpgradeIconCanvas(type, width, height, color) {
     const c = document.createElement('canvas');
     c.width = width; c.height = height;
@@ -737,6 +788,35 @@ function createUpgradeIconCanvas(type, width, height, color) {
     return c;
 }
 
+function createDismantleIconCanvas(width, height, color) {
+    const c = document.createElement('canvas');
+    c.width = width; c.height = height;
+    const iCtx = c.getContext('2d');
+    const w = width, h = height;
+    
+    iCtx.strokeStyle = color;
+    iCtx.lineWidth = Math.max(2, w / 12);
+    iCtx.lineCap = 'round';
+    
+    iCtx.beginPath();
+    iCtx.arc(w * 0.3, h * 0.3, w * 0.18, Math.PI * 0.7, Math.PI * 1.8);
+    iCtx.stroke();
+    
+    iCtx.beginPath();
+    iCtx.moveTo(w * 0.38, h * 0.45);
+    iCtx.lineTo(w * 0.8, h * 0.9);
+    iCtx.stroke();
+    
+    iCtx.beginPath();
+    iCtx.moveTo(w * 0.6, h * 0.4);
+    iCtx.lineTo(w * 0.45, h * 0.55);
+    iCtx.moveTo(w * 0.7, h * 0.5);
+    iCtx.lineTo(w * 0.55, h * 0.65);
+    iCtx.stroke();
+
+    return c;
+}
+
 
 window.addEventListener('load', function() {
     // --- ELEMENT SELECTORS ---
@@ -762,6 +842,7 @@ window.addEventListener('load', function() {
     const waveFlash = document.getElementById('wave-flash');
     const menuBtn = document.getElementById('menuBtn');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const destroyBtn = document.getElementById('destroy-btn');
 
     // --- INITIALIZATION ---
     const computedStyles = getComputedStyle(document.body);
@@ -769,6 +850,10 @@ window.addEventListener('load', function() {
     UI_COLORS.success = computedStyles.getPropertyValue('--color-success').trim();
     UI_COLORS.danger = computedStyles.getPropertyValue('--color-danger').trim();
     UI_COLORS.warning = computedStyles.getPropertyValue('--color-warning').trim();
+    
+    const dismantleIcon = createDismantleIconCanvas(24, 24, UI_COLORS.danger);
+    destroyBtn.prepend(dismantleIcon);
+
 
     const ctx = gameCanvas.getContext('2d');
     
@@ -1294,7 +1379,7 @@ window.addEventListener('load', function() {
     class SolarPanel extends Building { constructor(x,y){ super(x,y,'SolarPanel'); } }
     class ShieldGenerator extends Building { constructor(x,y) { super(x,y,'ShieldGenerator');} }
     
-    class Miner extends UnitProducer { constructor(x,y){ super(x,y,'Miner'); this.unitType = 'CollectorDrone'; } draw(ctx) { super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if (!this.isConstructing && (game.selectedObject === this || game.buildConfirmationDetails?.type === 'Miner')) { game.drawContrastingCircle(ctx, this.x, this.y, this.specs.range, this.specs.color + '40', 1); } } }
+    class Miner extends UnitProducer { constructor(x,y){ super(x,y,'Miner'); this.unitType = 'CollectorDrone'; } draw(ctx) { super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if (!this.isConstructing && (game.selectedObject === this || game.buildConfirmationDetails?.type === 'Miner')) { game.drawSelectionIndicator(ctx, this.x, this.y, this.specs.range, this.specs.color + '40', 1); } } }
     class StorageDepot extends Building { constructor(x,y){ super(x,y,'StorageDepot'); } }
     
     class Turret extends Building { constructor(x,y,type='PhaserTurret'){ super(x,y,type); this.cooldown=0; this.target=null; } update(game,dt){ super.update(game,dt); if(this.isConstructing || !this.isPowered || this.task){ this.target=null; return; } this.cooldown -= dt; if(!this.target || (this.target.health<=0 && this.target.shieldHealth <= 0) || distance(this.x,this.y,this.target.x,this.target.y)>this.specs.range){ this.findTarget(game.enemies); } } findTarget(enemies){ this.target = null; let dmax = this.specs.range; for(const e of enemies){ const d = distance(this.x,this.y,e.x,e.y); if(d<dmax){ dmax = d; this.target = e; } } } }
@@ -1304,7 +1389,7 @@ window.addEventListener('load', function() {
 
     class Barracks extends UnitProducer { 
         constructor(x,y){ super(x,y,'Barracks'); this.unitType = 'Infantry'; this.rallyPoint={x,y:y+50}; } 
-        draw(ctx){ super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if(!this.isConstructing && game.selectedObject===this){ ctx.beginPath(); ctx.strokeStyle = '#00ff7f'; ctx.setLineDash([5,5]); ctx.moveTo(this.x,this.y); ctx.lineTo(this.rallyPoint.x,this.rallyPoint.y); ctx.stroke(); ctx.setLineDash([]); game.drawContrastingCircle(ctx, this.rallyPoint.x,this.rallyPoint.y,10, '#00ff7f', 2); } } 
+        draw(ctx){ super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if(!this.isConstructing && game.selectedObject===this){ ctx.beginPath(); ctx.strokeStyle = '#00ff7f'; ctx.setLineDash([5,5]); ctx.moveTo(this.x,this.y); ctx.lineTo(this.rallyPoint.x,this.rallyPoint.y); ctx.stroke(); ctx.setLineDash([]); game.drawSelectionIndicator(ctx, this.rallyPoint.x,this.rallyPoint.y,10, '#00ff7f', 2); } } 
     }
     class SwarmTower extends UnitProducer { constructor(x,y){ super(x,y,'SwarmTower'); this.unitType = 'RepairDrone'; } }
     
@@ -1561,15 +1646,38 @@ window.addEventListener('load', function() {
                 for (let j = 0; j < numVertices; j++) {
                     const angle = (j / numVertices) * 2 * Math.PI;
                     const radius = rockSize * (0.8 + Math.random() * 0.4);
-                    vertices.push({
-                        x: ox + Math.cos(angle) * radius,
-                        y: oy + Math.sin(angle) * radius
-                    });
+                    vertices.push({ x: ox + Math.cos(angle) * radius, y: oy + Math.sin(angle) * radius });
                 }
                 const gray = 90 + Math.random() * 20;
-                this.asteroids.push({ vertices, c: `rgb(${gray}, ${gray-5}, ${gray-10})` });
+                
+                // NEW: Add properties for animation
+                this.asteroids.push({ 
+                    vertices, 
+                    c: `rgb(${gray}, ${gray-5}, ${gray-10})`,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.0001,
+                    wobbleAngleX: Math.random() * Math.PI * 2,
+                    wobbleAngleY: Math.random() * Math.PI * 2,
+                    wobbleSpeedX: 0.0005 + Math.random() * 0.0005,
+                    wobbleSpeedY: 0.0005 + Math.random() * 0.0005,
+                    wobbleAmount: rockSize * 0.1,
+                    wobbleOffsetX: 0,
+                    wobbleOffsetY: 0,
+                });
             }
         } 
+        
+        // NEW: Update method for animations
+        update(dt) {
+            this.asteroids.forEach(a => {
+                a.rotation += a.rotationSpeed * dt;
+                a.wobbleAngleX += a.wobbleSpeedX * dt;
+                a.wobbleAngleY += a.wobbleSpeedY * dt;
+                a.wobbleOffsetX = Math.sin(a.wobbleAngleX) * a.wobbleAmount;
+                a.wobbleOffsetY = Math.cos(a.wobbleAngleY) * a.wobbleAmount;
+            });
+        }
+        
         draw(ctx) {
             const op = (this.minerals / this.initialMinerals) * 0.7 + 0.3;
             ctx.save();
@@ -1577,6 +1685,8 @@ window.addEventListener('load', function() {
             ctx.translate(this.x, this.y);
             this.asteroids.forEach(a => {
                 ctx.save();
+                ctx.translate(a.wobbleOffsetX, a.wobbleOffsetY); // Apply wobble
+                ctx.rotate(a.rotation); // Apply rotation
                 
                 ctx.lineWidth = 5;
                 ctx.strokeStyle = "rgba(0,0,0,0.7)";
@@ -1596,16 +1706,8 @@ window.addEventListener('load', function() {
 
                 ctx.restore();
             });
-            ctx.translate(-this.x, -this.y);
-
-            const pulse = Math.sin(Date.now() / 500) * 5 + 5;
-            ctx.shadowColor = '#ffffaa';
-            ctx.shadowBlur = pulse + 10;
-            ctx.fillStyle = `rgba(200, 200, 150, ${op*0.1})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size * 1.6, 0, 2 * Math.PI);
-            ctx.fill();
             ctx.restore();
+            // REMOVED: Aura drawing code
         } 
     }
     
@@ -1729,6 +1831,7 @@ window.addEventListener('load', function() {
             if(this.isGameOver || !dt) return;
             
             this.buildings.forEach(b => { b.update(this, dt) });
+            this.asteroidFields.forEach(a => a.update(dt)); // NEW: Update asteroids
             
             this.updateShields(dt);
             this.dispatchConstructionDrones(); this.waveManager.update(dt);
@@ -1925,11 +2028,12 @@ window.addEventListener('load', function() {
             });
 
             if(this.selectedObject){
-                this.drawContrastingCircle(ctx, this.selectedObject.x, this.selectedObject.y, this.selectedObject.size * (this.selectedObject instanceof AsteroidField ? 1.6 : 1) + 5, UI_COLORS.primary, 2);
+                const radius = this.selectedObject.size * (this.selectedObject instanceof AsteroidField ? 1.6 : 1) + 5;
+                this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, radius, UI_COLORS.primary, 2);
                 if(this.selectedObject instanceof Building) {
-                    const specs = this.selectedObject.specs; const radius = specs.connectionRange || specs.range;
-                    if (radius > 0 && !this.selectedObject.isConstructing) { 
-                        this.drawContrastingCircle(ctx, this.selectedObject.x, this.selectedObject.y, radius, 'rgba(137, 221, 255, 0.4)', 1);
+                    const specs = this.selectedObject.specs; const rangeRadius = specs.connectionRange || specs.range;
+                    if (rangeRadius > 0 && !this.selectedObject.isConstructing) { 
+                        this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, rangeRadius, 'rgba(137, 221, 255, 0.4)', 1);
                     }
                 }
             }
@@ -1941,19 +2045,55 @@ window.addEventListener('load', function() {
             this.drawOffscreenIndicators();
         }
 
-        drawContrastingCircle(ctx, x, y, radius, color, lineWidth) {
+        drawSelectionIndicator(ctx, x, y, radius, color, lineWidth) {
             ctx.save();
-            ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-            ctx.lineWidth = (lineWidth + 2) / this.camera.zoom;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, 2 * Math.PI);
-            ctx.stroke();
+            
+            const pulse = 1 + Math.sin(Date.now() / 150) * 0.15;
+            const r = radius * pulse;
+            const bracketSize = r * 0.2;
 
+            // Background rect
             ctx.strokeStyle = color;
             ctx.lineWidth = lineWidth / this.camera.zoom;
             ctx.shadowColor = color;
             ctx.shadowBlur = 15;
+            ctx.setLineDash([6 / this.camera.zoom, 8 / this.camera.zoom]);
+            ctx.globalAlpha = 0.4;
+            ctx.strokeRect(x - r, y - r, r * 2, r * 2);
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+
+            // Corner brackets
+            ctx.lineWidth = (lineWidth + 1) / this.camera.zoom;
+            
+            // Top-left
+            ctx.beginPath();
+            ctx.moveTo(x - r, y - r + bracketSize);
+            ctx.lineTo(x - r, y - r);
+            ctx.lineTo(x - r + bracketSize, y - r);
             ctx.stroke();
+            
+            // Top-right
+            ctx.beginPath();
+            ctx.moveTo(x + r - bracketSize, y - r);
+            ctx.lineTo(x + r, y - r);
+            ctx.lineTo(x + r, y - r + bracketSize);
+            ctx.stroke();
+
+            // Bottom-left
+            ctx.beginPath();
+            ctx.moveTo(x - r, y + r - bracketSize);
+            ctx.lineTo(x - r, y + r);
+            ctx.lineTo(x - r + bracketSize, y + r);
+            ctx.stroke();
+
+            // Bottom-right
+            ctx.beginPath();
+            ctx.moveTo(x + r, y + r - bracketSize);
+            ctx.lineTo(x + r, y + r);
+            ctx.lineTo(x + r - bracketSize, y + r);
+            ctx.stroke();
+
             ctx.restore();
         }
 
@@ -2021,7 +2161,7 @@ window.addEventListener('load', function() {
             ctx.save();
             const radius = specs.range || specs.connectionRange;
             if (radius > 0) { 
-                this.drawContrastingCircle(ctx, x, y, radius, 'rgba(255, 255, 255, 0.4)', 1);
+                this.drawSelectionIndicator(ctx, x, y, radius, 'rgba(255, 255, 255, 0.4)', 1);
             }
             ctx.globalAlpha = 0.6; ctx.fillStyle = ghostColor; ctx.strokeStyle = ghostColor; ctx.lineWidth = 2; ctx.shadowColor = ghostColor; ctx.shadowBlur = 15;
             drawBuildingPath(ctx, type, specs.size, x, y);
@@ -2050,7 +2190,8 @@ window.addEventListener('load', function() {
 
             menuBtn.addEventListener("click", () => this.togglePause());
             fullscreenBtn.addEventListener("click", () => this.toggleFullscreen());
-            document.getElementById("destroy-btn").addEventListener("click", () => {
+            
+            destroyBtn.addEventListener("click", () => {
                 if(!(this.selectedObject instanceof Building)) return; 
                 const b = this.selectedObject; 
                 const refund = b.isConstructing ? b.baseSpecs.cost : 0.5 * b.baseSpecs.cost; 
@@ -2403,7 +2544,7 @@ window.addEventListener('load', function() {
                         
                         const wordDiv = document.createElement('div');
                         wordDiv.className = 'upgrade-word';
-                        wordDiv.textContent = UPGRADE_DETAILS[upgType]?.word || 'UPGRADE';
+                        wordDiv.textContent = t(UPGRADE_DETAILS[upgType]?.wordKey) || 'UPGRADE';
                         btn.appendChild(wordDiv);
 
                         const specDiv = document.createElement('div');
@@ -2489,7 +2630,7 @@ window.addEventListener('load', function() {
                         if (this.minerals < conversionCost) btn.disabled = true;
                     });
                 }
-                destroyBtn.style.display = (b.type !== 'Core') ? 'block' : 'none';
+                destroyBtn.style.display = (b.type !== 'Core') ? 'flex' : 'none';
 
             } else if (this.selectedObject instanceof AsteroidField) {
                 const a = this.selectedObject;
@@ -2734,13 +2875,16 @@ window.addEventListener('load', function() {
             const text = t(key);
             if (!text) return;
 
-            const isControlIcon = el.classList.contains('control-btn');
-            
-            if (el.tagName === 'BUTTON' && !isControlIcon) {
-                 if (el.id !== 'play-button' || playButton.disabled === false) { 
-                    el.textContent = text;
-                 }
-            } else if (el.tagName !== 'BUTTON') {
+            if (el.matches('span') || (el.parentElement && el.parentElement.tagName === 'BUTTON')) {
+                 el.textContent = text;
+            } else if (el.tagName === 'BUTTON') {
+                const hasTextNode = Array.from(el.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0);
+                const hasSpanForText = el.querySelector('span');
+                if (hasTextNode || hasSpanForText) {
+                    const target = hasSpanForText || el;
+                    target.textContent = text;
+                }
+            } else {
                  el.textContent = text;
             }
         });
@@ -2761,15 +2905,15 @@ window.addEventListener('load', function() {
         const gap = 8;
         const numButtons = buildMenuEl.children.length;
 
-        const vw = window.innerWidth - 40; // available width with padding
-        const vh = window.innerHeight - 40; // available height with padding
+        const vw = window.innerWidth - 40;
+        const vh = window.innerHeight - 40;
 
         const reqW9x1 = btnWidth * numButtons + gap * (numButtons - 1);
         const reqH1x9 = btnHeight * numButtons + gap * (numButtons - 1);
         const reqW3x3 = btnWidth * 3 + gap * 2;
         const reqH3x3 = btnHeight * 3 + gap * 2;
 
-        buildMenuEl.className = "ui-panel"; // Keep the base class
+        buildMenuEl.className = "ui-panel";
         
         if (reqW9x1 <= vw) {
             buildMenuEl.classList.add('layout-9x1');
