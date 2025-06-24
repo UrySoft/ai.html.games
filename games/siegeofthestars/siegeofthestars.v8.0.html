@@ -591,7 +591,7 @@ const UPGRADE_DETAILS = {
     unitSlot: { wordKey: 'upgrade_unitSlots' }
 };
 
-// Sistema de Internacionalización (i18n)
+// --- Sistema de Internacionalización (i18n) ---
 const LANG_STRINGS = {
     'ca': {
         'game_title': 'Setge Estel·lar',
@@ -627,7 +627,15 @@ const LANG_STRINGS = {
         'starbase_name': 'Base Secundària', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centre de comandament avançat. Reconstrueix drons de construcció amb un cost.',
         'shieldgenerator_name': 'Generador d\'Escut', 'shieldgenerator_short': 'ESCUT', 'shieldgenerator_desc': 'Projecta un escut d\'energia sobre les unitats i estructures properes.',
         'storagedepot_name': 'Magatzem de Recursos', 'storagedepot_short': 'MAGATZEM', 'storagedepot_desc': 'Augmenta la capacitat màxima de minerals.',
-        'tooltip_cost': 'Cost', 'tooltip_power': 'Energia'
+        'tooltip_cost': 'Cost', 'tooltip_power': 'Energia',
+        'constructiondrone_name': 'Drons de Construcció', 'repairdrone_name': 'Drons de Reparació', 'collectordrone_name': 'Drons de Recollida',
+        'tts_construction_started': 'Iniciada construcció de {name}.',
+        'tts_construction_completed': 'Construcció de {name} acabada.',
+        'tts_upgrade_completed': 'Millora de {name} finalitzada.',
+        'tts_drone_built': '{type} creat.',
+        'tts_wave_incoming': 'Atenció: onada hostil imminent.',
+        'tts_entity_attacked': 'Atac contra {name}.',
+        'tts_entity_destroyed': '{name} destruït.',
     },
     'es': {
         'game_title': 'Asedio de las Estrellas',
@@ -663,7 +671,15 @@ const LANG_STRINGS = {
         'starbase_name': 'Base Secundaria', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centro de mando avanzado. Reconstruix drons de construcció amb un cost.',
         'shieldgenerator_name': 'Generador de Escudo', 'shieldgenerator_short': 'ESCUDO', 'shieldgenerator_desc': 'Proyecta un escudo de energía sobre las unidades y estructuras cercanas.',
         'storagedepot_name': 'Depósito de Recursos', 'storagedepot_short': 'ALMACÉN', 'storagedepot_desc': 'Aumenta la capacidad máxima de minerales.',
-        'tooltip_cost': 'Coste', 'tooltip_power': 'Energía'
+        'tooltip_cost': 'Coste', 'tooltip_power': 'Energía',
+        'constructiondrone_name': 'Drones de Construcción', 'repairdrone_name': 'Drones de Reparación', 'collectordrone_name': 'Drones de Recolección',
+        'tts_construction_started': 'Iniciada construcción de {name}.',
+        'tts_construction_completed': 'Construcción de {name} completada.',
+        'tts_upgrade_completed': 'Mejora de {name} completada.',
+        'tts_drone_built': '{type} construido.',
+        'tts_wave_incoming': 'Atención: oleada hostil inminente.',
+        'tts_entity_attacked': 'Ataque contra {name}.',
+        'tts_entity_destroyed': '{name} destruido.',
     },
     'en': {
         'game_title': 'Siege of the Stars',
@@ -699,11 +715,63 @@ const LANG_STRINGS = {
         'starbase_name': 'Forward Base', 'starbase_short': 'FWD BASE', 'starbase_desc': 'Advanced command center. Rebuilds construction drones for a cost.',
         'shieldgenerator_name': 'Shield Generator', 'shieldgenerator_short': 'SHIELD', 'shieldgenerator_desc': 'Projects an energy shield over nearby units and structures.',
         'storagedepot_name': 'Resource Depot', 'storagedepot_short': 'DEPOT', 'storagedepot_desc': 'Increases your maximum mineral storage capacity.',
-        'tooltip_cost': 'Cost', 'tooltip_power': 'Power'
+        'tooltip_cost': 'Cost', 'tooltip_power': 'Power',
+        'constructiondrone_name': 'Construction Drone', 'repairdrone_name': 'Repair Drone', 'collectordrone_name': 'Collector Drone',
+        'tts_construction_started': 'Construction of {name} started.',
+        'tts_construction_completed': 'Construction of {name} completed.',
+        'tts_upgrade_completed': 'Upgrade of {name} completed.',
+        'tts_drone_built': '{type} constructed.',
+        'tts_wave_incoming': 'Warning: hostile wave incoming.',
+        'tts_entity_attacked': 'Attack on {name}.',
+        'tts_entity_destroyed': '{name} destroyed.',
     }
 };
 let currentLanguage = localStorage.getItem('sots_language') || 'ca';
 const t = (key) => LANG_STRINGS[currentLanguage][key] || key;
+
+// --- Sistema TTS Robótico ---
+let ttsSupported = 'speechSynthesis' in window;
+let availableVoices = [];
+
+function initTTS() {
+    if (!ttsSupported) {
+        console.warn('TTS not supported in this browser.');
+        return;
+    }
+    function loadVoices() {
+        availableVoices = window.speechSynthesis.getVoices();
+        if (availableVoices.length === 0 && ttsSupported) {
+            // Some browsers load voices asynchronously.
+            setTimeout(loadVoices, 100);
+        }
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+}
+
+function speakRobot(text) {
+  if (!ttsSupported || !text) return;
+  
+  const utter = new SpeechSynthesisUtterance(text);
+  
+  utter.lang = currentLanguage === 'ca' ? 'ca-ES'
+             : currentLanguage === 'es' ? 'es-ES'
+             : 'en-US';
+  
+  // Find a suitable robotic voice
+  if (availableVoices.length > 0) {
+      utter.voice = availableVoices.find(v => /Google|Microsoft|native/i.test(v.name) && v.lang.startsWith(currentLanguage))
+                    || availableVoices.find(v => v.lang.startsWith(currentLanguage))
+                    || availableVoices.find(v => /Google|Microsoft|native/i.test(v.name))
+                    || availableVoices[0];
+  }
+
+  utter.rate  = 0.8;
+  utter.pitch = 0.3;
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
 
 function createIconValueHTML(icon, value, total) {
     let text = `<span class="icon-value">${icon}<span>${value}`;
@@ -957,6 +1025,7 @@ window.addEventListener('load', function() {
             this.upgradeLevels = {};
             if (this.baseSpecs.upgrades) { this.baseSpecs.upgrades.forEach(upg => { this.upgradeLevels[upg] = 1; }); }
             this.shieldHealth = 0; this.maxShieldHealth = 0; this.shieldRegenTimer = 0;
+            this.lastAttackedAnnounced = 0; // For TTS debounce
             this.applyLevelStats();
         }
         
@@ -975,6 +1044,15 @@ window.addEventListener('load', function() {
         }
 
         takeDamage(damage) {
+            // TTS announcement for being attacked (debounced)
+            if (this.health > 0 && Date.now() - this.lastAttackedAnnounced > 5000) {
+                 if (this instanceof Building || (this instanceof Unit && this.parentBuilding)) {
+                    const name = t(this.baseSpecs.shortNameKey);
+                    speakRobot(t('tts_entity_attacked').replace('{name}', name));
+                    this.lastAttackedAnnounced = Date.now();
+                 }
+            }
+
             this.shieldRegenTimer = this.specs.shieldRegenDelay || 3000;
             if (this.shieldHealth > 0) {
                 const damageToShield = Math.min(damage, this.shieldHealth);
@@ -1121,14 +1199,15 @@ window.addEventListener('load', function() {
                 const wasConstructing = this.isConstructing;
                 this.isConstructing = false;
                 
-                game.constructionQueue = game.constructionQueue.filter(b => b !== this);
-                
                 if (wasConstructing) {
+                    const name = t(this.baseSpecs.nameKey);
+                    speakRobot(t('tts_construction_completed').replace('{name}', name));
                     if (game.selectedObject === this) {
                         game.buildSelectionPanel();
                     }
                 }
                 
+                game.constructionQueue = game.constructionQueue.filter(b => b !== this);
                 this.assignedDrones.forEach(d => d.targetBuilding = null);
                 this.assignedDrones = [];
             }
@@ -1159,6 +1238,8 @@ window.addEventListener('load', function() {
                 this.upgradeLevels[upgradeType]++; 
                 this.applyLevelStats();
                 this.task = null;
+                const name = t(this.baseSpecs.nameKey);
+                speakRobot(t('tts_upgrade_completed').replace('{name}', name));
             } else if (this.task.type === 'convert') {
                 const { newType } = this.task.details;
                 this.task = null; 
@@ -1339,6 +1420,9 @@ window.addEventListener('load', function() {
                     game.units.push(unit);
                     
                     if(unit.type === 'Infantry') unit.rallyPoint = {...this.rallyPoint};
+
+                    const unitTypeName = t(BUILDING_SPECS[unit.type]?.nameKey) || unit.type;
+                    speakRobot(t('tts_drone_built').replace('{type}', unitTypeName));
 
                     this.isBuildingUnit = false;
                     this.buildProgress = 0;
@@ -1870,6 +1954,7 @@ window.addEventListener('load', function() {
         } 
         startNextWave(){ 
             if (this.waveInProgress) return;
+            speakRobot(t('tts_wave_incoming'));
             waveFlash.classList.add('active');
             waveFlash.addEventListener('animationend', () => waveFlash.classList.remove('active'), { once: true });
             this.waveNumber++; this.waveInProgress=true; this.timeToNextWave = 0; const comp = this.calculateWaveComposition(); for(const t of comp){ const pos = getRandomEdgePosition(this.game.worldWidth, this.game.worldHeight); let ne=null; if(t==='Grunt') ne=new Grunt(pos.x,pos.y); if(t==='Flier') ne=new Flier(pos.x,pos.y); if(ne){ ne.applyWaveBonus(this.waveNumber); this.game.enemies.push(ne); } } } 
@@ -1974,11 +2059,15 @@ window.addEventListener('load', function() {
             this.dispatchConstructionDrones(); this.waveManager.update(dt);
             this.updateMaxMinerals();
             
-            const updateAndFilter = (list) => {
+            const updateAndFilter = (list, isBuilding = false) => {
                 for (let i = list.length - 1; i >= 0; i--) {
                     const entity = list[i];
                     entity.update(this, dt);
                     if (entity.health <= 0) {
+                        if (isBuilding) {
+                             const name = t(entity.baseSpecs.nameKey);
+                             speakRobot(t('tts_entity_destroyed').replace('{name}', name));
+                        }
                         this.createExplosion(entity.x, entity.y, entity.specs.color, 10, entity.size);
                         if(entity.target) {
                             if(typeof entity.target.attackers === 'number') entity.target.attackers--;
@@ -1997,7 +2086,9 @@ window.addEventListener('load', function() {
                 }
             };
             
-            updateAndFilter(this.buildings); updateAndFilter(this.units); updateAndFilter(this.enemies);
+            updateAndFilter(this.buildings, true); 
+            updateAndFilter(this.units); 
+            updateAndFilter(this.enemies);
             this.projectiles.forEach(p => p.update(dt)); this.projectiles = this.projectiles.filter(p=>!p.shouldBeRemoved);
             this.effects.forEach(e => e.update(this, dt)); this.effects = this.effects.filter(e=> e.life > 0);
             this.particles.forEach(p => p.update(dt)); this.particles = this.particles.filter(p => p.life > 0);
@@ -2169,7 +2260,7 @@ window.addEventListener('load', function() {
                 const specs = this.selectedObject.specs; 
                 const rangeRadius = specs.connectionRange || specs.range;
                 if (rangeRadius > 0 && !this.selectedObject.isConstructing) { 
-                    this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, rangeRadius, 'rgba(137, 221, 255, 0.4)', 1);
+                    this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, rangeRadius, 'rgba(137, 221, 255, 0.4)', 2);
                 }
             } else if (this.selectedObject) {
                  const radius = this.selectedObject.size * 1.6 + 5;
@@ -2196,10 +2287,14 @@ window.addEventListener('load', function() {
             ctx.shadowBlur = 15;
             
             if (color.includes('rgba')) {
-                ctx.setLineDash([6 / this.camera.zoom, 8 / this.camera.zoom]);
-                ctx.globalAlpha = 0.6 * (0.8 + Math.sin(Date.now() / 300) * 0.2);
+                ctx.fillStyle = color.replace(/, ?0\.\d+\)/, ', 0.1)'); // Set a more transparent fill
+                ctx.globalAlpha = 0.8 + Math.sin(Date.now() / 300) * 0.2;
+                
                 ctx.beginPath();
                 ctx.arc(x, y, r, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.setLineDash([8 / this.camera.zoom, 6 / this.camera.zoom]);
                 ctx.stroke();
             } else {
                 ctx.setLineDash([]);
@@ -2274,10 +2369,10 @@ window.addEventListener('load', function() {
 
         drawBuildPlacementAids() { 
             ctx.save(); 
-            ctx.globalAlpha = 0.15; 
+            ctx.globalAlpha = 0.2; 
             this.buildings.forEach(b => { 
-                if (b.specs.connectionRange > 0 && !b.isConstructing) { 
-                    const canProvideRange = b.isPowered || ['Pylon', 'SolarPanel', 'Starbase', 'Core'].includes(b.type); 
+                if (b.specs.connectionRange > 0) { 
+                    const canProvideRange = b.isPowered || ['Pylon', 'SolarPanel', 'Starbase', 'Core'].includes(b.type) || b.isConstructing; 
                     if(canProvideRange) { 
                         ctx.fillStyle = b.specs.color; 
                         ctx.beginPath(); 
@@ -2498,6 +2593,8 @@ window.addEventListener('load', function() {
                     const BuildingClass = AllClasses[type];
                     if (BuildingClass) {
                         const newBuilding = new BuildingClass(x, y);
+                        const name = t(newBuilding.baseSpecs.nameKey);
+                        speakRobot(t('tts_construction_started').replace('{name}', name));
                         this.buildings.push(newBuilding);
                         this.constructionQueue.push(newBuilding);
                         this.dispatchConstructionDrones(newBuilding);
@@ -2998,6 +3095,12 @@ window.addEventListener('load', function() {
     }
     
     function startGame(loadId = null) {
+        // Prime the TTS engine on user interaction
+        if (ttsSupported) {
+            const utter = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(utter);
+        }
+        
         splashScreen.style.display = 'none';
         loadGameScreen.style.display = 'none';
         gameCanvas.style.display = 'block';
@@ -3172,6 +3275,7 @@ window.addEventListener('load', function() {
     });
 
     // --- INITIAL PAGE LOAD ---
+    initTTS();
     languageSelect.value = currentLanguage;
     peaceTimeSelect.value = localStorage.getItem('sots_peaceTime') || '300000';
     updateLanguageUI();
