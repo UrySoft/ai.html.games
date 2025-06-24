@@ -318,10 +318,14 @@
 
         #upgrade-buttons-container, #convert-buttons-container { 
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
             gap: 8px;
             margin-top: 10px; 
-            justify-content: start;
+        }
+        
+        #upgrade-buttons-container .upgrade-btn, 
+        #convert-buttons-container .convert-btn {
+            width: auto; 
         }
         
         .upgrade-btn .upgrade-word { margin-top: 2px; }
@@ -416,7 +420,7 @@
                 bottom: 20px !important; 
                 left: 20px !important;
             }
-            #upgrade-buttons-container, #convert-buttons-container { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+            #upgrade-buttons-container, #convert-buttons-container { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); }
             
             #build-confirm-panel {
                 flex-direction: row;
@@ -653,7 +657,7 @@ const LANG_STRINGS = {
         'pylon_name': 'Relé Subespacial', 'pylon_short': 'RELÉ', 'pylon_desc': 'Extiende el alcance de la red de energía.',
         'swarmtower_name': 'Bahía de Reparación', 'swarmtower_short': 'REPARADOR', 'swarmtower_desc': 'Reconstruye drones de reparación con un coste. Compra más ranuras para más drones.',
         'barracks_name': 'Hangar de Cazas', 'barracks_short': 'HANGAR', 'barracks_desc': 'Reconstruye cazas destruidos con un coste. Compra ranuras para aumentar tu flota.',
-        'starbase_name': 'Base Secundaria', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centro de mando avanzado. Reconstrueix drons de construcció amb un cost.',
+        'starbase_name': 'Base Secundaria', 'starbase_short': 'BASE-ADV', 'starbase_desc': 'Centro de mando avanzado. Reconstruix drons de construcció amb un cost.',
         'shieldgenerator_name': 'Generador de Escudo', 'shieldgenerator_short': 'ESCUDO', 'shieldgenerator_desc': 'Proyecta un escudo de energía sobre las unidades y estructuras cercanas.',
         'storagedepot_name': 'Depósito de Recursos', 'storagedepot_short': 'ALMACÉN', 'storagedepot_desc': 'Aumenta la capacidad máxima de minerales.',
         'tooltip_cost': 'Coste', 'tooltip_power': 'Energía'
@@ -942,7 +946,9 @@ window.addEventListener('load', function() {
     class GameEntity {
         constructor(x, y, type) {
             this.x = x; this.y = y; this.type = type;
-            this.baseSpecs = {...BUILDING_SPECS[type]}; this.attackers = 0;
+            this.baseSpecs = {...BUILDING_SPECS[type]}; 
+            this.attackers = 0;
+            this.repairers = 0;
             this.upgradeLevels = {};
             if (this.baseSpecs.upgrades) { this.baseSpecs.upgrades.forEach(upg => { this.upgradeLevels[upg] = 1; }); }
             this.shieldHealth = 0; this.maxShieldHealth = 0; this.shieldRegenTimer = 0;
@@ -1469,20 +1475,58 @@ window.addEventListener('load', function() {
         constructor(x,y){ super(x,y,'RepairDrone'); this.parentBuilding=null; this.parentPowered=true; } 
         update(game,dt){ 
             applySeparation(this, game.units, game.enemies, dt);
-            if (!this.parentBuilding || this.parentBuilding.health <= 0) { this.health = 0; return; }
+            if (!this.parentBuilding || this.parentBuilding.health <= 0) { 
+                if (this.target) this.target.repairers--;
+                this.health = 0; 
+                return; 
+            }
             this.parentPowered = this.parentBuilding.isPowered;
-            if(!this.parentPowered){ this.target=null; return; } 
-            if(!this.target || this.target.health>=this.target.maxHealth || this.target.health<=0){ this.findTarget(game); } 
+            if(!this.parentPowered){ 
+                if (this.target) this.target.repairers--;
+                this.target=null; return; 
+            } 
+            if(!this.target || this.target.health>=this.target.maxHealth || this.target.health<=0){ 
+                if (this.target) this.target.repairers--;
+                this.findTarget(game); 
+            } 
             if(this.target){ 
                 const d = distance(this.x,this.y,this.target.x,this.target.y); 
                 if(d> this.target.size+10){ const dx = (this.target.x - this.x)/d; const dy = (this.target.y - this.y)/d; this.x += dx * this.specs.speed * dt/1000; this.y += dy * this.specs.speed * dt/1000; } 
                 else { this.target.health += this.specs.repairRate * dt/1000; if(this.target.health > this.target.maxHealth) this.target.health = this.target.maxHealth; } 
             } else { 
                 const dp = distance(this.x,this.y,this.parentBuilding.x,this.parentBuilding.y); 
-                if(dp>50){ const dx = (this.parentBuilding.x - this.x)/dp; const dy = (this.parentBuilding.y - this.y)/dp; this.x += dx * this.specs.speed*0.5 * dt/1000; this.y += dy * this.specs.speed*0.5 * dt/1000; } 
+                if(dp > 5){ const dx = (this.parentBuilding.x - this.x)/dp; const dy = (this.parentBuilding.y - this.y)/dp; this.x += dx * this.specs.speed*0.5 * dt/1000; this.y += dy * this.specs.speed*0.5 * dt/1000; } 
             } 
         } 
-        findTarget(game){ this.target=null; let lowPct=1; const all = [...game.buildings,...game.units]; for(const t of all){ if(t.health > 0 && t.health < t.maxHealth && distance(this.parentBuilding.x,this.parentBuilding.y,t.x,t.y)<this.parentBuilding.specs.range){ const pct = t.health/t.maxHealth; if(pct<lowPct){ lowPct=pct; this.target=t; } } } } 
+        findTarget(game){
+            const oldTarget = this.target;
+            this.target=null; 
+            let bestTarget = null;
+            const maxRepairersPerTarget = 2;
+
+            const all = [...game.buildings,...game.units]; 
+            const potentialTargets = all.filter(t => 
+                t.health > 0 && 
+                t.health < t.maxHealth && 
+                t.repairers < maxRepairersPerTarget &&
+                distance(this.parentBuilding.x,this.parentBuilding.y,t.x,t.y) < this.parentBuilding.specs.range
+            );
+            
+            potentialTargets.sort((a,b) => (a.health/a.maxHealth) - (b.health/b.maxHealth));
+            
+            if (potentialTargets.length > 0) {
+                bestTarget = potentialTargets[0];
+            }
+            
+            if (oldTarget && oldTarget !== bestTarget) {
+                oldTarget.repairers--;
+            }
+            
+            this.target = bestTarget;
+            if (this.target) {
+                this.target.repairers++;
+            }
+        } 
         draw(ctx){ super.draw(ctx); if(this.target && this.parentPowered){ ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.lineTo(this.target.x,this.target.y); ctx.strokeStyle=this.specs.color; ctx.lineWidth=1; ctx.setLineDash([2,2]); ctx.shadowColor=this.specs.color; ctx.shadowBlur=10; ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur=0; } } 
     }
 
@@ -1529,7 +1573,7 @@ window.addEventListener('load', function() {
                 }
             } else if (this.state === 'returning') {
                 const distToParent = distance(this.x, this.y, this.parentBuilding.x, this.parentBuilding.y);
-                if (distToParent < this.parentBuilding.size) {
+                if (distToParent < this.parentBuilding.size + 5) {
                     if (this.heldMinerals > 0) {
                         game.addMinerals(this.heldMinerals);
                         this.heldMinerals = 0;
@@ -1552,7 +1596,12 @@ window.addEventListener('load', function() {
         constructor(x, y, parentBase) { super(x, y, 'ConstructionDrone'); this.parentBuilding = parentBase; this.targetBuilding = null; }
         update(game, dt) {
             applySeparation(this, game.units, game.enemies, dt);
-            if (!this.parentBuilding || this.parentBuilding.health <= 0) { this.targetBuilding = null; this.health = 0; return; }
+            if (!this.parentBuilding || this.parentBuilding.health <= 0) {
+                if (this.targetBuilding) this.targetBuilding.assignedDrones = this.targetBuilding.assignedDrones.filter(d => d !== this);
+                this.targetBuilding = null; 
+                this.health = 0; 
+                return; 
+            }
             
             if (this.targetBuilding && (this.targetBuilding.health <= 0 || (!this.targetBuilding.isConstructing && !this.targetBuilding.task))) {
                 if(this.targetBuilding.assignedDrones) {
@@ -1573,7 +1622,7 @@ window.addEventListener('load', function() {
                 game.dispatchConstructionDrones();
                 if (!this.targetBuilding) {
                     const dp = distance(this.x, this.y, this.parentBuilding.x, this.parentBuilding.y); 
-                    if (dp > 50) { 
+                    if (dp > 5) { 
                         const dx = (this.parentBuilding.x - this.x) / dp; 
                         const dy = (this.parentBuilding.y - this.y) / dp; 
                         this.x += dx * this.specs.speed * 0.5 * dt / 1000; 
@@ -1650,7 +1699,6 @@ window.addEventListener('load', function() {
                 }
                 const gray = 90 + Math.random() * 20;
                 
-                // NEW: Add properties for animation
                 this.asteroids.push({ 
                     vertices, 
                     c: `rgb(${gray}, ${gray-5}, ${gray-10})`,
@@ -1667,7 +1715,6 @@ window.addEventListener('load', function() {
             }
         } 
         
-        // NEW: Update method for animations
         update(dt) {
             this.asteroids.forEach(a => {
                 a.rotation += a.rotationSpeed * dt;
@@ -1685,8 +1732,8 @@ window.addEventListener('load', function() {
             ctx.translate(this.x, this.y);
             this.asteroids.forEach(a => {
                 ctx.save();
-                ctx.translate(a.wobbleOffsetX, a.wobbleOffsetY); // Apply wobble
-                ctx.rotate(a.rotation); // Apply rotation
+                ctx.translate(a.wobbleOffsetX, a.wobbleOffsetY);
+                ctx.rotate(a.rotation);
                 
                 ctx.lineWidth = 5;
                 ctx.strokeStyle = "rgba(0,0,0,0.7)";
@@ -1707,7 +1754,6 @@ window.addEventListener('load', function() {
                 ctx.restore();
             });
             ctx.restore();
-            // REMOVED: Aura drawing code
         } 
     }
     
@@ -1831,7 +1877,7 @@ window.addEventListener('load', function() {
             if(this.isGameOver || !dt) return;
             
             this.buildings.forEach(b => { b.update(this, dt) });
-            this.asteroidFields.forEach(a => a.update(dt)); // NEW: Update asteroids
+            this.asteroidFields.forEach(a => a.update(dt)); 
             
             this.updateShields(dt);
             this.dispatchConstructionDrones(); this.waveManager.update(dt);
@@ -1843,12 +1889,17 @@ window.addEventListener('load', function() {
                     entity.update(this, dt);
                     if (entity.health <= 0) {
                         this.createExplosion(entity.x, entity.y, entity.specs.color, 10, entity.size);
-                        if(entity.target && entity.target.attackers) entity.target.attackers--;
+                        if(entity.target) {
+                            if(typeof entity.target.attackers === 'number') entity.target.attackers--;
+                            if(typeof entity.target.repairers === 'number') entity.target.repairers--;
+                        }
                         if(entity instanceof Unit && entity.parentBuilding && entity.parentBuilding.units) {
                            entity.parentBuilding.units = entity.parentBuilding.units.filter(u => u !== entity);
                         }
                         if(entity instanceof Building && entity.assignedDrones){
-                            entity.assignedDrones.forEach(d => d.targetBuilding = null);
+                            entity.assignedDrones.forEach(d => {
+                                d.targetBuilding = null;
+                            });
                         }
                         list.splice(i, 1);
                     }
@@ -1882,46 +1933,34 @@ window.addEventListener('load', function() {
         }
         
         dispatchConstructionDrones(prioritizedJob = null) {
-            const idleDrones = this.units.filter(u => u.type === 'ConstructionDrone' && !u.targetBuilding);
+            let idleDrones = this.units.filter(u => u.type === 'ConstructionDrone' && !u.targetBuilding);
             if (idleDrones.length === 0) return;
 
-            let dronesToAssign = [...idleDrones];
-
-            if (prioritizedJob && (prioritizedJob.isConstructing || prioritizedJob.task)) {
-                const dronesNeeded = MAX_DRONES_PER_JOB - prioritizedJob.assignedDrones.length;
-                const dronesForPrioritized = dronesToAssign.splice(0, dronesNeeded);
-                dronesForPrioritized.forEach(drone => {
-                    prioritizedJob.assignedDrones.push(drone);
-                    drone.targetBuilding = prioritizedJob;
-                });
-            }
-            
-            const pendingJobs = [
-                ...this.constructionQueue.filter(b => b !== prioritizedJob && b.assignedDrones.length < MAX_DRONES_PER_JOB),
-                ...this.buildings.filter(b => b.task && b !== prioritizedJob && b.assignedDrones.length < MAX_DRONES_PER_JOB)
+            let allJobs = [
+                ...this.constructionQueue.filter(b => b.assignedDrones.length < MAX_DRONES_PER_JOB),
+                ...this.buildings.filter(b => b.task && b.assignedDrones.length < MAX_DRONES_PER_JOB)
             ];
-            
-            pendingJobs.sort((a, b) => {
-                if (a.isConstructing && !b.isConstructing) return -1;
-                if (!a.isConstructing && b.isConstructing) return 1;
-                const core = this.buildings.find(bld => bld.type === 'Core');
-                if (core) {
-                    return distance(a.x, a.y, core.x, core.y) - distance(b.x, b.y, core.x, core.y);
-                }
-                return 0;
+
+            if (allJobs.length === 0) return;
+
+            allJobs.sort((a, b) => {
+                if (a === prioritizedJob) return -1;
+                if (b === prioritizedJob) return 1;
+                return a.assignedDrones.length - b.assignedDrones.length;
             });
-
-
-            for (const job of pendingJobs) {
-                if (dronesToAssign.length === 0) break;
-
-                const dronesNeededForThisJob = MAX_DRONES_PER_JOB - job.assignedDrones.length;
-                if (dronesNeededForThisJob > 0) {
-                    const dronesForThisJob = dronesToAssign.splice(0, dronesNeededForThisJob);
-                    dronesForThisJob.forEach(drone => {
-                        job.assignedDrones.push(drone);
-                        drone.targetBuilding = job;
-                    });
+            
+            while(idleDrones.length > 0) {
+                allJobs.sort((a, b) => a.assignedDrones.length - b.assignedDrones.length);
+                const targetJob = allJobs[0];
+                
+                if (targetJob && targetJob.assignedDrones.length < MAX_DRONES_PER_JOB) {
+                    const drone = idleDrones.shift();
+                    if(drone) {
+                       targetJob.assignedDrones.push(drone);
+                       drone.targetBuilding = targetJob;
+                    }
+                } else {
+                    break;
                 }
             }
         }
@@ -1979,8 +2018,8 @@ window.addEventListener('load', function() {
                 ctx.rotate(angle);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(-10, -6);
-                ctx.lineTo(-10, 6);
+                ctx.lineTo(-10, -4);
+                ctx.lineTo(-10, 4);
                 ctx.closePath();
                 ctx.fill();
                 ctx.restore();
@@ -1998,7 +2037,10 @@ window.addEventListener('load', function() {
             ctx.scale(this.camera.zoom, this.camera.zoom);
             ctx.translate(-this.camera.x, -this.camera.y);
             
-            if (this.buildConfirmationDetails) { this.drawBuildPlacementAids(); } 
+            if (this.buildConfirmationDetails) {
+                this.drawBuildPlacementAids();
+            }
+             
             this.drawPowerNetwork();
             this.asteroidFields.forEach(p=>p.draw(ctx));
             this.buildings.forEach(b=>b.draw(ctx));
@@ -2027,16 +2069,20 @@ window.addEventListener('load', function() {
                 }
             });
 
-            if(this.selectedObject){
-                const radius = this.selectedObject.size * (this.selectedObject instanceof AsteroidField ? 1.6 : 1) + 5;
+            if(this.selectedObject instanceof Building){
+                const radius = this.selectedObject.size * 1.2;
                 this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, radius, UI_COLORS.primary, 2);
-                if(this.selectedObject instanceof Building) {
-                    const specs = this.selectedObject.specs; const rangeRadius = specs.connectionRange || specs.range;
-                    if (rangeRadius > 0 && !this.selectedObject.isConstructing) { 
-                        this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, rangeRadius, 'rgba(137, 221, 255, 0.4)', 1);
-                    }
+                
+                const specs = this.selectedObject.specs; 
+                const rangeRadius = specs.connectionRange || specs.range;
+                if (rangeRadius > 0 && !this.selectedObject.isConstructing) { 
+                    this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, rangeRadius, 'rgba(137, 221, 255, 0.4)', 1);
                 }
+            } else if (this.selectedObject) {
+                 const radius = this.selectedObject.size * 1.6 + 5;
+                 this.drawSelectionIndicator(ctx, this.selectedObject.x, this.selectedObject.y, radius, UI_COLORS.primary, 2);
             }
+
             if(this.buildConfirmationDetails) this.drawBuildGhost();
             
             ctx.restore();
@@ -2049,51 +2095,52 @@ window.addEventListener('load', function() {
             ctx.save();
             
             const pulse = 1 + Math.sin(Date.now() / 150) * 0.15;
-            const r = radius * pulse;
+            const r = radius; // No pulsing on main indicator
             const bracketSize = r * 0.2;
 
-            // Background rect
             ctx.strokeStyle = color;
             ctx.lineWidth = lineWidth / this.camera.zoom;
             ctx.shadowColor = color;
             ctx.shadowBlur = 15;
-            ctx.setLineDash([6 / this.camera.zoom, 8 / this.camera.zoom]);
-            ctx.globalAlpha = 0.4;
-            ctx.strokeRect(x - r, y - r, r * 2, r * 2);
-            ctx.setLineDash([]);
-            ctx.globalAlpha = 1;
-
-            // Corner brackets
-            ctx.lineWidth = (lineWidth + 1) / this.camera.zoom;
             
-            // Top-left
-            ctx.beginPath();
-            ctx.moveTo(x - r, y - r + bracketSize);
-            ctx.lineTo(x - r, y - r);
-            ctx.lineTo(x - r + bracketSize, y - r);
-            ctx.stroke();
+            if (color.includes('rgba')) { // Dashed line for range indicators
+                ctx.setLineDash([6 / this.camera.zoom, 8 / this.camera.zoom]);
+                ctx.globalAlpha = 0.6 * (0.8 + Math.sin(Date.now() / 300) * 0.2); // Pulsing alpha for ranges
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2 * Math.PI);
+                ctx.stroke();
+            } else { // Solid brackets for selection
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1;
+                 // Top-left
+                ctx.beginPath();
+                ctx.moveTo(x - r, y - r + bracketSize);
+                ctx.lineTo(x - r, y - r);
+                ctx.lineTo(x - r + bracketSize, y - r);
+                ctx.stroke();
+                
+                // Top-right
+                ctx.beginPath();
+                ctx.moveTo(x + r - bracketSize, y - r);
+                ctx.lineTo(x + r, y - r);
+                ctx.lineTo(x + r, y - r + bracketSize);
+                ctx.stroke();
+
+                // Bottom-left
+                ctx.beginPath();
+                ctx.moveTo(x - r, y + r - bracketSize);
+                ctx.lineTo(x - r, y + r);
+                ctx.lineTo(x - r + bracketSize, y + r);
+                ctx.stroke();
+
+                // Bottom-right
+                ctx.beginPath();
+                ctx.moveTo(x + r, y + r - bracketSize);
+                ctx.lineTo(x + r, y + r);
+                ctx.lineTo(x + r - bracketSize, y + r);
+                ctx.stroke();
+            }
             
-            // Top-right
-            ctx.beginPath();
-            ctx.moveTo(x + r - bracketSize, y - r);
-            ctx.lineTo(x + r, y - r);
-            ctx.lineTo(x + r, y - r + bracketSize);
-            ctx.stroke();
-
-            // Bottom-left
-            ctx.beginPath();
-            ctx.moveTo(x - r, y + r - bracketSize);
-            ctx.lineTo(x - r, y + r);
-            ctx.lineTo(x - r + bracketSize, y + r);
-            ctx.stroke();
-
-            // Bottom-right
-            ctx.beginPath();
-            ctx.moveTo(x + r, y + r - bracketSize);
-            ctx.lineTo(x + r, y + r);
-            ctx.lineTo(x + r - bracketSize, y + r);
-            ctx.stroke();
-
             ctx.restore();
         }
 
@@ -2148,7 +2195,22 @@ window.addEventListener('load', function() {
             ctx.restore();
         }
 
-        drawBuildPlacementAids() { ctx.save(); ctx.globalAlpha = 0.15; this.buildings.forEach(b => { if (b.specs.connectionRange > 0) { const canProvideRange = b.isPowered || ['Pylon', 'SolarPanel', 'Starbase', 'Core'].includes(b.type); if(canProvideRange) { ctx.fillStyle = b.specs.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.specs.connectionRange, 0, 2 * Math.PI); ctx.fill(); } } }); ctx.restore(); }
+        drawBuildPlacementAids() { 
+            ctx.save(); 
+            ctx.globalAlpha = 0.15; 
+            this.buildings.forEach(b => { 
+                if (b.specs.connectionRange > 0 && !b.isConstructing) { 
+                    const canProvideRange = b.isPowered || ['Pylon', 'SolarPanel', 'Starbase', 'Core'].includes(b.type); 
+                    if(canProvideRange) { 
+                        ctx.fillStyle = b.specs.color; 
+                        ctx.beginPath(); 
+                        ctx.arc(b.x, b.y, b.specs.connectionRange, 0, 2 * Math.PI); 
+                        ctx.fill(); 
+                    } 
+                } 
+            }); 
+            ctx.restore(); 
+        }
         
         drawBuildGhost() {
             const ghostDetails = this.buildConfirmationDetails;
@@ -2161,7 +2223,7 @@ window.addEventListener('load', function() {
             ctx.save();
             const radius = specs.range || specs.connectionRange;
             if (radius > 0) { 
-                this.drawSelectionIndicator(ctx, x, y, radius, 'rgba(255, 255, 255, 0.4)', 1);
+                this.drawSelectionIndicator(ctx, x, y, radius, 'rgba(255, 255, 255, 0.5)', 1.5);
             }
             ctx.globalAlpha = 0.6; ctx.fillStyle = ghostColor; ctx.strokeStyle = ghostColor; ctx.lineWidth = 2; ctx.shadowColor = ghostColor; ctx.shadowBlur = 15;
             drawBuildingPath(ctx, type, specs.size, x, y);
