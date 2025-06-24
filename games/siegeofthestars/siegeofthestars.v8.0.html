@@ -198,9 +198,10 @@
             display: grid;
             gap: 8px;
         }
-        .layout-9x1 { grid-template-columns: repeat(9, auto); grid-template-rows: 1fr; }
-        .layout-1x9 { grid-template-columns: 1fr; grid-template-rows: repeat(9, auto); }
-        .layout-3x3 { grid-template-columns: repeat(3, auto); grid-template-rows: repeat(3, auto); }
+        .layout-10x1, .layout-9x1 { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+        .layout-1x10 { grid-template-columns: 1fr; grid-template-rows: repeat(10, auto); }
+        .layout-5x2 { grid-template-columns: repeat(5, auto); grid-template-rows: repeat(2, auto); }
+        .layout-3xN { grid-template-columns: repeat(3, auto); }
         .hidden { display: none !important; }
 
         .build-btn, .upgrade-btn, .convert-btn, .menu-btn-lrg {
@@ -296,8 +297,8 @@
             position: absolute !important; 
             bottom: 10px !important; 
             left: 10px !important; 
-            display: inline-flex; /* FIXED: Shrink-to-fit width */
-            flex-direction: column; /* FIXED: Arrange items vertically */
+            display: inline-flex;
+            flex-direction: column;
             min-width: 260px;
             right: auto !important;
             transform: none !important;
@@ -348,7 +349,7 @@
             bottom: 10px;
             right: 10px;
             flex-direction: column;
-            gap: 15px; /* FIXED: Increased spacing */
+            gap: 15px;
         }
         #build-confirm-info { display: flex; gap: 10px; align-items: center; }
         #build-confirm-icon { width: 50px; height: 50px; flex-shrink: 0; }
@@ -617,6 +618,7 @@ const LANG_STRINGS = {
         'phaserturret_name': 'Torreta Fàser', 'phaserturret_short': 'FÀSER', 'phaserturret_desc': 'Dispara raigs fàser a naus hostils.',
         'laserturret_name': 'Torreta Làser', 'laserturret_short': 'LÀSER', 'laserturret_desc': 'Emet un raig continu que causa un alt dany per segon.',
         'plasmatorret_name': 'Torreta de Plasma', 'plasmatorret_short': 'PLASMA', 'plasmatorret_desc': 'Llança boles de plasma lentes però devastadores.',
+        'empturret_name': 'Torreta PEM', 'empturret_short': 'PEM', 'empturret_desc': 'Allibera una ona d\'energia que destrueix naus enemigues al seu abast.',
         'miner_name': 'Estació Minera', 'miner_short': 'MINER', 'miner_desc': 'Reconstrueix drons destruïts amb un cost. Compra ranures per augmentar el límit.',
         'solarpanel_name': 'Reactor de Fusió', 'solarpanel_short': 'REACTOR', 'solarpanel_desc': 'Genera energia per a la xarxa de la base.',
         'pylon_name': 'Relé Subespacial', 'pylon_short': 'RELÉ', 'pylon_desc': 'Estén l\'abast de la xarxa d\'energia.',
@@ -652,6 +654,7 @@ const LANG_STRINGS = {
         'phaserturret_name': 'Torreta Fáser', 'phaserturret_short': 'FÁSER', 'phaserturret_desc': 'Dispara rayos fáser a naves hostiles.',
         'laserturret_name': 'Torreta Láser', 'laserturret_short': 'LÁSER', 'laserturret_desc': 'Emite un rayo continuo que causa un alto daño por segundo.',
         'plasmatorret_name': 'Torreta de Plasma', 'plasmatorret_short': 'PLASMA', 'plasmatorret_desc': 'Lanza bolas de plasma lentas pero devastadoras.',
+        'empturret_name': 'Torreta PEM', 'empturret_short': 'PEM', 'empturret_desc': 'Libera una onda de energía que destruye naves enemigas a su alcance.',
         'miner_name': 'Estación Minera', 'miner_short': 'MINERO', 'miner_desc': 'Reconstruye drones destruidos con un coste. Compra ranuras para aumentar el límite.',
         'solarpanel_name': 'Reactor de Fusión', 'solarpanel_short': 'REACTOR', 'solarpanel_desc': 'Genera energía para la red de la base.',
         'pylon_name': 'Relé Subespacial', 'pylon_short': 'RELÉ', 'pylon_desc': 'Extiende el alcance de la red de energía.',
@@ -687,6 +690,7 @@ const LANG_STRINGS = {
         'phaserturret_name': 'Phaser Turret', 'phaserturret_short': 'PHASER', 'phaserturret_desc': 'Fires phaser beams at hostile ships.',
         'laserturret_name': 'Laser Turret', 'laserturret_short': 'LASER', 'laserturret_desc': 'Emits a continuous beam, dealing high damage per second.',
         'plasmatorret_name': 'Plasma Turret', 'plasmatorret_short': 'PLASMA', 'plasmatorret_desc': 'Launches slow but devastating plasma balls.',
+        'empturret_name': 'EMP Turret', 'empturret_short': 'EMP', 'empturret_desc': 'Unleashes an energy wave that destroys enemy ships in range.',
         'miner_name': 'Mining Station', 'miner_short': 'MINER', 'miner_desc': 'Rebuilds destroyed drones for a cost. Buy slots to increase the limit.',
         'solarpanel_name': 'Fusion Reactor', 'solarpanel_short': 'REACTOR', 'solarpanel_desc': 'Generates power for the base\'s grid.',
         'pylon_name': 'Subspace Relay', 'pylon_short': 'RELAY', 'pylon_desc': 'Extends the range of the power grid.',
@@ -870,6 +874,7 @@ window.addEventListener('load', function() {
         PhaserTurret: { nameKey: 'phaserturret_name', shortNameKey: 'phaserturret_short', descKey: 'phaserturret_desc', cost: 50, size: 10, health: 50, color: '#ff8f8f', power: -10, range: 150, fireRate: 1000, damage: 10, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:25, fireRate:50, range:25}, conversionCost: 50, damage_values: [10, 15, 20, 25, 30], fireRate_values: [1000, 800, 700, 600, 500], range_values: [150, 200, 250, 300, 350] },
         LaserTurret:  { nameKey: 'laserturret_name', shortNameKey: 'laserturret_short', descKey: 'laserturret_desc', cost: 100, size: 10, health: 50, color: '#ff8f8f', power: -25, range: 160, fireRate: 100, damage: 2, upgrades:['damage', 'range'], upgradeCosts:{damage:100, range:50}, conversionCost: 100, damage_values: [2, 2.5, 3, 3.5, 4], range_values: [160, 180, 200, 220, 240] },
         PlasmaTurret: { nameKey: 'plasmatorret_name', shortNameKey: 'plasmatorret_short', descKey: 'plasmatorret_desc', cost: 150, size: 10, health: 50, color: '#ff8f8f', power: -20, range: 400, fireRate: 10000, damage: 50, upgrades:['damage', 'fireRate', 'range'], upgradeCosts:{damage:200, fireRate:200, range:100}, conversionCost: 150, damage_values: [50, 100, 150, 200, 250], fireRate_values: [10000, 8750, 7500, 6250, 5000], range_values: [400, 500, 600, 700, 800] },
+        EMPTurret:    { nameKey: 'empturret_name', shortNameKey: 'empturret_short', descKey: 'empturret_desc', cost: 250, size: 12, health: 75, color: '#ff8f8f', power: -200, range: 400, fireRate: 30000, upgrades:['range', 'fireRate'], upgradeCosts:{range:200, fireRate:300}, conversionCost: 200, fireRate_values: [30000, 27000, 24000, 21000, 18000], range_values: [400, 450, 500, 550, 600] },
         Miner:        { nameKey: 'miner_name', shortNameKey: 'miner_short', descKey: 'miner_desc', cost: 75, size: 15, health: 150, color: '#8fff7f', power: -25, range: 100, droneSpawnRate: 8000, upgrades:['range'], upgradeCosts:{range:100}, unitSlotCost: 75, unitBuildCost: 25, conversionCost: 100, range_values: [100, 125, 150, 175, 200] },
         StorageDepot: { nameKey: 'storagedepot_name', shortNameKey: 'storagedepot_short', descKey: 'storagedepot_desc', cost: 100, size: 25, health: 150, color: '#8fff7f', power: -5, storage: 200, upgrades: ['storage'], upgradeCosts: { storage: 200 }, storage_values: [200, 400, 600, 800, 1000]},
         SolarPanel:   { nameKey: 'solarpanel_name', shortNameKey: 'solarpanel_short', descKey: 'solarpanel_desc', cost: 100, size: 20, health: 100, color: '#89ddff', power: 50, connectionRange: 150, upgrades:['power'], upgradeCosts:{power:75}, power_values: [50, 75, 100, 125, 150] },
@@ -1038,6 +1043,10 @@ window.addEventListener('load', function() {
             case 'PhaserTurret': ctx.moveTo(x, y - s); ctx.lineTo(x + s, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s, y); ctx.closePath(); break;
             case 'LaserTurret': const armL = s*0.8; ctx.moveTo(x,y-s); ctx.lineTo(x-s,y+armL); ctx.lineTo(x,y); ctx.lineTo(x+s,y+armL); ctx.closePath(); break;
             case 'PlasmaTurret': for(let i=0;i<6;i++){ const a = i/6 * Math.PI*2; ctx.arc(x,y,s,a,a+Math.PI/6,false); ctx.closePath(); ctx.moveTo(x+s*Math.cos(a+Math.PI/6), y+s*Math.sin(a+Math.PI/6));} break;
+            case 'EMPTurret':
+                for (let i = 0; i < 6; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 6), y + s * Math.sin(i * 2 * Math.PI / 6)); } ctx.closePath();
+                for (let i = 0; i < 3; i++) { const angle = i * 2 * Math.PI / 3; ctx.moveTo(x + Math.cos(angle) * s * 0.7, y + Math.sin(angle) * s * 0.7); ctx.lineTo(x + Math.cos(angle) * s * 1.2, y + Math.sin(angle) * s * 1.2); }
+                break;
             case 'Miner': for (let i = 0; i < 6; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 6), y + s * Math.sin(i * 2 * Math.PI / 6)); } ctx.closePath(); break;
             case 'Barracks': for (let i = 0; i < 8; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 8), y + s * Math.sin(i * 2 * Math.PI / 8)); } ctx.closePath(); break;
             case 'Core': case 'Starbase': for (let i = 0; i < 10; i++) { ctx.lineTo(x + s * Math.cos(i * 2 * Math.PI / 10), y + s * Math.sin(i * 2 * Math.PI / 10)); } ctx.closePath(); break;
@@ -1385,17 +1394,61 @@ window.addEventListener('load', function() {
     class SolarPanel extends Building { constructor(x,y){ super(x,y,'SolarPanel'); } }
     class ShieldGenerator extends Building { constructor(x,y) { super(x,y,'ShieldGenerator');} }
     
-    class Miner extends UnitProducer { constructor(x,y){ super(x,y,'Miner'); this.unitType = 'CollectorDrone'; } draw(ctx) { super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if (!this.isConstructing && (game.selectedObject === this || game.buildConfirmationDetails?.type === 'Miner')) { game.drawSelectionIndicator(ctx, this.x, this.y, this.specs.range, this.specs.color + '40', 1); } } }
+    class Miner extends UnitProducer { constructor(x,y){ super(x,y,'Miner'); this.unitType = 'CollectorDrone'; } }
     class StorageDepot extends Building { constructor(x,y){ super(x,y,'StorageDepot'); } }
     
-    class Turret extends Building { constructor(x,y,type='PhaserTurret'){ super(x,y,type); this.cooldown=0; this.target=null; } update(game,dt){ super.update(game,dt); if(this.isConstructing || !this.isPowered || this.task){ this.target=null; return; } this.cooldown -= dt; if(!this.target || (this.target.health<=0 && this.target.shieldHealth <= 0) || distance(this.x,this.y,this.target.x,this.target.y)>this.specs.range){ this.findTarget(game.enemies); } } findTarget(enemies){ this.target = null; let dmax = this.specs.range; for(const e of enemies){ const d = distance(this.x,this.y,e.x,e.y); if(d<dmax){ dmax = d; this.target = e; } } } }
+    class Turret extends Building { 
+        constructor(x,y,type='PhaserTurret'){ 
+            super(x,y,type); 
+            this.cooldown=0; this.target=null; 
+        } 
+        update(game,dt){ 
+            super.update(game,dt); 
+            if(this.isConstructing || !this.isPowered || this.task){ this.target=null; return; } 
+            this.cooldown -= dt; 
+            if(!this.target || (this.target.health<=0 && this.target.shieldHealth <= 0) || distance(this.x,this.y,this.target.x,this.target.y)>this.specs.range){ this.findTarget(game.enemies); } 
+        } 
+        findTarget(enemies){ 
+            this.target = null; let dmax = this.specs.range; 
+            for(const e of enemies){ const d = distance(this.x,this.y,e.x,e.y); if(d<dmax){ dmax = d; this.target = e; } } 
+        }
+        draw(ctx) {
+            super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y));
+            if (!this.isConstructing && !this.task && this.isPowered && this.specs.fireRate > 3000) {
+                const chargeProgress = 1 - (Math.max(0, this.cooldown) / this.specs.fireRate);
+                if (chargeProgress < 1) {
+                    ctx.save();
+                    const chargeRadius = this.size + 15 * (1 - chargeProgress);
+                    ctx.globalAlpha = 0.5 * chargeProgress;
+                    ctx.fillStyle = this.specs.color;
+                    ctx.shadowColor = this.specs.color;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, chargeRadius, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        }
+    }
     class PhaserTurret extends Turret { constructor(x,y){ super(x,y,'PhaserTurret'); } update(game,dt){ super.update(game,dt); if(this.target && this.cooldown<=0){ game.projectiles.push(new PhaserShot(this.x,this.y,this.target,this.specs.damage,this.specs.color)); this.cooldown = this.specs.fireRate; } } }
-    class LaserTurret extends Turret { constructor(x,y){ super(x,y,'LaserTurret'); this.beamActive = false; } update(game,dt){ super.update(game,dt); this.beamActive = false; if(this.target && this.cooldown<=0 && !this.task){ this.beamActive = true; this.target.takeDamage(this.specs.damage * (dt / 1000) * 20); } } draw(ctx){ super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if (this.beamActive && this.target) { ctx.save(); ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.target.x, this.target.y); ctx.strokeStyle = this.specs.color; ctx.lineWidth = 3; ctx.globalAlpha = 0.8; ctx.shadowColor = this.specs.color; ctx.shadowBlur = 15; ctx.stroke(); ctx.restore(); } } }
+    class LaserTurret extends Turret { constructor(x,y){ super(x,y,'LaserTurret'); this.beamActive = false; } update(game,dt){ super.update(game,dt); this.beamActive = false; if(this.target && this.cooldown<=0 && !this.task){ this.beamActive = true; this.target.takeDamage(this.specs.damage * (dt / 1000) * 20); } } draw(ctx){ super.draw(ctx); if (this.beamActive && this.target) { ctx.save(); ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.target.x, this.target.y); ctx.strokeStyle = this.specs.color; ctx.lineWidth = 3; ctx.globalAlpha = 0.8; ctx.shadowColor = this.specs.color; ctx.shadowBlur = 15; ctx.stroke(); ctx.restore(); } } }
     class PlasmaTurret extends Turret { constructor(x,y){ super(x,y,'PlasmaTurret'); } update(game,dt){ super.update(game,dt); if(this.target && this.cooldown<=0){ game.projectiles.push(new PlasmaBall(this.x,this.y,this.target,this.specs.damage,'#89ddff')); this.cooldown = this.specs.fireRate; } } }
+    class EMPTurret extends Turret { 
+        constructor(x,y){ super(x,y,'EMPTurret'); } 
+        update(game,dt){ 
+            super.update(game,dt); 
+            const hasTargets = game.enemies.some(e => distance(this.x, this.y, e.x, e.y) < this.specs.range);
+            if(this.cooldown<=0 && hasTargets){ 
+                game.effects.push(new EMP_Pulse(this.x,this.y,this.specs.range,this.specs.color));
+                this.cooldown = this.specs.fireRate; 
+            } 
+        } 
+    }
 
     class Barracks extends UnitProducer { 
         constructor(x,y){ super(x,y,'Barracks'); this.unitType = 'Infantry'; this.rallyPoint={x,y:y+50}; } 
-        draw(ctx){ super.draw(ctx, () => drawBuildingPath(ctx, this.type, this.size, this.x, this.y)); if(!this.isConstructing && game.selectedObject===this){ ctx.beginPath(); ctx.strokeStyle = '#00ff7f'; ctx.setLineDash([5,5]); ctx.moveTo(this.x,this.y); ctx.lineTo(this.rallyPoint.x,this.rallyPoint.y); ctx.stroke(); ctx.setLineDash([]); game.drawSelectionIndicator(ctx, this.rallyPoint.x,this.rallyPoint.y,10, '#00ff7f', 2); } } 
+        draw(ctx){ super.draw(ctx); if(!this.isConstructing && game.selectedObject===this){ ctx.beginPath(); ctx.strokeStyle = '#00ff7f'; ctx.setLineDash([5,5]); ctx.moveTo(this.x,this.y); ctx.lineTo(this.rallyPoint.x,this.rallyPoint.y); ctx.stroke(); ctx.setLineDash([]); game.drawSelectionIndicator(ctx, this.rallyPoint.x,this.rallyPoint.y,10, '#00ff7f', 2); } } 
     }
     class SwarmTower extends UnitProducer { constructor(x,y){ super(x,y,'SwarmTower'); this.unitType = 'RepairDrone'; } }
     
@@ -1680,6 +1733,43 @@ window.addEventListener('load', function() {
             });
         }
     }
+
+    class EMP_Pulse {
+        constructor(x, y, maxRadius, color) {
+            this.x = x; this.y = y; this.maxRadius = maxRadius; this.color = color;
+            this.currentRadius = 0;
+            this.expansionSpeed = maxRadius * 2; // Expands in 0.5 seconds
+            this.life = 500;
+            this.hitEnemies = new Set();
+        }
+        update(game, dt) {
+            this.life -= dt;
+            const oldRadius = this.currentRadius;
+            this.currentRadius += this.expansionSpeed * (dt / 1000);
+
+            game.enemies.forEach(enemy => {
+                if (this.hitEnemies.has(enemy)) return;
+                const d = distance(this.x, this.y, enemy.x, enemy.y);
+                if (d > oldRadius && d <= this.currentRadius) {
+                    enemy.health = 0; // Instant kill
+                    this.hitEnemies.add(enemy);
+                }
+            });
+        }
+        draw(ctx) {
+            ctx.save();
+            const progress = this.currentRadius / this.maxRadius;
+            ctx.globalAlpha = 1 - progress;
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = (3 + (progress * 7)) / game.camera.zoom;
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.currentRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
     
     class AsteroidField { 
         constructor(x, y, size, amount) { 
@@ -1792,7 +1882,7 @@ window.addEventListener('load', function() {
         }
     }
     
-    const AllClasses = { Core, Starbase, Pylon, SolarPanel, ShieldGenerator, Miner, StorageDepot, PhaserTurret, LaserTurret, PlasmaTurret, Barracks, SwarmTower, Infantry, RepairDrone, CollectorDrone, ConstructionDrone, Grunt, Flier, Projectile, PhaserShot, PlasmaBall, UnitProducer };
+    const AllClasses = { Core, Starbase, Pylon, SolarPanel, ShieldGenerator, Miner, StorageDepot, PhaserTurret, LaserTurret, PlasmaTurret, EMPTurret, Barracks, SwarmTower, Infantry, RepairDrone, CollectorDrone, ConstructionDrone, Grunt, Flier, Projectile, PhaserShot, PlasmaBall, EMP_Pulse, UnitProducer };
 
     class Game {
         constructor(width,height){
@@ -1803,10 +1893,11 @@ window.addEventListener('load', function() {
             this.isPaused = false;
             this.minZoomToFitWorld = 0.1;
             this.maxMinerals = 0;
+            this.lastSelectionTime = 0;
         }
         
         init(isReload = false, settings = {}){
-            Object.assign(this, { minerals: 250, buildings: [], units: [], enemies: [], projectiles: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, camera: { x: this.worldWidth/2, y: this.worldHeight/2, zoom:1 }, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
+            Object.assign(this, { minerals: 250, buildings: [], units: [], enemies: [], projectiles: [], effects: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, camera: { x: this.worldWidth/2, y: this.worldHeight/2, zoom:1 }, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
             
             this.calculateMinZoom();
             this.camera.zoom = Math.max(this.minZoomToFitWorld, 1.0);
@@ -1908,6 +1999,7 @@ window.addEventListener('load', function() {
             
             updateAndFilter(this.buildings); updateAndFilter(this.units); updateAndFilter(this.enemies);
             this.projectiles.forEach(p => p.update(dt)); this.projectiles = this.projectiles.filter(p=>!p.shouldBeRemoved);
+            this.effects.forEach(e => e.update(this, dt)); this.effects = this.effects.filter(e=> e.life > 0);
             this.particles.forEach(p => p.update(dt)); this.particles = this.particles.filter(p => p.life > 0);
 
             this.asteroidFields = this.asteroidFields.filter(w=>w.minerals>0 || this.selectedObject === w);
@@ -2047,6 +2139,7 @@ window.addEventListener('load', function() {
             this.units.forEach(u=>u.draw(ctx));
             this.enemies.forEach(e=>e.draw(ctx));
             this.projectiles.forEach(p=>p.draw(ctx));
+            this.effects.forEach(e => e.draw(ctx));
             this.particles.forEach(p => p.draw(ctx));
             
             this.buildings.forEach(b => {
@@ -2094,8 +2187,7 @@ window.addEventListener('load', function() {
         drawSelectionIndicator(ctx, x, y, radius, color, lineWidth) {
             ctx.save();
             
-            const pulse = 1 + Math.sin(Date.now() / 150) * 0.15;
-            const r = radius; // No pulsing on main indicator
+            const r = radius;
             const bracketSize = r * 0.2;
 
             ctx.strokeStyle = color;
@@ -2103,41 +2195,26 @@ window.addEventListener('load', function() {
             ctx.shadowColor = color;
             ctx.shadowBlur = 15;
             
-            if (color.includes('rgba')) { // Dashed line for range indicators
+            if (color.includes('rgba')) {
                 ctx.setLineDash([6 / this.camera.zoom, 8 / this.camera.zoom]);
-                ctx.globalAlpha = 0.6 * (0.8 + Math.sin(Date.now() / 300) * 0.2); // Pulsing alpha for ranges
+                ctx.globalAlpha = 0.6 * (0.8 + Math.sin(Date.now() / 300) * 0.2);
                 ctx.beginPath();
                 ctx.arc(x, y, r, 0, 2 * Math.PI);
                 ctx.stroke();
-            } else { // Solid brackets for selection
+            } else {
                 ctx.setLineDash([]);
                 ctx.globalAlpha = 1;
-                 // Top-left
                 ctx.beginPath();
-                ctx.moveTo(x - r, y - r + bracketSize);
-                ctx.lineTo(x - r, y - r);
-                ctx.lineTo(x - r + bracketSize, y - r);
+                ctx.moveTo(x - r, y - r + bracketSize); ctx.lineTo(x - r, y - r); ctx.lineTo(x - r + bracketSize, y - r);
                 ctx.stroke();
-                
-                // Top-right
                 ctx.beginPath();
-                ctx.moveTo(x + r - bracketSize, y - r);
-                ctx.lineTo(x + r, y - r);
-                ctx.lineTo(x + r, y - r + bracketSize);
+                ctx.moveTo(x + r - bracketSize, y - r); ctx.lineTo(x + r, y - r); ctx.lineTo(x + r, y - r + bracketSize);
                 ctx.stroke();
-
-                // Bottom-left
                 ctx.beginPath();
-                ctx.moveTo(x - r, y + r - bracketSize);
-                ctx.lineTo(x - r, y + r);
-                ctx.lineTo(x - r + bracketSize, y + r);
+                ctx.moveTo(x - r, y + r - bracketSize); ctx.lineTo(x - r, y + r); ctx.lineTo(x - r + bracketSize, y + r);
                 ctx.stroke();
-
-                // Bottom-right
                 ctx.beginPath();
-                ctx.moveTo(x + r, y + r - bracketSize);
-                ctx.lineTo(x + r, y + r);
-                ctx.lineTo(x + r - bracketSize, y + r);
+                ctx.moveTo(x + r, y + r - bracketSize); ctx.lineTo(x + r, y + r); ctx.lineTo(x + r - bracketSize, y + r);
                 ctx.stroke();
             }
             
@@ -2254,6 +2331,7 @@ window.addEventListener('load', function() {
             fullscreenBtn.addEventListener("click", () => this.toggleFullscreen());
             
             destroyBtn.addEventListener("click", () => {
+                if (Date.now() - this.lastSelectionTime < 100) return;
                 if(!(this.selectedObject instanceof Building)) return; 
                 const b = this.selectedObject; 
                 const refund = b.isConstructing ? b.baseSpecs.cost : 0.5 * b.baseSpecs.cost; 
@@ -2360,6 +2438,7 @@ window.addEventListener('load', function() {
         
         setSelectedObject(obj) { 
             if (this.buildConfirmationDetails) return;
+            this.lastSelectionTime = Date.now();
             this.selectedObject = obj;
             this.buildSelectionPanel();
         }
@@ -2512,7 +2591,11 @@ window.addEventListener('load', function() {
                             const btn = document.createElement('button');
                             btn.classList.add('build-btn', 'upgrade-btn');
                             btn.dataset.upgrade = upgType;
-                            btn.onclick = (e) => { e.stopPropagation(); b.startUpgrade(upgType); };
+                            btn.onclick = (e) => { 
+                                if (Date.now() - game.lastSelectionTime < 100) return;
+                                e.stopPropagation(); 
+                                b.startUpgrade(upgType); 
+                            };
                             upgradeContainer.appendChild(btn);
                         });
                     }
@@ -2527,7 +2610,11 @@ window.addEventListener('load', function() {
                         const btn = document.createElement('button');
                         btn.classList.add('build-btn', 'upgrade-btn');
                         btn.dataset.upgrade = "unitSlot";
-                        btn.onclick = (e) => { e.stopPropagation(); b.buyUnitSlot(); };
+                        btn.onclick = (e) => { 
+                             if (Date.now() - game.lastSelectionTime < 100) return;
+                            e.stopPropagation(); 
+                            b.buyUnitSlot(); 
+                        };
                         upgradeContainer.appendChild(btn);
                     }
                     
@@ -2535,7 +2622,7 @@ window.addEventListener('load', function() {
                         convertContainer.style.display = 'none';
                         let conversionOptions = [];
                         if (b instanceof Turret) {
-                            conversionOptions = ['PhaserTurret', 'LaserTurret', 'PlasmaTurret'].filter(t => t !== b.type);
+                            conversionOptions = ['PhaserTurret', 'LaserTurret', 'PlasmaTurret', 'EMPTurret'].filter(t => t !== b.type);
                         } else if (b.type === 'Miner') {
                             conversionOptions = ['StorageDepot'];
                         }
@@ -2546,7 +2633,11 @@ window.addEventListener('load', function() {
                                 const btn = document.createElement('button');
                                 btn.classList.add('build-btn', 'convert-btn');
                                 btn.dataset.convert = convertType;
-                                btn.onclick = (e) => { e.stopPropagation(); b.startConversion(convertType); };
+                                btn.onclick = (e) => { 
+                                    if (Date.now() - game.lastSelectionTime < 100) return;
+                                    e.stopPropagation(); 
+                                    b.startConversion(convertType); 
+                                };
                                 convertContainer.appendChild(btn);
                             });
                         }
@@ -2664,7 +2755,7 @@ window.addEventListener('load', function() {
                         const targetSpecs = BUILDING_SPECS[convertType];
                         
                         btn.disabled = !!b.task;
-                        const iconColor = (btn.disabled) ? '#777' : UI_COLORS.success;
+                        
                         const iconCanvas = createIconCanvas(convertType, 32, 32);
                         btn.appendChild(iconCanvas);
 
@@ -2825,7 +2916,7 @@ window.addEventListener('load', function() {
             try {
                 const savedState = JSON.parse(savedStateJSON);
                 
-                Object.assign(this, { buildings: [], units: [], enemies: [], projectiles: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
+                Object.assign(this, { buildings: [], units: [], enemies: [], projectiles: [], effects: [], particles: [], asteroidFields: [], selectedObject: null, isGameOver: false, isPaused: false, mouse: { screenX:0, screenY:0, worldX:0, worldY:0, down:false, lastDownTime:0, startX:0, startY:0, lastMoveX:0, lastMoveY:0 }, pointers: [], initialPinchDistance: null, buildConfirmationDetails: null, constructionQueue: [], tasks: [], stars: [] });
                 
                 for (let i = 0; i < NUM_STARS; i++) {
                     this.stars.push({ x: Math.random() * this.worldWidth, y: Math.random() * this.worldHeight, depth: 0.05 + Math.random() * 0.75, size: 0.7 + Math.random() * 1.2, alpha: 0.5 + Math.random() * 0.4 });
@@ -2859,19 +2950,23 @@ window.addEventListener('load', function() {
                     this.constructionQueue = savedState.constructionQueue.map(idx => this.buildings[idx]).filter(b => b);
                 }
 
-                savedState.enemies.forEach(eData => {
-                    const EnemyClass = AllClasses[eData.type];
-                    if(EnemyClass) {
-                        const enemy = new EnemyClass(eData.x, eData.y);
-                        enemy.applyWaveBonus(this.waveManager.waveNumber); 
-                        enemy.health = eData.health; enemy.shieldHealth = eData.shieldHealth || 0;
-                        this.enemies.push(enemy);
-                    }
-                });
-                savedState.asteroidFields.forEach(aData => {
-                    const field = new AsteroidField(aData.x, aData.y, aData.size, aData.initialMinerals);
-                    field.minerals = aData.minerals; this.asteroidFields.push(field);
-                });
+                if (savedState.enemies) {
+                    savedState.enemies.forEach(eData => {
+                        const EnemyClass = AllClasses[eData.type];
+                        if(EnemyClass) {
+                            const enemy = new EnemyClass(eData.x, eData.y);
+                            enemy.applyWaveBonus(this.waveManager.waveNumber); 
+                            enemy.health = eData.health; enemy.shieldHealth = eData.shieldHealth || 0;
+                            this.enemies.push(enemy);
+                        }
+                    });
+                }
+                if (savedState.asteroidFields) {
+                    savedState.asteroidFields.forEach(aData => {
+                        const field = new AsteroidField(aData.x, aData.y, aData.size, aData.initialMinerals);
+                        field.minerals = aData.minerals; this.asteroidFields.push(field);
+                    });
+                }
 
                 this.updateMaxMinerals();
                 this.updatePowerGrid(); 
@@ -2969,20 +3064,16 @@ window.addEventListener('load', function() {
 
         const vw = window.innerWidth - 40;
         const vh = window.innerHeight - 40;
-
-        const reqW9x1 = btnWidth * numButtons + gap * (numButtons - 1);
-        const reqH1x9 = btnHeight * numButtons + gap * (numButtons - 1);
-        const reqW3x3 = btnWidth * 3 + gap * 2;
-        const reqH3x3 = btnHeight * 3 + gap * 2;
-
-        buildMenuEl.className = "ui-panel";
         
-        if (reqW9x1 <= vw) {
-            buildMenuEl.classList.add('layout-9x1');
-        } else if (reqH1x9 <= vh) {
-            buildMenuEl.classList.add('layout-1x9');
+        buildMenuEl.className = "ui-panel";
+        if (vw > (btnWidth * numButtons + gap * (numButtons - 1))) {
+            buildMenuEl.classList.add(`layout-${numButtons}x1`);
+        } else if (vh > (btnHeight * numButtons + gap * (numButtons - 1))) {
+            buildMenuEl.classList.add('layout-1x10');
+        } else if (vw > (btnWidth * 5 + gap * 4)) {
+            buildMenuEl.classList.add('layout-5x2');
         } else {
-            buildMenuEl.classList.add('layout-3x3');
+             buildMenuEl.classList.add('layout-3xN');
         }
     }
     
