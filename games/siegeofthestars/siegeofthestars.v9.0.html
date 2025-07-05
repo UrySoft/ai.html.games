@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Siege of the Stars v9.3</title>
+    <title>Siege of the Stars v9.4</title>
     <style>
         :root {
             --color-primary: #89ddff;
@@ -2365,23 +2365,29 @@ window.addEventListener('load', function() {
             allNodes.forEach(b => {
                 b.isPowered = false;
                 b.gridDepth = Infinity;
-                if (b instanceof UnitProducer && (b.type === 'Core' || b.type === 'Starbase')) {
+                if (b.type === 'Core' || b.type === 'Starbase') {
                     b.gridProduction = 0;
                     b.gridConsumption = 0;
                 }
             });
 
             const powerSources = allNodes.filter(b => b.specs.power > 0);
-            if (powerSources.length === 0) return;
+            if (powerSources.length === 0) {
+                 const core = this.buildings.find(b => b.type === 'Core' || b.type === 'Starbase');
+                 if (core) {
+                    core.gridProduction = 0;
+                    core.gridConsumption = this.buildings.reduce((acc, b) => acc - (b.specs.power < 0 ? b.specs.power : 0), 0);
+                 }
+                return;
+            };
 
-            // Dijkstra-like algorithm to find shortest path from any source
             const queue = [];
             powerSources.forEach(source => {
                 source.gridDepth = 0;
                 queue.push(source);
             });
             
-            queue.sort((a, b) => a.gridDepth - b.gridDepth);
+            queue.sort((a,b) => a.gridDepth - b.gridDepth);
 
             let head = 0;
             while(head < queue.length) {
@@ -2394,43 +2400,55 @@ window.addEventListener('load', function() {
                          if (current.gridDepth + 1 < neighbor.gridDepth) {
                             neighbor.gridDepth = current.gridDepth + 1;
                             queue.push(neighbor);
-                            queue.sort((a, b) => a.gridDepth - b.gridDepth); // Re-sort for priority queue behavior
                          }
                     }
                 }
+                queue.sort((a,b) => a.gridDepth - b.gridDepth);
             }
             
-            const gridStarters = this.buildings.filter(b => (b.type === 'Core' || b.type === 'Starbase') && !b.isConstructing);
-            gridStarters.forEach(startNode => {
-                 const connectedNodes = allNodes.filter(n => n.gridDepth !== Infinity);
-                 let localProduction = 0;
-                 let localDemand = 0;
-                 const localConsumers = new Set();
-                 
-                 connectedNodes.forEach(node => { if(node.specs.power > 0) localProduction += node.specs.power; });
-                 
-                 this.buildings.forEach(b => {
-                    if (b.specs.power < 0 && !b.isConstructing) {
-                        for(const provider of connectedNodes) {
-                            if (distance(b.x, b.y, provider.x, provider.y) < provider.specs.connectionRange) {
-                                localConsumers.add(b);
-                                break;
-                            }
-                        }
-                    }
-                 });
-                 localConsumers.forEach(c => localDemand -= c.specs.power);
-                 
-                 if(startNode instanceof UnitProducer) {
-                    startNode.gridProduction = localProduction;
-                    startNode.gridConsumption = localDemand;
+            const connectedNodes = allNodes.filter(n => n.gridDepth !== Infinity);
+            let totalProduction = 0;
+            connectedNodes.forEach(node => { if(node.specs.power > 0) totalProduction += node.specs.power; });
+            
+            const consumersInNetwork = this.buildings.filter(b => {
+                if (b.specs.power >= 0 || b.isConstructing) return false;
+                for (const p of connectedNodes) {
+                    if (distance(b.x, b.y, p.x, p.y) < p.specs.connectionRange) return true;
                 }
-
-                 if (localProduction >= localDemand) {
-                    connectedNodes.forEach(node => node.isPowered = true);
-                    localConsumers.forEach(node => node.isPowered = true);
-                 }
+                return false;
             });
+            
+            const totalDemand = consumersInNetwork.reduce((acc, c) => acc - c.specs.power, 0);
+
+            const gridRoots = this.buildings.filter(b => (b.type === 'Core' || b.type === 'Starbase') && !b.isConstructing);
+            gridRoots.forEach(root => {
+                root.gridProduction = totalProduction;
+                root.gridConsumption = totalDemand;
+            });
+
+            if (totalProduction >= totalDemand) {
+                connectedNodes.forEach(node => node.isPowered = true);
+                consumersInNetwork.forEach(c => c.isPowered = true);
+            } else {
+                connectedNodes.forEach(node => { if (node.specs.power >= 0) node.isPowered = true; }); // Power up producers first
+                let availablePower = totalProduction;
+                
+                consumersInNetwork.sort((a,b) => {
+                    const depthA = connectedNodes.reduce((minD, p) => distance(a.x, a.y, p.x, p.y) < p.specs.connectionRange ? Math.min(minD, p.gridDepth) : minD, Infinity);
+                    const depthB = connectedNodes.reduce((minD, p) => distance(b.x, b.y, p.x, p.y) < p.specs.connectionRange ? Math.min(minD, p.gridDepth) : minD, Infinity);
+                    return depthA - depthB;
+                });
+                
+                for (const consumer of consumersInNetwork) {
+                    const demand = -consumer.specs.power;
+                    if(availablePower >= demand) {
+                       consumer.isPowered = true;
+                       availablePower -= demand;
+                    } else {
+                       consumer.isPowered = false;
+                    }
+                }
+            }
         }
 
         drawPowerNetwork(timestamp) {
@@ -2447,7 +2465,6 @@ window.addEventListener('load', function() {
             const drawLineWithPulse = (p_start, p_end, isPowered) => {
                 let p1 = p_start, p2 = p_end;
                 
-                // Use grid depth to determine flow direction. Flow from lower depth to higher depth.
                 if (p2.gridDepth < p1.gridDepth) {
                     [p1, p2] = [p2, p1];
                 }
@@ -2498,11 +2515,13 @@ window.addEventListener('load', function() {
             
             const drawnConnections = new Set();
             const getKey = (b1, b2) => b1.x < b2.x ? `${b1.x},${b1.y},${b2.x},${b2.y}` : `${b2.x},${b2.y},${b1.x},${b1.y}`;
-
+            
             for (let i = 0; i < providers.length; i++) {
                 for (let j = i + 1; j < providers.length; j++) {
                     const p1 = providers[i];
                     const p2 = providers[j];
+                    if (p1.gridDepth === Infinity || p2.gridDepth === Infinity) continue;
+                    
                     if (distance(p1.x, p1.y, p2.x, p2.y) < p1.specs.connectionRange || distance(p1.x, p1.y, p2.x, p2.y) < p2.specs.connectionRange) {
                          const key = getKey(p1,p2);
                          if (!drawnConnections.has(key)) {
@@ -2514,22 +2533,27 @@ window.addEventListener('load', function() {
             }
 
             consumers.forEach(consumer => {
-                let closestProvider = null;
-                let minDist = Infinity;
-                providers.forEach(provider => {
-                    const d = distance(consumer.x, consumer.y, provider.x, provider.y);
-                    if (d < provider.specs.connectionRange && d < minDist) {
-                        minDist = d;
-                        closestProvider = provider;
+                 if(consumer.isPowered) {
+                    let closestProvider = null;
+                    let bestDepth = Infinity;
+                    
+                    providers.forEach(provider => {
+                        if (provider.isPowered && distance(consumer.x, consumer.y, provider.x, provider.y) < provider.specs.connectionRange) {
+                             if(provider.gridDepth < bestDepth) {
+                                bestDepth = provider.gridDepth;
+                                closestProvider = provider;
+                             }
+                        }
+                    });
+
+                    if (closestProvider) {
+                         const key = getKey(consumer, closestProvider);
+                         if (!drawnConnections.has(key)) {
+                            drawLineWithPulse(closestProvider, consumer, true);
+                            drawnConnections.add(key);
+                         }
                     }
-                });
-                if (closestProvider) {
-                     const key = getKey(consumer, closestProvider);
-                     if (!drawnConnections.has(key)) {
-                        drawLineWithPulse(closestProvider, consumer, consumer.isPowered);
-                        drawnConnections.add(key);
-                     }
-                }
+                 }
             });
 
             ctx.restore();
