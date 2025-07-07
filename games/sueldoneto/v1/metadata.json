@@ -1,6 +1,0 @@
-{
-  "name": "Calculadora de Sueldo en España",
-  "description": "Una aplicación para calcular tu sueldo neto mensual en España a partir de tu sueldo bruto anual. Los cálculos se basan en la normativa de 2024 y muestran un desglose de impuestos y el coste total para la empresa.",
-  "requestFramePermissions": [],
-  "prompt": ""
-}
