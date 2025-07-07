@@ -1,0 +1,150 @@
+
+{
+  "app": {
+    "title": "Calculadora de Sueldo en España",
+    "subtitle": "Introduce tu sueldo bruto anual y explora diferentes escenarios de cálculo.",
+    "author": {
+      "prefix": "Creada por"
+    },
+    "footer": {
+      "disclaimer": "* Las cifras son una estimación basada en un contrato estándar para un soltero sin hijos. Los resultados pueden variar según las circunstancias personales.",
+      "tech": "Desarrollado con React, Tailwind CSS y lógica de cálculo local."
+    }
+  },
+  "form": {
+    "grossAnnualLabel": "Tu Sueldo Bruto Anual",
+    "communityLabel": "Comunidad Autónoma",
+    "calculateButton": "Calcular",
+    "calculatingButton": "Calculando...",
+    "placeholder": "Ej: 30000"
+  },
+  "error": {
+    "title": "Error en el Cálculo",
+    "defaultMessage": "No se pudo calcular el desglose. Por favor, inténtalo de nuevo."
+  },
+  "results": {
+    "switch": {
+      "annual": "Anual",
+      "monthly": "Mensual"
+    },
+    "hypothesis": {
+      "standard": {
+        "label": "Cálculo Real",
+        "description": "Esta es tu nómina estándar. La empresa y tú pagáis vuestras respectivas partes de impuestos y cotizaciones."
+      },
+      "companyCost": {
+        "label": "Hipótesis: Inversión Total = Tu Bruto",
+        "description": "En este escenario, el coste total del 'Cálculo Real' se convierte en tu nuevo sueldo bruto. La empresa no realiza aportaciones adicionales."
+      }
+    },
+    "summary": {
+      "title": "Resumen General",
+      "company": {
+        "label": "Total Aportado por la Empresa"
+      },
+      "state": {
+        "label": "Total Recaudado (Estado y C.A.)"
+      },
+      "employee": {
+        "label": "Total Recibido por ti (Neto)"
+      },
+      "percentOfTotal": "{percent}% del coste total"
+    },
+    "detailed": {
+      "title": "Desglose Detallado"
+    },
+    "visual": {
+      "title": "Resumen Visual"
+    },
+    "taxDistribution": {
+      "title": "¿A dónde van tus impuestos?",
+      "description": "Distribución estimada de tu aportación total basada en los últimos Presupuestos Generales del Estado (PGE 2023).",
+      "category": "Área de Gasto",
+      "percentage": "% del Presupuesto",
+      "yourContribution": "Tu Aportación",
+      "totalBudgeted": "Total Presupuestado"
+    }
+  },
+  "breakdown": {
+    "companyCost": { "label": "Coste Total para la Empresa" },
+    "grossSalary": { "label": "Sueldo Bruto (Tu remuneración)" },
+    "netSalary": { "label": "Sueldo Neto (En tu bolsillo)" },
+    "employeeContributions": { "label": "Tus Aportaciones al Estado" },
+    "irpf": { "label": "IRPF (Impuesto sobre la Renta)" },
+    "irpfState": { "label": "Tramo Estatal" },
+    "irpfCommunity": { "label": "Tramo Autonómico" },
+    "ssEmployee": { "label": "Seguridad Social (tu parte)" },
+    "ssEmployer": { "label": "Aportación de la Empresa (S.S.)" },
+    "context": {
+      "ofTotal": "del coste total",
+      "ofGross": "de tu bruto",
+      "ofContributions": "de tus aportaciones",
+      "ofIrpf": "del IRPF total"
+    }
+  },
+  "pieChart": {
+    "net": "Tu Neto",
+    "state": "Aportado al Estado",
+    "community": "Aportado a la C.A."
+  },
+  "references": {
+    "title": "Referencias y Fuentes Oficiales",
+    "items": [
+      {
+        "title": "Ley 35/2006 del IRPF",
+        "description": "Texto consolidado de la Ley del Impuesto sobre la Renta de las Personas Físicas. La base de los cálculos de retenciones.",
+        "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2006-20764"
+      },
+      {
+        "title": "Bases y Tipos de Cotización (Seguridad Social)",
+        "description": "Información oficial de la Seguridad Social sobre las bases máximas y mínimas y los porcentajes de cotización.",
+        "url": "https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionConvenios/Basesytiposdecotizacion"
+      },
+      {
+        "title": "Tramos IRPF 2024 (Estatal y Autonómicos)",
+        "description": "Artículo con una tabla detallada de los tramos de IRPF para el Estado y cada Comunidad Autónoma.",
+        "url": "https://www.bankinter.com/blog/impuestos/tramos-irpf"
+      },
+      {
+        "title": "Calculadora de Retenciones de la Agencia Tributaria",
+        "description": "Herramienta oficial de la Agencia Tributaria para calcular las retenciones del IRPF. Útil para contrastar resultados.",
+        "url": "https2.agenciatributaria.gob.es/wcl/PRET-R200/index.zul"
+      }
+    ]
+  },
+  "budgetAreas": {
+    "Pensions": "Pensiones",
+    "Public Debt Interest": "Intereses de la Deuda Pública",
+    "Transfers to other Public Administrations": "Transferencias a otras AAPP",
+    "Unemployment benefits": "Prestaciones por Desempleo",
+    "Healthcare": "Sanidad",
+    "Education": "Educación",
+    "Defense": "Defensa",
+    "Economic Affairs": "Asuntos Económicos",
+    "General Administration": "Administración Pública General",
+    "High State Institutions": "Altos Organismos del Estado",
+    "Casa Real": "Casa Real",
+    "Other": "Otros Gastos"
+  },
+  "communities": [
+    { "value": "Andalucía", "label": "Andalucía" },
+    { "value": "Aragón", "label": "Aragón" },
+    { "value": "Asturias", "label": "Asturias" },
+    { "value": "Baleares", "label": "Islas Baleares" },
+    { "value": "Canarias", "label": "Canarias" },
+    { "value": "Cantabria", "label": "Cantabria" },
+    { "value": "Castilla-La Mancha", "label": "Castilla-La Mancha" },
+    { "value": "Castilla y León", "label": "Castilla y León" },
+    { "value": "Cataluña", "label": "Cataluña" },
+    { "value": "Ceuta", "label": "Ceuta" },
+    { "value": "Comunidad Valenciana", "label": "Comunidad Valenciana" },
+    { "value": "Extremadura", "label": "Extremadura" },
+    { "value": "Galicia", "label": "Galicia" },
+    { "value": "Madrid", "label": "Comunidad de Madrid" },
+    { "value": "Melilla", "label": "Melilla" },
+    { "value": "Murcia", "label": "Región de Murcia" },
+    { "value": "Navarra", "label": "Navarra" },
+    { "value": "País Vasco", "label": "País Vasco" },
+    { "value": "La Rioja", "label": "La Rioja" }
+  ]
+}

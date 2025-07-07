@@ -1,0 +1,150 @@
+
+{
+  "app": {
+    "title": "Soldata Kalkulagailua Espainian",
+    "subtitle": "Sartu zure urteko soldata gordina eta aztertu kalkulu-eszenatoki desberdinak.",
+    "author": {
+      "prefix": "Egilea:"
+    },
+    "footer": {
+      "disclaimer": "* Zifrak estimazio bat dira, seme-alabarik gabeko ezkongabeentzako kontratu estandar batean oinarrituta. Emaitzak alda daitezke egoera pertsonalen arabera.",
+      "tech": "React, Tailwind CSS eta tokiko kalkulu-logikarekin garatua."
+    }
+  },
+  "form": {
+    "grossAnnualLabel": "Zure Urteko Soldata Gordina",
+    "communityLabel": "Autonomia Erkidegoa",
+    "calculateButton": "Kalkulatu",
+    "calculatingButton": "Kalkulatzen...",
+    "placeholder": "Adib: 30000"
+  },
+  "error": {
+    "title": "Errorea Kalkuluan",
+    "defaultMessage": "Ezin izan da banakapena kalkulatu. Mesedez, saiatu berriro."
+  },
+  "results": {
+    "switch": {
+      "annual": "Urtekoa",
+      "monthly": "Hilekoa"
+    },
+    "hypothesis": {
+      "standard": {
+        "label": "Benetako Kalkulua",
+        "description": "Hau zure nomina estandarra da. Enpresak eta zuk zuen zerga eta kotizazio zatiak ordaintzen dituzue."
+      },
+      "companyCost": {
+        "label": "Hipotesia: Inbertsio Osoa = Zure Gordina",
+        "description": "Eszenatoki honetan, 'Benetako Kalkulua'-ren kostu osoa zure soldata gordin berria bihurtzen da. Enpresak ez du ekarpen gehigarririk egiten."
+      }
+    },
+    "summary": {
+      "title": "Laburpen Orokorra",
+      "company": {
+        "label": "Enpresak Aportatutakoa Guztira"
+      },
+      "state": {
+        "label": "Bildutakoa Guztira (Estatua eta E.A.)"
+      },
+      "employee": {
+        "label": "Zuk Jasotakoa Guztira (Garbia)"
+      },
+      "percentOfTotal": "kostu osoaren %{percent}"
+    },
+    "detailed": {
+      "title": "Banakapen Xehatua"
+    },
+    "visual": {
+      "title": "Laburpen Bisuala"
+    },
+    "taxDistribution": {
+      "title": "Nora doaz zure zergak?",
+      "description": "Zure ekarpen osoaren estimatutako banaketa, Estatuko azken Aurrekontu Orokorretan oinarrituta (PGE 2023).",
+      "category": "Gastu Arloa",
+      "percentage": "Aurrekontuaren %",
+      "yourContribution": "Zure Ekarpena",
+      "totalBudgeted": "Aurrekontu Osoa"
+    }
+  },
+  "breakdown": {
+    "companyCost": { "label": "Enpresarentzako Kostu Osoa" },
+    "grossSalary": { "label": "Soldata Gordina (Zure ordainsaria)" },
+    "netSalary": { "label": "Soldata Garbia (Zure poltsikoan)" },
+    "employeeContributions": { "label": "Zure Ekarpenak Estatuari" },
+    "irpf": { "label": "PFEZ (Errentaren gaineko Zerga)" },
+    "irpfState": { "label": "Tarte Estatala" },
+    "irpfCommunity": { "label": "Tarte Autonomikoa" },
+    "ssEmployee": { "label": "Gizarte Segurantza (zure zatia)" },
+    "ssEmployer": { "label": "Enpresaren Ekarpena (G.S.)" },
+    "context": {
+      "ofTotal": "kostu osoaren",
+      "ofGross": "zure gordinaren",
+      "ofContributions": "zure ekarpenen",
+      "ofIrpf": "PFEZ osoaren"
+    }
+  },
+  "pieChart": {
+    "net": "Zure Garbia",
+    "state": "Estatuari Aportatua",
+    "community": "E.A.-ri Aportatua"
+  },
+  "references": {
+    "title": "Erreferentziak eta Iturri Ofizialak",
+    "items": [
+      {
+        "title": "PFEZren 35/2006 Legea",
+        "description": "Pertsona Fisikoen Errentaren gaineko Zergaren Legearen testu bateratua. Atxikipenen kalkuluen oinarria.",
+        "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2006-20764"
+      },
+      {
+        "title": "Kotizazio Oinarriak eta Tasak (Gizarte Segurantza)",
+        "description": "Gizarte Segurantzaren informazio ofiziala, gehienezko eta gutxieneko oinarriei eta kotizazio-portzentajeei buruz.",
+        "url": "https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionConvenios/Basesytiposdecotizacion"
+      },
+      {
+        "title": "PFEZ Tarteak 2024 (Estatala eta Autonomikoak)",
+        "description": "Artikulua PFEZ tarteen taula zehatzarekin Estatuarentzat eta Autonomia Erkidego bakoitzarentzat.",
+        "url": "https://www.bankinter.com/blog/impuestos/tramos-irpf"
+      },
+      {
+        "title": "Zerga Agentziaren Atxikipen Kalkulagailua",
+        "description": "Zerga Agentziaren tresna ofiziala PFEZren atxikipenak kalkulatzeko. Emaitzak alderatzeko erabilgarria.",
+        "url": "https2.agenciatributaria.gob.es/wcl/PRET-R200/index.zul"
+      }
+    ]
+  },
+  "budgetAreas": {
+    "Pensions": "Pentsioak",
+    "Public Debt Interest": "Zor Publikoaren Interesak",
+    "Transfers to other Public Administrations": "Beste AAPP batzuetarako transferentziak",
+    "Unemployment benefits": "Langabezia-prestazioak",
+    "Healthcare": "Osasuna",
+    "Education": "Hezkuntza",
+    "Defense": "Defentsa",
+    "Economic Affairs": "Gai Ekonomikoak",
+    "General Administration": "Administrazio Publiko Orokorra",
+    "High State Institutions": "Estatuko Goi Erakundeak",
+    "Casa Real": "Errege Etxea",
+    "Other": "Beste Gastu batzuk"
+  },
+  "communities": [
+    { "value": "Andalucía", "label": "Andaluzia" },
+    { "value": "Aragón", "label": "Aragoi" },
+    { "value": "Asturias", "label": "Asturias" },
+    { "value": "Baleares", "label": "Balear Uharteak" },
+    { "value": "Canarias", "label": "Kanariak" },
+    { "value": "Cantabria", "label": "Kantabria" },
+    { "value": "Castilla-La Mancha", "label": "Gaztela-Mantxa" },
+    { "value": "Castilla y León", "label": "Gaztela eta Leon" },
+    { "value": "Cataluña", "label": "Katalunia" },
+    { "value": "Ceuta", "label": "Ceuta" },
+    { "value": "Comunidad Valenciana", "label": "Valentziako Erkidegoa" },
+    { "value": "Extremadura", "label": "Extremadura" },
+    { "value": "Galicia", "label": "Galizia" },
+    { "value": "Madrid", "label": "Madrilgo Erkidegoa" },
+    { "value": "Melilla", "label": "Melilla" },
+    { "value": "Murcia", "label": "Murtziako Eskualdea" },
+    { "value": "Navarra", "label": "Nafarroa" },
+    { "value": "País Vasco", "label": "Euskal Herria" },
+    { "value": "La Rioja", "label": "Errioxa" }
+  ]
+}

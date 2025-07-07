@@ -1,0 +1,150 @@
+
+{
+  "app": {
+    "title": "Calculadora de Salario en España",
+    "subtitle": "Introduce o teu salario bruto anual e explora diferentes escenarios de cálculo.",
+    "author": {
+      "prefix": "Creada por"
+    },
+    "footer": {
+      "disclaimer": "* As cifras son unha estimación baseada nun contrato estándar para un solteiro sen fillos. Os resultados poden variar segundo as circunstancias persoais.",
+      "tech": "Desenvolvido con React, Tailwind CSS e lóxica de cálculo local."
+    }
+  },
+  "form": {
+    "grossAnnualLabel": "O Teu Salario Bruto Anual",
+    "communityLabel": "Comunidade Autónoma",
+    "calculateButton": "Calcular",
+    "calculatingButton": "Calculando...",
+    "placeholder": "Ex: 30000"
+  },
+  "error": {
+    "title": "Erro no Cálculo",
+    "defaultMessage": "Non se puido calcular o desglose. Por favor, inténtao de novo."
+  },
+  "results": {
+    "switch": {
+      "annual": "Anual",
+      "monthly": "Mensual"
+    },
+    "hypothesis": {
+      "standard": {
+        "label": "Cálculo Real",
+        "description": "Esta é a túa nómina estándar. A empresa e ti pagades as vosas respectivas partes de impostos e cotizacións."
+      },
+      "companyCost": {
+        "label": "Hipótese: Investimento Total = O Teu Bruto",
+        "description": "Neste escenario, o custo total do 'Cálculo Real' convértese no teu novo salario bruto. A empresa non realiza achegas adicionais."
+      }
+    },
+    "summary": {
+      "title": "Resumo Xeral",
+      "company": {
+        "label": "Total Achegado pola Empresa"
+      },
+      "state": {
+        "label": "Total Recadado (Estado e C.A.)"
+      },
+      "employee": {
+        "label": "Total Recibido por ti (Neto)"
+      },
+      "percentOfTotal": "{percent}% do custo total"
+    },
+    "detailed": {
+      "title": "Desglose Detallado"
+    },
+    "visual": {
+      "title": "Resumo Visual"
+    },
+    "taxDistribution": {
+      "title": "Onde van os teus impostos?",
+      "description": "Distribución estimada da túa achega total baseada nos últimos Orzamentos Xerais do Estado (PGE 2023).",
+      "category": "Área de Gasto",
+      "percentage": "% do Orzamento",
+      "yourContribution": "A Túa Achega",
+      "totalBudgeted": "Total Orzamentado"
+    }
+  },
+  "breakdown": {
+    "companyCost": { "label": "Custo Total para a Empresa" },
+    "grossSalary": { "label": "Salario Bruto (A túa remuneración)" },
+    "netSalary": { "label": "Salario Neto (No teu peto)" },
+    "employeeContributions": { "label": "As Túas Achegas ao Estado" },
+    "irpf": { "label": "IRPF (Imposto sobre a Renda)" },
+    "irpfState": { "label": "TRAMO Estatal" },
+    "irpfCommunity": { "label": "TRAMO Autonómico" },
+    "ssEmployee": { "label": "Seguridade Social (a túa parte)" },
+    "ssEmployer": { "label": "Achega da Empresa (S.S.)" },
+    "context": {
+      "ofTotal": "do custo total",
+      "ofGross": "do teu bruto",
+      "ofContributions": "das túas achegas",
+      "ofIrpf": "do IRPF total"
+    }
+  },
+  "pieChart": {
+    "net": "O Teu Neto",
+    "state": "Achegado ao Estado",
+    "community": "Achegado á C.A."
+  },
+  "references": {
+    "title": "Referencias e Fontes Oficiais",
+    "items": [
+      {
+        "title": "Lei 35/2006 do IRPF",
+        "description": "Texto consolidado da Lei do Imposto sobre a Renda das Persoas Físicas. A base dos cálculos de retencións.",
+        "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2006-20764"
+      },
+      {
+        "title": "Bases e Tipos de Cotización (Seguridade Social)",
+        "description": "Información oficial da Seguridade Social sobre as bases máximas e mínimas e as porcentaxes de cotización.",
+        "url": "https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionConvenios/Basesytiposdecotizacion"
+      },
+      {
+        "title": "Tramos IRPF 2024 (Estatal e Autonómicos)",
+        "description": "Artigo cunha táboa detallada dos tramos de IRPF para o Estado e cada Comunidade Autónoma.",
+        "url": "https://www.bankinter.com/blog/impuestos/tramos-irpf"
+      },
+      {
+        "title": "Calculadora de Retencións da Axencia Tributaria",
+        "description": "Ferramenta oficial da Axencia Tributaria para calcular as retencións do IRPF. Útil para contrastar resultados.",
+        "url": "https2.agenciatributaria.gob.es/wcl/PRET-R200/index.zul"
+      }
+    ]
+  },
+  "budgetAreas": {
+    "Pensions": "Pensións",
+    "Public Debt Interest": "Xuros da Débeda Pública",
+    "Transfers to other Public Administrations": "Transferencias a outras AAPP",
+    "Unemployment benefits": "Prestacións por Desemprego",
+    "Healthcare": "Sanidade",
+    "Education": "Educación",
+    "Defense": "Defensa",
+    "Economic Affairs": "Asuntos Económicos",
+    "General Administration": "Administración Pública Xeral",
+    "High State Institutions": "Altos Organismos do Estado",
+    "Casa Real": "Casa Real",
+    "Other": "Outros Gastos"
+  },
+  "communities": [
+    { "value": "Andalucía", "label": "Andalucía" },
+    { "value": "Aragón", "label": "Aragón" },
+    { "value": "Asturias", "label": "Asturias" },
+    { "value": "Baleares", "label": "Illas Baleares" },
+    { "value": "Canarias", "label": "Canarias" },
+    { "value": "Cantabria", "label": "Cantabria" },
+    { "value": "Castilla-La Mancha", "label": "Castela-A Mancha" },
+    { "value": "Castilla y León", "label": "Castela e León" },
+    { "value": "Cataluña", "label": "Cataluña" },
+    { "value": "Ceuta", "label": "Ceuta" },
+    { "value": "Comunidad Valenciana", "label": "Comunidade Valenciana" },
+    { "value": "Extremadura", "label": "Estremadura" },
+    { "value": "Galicia", "label": "Galicia" },
+    { "value": "Madrid", "label": "Comunidade de Madrid" },
+    { "value": "Melilla", "label": "Melilla" },
+    { "value": "Murcia", "label": "Rexión de Murcia" },
+    { "value": "Navarra", "label": "Navarra" },
+    { "value": "País Vasco", "label": "País Vasco" },
+    { "value": "La Rioja", "label": "A Rioxa" }
+  ]
+}
