@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="documentTitle">Dashboard Salarial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0069d9;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --border-color: #e9ecef;
+            --state-color: #fd7e14;
+            --company-color: #dc3545;
+            --employee-color: #198754;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        body.dark-theme {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #888;
+            --border-color: #2c2c2c;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        main {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 800px;
+            transition: background-color 0.3s;
+        }
+        .header-container { text-align: center; margin-bottom: 2rem; }
+        h1 { font-size: 2.25rem; margin: 0; }
+        .top-controls { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+        .author-credit { display: flex; align-items: center; gap: 0.5rem; flex-grow: 1; justify-content: center; }
+        .author-credit a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        .author-credit a:hover { color: var(--primary-color); }
+        .author-credit svg { width: 16px; height: 16px; fill: currentColor; }
+        h2, h3 { text-align: center; font-weight: 700; }
+        h2 { font-size: 1.75rem; margin-top: 3.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+        h3 { font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 1rem; }
+        
+        #lang-selector { background-color: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.25rem 0.5rem; font-family: 'Inter', sans-serif; font-weight: 500;}
+        .control-switch-wrapper { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+        .control-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .control-switch input { opacity: 0; width: 0; height: 0; }
+        .control-slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .control-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .control-slider-icon { position: absolute; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: bold; color: var(--bg-color); user-select: none; }
+        .icon-on { right: 7px; opacity: 1; transition: opacity 0.4s; }
+        .icon-off { left: 7px; opacity: 0; transition: opacity 0.4s; }
+        input:checked + .control-slider { background-color: var(--primary-color); }
+        input:checked + .control-slider:before { transform: translateX(20px); }
+        input:checked + .control-slider .icon-on { opacity: 0; }
+        input:checked + .control-slider .icon-off { opacity: 1; }
+
+        .input-section { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; margin-bottom: 2rem; }
+        label { font-weight: 600; }
+        input[type="number"] { background-color: var(--card-bg); color: var(--text-color); width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; transition: all 0.2s; }
+        input[type="number"]:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); outline: none; }
+        input[readonly] { background-color: var(--bg-color); color: var(--text-muted); cursor: not-allowed; border-style: dashed; }
+        button { background-color: var(--primary-color); color: white; border: none; padding: 0.75rem 1.5rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; height: fit-content;}
+        button:hover { background-color: var(--primary-hover); }
+        #results { display: none; }
+        .results-header { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+        .disclaimer { font-size: 0.8rem; color: var(--text-muted); background-color: var(--bg-color); border-radius: 8px; padding: 0.75rem; margin-top: 1.5rem; line-height: 1.5; }
+        .summary-section { display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; }
+        .summary-grid { flex: 1 1 300px; display: grid; gap: 1rem; }
+        .summary-chart-container { flex: 1 1 250px; min-width: 250px; }
+        .summary-card { background-color: var(--card-bg); padding: 1.25rem; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.5rem; box-shadow: var(--shadow-md); transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; }
+        .summary-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .summary-card .label { font-weight: 600; font-size: 1rem; }
+        .summary-card .value { font-size: 1.75rem; font-weight: 700; font-family: monospace; white-space: nowrap; align-self: flex-end; margin-top: 0.5rem; }
+        .summary-card.company .value { color: var(--company-color); }
+        .summary-card.state .value { color: var(--state-color); }
+        .summary-card.employee .value { color: var(--employee-color); }
+        .breakdown-card { border-radius: 12px; background-color: var(--card-bg); margin-top: 1rem; box-shadow: var(--shadow-sm); overflow: hidden; transition: background-color 0.3s; }
+        .breakdown-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; }
+        .card-info { font-weight: 600; font-size: 1.1rem; }
+        .value-wrapper { display: flex; flex-direction: column; align-items: flex-end; }
+        .breakdown-header .value { font-family: monospace; font-size: 1.5rem; font-weight: 700; white-space: nowrap; }
+        .breakdown-header .percentages { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+        .nested-cards { padding: 0 1rem 1rem 1rem; background-color: rgba(0,0,0,0.02); border-top: 1px solid var(--border-color); }
+        body.dark-theme .nested-cards { background-color: rgba(255,255,255,0.03); }
+        .company-cost { border-left: 4px solid var(--company-color); }
+        .state-tax { border-left: 4px solid var(--state-color); }
+        .employee-gross { border-left: 4px solid var(--text-color); }
+        .employee-net { border-left: 4px solid var(--employee-color); }
+        .tax-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .tax-table th, .tax-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); text-align: left; transition: background-color 0.3s; }
+        .tax-table thead th { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; }
+        .tax-table .numeric-cell { text-align: right; font-family: monospace; }
+        .tax-table tbody tr:hover td { background-color: var(--bg-color); }
+        .tax-table tfoot td { font-weight: 700; border-top: 2px solid var(--text-color); }
+        #breakdown-chart { margin-top: 1.5rem; }
+        .evolution-controls { display: flex; align-items: flex-end; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+        .evolution-controls .input-wrapper { display: flex; flex-direction: column; gap: 0.25rem; }
+        .evolution-controls .input-container { display: flex; align-items: center; gap: 0.5rem; }
+        .evolution-controls input { text-align: right; width: 120px; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="header-container">
+            <h1 data-translate-key="pageTitle">Dashboard Salarial</h1>
+            <div class="top-controls">
+                <div class="author-credit"><span data-translate-key="authorBy">by</span><a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><g><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 114.75 6.5 1.75 1.75 0 016.5 8.25zM19 19h-3v-4.75c0-1.4-1.2-2.5-2.5-2.5S11 12.85 11 14.25V19h-3v-9h2.9v1.3a3.11 3.11 0 012.6-1.4c2.5 0 4.5 2.1 4.5 5.1V19z"></path></g></svg><span>Oriol Badia Campanera</span></a></div>
+                <select id="lang-selector">
+                    <option value="es">Castellano</option>
+                    <option value="ca">Català</option>
+                    <option value="eu">Euskara</option>
+                    <option value="gl">Galego</option>
+                    <option value="oc">Aranés</option>
+                    <option value="en">English</option>
+                </select>
+                <div class="control-switch-wrapper"><label class="control-switch"><input type="checkbox" id="theme-toggle"><span class="control-slider"><span class="control-slider-icon icon-on">☀️</span><span class="control-slider-icon icon-off">🌙</span></span></label></div>
+            </div>
+        </div>
+        <div class="input-section">
+            <label for="sueldo-bruto" data-translate-key="grossSalaryLabel">Sueldo Bruto Anual (€)</label>
+            <input type="number" id="sueldo-bruto" data-translate-placeholder="grossSalaryPlaceholder" placeholder="Ej: 30000" min="0">
+            <button id="calculate-btn" data-translate-key="calculateBtn">Generar Dashboard</button>
+        </div>
+        <div id="results">
+            <div class="results-header">
+                <div class="control-switch-wrapper">
+                    <span data-translate-key="annual">Anual</span>
+                    <label class="control-switch">
+                        <input type="checkbox" id="period-toggle">
+                        <span class="control-slider">
+                            <span class="control-slider-icon icon-on">A</span>
+                            <span class="control-slider-icon icon-off">M</span>
+                        </span>
+                    </label>
+                    <span data-translate-key="monthly">Mensual</span>
+                </div>
+            </div>
+            <h2 data-translate-key="summaryTitle">Resumen Financiero</h2>
+            <div class="summary-section">
+                <div class="summary-grid">
+                    <div class="summary-card company"><div class="summary-content"><span class="label" data-translate-key="companyInvests">La empresa invierte</span></div><span class="value" id="summary-empresa"></span></div>
+                    <div class="summary-card state"><div class="summary-content"><span class="label" data-translate-key="stateCollects">El Estado recauda</span></div><span class="value" id="summary-estado"></span></div>
+                    <div class="summary-card employee"><div class="summary-content"><span class="label" data-translate-key="employeeReceives">El trabajador recibe</span></div><span class="value" id="summary-trabajador"></span></div>
+                </div>
+                <div class="summary-chart-container"><div id="summary-chart"></div></div>
+            </div>
+            <div id="evolution-section">
+                <h3 data-translate-key="evolutionTitle">📈 Evolución Salarial</h3>
+                <div class="evolution-controls">
+                    <div class="input-wrapper">
+                        <label for="evolution-smi" data-translate-key="fromSMI">Desde (SMI)</label>
+                        <div class="input-container"><input type="number" id="evolution-smi" readonly><span>€</span></div>
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="evolution-max-salary" data-translate-key="upTo">Hasta</label>
+                        <div class="input-container"><input type="number" id="evolution-max-salary"><span >€</span></div>
+                    </div>
+                    <button id="redraw-evolution-btn" data-translate-key="updateChartBtn">Actualizar</button>
+                </div>
+                <div id="evolution-chart"></div>
+                 <p class="disclaimer" data-translate-key="evolutionDisclaimer">Este gráfico muestra la evolución de los costes e ingresos según el sueldo bruto. La línea vertical marca la posición del salario introducido.</p>
+            </div>
+            <h2 data-translate-key="breakdownTitle">Desglose de Costes</h2>
+            <div id="breakdown-chart"></div>
+            <div id="breakdown-container"></div>
+            <div id="tax-distribution-section">
+                <h3 data-translate-key="taxDistributionTitle">🏛️ ¿A qué se destinan tus impuestos?</h3>
+                <table class="tax-table">
+                    <thead><tr><th data-translate-key="taxDestination">Destino del Gasto</th><th class="numeric-cell" data-translate-key="taxPercentagePGE">% PGE</th><th class="numeric-cell" data-translate-key="taxYourContribution">Tu Aportación</th></tr></thead>
+                    <tbody id="tax-tbody"></tbody>
+                    <tfoot><tr><td data-translate-key="total">Total</td><td></td><td class="numeric-cell" id="tax-total"></td></tr></tfoot>
+                </table>
+                <p class="disclaimer" data-translate-key="taxDisclaimer"><strong>Nota:</strong> Esta tabla distribuye el total de impuestos (IRPF + S.S.) según los porcentajes de gasto de los PGE 2023. Es un modelo ilustrativo.</p>
+            </div>
+            <p class="disclaimer" data-translate-key="generalDisclaimer"><strong>Aviso General:</strong> Este cálculo es una <strong>estimación</strong>. Las cifras reales pueden variar según convenio, tipo de contrato, situación personal, etc.</p>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- UI ELEMENTS ---
+            const calculateBtn = document.getElementById('calculate-btn');
+            const sueldoBrutoInput = document.getElementById('sueldo-bruto');
+            const periodToggle = document.getElementById('period-toggle');
+            const themeToggle = document.getElementById('theme-toggle');
+            const langSelector = document.getElementById('lang-selector');
+            const redrawEvolutionBtn = document.getElementById('redraw-evolution-btn');
+            const evolutionSmiInput = document.getElementById('evolution-smi');
+            const evolutionMaxInput = document.getElementById('evolution-max-salary');
+            
+            // --- STATE & CONSTANTS ---
+            let annualValues = {};
+            let evolutionMaxSalaryAnnual = 100000;
+            let charts = { summary: null, breakdown: null, evolution: null };
+            let currentLang = 'es';
+
+            const SMI_ANNUAL = 15876;
+            const SS_EMPRESA_RATE = 0.32, SS_TRABAJADOR_RATE = 0.0645;
+            const PGE_DISTRIBUTION = [ { key: 'pensions', percent: 0.389 }, { key: 'debt', percent: 0.115 }, { key: 'transfers', percent: 0.102 }, { key: 'unemployment', percent: 0.076 }, { key: 'health', percent: 0.061 }, { key: 'education', percent: 0.052 }, { key: 'publicServices', percent: 0.045 }, { key: 'fomento', percent: 0.041 }, { key: 'defense', percent: 0.038 }, { key: 'industry', percent: 0.031 }, { key: 'rdi', percent: 0.025 }, { key: 'culture', percent: 0.025 }];
+            
+            // --- TRANSLATION DICTIONARY ---
+            const translations = {
+                es: {
+                    documentTitle: 'Dashboard Salarial', pageTitle: 'Dashboard Salarial', authorBy: 'by',
+                    grossSalaryLabel: 'Sueldo Bruto Anual (€)', grossSalaryPlaceholder: 'Ej: 30000', calculateBtn: 'Generar Dashboard',
+                    annual: 'Anual', monthly: 'Mensual', summaryTitle: 'Resumen Financiero',
+                    companyInvests: 'La empresa invierte', stateCollects: 'El Estado recauda', employeeReceives: 'El trabajador recibe',
+                    evolutionTitle: '📈 Evolución Salarial', fromSMI: 'Desde (SMI)', upTo: 'Hasta', updateChartBtn: 'Actualizar',
+                    evolutionDisclaimer: 'Este gráfico muestra la evolución de los costes e ingresos según el sueldo bruto. La línea vertical marca la posición del salario introducido.',
+                    breakdownTitle: 'Desglose de Costes', taxDistributionTitle: '🏛️ ¿A qué se destinan tus impuestos?',
+                    taxDestination: 'Destino del Gasto', taxPercentagePGE: '% PGE', taxYourContribution: 'Tu Aportación', total: 'Total',
+                    taxDisclaimer: 'Nota: Esta tabla distribuye el total de impuestos (IRPF + S.S.) según los porcentajes de gasto de los PGE 2023. Es un modelo ilustrativo.',
+                    generalDisclaimer: 'Aviso General: Este cálculo es una estimación. Las cifras reales pueden variar según convenio, tipo de contrato, situación personal, etc.',
+                    totalCompanyCost: '💰 Coste Total Empresa', ssCompany: '🏛️ S.S. (Empresa)', grossSalary: '💼 Sueldo Bruto', irpf: '🏛️ IRPF (Retención)', ssEmployee: '🏛️ S.S. (Trabajador)', netSalary: '✅ Sueldo Neto',
+                    ofTotal: 'del total', ofGross: 'del bruto',
+                    chartLabelState: 'Recaudado por el Estado', chartLabelNet: 'Recibido por el Trabajador (Neto)',
+                    chartSeriesCompany: 'Coste Empresa', chartSeriesState: 'Recaudado Estado', chartSeriesNet: 'Sueldo Neto',
+                    yourSalary: 'Tu Salario',
+                    pensions: 'Pensiones', debt: 'Deuda Pública (intereses)', transfers: 'Transf. a Adm. Públicas', unemployment: 'Desempleo', health: 'Sanidad', education: 'Educación', publicServices: 'Servicios Públicos Generales', fomento: 'Fomento', defense: 'Defensa y Seguridad', industry: 'Industria y Energía', rdi: 'I+D+i y Digitalización', culture: 'Cultura y otros'
+                },
+                ca: {
+                    documentTitle: 'Dashboard Salarial', pageTitle: 'Dashboard Salarial', authorBy: 'per',
+                    grossSalaryLabel: 'Sou Brut Anual (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Generar Dashboard',
+                    annual: 'Anual', monthly: 'Mensual', summaryTitle: 'Resum Financer',
+                    companyInvests: 'L\'empresa inverteix', stateCollects: 'L\'Estat recapta', employeeReceives: 'El treballador rep',
+                    evolutionTitle: '📈 Evolució Salarial', fromSMI: 'Des de (SMI)', upTo: 'Fins a', updateChartBtn: 'Actualitzar',
+                    evolutionDisclaimer: 'Aquest gràfic mostra l\'evolució dels costos i ingressos segons el sou brut. La línia vertical marca la posició del salari introduït.',
+                    breakdownTitle: 'Desglossament de Costos', taxDistributionTitle: '🏛️ A què es destinen els teus impostos?',
+                    taxDestination: 'Destinació de la Despesa', taxPercentagePGE: '% PGE', taxYourContribution: 'La teva Aportació', total: 'Total',
+                    taxDisclaimer: 'Nota: Aquesta taula distribueix el total d\'impostos (IRPF + S.S.) segons els percentatges de despesa dels PGE 2023. És un model il·lustratiu.',
+                    generalDisclaimer: 'Avís General: Aquest càlcul és una estimació. Les xifres reals poden variar segons conveni, tipus de contracte, situació personal, etc.',
+                    totalCompanyCost: '💰 Cost Total Empresa', ssCompany: '🏛️ S.S. (Empresa)', grossSalary: '💼 Sou Brut', irpf: '🏛️ IRPF (Retenció)', ssEmployee: '🏛️ S.S. (Treballador)', netSalary: '✅ Sou Net',
+                    ofTotal: 'del total', ofGross: 'del brut',
+                    chartLabelState: 'Recaptat per l\'Estat', chartLabelNet: 'Rebut pel Treballador (Net)',
+                    chartSeriesCompany: 'Cost Empresa', chartSeriesState: 'Recaptat Estat', chartSeriesNet: 'Sou Net',
+                    yourSalary: 'El Teu Salari',
+                    pensions: 'Pensions', debt: 'Deute Públic (interessos)', transfers: 'Transf. a Adm. Públiques', unemployment: 'Atur', health: 'Sanitat', education: 'Educació', publicServices: 'Serveis Públics Generals', fomento: 'Foment', defense: 'Defensa i Seguretat', industry: 'Indústria i Energia', rdi: 'R+D+i i Digitalització', culture: 'Cultura i altres'
+                },
+                eu: {
+                    documentTitle: 'Soldata Arbel', pageTitle: 'Soldata Arbel', authorBy: 'egilea',
+                    grossSalaryLabel: 'Urteko Soldata Gordina (€)', grossSalaryPlaceholder: 'Adib: 30000', calculateBtn: 'Arbela Sortu',
+                    annual: 'Urtekoa', monthly: 'Hilekoa', summaryTitle: 'Finantza Laburpena',
+                    companyInvests: 'Enpresak inbertitzen du', stateCollects: 'Estatuak biltzen du', employeeReceives: 'Langileak jasotzen du',
+                    evolutionTitle: '📈 Soldataren Eboluzioa', fromSMI: 'HGGtik (SMI)', upTo: 'Hona arte', updateChartBtn: 'Eguneratu',
+                    evolutionDisclaimer: 'Grafiko honek kostuen eta diru-sarreren bilakaera erakusten du soldata gordinaren arabera. Lerro bertikalak sartutako soldataren posizioa markatzen du.',
+                    breakdownTitle: 'Kostuen Banaketa', taxDistributionTitle: '🏛️ Zertara bideratzen dira zure zergak?',
+                    taxDestination: 'Gastuaren Helburua', taxPercentagePGE: '% PGE', taxYourContribution: 'Zure Ekarpena', total: 'Guztira',
+                    taxDisclaimer: 'Oharra: Taula honek zerga guztien (PFEZ + G.S.) banaketa egiten du, 2023ko PGEen gastu-portzentajeen arabera. Eredu argigarria da.',
+                    generalDisclaimer: 'Ohar Orokorra: Kalkulu hau estimazio bat da. Benetako zifrak alda daitezke hitzarmenaren, kontratu motaren, egoera pertsonalaren eta abarren arabera.',
+                    totalCompanyCost: '💰 Enpresaren Kostu Totala', ssCompany: '🏛️ G.S. (Enpresa)', grossSalary: '💼 Soldata Gordina', irpf: '🏛️ PFEZ (Atxikipena)', ssEmployee: '🏛️ G.S. (Langilea)', netSalary: '✅ Soldata Garbia',
+                    ofTotal: 'guztirakoaren', ofGross: 'gordinaren',
+                    chartLabelState: 'Estatuak Bildutakoa', chartLabelNet: 'Langileak Jasotakoa (Garbia)',
+                    chartSeriesCompany: 'Enpresa Kostua', chartSeriesState: 'Estatuak Bildutakoa', chartSeriesNet: 'Soldata Garbia',
+                    yourSalary: 'Zure Soldata',
+                    pensions: 'Pentsioak', debt: 'Zor Publikoa (interesak)', transfers: 'Beste Adm. Publikoei Transf.', unemployment: 'Langabezia', health: 'Osasuna', education: 'Hezkuntza', publicServices: 'Zerbitzu Publiko Orokorrak', fomento: 'Sustapena', defense: 'Defentsa eta Segurtasuna', industry: 'Industria eta Energia', rdi: 'I+G+b eta Digitalizazioa', culture: 'Kultura eta beste batzuk'
+                },
+                gl: {
+                    documentTitle: 'Panel Salarial', pageTitle: 'Panel Salarial', authorBy: 'por',
+                    grossSalaryLabel: 'Soldo Bruto Anual (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Xerar Panel',
+                    annual: 'Anual', monthly: 'Mensual', summaryTitle: 'Resumo Financeiro',
+                    companyInvests: 'A empresa inviste', stateCollects: 'O Estado recada', employeeReceives: 'O traballador recibe',
+                    evolutionTitle: '📈 Evolución Salarial', fromSMI: 'Dende (SMI)', upTo: 'Ata', updateChartBtn: 'Actualizar',
+                    evolutionDisclaimer: 'Este gráfico amosa a evolución dos custos e ingresos segundo o soldo bruto. A liña vertical marca a posición do salario introducido.',
+                    breakdownTitle: 'Desglose de Custos', taxDistributionTitle: '🏛️ A que se destinan os teus impostos?',
+                    taxDestination: 'Destino do Gasto', taxPercentagePGE: '% PXE', taxYourContribution: 'A túa Aportación', total: 'Total',
+                    taxDisclaimer: 'Nota: Esta táboa distribúe o total de impostos (IRPF + S.S.) segundo as porcentaxes de gasto dos PXE 2023. É un modelo ilustrativo.',
+                    generalDisclaimer: 'Aviso Xeral: Este cálculo é unha estimación. As cifras reais poden variar segundo convenio, tipo de contrato, situación persoal, etc.',
+                    totalCompanyCost: '💰 Custo Total Empresa', ssCompany: '🏛️ S.S. (Empresa)', grossSalary: '💼 Soldo Bruto', irpf: '🏛️ IRPF (Retención)', ssEmployee: '🏛️ S.S. (Traballador)', netSalary: '✅ Soldo Neto',
+                    ofTotal: 'do total', ofGross: 'do bruto',
+                    chartLabelState: 'Recadado polo Estado', chartLabelNet: 'Recibido polo Traballador (Neto)',
+                    chartSeriesCompany: 'Custo Empresa', chartSeriesState: 'Recadado Estado', chartSeriesNet: 'Soldo Neto',
+                    yourSalary: 'O Teu Salario',
+                    pensions: 'Pensións', debt: 'Débeda Pública (xuros)', transfers: 'Transf. a Adm. Públicas', unemployment: 'Desemprego', health: 'Sanidade', education: 'Educación', publicServices: 'Servizos Públicos Xerais', fomento: 'Fomento', defense: 'Defensa e Seguridade', industry: 'Industria e Enerxía', rdi: 'I+D+i e Dixitalización', culture: 'Cultura e outros'
+                },
+                oc: {
+                    documentTitle: 'Panèu Salariau', pageTitle: 'Panèu Salariau', authorBy: 'per',
+                    grossSalaryLabel: 'Sòlde Brut Anuau (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Generar Panèu',
+                    annual: 'Anuau', monthly: 'Mensuau', summaryTitle: 'Arresumit Financièr',
+                    companyInvests: 'Er\'entrepresa investís', stateCollects: 'Er\'Estat recapte', employeeReceives: 'Eth trabalhador recep',
+                    evolutionTitle: '📈 Evolucion Salariau', fromSMI: 'A compdar de (SMI)', upTo: 'Enquia', updateChartBtn: 'Actualizar',
+                    evolutionDisclaimer: 'Aguest grafic mòstre er\'evolucion des còsti e revenguts segontes eth sòlde brut. Era linha verticau marque era posicion deth salari introdusit.',
+                    breakdownTitle: 'Desglossament de Còsti', taxDistributionTitle: '🏛️ A qué se destinen es tòns impòsti?',
+                    taxDestination: 'Destinacion dera Despesa', taxPercentagePGE: '% PGE', taxYourContribution: 'Era tua Aportacion', total: 'Total',
+                    taxDisclaimer: 'Nòta: Aguesta taula distribuís eth total d\'impòsti (IRPF + S.S.) segontes es percentatges de despesa des PGE 2023. Ei un modèl illustratiu.',
+                    generalDisclaimer: 'Avís Generau: Aguest calcul ei ua estimacion. Es chifres reaus pòden variar segontes convèni, tipe de contracte, situacion personau, etc.',
+                    totalCompanyCost: '💰 Còst Totau Empresa', ssCompany: '🏛️ S.S. (Entrepresa)', grossSalary: '💼 Sòlde Brut', irpf: '🏛️ IRPF (Retencion)', ssEmployee: '🏛️ S.S. (Trabalhador)', netSalary: '✅ Sòlde Net',
+                    ofTotal: 'deth totau', ofGross: 'deth brut',
+                    chartLabelState: 'Recaptat per er\'Estat', chartLabelNet: 'Recebut peth Trabalhador (Net)',
+                    chartSeriesCompany: 'Còst Empresa', chartSeriesState: 'Recaptat Estat', chartSeriesNet: 'Sòlde Net',
+                    yourSalary: 'Eth Tòn Salari',
+                    pensions: 'Pensions', debt: 'Deute Public (interèssi)', transfers: 'Transf. a Adm. Publiques', unemployment: 'Shens trabalh', health: 'Sanitat', education: 'Educacion', publicServices: 'Servicis Publics Generaus', fomento: 'Foment', defense: 'Defensa e Seguretat', industry: 'Indústria e Energia', rdi: 'R+D+i e Digitalizacion', culture: 'Cultura e auti'
+                },
+                en: {
+                    documentTitle: 'Salary Dashboard', pageTitle: 'Salary Dashboard', authorBy: 'by',
+                    grossSalaryLabel: 'Annual Gross Salary (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Generate Dashboard',
+                    annual: 'Annual', monthly: 'Monthly', summaryTitle: 'Financial Summary',
+                    companyInvests: 'The company invests', stateCollects: 'The State collects', employeeReceives: 'The employee receives',
+                    evolutionTitle: '📈 Salary Evolution', fromSMI: 'From (Min. Wage)', upTo: 'To', updateChartBtn: 'Update',
+                    evolutionDisclaimer: 'This chart shows the evolution of costs and income according to the gross salary. The vertical line marks the position of the entered salary.',
+                    breakdownTitle: 'Cost Breakdown', taxDistributionTitle: '🏛️ Where do your taxes go?',
+                    taxDestination: 'Public Spending', taxPercentagePGE: '% Budget', taxYourContribution: 'Your Contribution', total: 'Total',
+                    taxDisclaimer: 'Note: This table distributes the total taxes (IRPF + S.S.) according to the spending percentages of the 2023 Spanish Budget. It is an illustrative model.',
+                    generalDisclaimer: 'General Notice: This calculation is an estimate. The actual figures may vary depending on the collective agreement, type of contract, personal situation, etc.',
+                    totalCompanyCost: '💰 Total Company Cost', ssCompany: '🏛️ S.S. (Company)', grossSalary: '💼 Gross Salary', irpf: '🏛️ IRPF (Withholding)', ssEmployee: '🏛️ S.S. (Employee)', netSalary: '✅ Net Salary',
+                    ofTotal: 'of total', ofGross: 'of gross',
+                    chartLabelState: 'Collected by State', chartLabelNet: 'Received by Employee (Net)',
+                    chartSeriesCompany: 'Company Cost', chartSeriesState: 'State Revenue', chartSeriesNet: 'Net Salary',
+                    yourSalary: 'Your Salary',
+                    pensions: 'Pensions', debt: 'Public Debt (interest)', transfers: 'Transfers to Public Adm.', unemployment: 'Unemployment', health: 'Healthcare', education: 'Education', publicServices: 'General Public Services', fomento: 'Infrastructures', defense: 'Defense & Security', industry: 'Industry & Energy', rdi: 'R&D&I and Digitization', culture: 'Culture & others'
+                }
+            };
+
+            // --- HELPER FUNCTIONS ---
+            const getIrpfRate = (s) => { if (s <= 15000) return 0.15; if (s <= 25000) return 0.19; if (s <= 35000) return 0.22; if (s <= 50000) return 0.26; if (s <= 70000) return 0.32; return 0.38; };
+            const formatCurrency = (v) => (typeof v === 'number') ? v.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', useGrouping: true, minimumFractionDigits: 2 }) : '';
+            const formatPercent = (v) => (typeof v === 'number') ? `${v.toFixed(2)}%` : '';
+
+            // --- CORE FUNCTIONS ---
+            const setLanguage = (lang) => {
+                currentLang = lang;
+                localStorage.setItem('selectedLanguage', lang);
+                const t = translations[lang];
+                
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.dataset.translateKey;
+                    if (t[key]) el.textContent = t[key];
+                });
+                document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                    const key = el.dataset.translatePlaceholder;
+                    if (t[key]) el.placeholder = t[key];
+                });
+                document.title = t.documentTitle;
+
+                if (Object.keys(annualValues).length > 0) {
+                    updateDisplay();
+                }
+            };
+            
+            const getCssVar = (varName) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+
+            const initCharts = (theme) => {
+                Object.values(charts).forEach(chart => chart?.destroy());
+                
+                charts.summary = new ApexCharts(document.querySelector("#summary-chart"), getSummaryChartOptions(theme));
+                charts.breakdown = new ApexCharts(document.querySelector("#breakdown-chart"), getBreakdownChartOptions(theme));
+                charts.evolution = new ApexCharts(document.querySelector("#evolution-chart"), getEvolutionChartOptions(theme));
+                
+                Object.values(charts).forEach(chart => chart.render());
+            };
+
+            const getSummaryChartOptions = (theme) => ({
+                series: [], chart: { type: 'donut', height: 300, fontFamily: 'Inter, sans-serif', theme: { mode: theme } },
+                labels: [translations[currentLang].chartLabelState, translations[currentLang].chartLabelNet],
+                colors: [getCssVar('--state-color'), getCssVar('--employee-color')],
+                legend: { position: 'bottom', labels: { colors: getCssVar('--text-muted') } },
+                dataLabels: { enabled: true, formatter: (val, opts) => [val.toFixed(1) + '%', formatCurrency(opts.w.globals.series[opts.seriesIndex])], style: { fontSize: '12px', colors: ['#fff'], fontWeight: 600 }, dropShadow: { enabled: true, top: 1, left: 1, blur: 1, opacity: 0.7 } },
+                tooltip: { theme: theme, y: { formatter: (val) => formatCurrency(val) } }
+            });
+
+            const getBreakdownChartOptions = (theme) => ({
+                series: [{ data: [] }], chart: { type: 'treemap', height: 250, fontFamily: 'Inter, sans-serif', theme: { mode: theme } },
+                plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.5, distributed: true } },
+                colors: [getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--employee-color')],
+                tooltip: { theme: theme, y: { formatter: (val) => formatCurrency(val) } },
+                dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / op.w.globals.seriesTotals[0]) * 100), formatCurrency(op.value)], offsetY: -4 }
+            });
+
+            const getEvolutionChartOptions = (theme) => ({
+                series: [], chart: { type: 'line', height: 350, fontFamily: 'Inter, sans-serif', zoom: { enabled: false }, theme: { mode: theme } },
+                colors: [getCssVar('--company-color'), getCssVar('--state-color'), getCssVar('--employee-color')],
+                stroke: { width: 3, curve: 'smooth' }, markers: { size: 0 },
+                xaxis: { type: 'numeric', title: { text: '', style: { color: getCssVar('--text-muted') } }, labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } },
+                yaxis: { title: { text: 'Euros (€)', style: { color: getCssVar('--text-muted') } }, labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } },
+                grid: { borderColor: getCssVar('--border-color') },
+                legend: { position: 'top', horizontalAlign: 'left', labels: { colors: getCssVar('--text-muted') } },
+                annotations: { xaxis: [] },
+                tooltip: { theme: theme, x: { formatter: (val) => `${translations[currentLang].grossSalary}: ${formatCurrency(val)}` }, y: { formatter: (val) => formatCurrency(val) } }
+            });
+
+            const updateEvolutionControls = (divisor) => {
+                evolutionSmiInput.value = (SMI_ANNUAL / divisor).toFixed(0);
+                evolutionMaxInput.value = (evolutionMaxSalaryAnnual / divisor).toFixed(0);
+            };
+
+            const generateAndDrawEvolutionChart = () => {
+                if (!charts.evolution) return;
+                const divisor = periodToggle.checked ? 12 : 1;
+                const minSalary = parseFloat(evolutionSmiInput.value) * divisor;
+                const maxSalary = parseFloat(evolutionMaxInput.value) * divisor;
+                const currentSalary = parseFloat(sueldoBrutoInput.value) || 0;
+                const step = (maxSalary - minSalary) < 1000 ? 100 : (maxSalary - minSalary) / 100;
+                
+                const costeData = [], estadoData = [], netoData = [];
+                for (let sueldo = minSalary; sueldo <= maxSalary; sueldo += step) {
+                    const ssEmpresa = sueldo * SS_EMPRESA_RATE, costeTotal = sueldo + ssEmpresa, ssTrabajador = sueldo * SS_TRABAJADOR_RATE, irpf = sueldo * getIrpfRate(sueldo), sueldoNeto = sueldo - ssTrabajador - irpf, totalEstado = ssEmpresa + ssTrabajador + irpf;
+                    costeData.push({ x: sueldo / divisor, y: costeTotal / divisor });
+                    estadoData.push({ x: sueldo / divisor, y: totalEstado / divisor });
+                    netoData.push({ x: sueldo / divisor, y: sueldoNeto / divisor });
+                }
+
+                charts.evolution.updateOptions({
+                    series: [ { name: translations[currentLang].chartSeriesCompany, data: costeData }, { name: translations[currentLang].chartSeriesState, data: estadoData }, { name: translations[currentLang].chartSeriesNet, data: netoData } ],
+                    annotations: { xaxis: [{ x: currentSalary / divisor, borderColor: getCssVar('--primary-color'), label: { borderColor: getCssVar('--primary-color'), style: { color: '#fff', background: getCssVar('--primary-color') }, text: translations[currentLang].yourSalary } }] },
+                    xaxis: { min: minSalary / divisor, max: maxSalary / divisor, title: { text: `${translations[currentLang].grossSalaryLabel.replace(' (€)', '')} ${divisor === 1 ? '' : '(' + translations[currentLang].monthly + ')'}` } },
+                });
+            };
+
+            const updateDisplay = () => {
+                if (Object.keys(annualValues).length === 0) return;
+                const isMonthly = periodToggle.checked;
+                const divisor = isMonthly ? 12 : 1;
+                const v = annualValues;
+                const t = translations[currentLang];
+
+                document.getElementById('summary-empresa').textContent = formatCurrency(v.costeTotalEmpresa / divisor);
+                document.getElementById('summary-estado').textContent = formatCurrency(v.totalEstado / divisor);
+                document.getElementById('summary-trabajador').textContent = formatCurrency(v.sueldoNeto / divisor);
+                
+                charts.summary.updateOptions({ labels: [t.chartLabelState, t.chartLabelNet] });
+                charts.summary.updateSeries([v.totalEstado / divisor, v.sueldoNeto / divisor]);
+                
+                charts.breakdown.updateSeries([{ data: [
+                    { x: t.ssCompany.replace(/^[^\w\s(]+/, ''), y: v.ssEmpresa / divisor },
+                    { x: t.irpf.replace(/^[^\w\s(]+/, ''), y: v.irpf / divisor },
+                    { x: t.ssEmployee.replace(/^[^\w\s(]+/, ''), y: v.ssTrabajador / divisor },
+                    { x: t.netSalary.replace(/^[^\w\s(]+/, ''), y: v.sueldoNeto / divisor }
+                ] }]);
+
+                document.getElementById('breakdown-container').innerHTML = `
+                <div class="breakdown-card company-cost"><div class="breakdown-header"><span class="card-info">${t.totalCompanyCost}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.costeTotalEmpresa / divisor)}</span><div class="percentages"><span>${formatPercent(100)}</span></div></div></div>
+                    <div class="nested-cards">
+                        <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.ssCompany}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ssEmpresa / divisor)}</span><div class="percentages"><span>${formatPercent(v.perc_ssEmpresa_parent)} ${t.ofTotal}</span></div></div></div></div>
+                        <div class="breakdown-card employee-gross"><div class="breakdown-header"><span class="card-info">${t.grossSalary}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoBrutoAnual / divisor)}</span><div class="percentages"><span>${formatPercent(v.perc_bruto_parent)} ${t.ofTotal}</span></div></div></div>
+                            <div class="nested-cards">
+                                <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.irpf}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.irpf / divisor)}</span><div class="percentages"><span>${formatPercent(v.perc_irpf_parent)} ${t.ofGross}</span></div></div></div></div>
+                                <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.ssEmployee}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ssTrabajador / divisor)}</span><div class="percentages"><span>${formatPercent(v.perc_ssTrabajador_parent)} ${t.ofGross}</span></div></div></div></div>
+                                <div class="breakdown-card employee-net"><div class="breakdown-header"><span class="card-info">${t.netSalary}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoNeto / divisor)}</span><div class="percentages"><span>${formatPercent(v.perc_neto_parent)} ${t.ofGross}</span></div></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                const taxTbody = document.getElementById('tax-tbody');
+                taxTbody.innerHTML = '';
+                v.taxDistribution.forEach(item => {
+                    taxTbody.innerHTML += `<tr><td>${t[item.key]}</td><td class="numeric-cell">${formatPercent(item.percent * 100)}</td><td class="numeric-cell">${formatCurrency(item.annualAmount / divisor)}</td></tr>`;
+                });
+                document.getElementById('tax-total').textContent = formatCurrency(v.totalEstado / divisor);
+                
+                updateEvolutionControls(divisor);
+                generateAndDrawEvolutionChart();
+            };
+
+            const calculate = () => {
+                const sueldoBrutoAnual = parseFloat(sueldoBrutoInput.value);
+                if (isNaN(sueldoBrutoAnual) || sueldoBrutoAnual <= 0) { alert('Por favor, introduce un sueldo bruto anual válido.'); return; }
+                const ssEmpresa = sueldoBrutoAnual * SS_EMPRESA_RATE;
+                const costeTotalEmpresa = sueldoBrutoAnual + ssEmpresa;
+                const ssTrabajador = sueldoBrutoAnual * SS_TRABAJADOR_RATE;
+                const irpf = sueldoBrutoAnual * getIrpfRate(sueldoBrutoAnual);
+                const sueldoNeto = sueldoBrutoAnual - ssTrabajador - irpf;
+                const totalEstado = ssEmpresa + ssTrabajador + irpf;
+                
+                annualValues = {
+                    sueldoBrutoAnual, costeTotalEmpresa, ssEmpresa, ssTrabajador, irpf, sueldoNeto, totalEstado,
+                    perc_irpf_total: (irpf / costeTotalEmpresa) * 100,
+                    perc_ssTrabajador_total: (ssTrabajador / costeTotalEmpresa) * 100,
+                    perc_neto_total: (sueldoNeto / costeTotalEmpresa) * 100,
+                    perc_ssEmpresa_parent: (ssEmpresa / costeTotalEmpresa) * 100,
+                    perc_bruto_parent: (sueldoBrutoAnual / costeTotalEmpresa) * 100,
+                    perc_irpf_parent: (irpf / sueldoBrutoAnual) * 100,
+                    perc_ssTrabajador_parent: (ssTrabajador / sueldoBrutoAnual) * 100,
+                    perc_neto_parent: (sueldoNeto / sueldoBrutoAnual) * 100,
+                    taxDistribution: PGE_DISTRIBUTION.map(item => ({...item, annualAmount: totalEstado * item.percent }))
+                };
+                
+                if (!charts.summary) {
+                    const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    initCharts(currentTheme);
+                }
+                
+                updateDisplay();
+                document.getElementById('results').style.display = 'block';
+                window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
+            };
+            
+            const applyTheme = (theme) => {
+                document.body.classList.toggle('dark-theme', theme === 'dark');
+                localStorage.setItem('theme', theme);
+                if(charts.summary) {
+                    initCharts(theme);
+                    if (Object.keys(annualValues).length > 0) {
+                       updateDisplay();
+                    }
+                }
+            };
+            
+            // --- INITIALIZATION & EVENT LISTENERS ---
+            const initialLang = localStorage.getItem('selectedLanguage') || 'es';
+            langSelector.value = initialLang;
+            setLanguage(initialLang);
+
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            themeToggle.checked = savedTheme === 'dark';
+            applyTheme(savedTheme);
+
+            calculateBtn.addEventListener('click', calculate);
+            sueldoBrutoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') calculate(); });
+            periodToggle.addEventListener('change', updateDisplay);
+            themeToggle.addEventListener('change', () => applyTheme(themeToggle.checked ? 'dark' : 'light'));
+            langSelector.addEventListener('change', (e) => setLanguage(e.target.value));
+            redrawEvolutionBtn.addEventListener('click', () => {
+                const isMonthly = periodToggle.checked;
+                const divisor = isMonthly ? 12 : 1;
+                evolutionMaxSalaryAnnual = parseFloat(evolutionMaxInput.value) * divisor;
+                generateAndDrawEvolutionChart();
+            });
+        });
+    </script>
+</body>
+</html>
