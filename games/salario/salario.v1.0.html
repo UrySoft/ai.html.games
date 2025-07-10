@@ -457,7 +457,7 @@
             let currentSortCriteria = 'costeEmpresa';
             let comparisonMode = 'real';
             let evolutionMaxSalaryAnnual = 100000;
-            let charts = { summary: null, breakdown: null, evolution: null, comparison: null, taxDistribution: null };
+            let charts = { summary: null, breakdown: null, evolution: null, comparison: null, 'tax-distribution': null };
             let currentLang = 'es';
 
             const SMI_ANNUAL = 15876;
@@ -580,7 +580,7 @@
                     compChartNet: 'Sou Net', compChartStateRevenue: 'Recaptat per l\'Estat',
                     advancedOptions: 'Opcions Avançades (Càlcul Precís IRPF)',
                     sectionTitleGeneral: 'DADES GENERALS I SITUACIÓ LABORAL',
-                    labelAutonomousCommunity: 'Comunitat Autònoma', labelFamilySituation: 'Situació familiar',
+                    labelAutonomousCommunity: 'Comunitat Autonòma', labelFamilySituation: 'Situació familiar',
                     optSingle: 'Solter, vidu, divorciat o separat legalment', optMarried1: 'Casat i no separat legalment (declaració individual)', optMarried2: 'Casat i no separat legalment (cònjuge amb rendes < 1.500€)',
                     labelAge: 'Edat', labelNumberOfPays: 'Nombre de pagues',
                     sectionTitleFamily: 'DADES FAMILIARS (Descendents i Ascendents)',
@@ -765,19 +765,26 @@
                 switch(type) {
                     case 'summary': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'donut', height: 300 }, labels: [t.chartLabelState, t.chartLabelNet], colors: [getCssVar('--state-color'), getCssVar('--employee-color')], legend: { position: 'bottom', labels: { colors: getCssVar('--text-muted') } }, dataLabels: { enabled: true, formatter: (val, opts) => [val.toFixed(1) + '%', formatCurrency(opts.w.globals.series[opts.seriesIndex])], style: { fontSize: '12px', colors: ['#fff'], fontWeight: 600 }, dropShadow: { enabled: true, top: 1, left: 1, blur: 1, opacity: 0.7 } } };
                     case 'breakdown': return { ...baseOptions, series: [{ data: [] }], chart: { ...baseOptions.chart, type: 'treemap', height: 250 }, plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.5, distributed: true } }, colors: [getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--employee-color')], dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / op.w.globals.seriesTotals[0]) * 100), formatCurrency(op.value)], offsetY: -4 } };
-                    case 'taxDistribution': return { ...baseOptions, series: [{ data: [] }], chart: { ...baseOptions.chart, type: 'treemap', height: 300 }, plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.6, distributed: true } }, dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / op.w.globals.seriesTotals[0]) * 100), formatCurrency(op.value)], offsetY: -4 } };
+                    case 'tax-distribution': return { ...baseOptions, series: [{ data: [] }], chart: { ...baseOptions.chart, type: 'treemap', height: 300 }, plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.6, distributed: true } }, dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / op.w.globals.seriesTotals[0]) * 100), formatCurrency(op.value)], offsetY: -4 } };
                     case 'evolution': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'line', height: 400, zoom: { enabled: false } }, colors: [getCssVar('--company-color'), getCssVar('--state-color'), getCssVar('--employee-color')], stroke: { width: 3, curve: 'smooth' }, markers: { size: 0 }, xaxis: { type: 'numeric', title: { text: '', style: { color: getCssVar('--text-muted') } }, labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } }, yaxis: { title: { text: 'Euros (€)', style: { color: getCssVar('--text-muted') } }, labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } }, grid: { borderColor: getCssVar('--border-color') }, legend: { position: 'top', horizontalAlign: 'left', labels: { colors: getCssVar('--text-muted') } }, annotations: { xaxis: [] } };
                     case 'comparison': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'bar', height: 500, stacked: true }, plotOptions: { bar: { horizontal: true, dataLabels: { total: { enabled: true, offsetX: 0, style: { fontSize: '13px', fontWeight: 900, color: getCssVar('--text-color') } } } } }, stroke: { width: 1, colors: [ getCssVar('--card-bg') ] }, xaxis: { labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } }, yaxis: { labels: { style: { colors: getCssVar('--text-muted'), fontWeight: 600, fontSize: '14px' } } }, grid: { borderColor: getCssVar('--border-color') }, legend: { position: 'top', horizontalAlign: 'left' } };
                 }
             };
             
             const initCharts = () => {
-                Object.keys(charts).forEach(key => charts[key]?.destroy());
+                Object.keys(charts).forEach(key => {
+                    if (charts[key]) {
+                        charts[key].destroy();
+                        charts[key] = null;
+                    }
+                });
                 Object.keys(charts).forEach(key => {
                     const el = document.querySelector(`#${key}-chart`);
-                    if (el) charts[key] = new ApexCharts(el, getChartOptions(key));
+                    if (el) {
+                        charts[key] = new ApexCharts(el, getChartOptions(key));
+                        charts[key].render();
+                    }
                 });
-                Object.values(charts).forEach(chart => chart?.render());
             };
 
             const calculateCuota = (base, tramos) => {
@@ -866,7 +873,8 @@
 
                 annualValues = { sueldoBrutoAnual, costeTotalEmpresa, ssEmpresa, ssTrabajador, irpf, sueldoNeto, totalEstado, perc_ssEmpresa_parent: (ssEmpresa / costeTotalEmpresa) * 100, perc_bruto_parent: (sueldoBrutoAnual / costeTotalEmpresa) * 100, perc_irpf_parent: (irpf / sueldoBrutoAnual) * 100, perc_ssTrabajador_parent: (ssTrabajador / sueldoBrutoAnual) * 100, perc_neto_parent: (sueldoNeto / sueldoBrutoAnual) * 100, taxDistribution: PGE_DISTRIBUTION.map(item => ({...item, annualAmount: totalEstado * item.percent })) };
                 
-                if (!charts.summary) initCharts();
+                // Always re-initialize charts on new calculation for robustness
+                initCharts();
                 updateDisplay();
                 document.getElementById('results').style.display = 'block';
                 window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
@@ -920,7 +928,7 @@
                     taxDistributionData.push({ x: t[item.key] || item.key, y: amount });
                 });
                 document.getElementById('tax-total').textContent = formatCurrency(v.totalEstado / displayDivisor);
-                charts.taxDistribution?.updateSeries([{ data: taxDistributionData }]);
+                charts['tax-distribution']?.updateSeries([{ data: taxDistributionData }]);
 
                 updateEvolutionControls(displayDivisor);
                 generateAndDrawEvolutionChart();
