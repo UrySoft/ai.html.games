@@ -1,0 +1,1089 @@
+--- START OF FILE sistemasolar.v1.0.html ---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sistema Solar v14 - Foco Constante</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; }
+        canvas { display: block; background-color: #00000a; cursor: grab; touch-action: none; }
+        canvas.grabbing { cursor: grabbing; }
+
+        /* General Panel Styles */
+        .ui-panel { 
+            position: absolute; 
+            background-color: rgba(10, 20, 40, 0.9); 
+            backdrop-filter: blur(8px); 
+            color: #f0f0f0; 
+            padding: 25px; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+            transition: transform 0.4s ease-out; 
+            z-index: 100; /* Ensure panels are on top */
+        }
+        .ui-panel h2 { margin-top: 0; color: #a2c8ff; border-bottom: 1px solid #4a5a7a; padding-bottom: 10px;}
+        .ui-panel ul { list-style: none; padding: 0; }
+        .ui-panel li { margin-bottom: 8px; font-size: 14px; }
+        .ui-panel strong { color: #8cb2e0; min-width: 100px; display: inline-block;}
+        .ui-panel p { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-top: 20px;}
+        .ui-panel .close-btn { position: absolute; font-size: 28px; color: #fff; cursor: pointer; opacity: 0.7; z-index: 101;}
+
+        /* Info Panel (bottom) with Tabs */
+        #info-panel { 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            max-height: 60%; /* Increased height for tabs */
+            transform: translateY(100%); 
+            border-top: 1px solid rgba(100, 150, 255, 0.5); 
+            padding-bottom: 40px; 
+            display: flex;
+            flex-direction: column;
+        }
+        #info-panel.visible { transform: translateY(0); }
+        #info-panel .close-btn { top: 10px; right: 15px;}
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #4a5a7a;
+            margin-bottom: 15px;
+        }
+        .panel-tab-btn {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: #a2c8ff;
+            opacity: 0.6;
+            transition: opacity 0.3s, border-bottom 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        .panel-tab-btn.active {
+            opacity: 1;
+            border-bottom: 3px solid #a2c8ff;
+        }
+        .panel-tab-content {
+            display: none; /* Hide all tab contents by default */
+            flex-grow: 1; /* Allow content to fill space */
+            overflow: auto;
+        }
+        .panel-tab-content.active {
+            display: block; /* Show active tab content */
+        }
+        .panel-tab-content iframe {
+            width: 100%;
+            height: 300px; /* Adjust height for embedded content */
+            border: none;
+            background-color: #fff; /* White background for iframe loading */
+        }
+        #info-panel-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        #panel-image-container {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+        }
+        #panel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #000;
+        }
+        #panel-details-container {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* Filter Panel (left) */
+        #filter-panel {
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            transform: translateX(-100%);
+            border-right: 1px solid rgba(100, 150, 255, 0.5);
+            padding-top: 60px; /* Space for hamburger button */
+        }
+        #filter-panel.visible { transform: translateX(0); }
+        #filter-panel .close-btn { top: 10px; right: 15px;}
+        #filter-options label { 
+            display: block; 
+            margin-bottom: 10px; 
+            cursor: pointer; 
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        #filter-options input[type="checkbox"] { 
+            margin-right: 10px; 
+            width: 20px; /* Adjust checkbox size */
+            height: 20px;
+            cursor: pointer;
+        }
+        #visible-objects-list ul { 
+            list-style: none; padding: 0; 
+        }
+        #visible-objects-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        #visible-objects-list li:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        #visible-objects-list li span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.2); 
+        }
+
+
+        /* General UI Elements */
+        .ui-label { color: rgba(255, 255, 255, 0.9); font-size: 14px; }
+        #time-slider { width: 100%; margin-top: 5px; } 
+
+        /* Controls Container (bottom-center) */
+        .ui-controls-container { 
+            position: absolute; 
+            bottom: 15px; /* Default position */
+            left: 50%; 
+            transform: translateX(-50%); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background-color: rgba(0, 0, 0, 0.6); 
+            padding: 10px 20px; 
+            border-radius: 12px; 
+            width: 80%; 
+            max-width: 400px; 
+            transition: bottom 0.4s ease-out; 
+            z-index: 99; 
+        }
+
+        /* Buttons */
+        .ui-button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #6a7aa0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .ui-button:hover { background-color: #7a8baa; }
+        #panel-view-btn { background-color: #4a5a7a; }
+        #panel-view-btn:hover { background-color: #5a6a8a; }
+
+        /* Hamburger menu button */
+        #menu-toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(10, 20, 40, 0.8);
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 101;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        #menu-toggle-btn span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+        #menu-toggle-btn span::before,
+        #menu-toggle-btn span::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: transform 0.3s ease;
+        }
+        #menu-toggle-btn span::before { top: -8px; }
+        #menu-toggle-btn span::after { top: 8px; }
+        #menu-toggle-btn:hover span,
+        #menu-toggle-btn:hover span::before,
+        #menu-toggle-btn:hover span::after { background-color: #a2c8ff; }
+
+    </style>
+</head>
+<body>
+    <canvas id="solarSystemCanvas"></canvas>
+
+    <!-- Hamburger menu button -->
+    <div id="menu-toggle-btn"><span></span></div>
+
+    <!-- Filter Panel (left) -->
+    <div id="filter-panel" class="ui-panel">
+        <div id="filter-close-btn" class="close-btn">×</div>
+        <h2>Filtrar Objetos</h2>
+        <div id="filter-options">
+            <!-- Checkboxes will be generated here by JS -->
+        </div>
+        <h2>Objetos Visibles</h2>
+        <ul id="visible-objects-list"></ul> 
+    </div>
+
+    <!-- Info Panel (bottom) -->
+    <div id="info-panel" class="ui-panel">
+        <div id="panel-close-btn" class="close-btn">×</div>
+        <h2 id="panel-title"></h2>
+        <!-- Tab Navigation -->
+        <div class="panel-tabs">
+            <button class="panel-tab-btn active" data-tab="datos">Datos</button>
+            <button class="panel-tab-btn" data-tab="wiki">Wikipedia</button>
+            <button class="panel-tab-btn" data-tab="nasa">NASA</button>
+        </div>
+        <!-- Tab Content -->
+        <div id="tab-datos" class="panel-tab-content active">
+            <div id="info-panel-content">
+                <div id="panel-image-container">
+                    <img id="panel-image" src="" alt="Objeto Celeste">
+                </div>
+                <div id="panel-details-container">
+                     <ul id="panel-data-list"></ul>
+                </div>
+            </div>
+            <p id="panel-description"></p>
+            <button id="panel-view-btn" class="ui-button">Ver</button>
+        </div>
+        <div id="tab-wiki" class="panel-tab-content">
+            <iframe id="wiki-iframe" src="about:blank"></iframe>
+        </div>
+        <div id="tab-nasa" class="panel-tab-content">
+            <iframe id="nasa-iframe" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <!-- Controls Container (bottom-center) -->
+    <div class="ui-controls-container">
+        <label for="time-slider" class="ui-label" id="time-label">Velocidad</label> 
+        <input type="range" min="0" max="100" value="75" id="time-slider"> 
+        <button id="view-all-btn" class="ui-button">Ver Sistema Completo</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('solarSystemCanvas'), ctx = canvas.getContext('2d');
+            ctx.canvas.style.backgroundColor = '#00000a'; 
+
+            const dom = { 
+                timeSlider: document.getElementById('time-slider'), 
+                timeLabel: document.getElementById('time-label'), 
+                panel: document.getElementById('info-panel'), 
+                title: document.getElementById('panel-title'), 
+                dataList: document.getElementById('panel-data-list'), 
+                description: document.getElementById('panel-description'), 
+                panelImage: document.getElementById('panel-image'), 
+                closeBtn: document.getElementById('panel-close-btn'),
+                panelViewBtn: document.getElementById('panel-view-btn'), 
+                viewAllBtn: document.getElementById('view-all-btn'),
+                filterPanel: document.getElementById('filter-panel'), 
+                filterCloseBtn: document.getElementById('filter-close-btn'), 
+                filterOptions: document.getElementById('filter-options'), 
+                menuToggleBtn: document.getElementById('menu-toggle-btn'), 
+                controlsContainer: document.querySelector('.ui-controls-container'),
+                visibleObjectsList: document.getElementById('visible-objects-list'),
+                panelTabs: document.querySelector('.panel-tabs'), // For tab switching
+                wikiIframe: document.getElementById('wiki-iframe'),
+                nasaIframe: document.getElementById('nasa-iframe')
+            };
+
+            const AU_KM = 149.6e6; 
+
+            const FILTERABLE_OBJECT_CATEGORIES = [
+                { name: 'Estrellas', type: 'Estrella' },
+                { name: 'Planetas', type: 'Planeta' },
+                { name: 'Lunas', type: 'Luna' },
+                { name: 'Planetas Enanos', type: 'Planeta Enano' },
+                { name: 'Asteroides', type: 'Asteroide' },
+                { name: 'Sondas Espaciales', type: 'Sonda Espacial' }
+            ];
+
+            let visibleObjectCategories = {};
+            FILTERABLE_OBJECT_CATEGORIES.forEach(category => {
+                visibleObjectCategories[category.type] = true; 
+            });
+
+            // UPDATED DATASET with reliable texture URLs and more info
+            // Texture source: https://github.com/scrawl-v8/scrawl-v8-utilities/tree/master/images/solar-system
+            const solarSystemData = [
+                { id: 'Sol', name: 'Sol', type: 'Estrella', radius_km: 696340, mass: '1.989 × 10^30 kg', gravity: '274 m/s²', temperature: '5,500 °C', color: '#FFD700', description: 'El Sol es una estrella de tipo G2V y el corazón de nuestro sistema solar.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBcVBZIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--ba7c3127394c5a088523b1853d2c3848972e613f/sun_1.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/sun.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Sol', nasaUrl: 'https://solarsystem.nasa.gov/solar-system/sun/overview/' },
+                { id: 'Mercurio', name: 'Mercurio', type: 'Planeta', radius_km: 2439, distance_au: 0.387, period_days: 88, color: '#A9A9A9', description: 'El más pequeño y cercano al Sol.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbDlKIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--e6715f0a3594ca4f043e62059346610098e9860b/mercury_1.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/mercury.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Mercurio_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/mercury/overview/' },
+                { id: 'Venus', name: 'Venus', type: 'Planeta', radius_km: 6051, distance_au: 0.723, period_days: 225, color: '#FFA500', description: 'El planeta más caliente debido a su atmósfera densa.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc3NDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--0f3c53b2165c71d995c6c9a933f7462c974c2b9a/venus.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/venus.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Venus_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/venus/overview/' },
+                { id: 'Tierra', name: 'Tierra', type: 'Planeta', radius_km: 6371, distance_au: 1, period_days: 365.25, color: '#4F92FF', description: 'Nuestro hogar, el único lugar conocido que alberga vida.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbWZKIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--4cb613b379374352f55971485a37123de26f0474/earth_1.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/earth.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Tierra', nasaUrl: 'https://solarsystem.nasa.gov/planets/earth/overview/', moons: [ { id: 'Luna', name: 'Luna', type: 'Luna', radius_km: 1737, distance_km: 384400, period_days: 27.3, color: '#E0E0E0', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBb0dKIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--6c97800c62e51922003c4f7b243454655f44b6e5/moon_1.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/moon.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Luna', nasaUrl: 'https://solarsystem.nasa.gov/moons/earths-moon/overview/' } ] },
+                { id: 'Marte', name: 'Marte', type: 'Planeta', radius_km: 3389, distance_au: 1.524, period_days: 687, color: '#FF4500', description: 'El "Planeta Rojo", objetivo de exploración.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdTRDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--3a18e0a811a221ca947f6c323f66c04f5e714432/mars.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/mars.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Marte_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/mars/overview/', moons: [ { id: 'Fobos', name: 'Fobos', type: 'Luna', radius_km: 11, distance_km: 9377, period_days: 0.319, color: '#BFBFBF' }, { id: 'Deimos', name: 'Deimos', type: 'Luna', radius_km: 6, distance_km: 23460, period_days: 1.262, color: '#BFBFBF' } ] },
+                { id: 'Vesta', name: 'Vesta', type: 'Asteroide', radius_km: 262, distance_au: 2.36, period_days: 1325, color: '#b9a896' },
+                { id: 'Ceres', name: 'Ceres', type: 'Planeta Enano', radius_km: 476, distance_au: 2.77, period_days: 1682, color: '#d1d1d1' },
+                { id: 'Pallas', name: 'Pallas', type: 'Asteroide', radius_km: 256, distance_au: 2.77, period_days: 1686, color: '#a0a0a0' },
+                { id: 'Hygiea', name: 'Hygiea', type: 'Asteroide', radius_km: 216, distance_au: 3.14, period_days: 2030, color: '#888888' },
+                { id: 'Jupiter', name: 'Júpiter', type: 'Planeta', radius_km: 69911, distance_au: 5.203, period_days: 4333, color: '#D2B48C', description: 'El planeta más grande del sistema.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdXdDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--f6c52b75a7c295e8a7d65cb552d5b6f35b445585/jupiter.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/jupiter.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/J%C3%BApiter_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/jupiter/overview/', moons: [ { id: 'Io', name: 'Io', type: 'Luna', radius_km: 1821, distance_km: 421700, period_days: 1.77, color: '#FDFD96'}, { id: 'Europa', name: 'Europa', type: 'Luna', radius_km: 1560, distance_km: 671034, period_days: 3.55, color: '#C1E1C1' }, { id: 'Ganimedes', name: 'Ganimedes', type: 'Luna', radius_km: 2634, distance_km: 1070400, period_days: 7.15, color: '#A7C7E7' }, { id: 'Calisto', name: 'Calisto', type: 'Luna', radius_km: 2410, distance_km: 1882700, period_days: 16.69, color: '#F0F0F0' }, { id: 'Amalthea', name: 'Amaltea', type: 'Luna', radius_km: 83.5, distance_km: 181365, period_days: 0.498, color: '#b0a0a0' }, { id: 'Himalia', name: 'Himalia', type: 'Luna', radius_km: 85, distance_km: 11461000, period_days: 250.56, color: '#c0c0c0' } ] },
+                { id: 'Saturno', name: 'Saturno', type: 'Planeta', radius_km: 58232, distance_au: 9.537, period_days: 10759, color: '#F0E68C', description: 'Conocido por sus impresionantes anillos.', inner_ring_radius_km: 67000, outer_ring_radius_km: 120700, imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBcCtDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--2161b363403a4996963dc366f03028d7b3f947e4/saturn.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/saturn.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Saturno_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/saturn/overview/', moons: [ { id: 'Titan', name: 'Titán', type: 'Luna', radius_km: 2574, distance_km: 1221870, period_days: 15.95, color: '#f4a460' }, { id: 'Encelado', name: 'Encélado', type: 'Luna', radius_km: 252, distance_km: 237948, period_days: 1.37, color: '#f0ffff' }, { id: 'Rhea', name: 'Rea', type: 'Luna', radius_km: 764, distance_km: 527040, period_days: 4.518, color: '#d0d0d0' }, { id: 'Iapetus', name: 'Jápeto', type: 'Luna', radius_km: 734, distance_km: 3561300, period_days: 79.32, color: '#f0f0f0' }, { id: 'Dione', name: 'Dione', type: 'Luna', radius_km: 561, distance_km: 377400, period_days: 2.737, color: '#e5e5e5' }, { id: 'Tethys', name: 'Tetis', type: 'Luna', radius_km: 531, distance_km: 294619, period_days: 1.888, color: '#f5f5f5' }, { id: 'Mimas', name: 'Mimas', type: 'Luna', radius_km: 198.6, distance_km: 185539, period_days: 0.942, color: '#cccccc' } ] },
+                { id: 'Urano', name: 'Urano', type: 'Planeta', radius_km: 25362, distance_au: 19.191, period_days: 30687, color: '#ADD8E6', description: 'Gira de lado, con una inclinación axial de 98 grados.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBcVVDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--0c1731633d45c6136a858e734568600f930263f6/uranus.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/uranus.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Urano_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/uranus/overview/', moons: [ { id: 'Miranda', name: 'Miranda', type: 'Luna', radius_km: 235.8, distance_km: 129390, period_days: 1.413, color: '#a0b0c0' }, { id: 'Ariel', name: 'Ariel', type: 'Luna', radius_km: 578.9, distance_km: 191000, period_days: 2.520, color: '#c0d0e0' }, { id: 'Umbriel', name: 'Umbriel', type: 'Luna', radius_km: 584.7, distance_km: 266000, period_days: 4.144, color: '#8090a0' }, { id: 'Titania', name: 'Titania', type: 'Luna', radius_km: 788.9, distance_km: 436300, period_days: 8.706, color: '#d0e0f0' }, { id: 'Oberon', name: 'Oberón', type: 'Luna', radius_km: 761.4, distance_km: 583500, period_days: 13.463, color: '#a0a0b0' } ] },
+                { id: 'Neptuno', name: 'Neptuno', type: 'Planeta', radius_km: 24622, distance_au: 30.069, period_days: 60190, color: '#4169E1', description: 'El planeta más lejano, con los vientos más rápidos.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc0lDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--7ea70bbb13a8335f66343202b851b22e1b9b99f6/neptune.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/neptune.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Neptuno_(planeta)', nasaUrl: 'https://solarsystem.nasa.gov/planets/neptune/overview/', moons: [ { id: 'Triton', name: 'Tritón', type: 'Luna', radius_km: 1353, distance_km: 354759, period_days: -5.88, color: '#f5deb3' }, { id: 'Nereid', name: 'Nereida', type: 'Luna', radius_km: 170, distance_km: 5513400, period_days: 360.13, color: '#c0c0c0' }, { id: 'Proteus', name: 'Proteo', type: 'Luna', radius_km: 210, distance_km: 117647, period_days: 1.122, color: '#b0b0b0' } ] },
+                { id: 'Pluton', name: 'Plutón', type: 'Planeta Enano', radius_km: 1188, distance_au: 39.5, period_days: 90560, color: '#e0d6c8', description: 'El objeto más famoso del Cinturón de Kuiper.', imageUrl: 'https://solarsystem.nasa.gov/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdG5KIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--b1e07584105220c3552dc88ac05272a8566164f8/pluto_1.jpg', textureUrl: 'https://raw.githubusercontent.com/scrawl-v8/scrawl-v8-utilities/master/images/solar-system/pluto.jpg', wikiUrl: 'https://es.wikipedia.org/wiki/Plut%C3%B3n_(planeta_enano)', nasaUrl: 'https://solarsystem.nasa.gov/planets/dwarf-planets/pluto/overview/', moons: [ { id: 'Charon', name: 'Caronte', type: 'Luna', radius_km: 606, distance_km: 19571, period_days: 6.387, color: '#bdbdbd' } ]},
+                { id: 'Haumea', name: 'Haumea', type: 'Planeta Enano', radius_km: 620, distance_au: 43.13, period_days: 103363, color: '#f8f8ff' },
+                { id: 'Makemake', name: 'Makemake', type: 'Planeta Enano', radius_km: 715, distance_au: 45.79, period_days: 111800, color: '#ffdead' },
+                { id: 'Eris', name: 'Eris', type: 'Planeta Enano', radius_km: 1163, distance_au: 67.7, period_days: 203830, color: '#cccccc', description: 'Su descubrimiento fue clave en la reclasificación de Plutón.' },
+                { id: 'Voyager1', name: 'Voyager 1', type: 'Sonda Espacial', radius_km: 0.002, color: '#ffffff', description: 'Lanzada en 1977, es el objeto humano más alejado de la Tierra.' }
+            ];
+            
+            let camera = { x: 0, y: 0, zoom: 1e-9, isFollowing: true }; 
+            let focusTargetId = 'Sol'; 
+            let timeScale = 100; 
+            let bodies = [], asteroidBelt = [], oortCloudParticles = []; 
+            let constantLineWidth = 1;
+            const images = {}; 
+
+            const STARS = [];
+            const NUM_STARS = 2000; 
+            const MAX_WORLD_SYSTEM_EXTENT = 200000 * AU_KM; 
+            
+            const MIN_BODY_RADIUS_PX = 1.5; 
+            const MIN_LABEL_FONT_SIZE_PX = 10; 
+            const MAX_LABEL_FONT_SIZE_PX = 30; 
+            const MIN_ORBIT_OR_SIZE_ON_SCREEN_PX = 25; 
+            const LABEL_ZOOM_THRESHOLD = 2e-7; 
+            const SELECTION_HITBOX_PX = 30; 
+
+            // Constants for Oort Cloud
+            const OORT_CLOUD_INNER_AU = 2000;
+            const OORT_CLOUD_OUTER_AU = 200000;
+            const OORT_CLOUD_PARTICLE_COUNT = 5000;
+            const OORT_CLOUD_PARALLAX_FACTOR = 0.01; 
+            const OORT_CLOUD_PARTICLE_SIZE_PX = 0.5; 
+
+            // --- INITIALIZATION FUNCTIONS ---
+            function init() {
+                // Correctly process full dataset including moons
+                bodies = solarSystemData.flatMap(data => {
+                    const body = { ...data, x: 0, y: 0, angle: Math.random() * 2 * Math.PI };
+                    if (data.distance_au) body.distance_km = data.distance_au * AU_KM;
+                    const moons = data.moons ? data.moons.map(m => ({ ...m, parentId: data.id, x:0, y:0, angle: Math.random() * 2 * Math.PI })) : [];
+                    return [body, ...moons];
+                });
+                
+                const voyager = bodies.find(b => b.id === 'Voyager1');
+                if (voyager) {
+                    voyager.distance_km = 160 * AU_KM; 
+                    voyager.period_days = 365 * 1000000; 
+                }
+
+                asteroidBelt = generateParticleField(2000, 2.2 * AU_KM, 3.2 * AU_KM, 0.1 * AU_KM);
+                
+                oortCloudParticles = generateParticleField(
+                    OORT_CLOUD_PARTICLE_COUNT,
+                    OORT_CLOUD_INNER_AU * AU_KM,
+                    OORT_CLOUD_OUTER_AU * AU_KM,
+                    OORT_CLOUD_OUTER_AU * AU_KM * 0.5 
+                );
+
+                for (let i = 0; i < NUM_STARS; i++) {
+                    STARS.push({
+                        x: (Math.random() * 2 - 1) * MAX_WORLD_SYSTEM_EXTENT, 
+                        y: (Math.random() * 2 - 1) * MAX_WORLD_SYSTEM_EXTENT,
+                        size: 0.5 + Math.random() * 1.5, 
+                        opacity: 0.2 + Math.random() * 0.8,
+                        parallaxFactor: 0.05 + Math.random() * 0.15 
+                    });
+                }
+                
+                preloadImages(); 
+                zoomToSolarSystem(); 
+                updateTimeScaleDisplay(); 
+                initFilterPanel(); 
+                updateVisibleObjectsList(); 
+            }
+
+            function preloadImages() {
+                bodies.forEach(body => {
+                    if (body.textureUrl) {
+                        const img = new Image();
+                        img.crossOrigin = "Anonymous"; 
+                        img.onload = () => {
+                            images[body.id] = img; 
+                        };
+                        img.onerror = () => {
+                            console.error(`Failed to load texture for ${body.id}`);
+                            images[body.id] = null; 
+                        };
+                        img.src = body.textureUrl;
+                    }
+                });
+            }
+
+            function generateParticleField(count, innerR, outerR, verticalSpread) {
+                return Array.from({length: count}, () => ({ angle: Math.random() * 2 * Math.PI, radius: innerR + Math.random() * (outerR - innerR), y: (Math.random() - 0.5) * verticalSpread, brightness: 0.5 + Math.random() * 0.5 }));
+            }
+
+            function getObjectTypeCategory(body) {
+                if (body.type.includes('Estrella')) return 'Estrella';
+                if (body.type.includes('Planeta') && !body.type.includes('Enano')) return 'Planeta'; 
+                if (body.type.includes('Luna')) return 'Luna';
+                if (body.type.includes('Planeta Enano')) return 'Planeta Enano';
+                if (body.type.includes('Asteroide')) return 'Asteroide'; 
+                if (body.type.includes('Sonda Espacial')) return 'Sonda Espacial';
+                return 'Otro'; 
+            }
+
+            // --- UI FUNCTIONS ---
+
+            function showInfoPanel(id) {
+                const body = bodies.find(b => b.id === id);
+                if (body) {
+                    dom.title.textContent = body.name;
+                    dom.panelImage.src = body.imageUrl || '';
+                    dom.panelImage.style.display = body.imageUrl ? 'block' : 'none';
+
+                    // Set iframe sources
+                    dom.wikiIframe.src = body.wikiUrl || 'about:blank';
+                    dom.nasaIframe.src = body.nasaUrl || 'about:blank';
+
+                    dom.dataList.innerHTML = '';
+                    const detailsToShow = {
+                        'Tipo': body.type,
+                        'Masa': body.mass,
+                        'Gravedad': body.gravity,
+                        'Temperatura': body.temperature,
+                        'Radio': body.radius_km ? `${body.radius_km.toLocaleString()} km` : 'N/A',
+                        'Distancia': body.distance_au ? `${body.distance_au.toFixed(2)} AU` : 'N/A',
+                        'Periodo Orbital': body.period_days ? `${body.period_days.toLocaleString()} días` : 'N/A'
+                    };
+                    for (const [key, value] of Object.entries(detailsToShow)) {
+                        if (value && value !== 'N/A') {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<strong>${key}:</strong> ${value}`;
+                            dom.dataList.appendChild(li);
+                        }
+                    }
+
+                    dom.description.textContent = body.description || 'No hay descripción disponible.';
+                    dom.panel.classList.add('visible');
+                    dom.panelViewBtn.dataset.targetId = id; 
+                    updateUiPositions(); 
+                }
+            }
+            function hideInfoPanel() { 
+                dom.panel.classList.remove('visible'); 
+                // Clear iframes to stop loading/video playback
+                dom.wikiIframe.src = 'about:blank';
+                dom.nasaIframe.src = 'about:blank';
+                updateUiPositions(); 
+            }
+
+            function initFilterPanel() {
+                dom.filterOptions.innerHTML = ''; 
+                FILTERABLE_OBJECT_CATEGORIES.forEach(category => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = visibleObjectCategories[category.type];
+                    checkbox.dataset.type = category.type;
+
+                    checkbox.addEventListener('change', (e) => {
+                        visibleObjectCategories[e.target.dataset.type] = e.target.checked;
+                        draw(); 
+                        updateVisibleObjectsList(); 
+                    });
+
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(category.name));
+                    dom.filterOptions.appendChild(label);
+                });
+            }
+
+            function updateVisibleObjectsList() {
+                dom.visibleObjectsList.innerHTML = ''; 
+                
+                const objectsToList = bodies.filter(body => {
+                    const category = getObjectTypeCategory(body);
+                    return visibleObjectCategories[category]; 
+                }).sort((a, b) => {
+                    const order = ['Estrella', 'Planeta', 'Planeta Enano', 'Asteroide', 'Luna', 'Sonda Espacial', 'Otro'];
+                    const typeA = getObjectTypeCategory(a);
+                    const typeB = getObjectTypeCategory(b);
+                    if (typeA !== typeB) {
+                        return order.indexOf(typeA) - order.indexOf(typeB);
+                    }
+                    return a.name.localeCompare(b.name);
+                }); 
+
+                objectsToList.forEach(body => {
+                    const li = document.createElement('li');
+                    let displayName = body.name;
+
+                    if (getObjectTypeCategory(body) === 'Luna' && body.parentId) {
+                        const parent = bodies.find(p => p.id === body.parentId);
+                        if (parent) {
+                            displayName = `${body.name} (${parent.name})`;
+                        }
+                    }
+                    li.textContent = displayName;
+                    
+                    const colorDot = document.createElement('span');
+                    colorDot.style.backgroundColor = body.color;
+                    li.prepend(colorDot); 
+
+                    li.addEventListener('click', () => {
+                        setFocus(body.id, true); 
+                        autoZoomToBody(body.id); 
+                        hideInfoPanel(); 
+                        hideFilterPanel(); 
+                    });
+                    dom.visibleObjectsList.appendChild(li);
+                });
+            }
+
+
+            function toggleFilterPanel() {
+                dom.filterPanel.classList.toggle('visible');
+            }
+            function hideFilterPanel() {
+                dom.filterPanel.classList.remove('visible');
+            }
+            
+            function updateTimeScaleDisplay() { 
+                const v = parseFloat(dom.timeSlider.value);
+                timeScale = v === 0 ? 0 : Math.pow(10, v / 12.5);
+                dom.timeLabel.textContent = `Velocidad: ${timeScale === 0 ? 'Pausa' : (timeScale < 1000 ? timeScale.toFixed(1) + 'x' : (timeScale/1e6).toFixed(1) + ' Millones x')}`;
+            }
+
+            function updateUiPositions() {
+                const infoPanelVisible = dom.panel.classList.contains('visible');
+                const infoPanelHeight = infoPanelVisible ? dom.panel.offsetHeight : 0;
+                
+                dom.controlsContainer.style.bottom = `${15 + infoPanelHeight}px`;
+            }
+            
+            // --- INTERACTION LOGIC ---
+            let pointer = { isDown: false, last: {x:0, y:0}, downTime: 0, initialX: 0, initialY: 0 }; 
+            let lastTouchDist = 0;
+
+            function onPointerDown(e) { 
+                if (e.target !== canvas) return;
+                const p = e.touches ? e.touches[0] : e; 
+                pointer = { isDown: true, last: {x: p.clientX, y: p.clientY}, downTime: Date.now(), initialX: p.clientX, initialY: p.clientY }; 
+                canvas.classList.add('grabbing'); 
+            }
+
+            function onPointerMove(e) {
+                if (!pointer.isDown) return;
+                
+                if(e.touches && e.touches.length > 1) { 
+                    handlePinch(e); 
+                    return; 
+                }
+                const p = e.touches ? e.touches[0] : e;
+
+                if (!camera.isFollowing) {
+                    camera.x -= (p.clientX - pointer.last.x) / camera.zoom;
+                    camera.y -= (p.clientY - pointer.last.y) / camera.zoom;
+                }
+                pointer.last = {x: p.clientX, y: p.clientY};
+            }
+
+            function onPointerUp(e) { 
+                if (pointer.isDown) {
+                    const currentX = e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0].clientX : e.clientX; 
+                    const currentY = e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0].clientY : e.clientY;
+                    
+                    const TAP_THRESHOLD_PX = 12; // More forgiving tap threshold
+                    const TAP_TIME_THRESHOLD_MS = 300; 
+
+                    const totalDistanceMoved = Math.hypot(currentX - pointer.initialX, currentY - pointer.initialY);
+
+                    if (totalDistanceMoved < TAP_THRESHOLD_PX && (Date.now() - pointer.downTime < TAP_TIME_THRESHOLD_MS)) {
+                        handleTap(pointer.initialX, pointer.initialY); 
+                    }
+                }
+                pointer.isDown = false; 
+                lastTouchDist = 0; 
+                canvas.classList.remove('grabbing'); 
+            }
+            
+            const getEffectiveScreenCenter = () => {
+                const infoPanelVisible = dom.panel.classList.contains('visible');
+                const infoPanelHeight = infoPanelVisible ? dom.panel.offsetHeight : 0; 
+
+                const centerX = canvas.width / 2; 
+                const centerY = (canvas.height - infoPanelHeight) / 2; 
+
+                return { x: centerX, y: centerY };
+            };
+
+            const screenToWorld = (sx, sy) => { 
+                const effectiveCenter = getEffectiveScreenCenter();
+                return { 
+                    x: (sx - effectiveCenter.x) / camera.zoom + camera.x, 
+                    y: (sy - effectiveCenter.y) / camera.zoom + camera.y 
+                };
+            };
+            
+            function handleTap(sx, sy) {
+                let bestMatch = { id: null, distPx: Infinity }; 
+
+                for (let i = bodies.length - 1; i >= 0; i--) { 
+                    const body = bodies[i];
+                    if (!checkBodyVisibility(body)) continue; 
+
+                    const bodyScreenX = getEffectiveScreenCenter().x + (body.x - camera.x) * camera.zoom;
+                    const bodyScreenY = getEffectiveScreenCenter().y + (body.y - camera.y) * camera.zoom;
+                    const distToBodyCenterPx = Math.hypot(sx - bodyScreenX, sy - bodyScreenY);
+                    
+                    const bodyRadiusOnScreen = body.radius_km * camera.zoom;
+                    const clickableRadiusPx = Math.max(bodyRadiusOnScreen, SELECTION_HITBOX_PX / 2); 
+                    
+                    if (distToBodyCenterPx < clickableRadiusPx && distToBodyCenterPx < bestMatch.distPx) {
+                        bestMatch = { id: body.id, distPx: distToBodyCenterPx };
+                    }
+                }
+                
+                if (!bestMatch.id || bestMatch.distPx > SELECTION_HITBOX_PX / 2) { 
+                    bodies.forEach(body => {
+                        if (!checkBodyVisibility(body) || !body.distance_km || body.id === 'Sol') return; 
+                        
+                        const parent = bodies.find(p => p.id === body.parentId) || {x:0, y:0}; 
+                        const parentScreenX = getEffectiveScreenCenter().x + (parent.x - camera.x) * camera.zoom;
+                        const parentScreenY = getEffectiveScreenCenter().y + (parent.y - camera.y) * camera.zoom;
+                        const orbitRadiusPx = body.distance_km * camera.zoom;
+                        const distToOrbitCenterPx = Math.hypot(sx - parentScreenX, sy - parentScreenY);
+                        const distToOrbitLinePx = Math.abs(distToOrbitCenterPx - orbitRadiusPx);
+                        
+                        if (distToOrbitLinePx < SELECTION_HITBOX_PX / 2 && distToOrbitLinePx < bestMatch.distPx) { 
+                            bestMatch = { id: body.id, distPx: distToOrbitLinePx };
+                        }
+                    });
+                }
+
+                if (bestMatch.id) { 
+                    setFocus(bestMatch.id, true); 
+                    showInfoPanel(bestMatch.id); 
+                } else { 
+                    setFocus('Sol', false); 
+                    hideInfoPanel(); 
+                }
+            }
+
+            function setFocus(id, enableFollowing = true) { 
+                focusTargetId = id; 
+                camera.isFollowing = enableFollowing; 
+
+                const target = bodies.find(b => b.id === focusTargetId);
+                if (target) {
+                    camera.x = target.x;
+                    camera.y = target.y;
+                }
+                draw(); 
+            }
+
+            function autoZoomToBody(bodyId) {
+                const target = bodies.find(b => b.id === bodyId);
+                if (target) {
+                    let maxSystemExtent = target.radius_km; 
+                    let targetForCamera = target; 
+
+                    if (getObjectTypeCategory(target) === 'Luna' && target.parentId) {
+                        const parent = bodies.find(p => p.id === target.parentId);
+                        if (parent) {
+                            targetForCamera = parent;
+                            maxSystemExtent = Math.max(parent.radius_km * 2, target.distance_km + target.radius_km);
+                        }
+                    } else {
+                        const childMoons = bodies.filter(b => b.parentId === target.id);
+                        if (childMoons.length > 0) {
+                            const largestMoonOrbitExtent = childMoons.reduce((max, moon) => 
+                                Math.max(max, moon.distance_km + moon.radius_km), 0);
+                            maxSystemExtent = Math.max(maxSystemExtent, largestMoonOrbitExtent);
+                        } else {
+                            maxSystemExtent = target.radius_km * 5; 
+                        }
+                    }
+                    
+                    const desiredScreenCoverage = 0.8; 
+                    const effectiveCanvasDim = Math.min(canvas.width, canvas.height - (dom.panel.classList.contains('visible') ? dom.panel.offsetHeight : 0));
+                    
+                    const safeEffectiveCanvasDim = Math.max(1, effectiveCanvasDim); 
+
+                    const effectiveDiameterWorld = maxSystemExtent * 2; 
+                    camera.zoom = (safeEffectiveCanvasDim * desiredScreenCoverage) / (effectiveDiameterWorld || 1);
+                    
+                    setFocus(targetForCamera.id, true); 
+                }
+            }
+
+            function zoomToSolarSystem() {
+                const maxSystemOrbitExtent = bodies.reduce((max, b) => {
+                    let currentBodyMaxExtent = 0;
+                    if (!b.parentId) { 
+                        currentBodyMaxExtent = (b.distance_km || 0) + (b.radius_km || 0); 
+                    } else { 
+                        const parent = bodies.find(p => p.id === b.parentId);
+                        if (parent) { 
+                            currentBodyMaxExtent = (parent.distance_km || 0) + (b.distance_km || 0) + (b.radius_km || 0); 
+                        }
+                    }
+                    return Math.max(max, currentBodyMaxExtent);
+                }, 0);
+                
+                const effectiveCanvasDim = Math.min(canvas.width, canvas.height - (dom.controlsContainer.offsetHeight + 30)); 
+                
+                const safeEffectiveCanvasDim = Math.max(1, effectiveCanvasDim); 
+
+                camera.zoom = (safeEffectiveCanvasDim * 0.9) / (maxSystemOrbitExtent * 2 || 1); 
+                setFocus('Sol', false); 
+            }
+            
+            const zoomAt = (sx, sy, factor) => { 
+                if (!camera.isFollowing) {
+                    const worldPosBefore = screenToWorld(sx, sy); 
+                    camera.zoom *= factor; 
+                    const worldPosAfter = screenToWorld(sx, sy); 
+                    camera.x += worldPosBefore.x - worldPosAfter.x; 
+                    camera.y += worldPosBefore.y - worldPosAfter.y; 
+                } else {
+                    camera.zoom *= factor; 
+                }
+            };
+
+            const handleWheel = (e) => { e.preventDefault(); zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.5 : 1 / 1.5); };
+            
+            const handlePinch = (e) => { 
+                const p1=e.touches[0], p2=e.touches[1]; 
+                const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY); 
+                if (lastTouchDist > 0) { 
+                    const mid = { x: (p1.clientX + p2.clientX) / 2, y: (p1.clientY + p2.clientY) / 2 }; 
+                    zoomAt(mid.x, mid.y, dist / lastTouchDist); 
+                } 
+                lastTouchDist = dist; 
+            };
+            
+            // --- MAIN SIMULATION LOOP ---
+            let lastTimestamp = 0;
+            function animate() { update(); draw(); requestAnimationFrame(animate); }
+
+            function update() {
+                const simDeltaTime = (Date.now() - (lastTimestamp || Date.now())) / 1000 * timeScale; 
+                lastTimestamp = Date.now();
+                
+                bodies.forEach(body => { 
+                    if (body.period_days) { 
+                        body.angle += ((2 * Math.PI) / (body.period_days * 24 * 3600)) * simDeltaTime;
+                        const parent = bodies.find(b => b.id === body.parentId) || {x:0, y:0}; 
+                        body.x = parent.x + Math.cos(body.angle) * body.distance_km;
+                        body.y = parent.y + Math.sin(body.angle) * body.distance_km;
+                    }
+                });
+
+                if (camera.isFollowing) { 
+                    const target = bodies.find(b => b.id === focusTargetId); 
+                    if (target) { 
+                        camera.x = target.x; 
+                        camera.y = target.y; 
+                    } 
+                }
+            }
+            
+            // --- DRAWING FUNCTIONS ---
+
+            function drawParticleField(field, alpha, lw) {
+                field.forEach(p => {
+                    const x = Math.cos(p.angle) * p.radius;
+                    const y = Math.sin(p.angle) * p.radius; 
+                    const z_offset = p.y; 
+                    
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * p.brightness})`;
+                    ctx.fillRect(x, y + z_offset, 1.5 * lw, 1.5 * lw); 
+                });
+            }
+
+            function drawOortCloud(particles, effectiveCenter, camera) {
+                ctx.fillStyle = `rgba(255, 255, 255, 0.02)`; 
+                particles.forEach(p => {
+                    const worldX = Math.cos(p.angle) * p.radius;
+                    const worldY = Math.sin(p.angle) * p.radius;
+
+                    const screenX = effectiveCenter.x + (worldX - camera.x * OORT_CLOUD_PARALLAX_FACTOR) * camera.zoom;
+                    const screenY = effectiveCenter.y + (worldY - camera.y * OORT_CLOUD_PARALLAX_FACTOR) * camera.zoom;
+
+                    if (screenX > -OORT_CLOUD_PARTICLE_SIZE_PX && screenX < canvas.width + OORT_CLOUD_PARTICLE_SIZE_PX &&
+                        screenY > -OORT_CLOUD_PARTICLE_SIZE_PX && screenY < canvas.height + OORT_CLOUD_PARTICLE_SIZE_PX) {
+                        ctx.fillRect(screenX, screenY, OORT_CLOUD_PARTICLE_SIZE_PX, OORT_CLOUD_PARTICLE_SIZE_PX);
+                    }
+                });
+            }
+
+
+            function drawRings(body, lw) {
+                if (!body.inner_ring_radius_km || !body.outer_ring_radius_km) return;
+
+                ctx.save();
+                ctx.translate(body.x, body.y);
+
+                const ringAspectRatio = 0.4; 
+                ctx.scale(1, ringAspectRatio); 
+
+                ctx.beginPath();
+                ctx.arc(0, 0, body.outer_ring_radius_km, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; 
+                ctx.lineWidth = lw * 2; 
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(0, 0, body.inner_ring_radius_km, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; 
+                ctx.lineWidth = lw * 2;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+
+            function checkBodyVisibility(body) {
+                const category = getObjectTypeCategory(body);
+                if (!visibleObjectCategories[category]) return false;
+
+                const screenCenterWorld = screenToWorld(canvas.width / 2, canvas.height / 2); 
+                const distToCenter = Math.hypot(body.x - screenCenterWorld.x, body.y - screenCenterWorld.y);
+                const maxScreenExtentWorld = Math.max(canvas.width, canvas.height) / camera.zoom / 2;
+                if (distToCenter > maxScreenExtentWorld * 1.5) return false; 
+
+                if (category === 'Luna' || category === 'Planeta Enano' || category === 'Asteroide' || category === 'Sonda Espacial') {
+                    let effectiveVisualSizeWorld = body.radius_km * 2; 
+                    if (body.distance_km && body.id !== 'Sol') { 
+                        effectiveVisualSizeWorld = body.distance_km * 2; 
+                        if (body.type === 'Sonda Espacial') effectiveVisualSizeWorld = Math.max(effectiveVisualSizeWorld, MAX_WORLD_SYSTEM_EXTENT * 0.005); 
+                    }
+                    
+                    if (effectiveVisualSizeWorld * camera.zoom < MIN_ORBIT_OR_SIZE_ON_SCREEN_PX) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            function draw() {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+
+                const effectiveCenter = getEffectiveScreenCenter();
+
+                drawOortCloud(oortCloudParticles, effectiveCenter, camera);
+
+                STARS.forEach(star => {
+                    const screenX = effectiveCenter.x + (star.x - camera.x * star.parallaxFactor) * camera.zoom;
+                    const screenY = effectiveCenter.y + (star.y - camera.y * star.parallaxFactor) * camera.zoom;
+
+                    if (screenX > -star.size && screenX < canvas.width + star.size &&
+                        screenY > -star.size && screenY < canvas.height + star.size) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                        ctx.fillRect(screenX, screenY, star.size, star.size); 
+                    }
+                });
+
+                ctx.save();
+                ctx.translate(effectiveCenter.x, effectiveCenter.y);
+                ctx.scale(camera.zoom, camera.zoom);
+                ctx.translate(-camera.x, -camera.y);
+
+                constantLineWidth = 1 / camera.zoom; 
+
+                drawParticleField(asteroidBelt, 0.4, constantLineWidth);
+                
+                bodies.forEach(body => {
+                    if (checkBodyVisibility(body)) {
+                        if (body.id === 'Saturno') { 
+                            drawRings(body, constantLineWidth);
+                        }
+
+                        if (body.distance_km && body.id !== 'Sol') { 
+                            drawOrbit(body, constantLineWidth);
+                        }
+                        drawBody(body, constantLineWidth);
+                    }
+                });
+                
+                ctx.restore();
+            }
+
+            function drawOrbit(body, lw) { 
+                const p = bodies.find(b => b.id === body.parentId) || {x:0,y:0}; 
+                ctx.beginPath(); 
+                ctx.arc(p.x, p.y, body.distance_km, 0, 2*Math.PI); 
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)'; 
+                ctx.lineWidth = lw; 
+                ctx.stroke(); 
+            }
+            
+            // New procedural drawing function as fallback
+            function drawProceduralBody(body, displayRadius) {
+                const category = getObjectTypeCategory(body);
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(body.x, body.y, displayRadius, 0, 2 * Math.PI);
+                ctx.clip(); 
+
+                ctx.fillStyle = body.color;
+                ctx.fill();
+
+                if (category === 'Estrella') {
+                    const gradient = ctx.createRadialGradient(body.x, body.y, 0, body.x, body.y, displayRadius);
+                    gradient.addColorStop(0, 'rgba(255, 255, 200, 0.8)');
+                    gradient.addColorStop(0.8, body.color);
+                    gradient.addColorStop(1, 'rgba(255, 100, 0, 0.5)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                } else if (category === 'Planeta' && (body.id === 'Jupiter' || body.id === 'Saturno')) {
+                    // Gas giant bands
+                    for (let i = 0; i < 10; i++) {
+                        ctx.fillStyle = (i % 2 === 0) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                        const y = body.y - displayRadius + (i * displayRadius * 0.2);
+                        ctx.fillRect(body.x - displayRadius, y, displayRadius * 2, displayRadius * 0.2);
+                    }
+                } else if (category === 'Planeta' || category === 'Luna' || category === 'Planeta Enano' || category === 'Asteroide') {
+                    // Rocky body craters
+                    const numCraters = Math.floor(displayRadius / (5 / camera.zoom)); 
+                    for (let i = 0; i < numCraters; i++) {
+                        ctx.beginPath();
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = Math.random() * displayRadius;
+                        const r = (1 + Math.random() * 2) / camera.zoom;
+                        const craterX = body.x + Math.cos(angle) * dist;
+                        const craterY = body.y + Math.sin(angle) * dist;
+                        ctx.arc(craterX, craterY, r, 0, 2 * Math.PI);
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                        ctx.fill();
+                    }
+                }
+
+                ctx.restore();
+            }
+
+            function drawBody(body, lw) {
+                const radiusOnScreen = body.radius_km * camera.zoom;
+                const displayRadius = radiusOnScreen < MIN_BODY_RADIUS_PX ? MIN_BODY_RADIUS_PX / camera.zoom : body.radius_km;
+                
+                const texture = images[body.id];
+                if (texture && texture.complete && texture.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(body.x, body.y, displayRadius, 0, 2 * Math.PI);
+                    ctx.clip();
+                    ctx.drawImage(texture, body.x - displayRadius, body.y - displayRadius, displayRadius * 2, displayRadius * 2);
+                    ctx.restore();
+                } else {
+                    drawProceduralBody(body, displayRadius);
+                }
+                
+                if(body.id === focusTargetId) {
+                    ctx.strokeStyle = 'rgba(255,255,0,0.8)';
+                    ctx.lineWidth = 1.5 * lw; 
+                    const highlightSize = displayRadius + 5 * lw; 
+
+                    ctx.beginPath();
+                    ctx.rect(body.x - highlightSize, body.y - highlightSize, highlightSize * 2, highlightSize * 2);
+                    ctx.stroke();
+                }
+                
+                let showLabel = false;
+                const category = getObjectTypeCategory(body);
+
+                if (category === 'Estrella' || category === 'Planeta') {
+                    if (radiusOnScreen > 5) {
+                        showLabel = true;
+                    }
+                } else { 
+                    if (camera.zoom > LABEL_ZOOM_THRESHOLD) {
+                        showLabel = true;
+                    }
+                }
+                
+                if (showLabel) {
+                    const fontSize = Math.max(MIN_LABEL_FONT_SIZE_PX, Math.min(MAX_LABEL_FONT_SIZE_PX, 14)); 
+                    ctx.font = `${fontSize}px sans-serif`; 
+                    ctx.fillStyle = 'white'; 
+                    ctx.textAlign = 'center'; 
+                    ctx.textBaseline = 'bottom'; 
+                    ctx.fillText(body.name, body.x, body.y - displayRadius - (5 / camera.zoom)); 
+                }
+            }
+            
+            // --- EVENT LISTENERS AND INITIAL SETUP ---
+            window.addEventListener('resize', () => { 
+                canvas.width = window.innerWidth; 
+                canvas.height = window.innerHeight; 
+                updateUiPositions(); 
+                if(!camera.isFollowing || focusTargetId === 'Sol') { 
+                    zoomToSolarSystem(); 
+                } else {
+                    autoZoomToBody(focusTargetId); 
+                }
+            }); 
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            
+            canvas.addEventListener('mousedown', onPointerDown, {passive: false});
+            canvas.addEventListener('mousemove', onPointerMove, {passive: false});
+            window.addEventListener('mouseup', onPointerUp, {passive: false}); 
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+
+            canvas.addEventListener('touchstart', onPointerDown, {passive: false});
+            canvas.addEventListener('touchmove', onPointerMove, {passive: false});
+            window.addEventListener('touchend', onPointerUp, {passive: false}); 
+
+            dom.timeSlider.addEventListener('input', updateTimeScaleDisplay); 
+
+            dom.closeBtn.addEventListener('click', hideInfoPanel); 
+            dom.filterCloseBtn.addEventListener('click', hideFilterPanel); 
+            dom.menuToggleBtn.addEventListener('click', toggleFilterPanel); 
+
+            dom.panelTabs.addEventListener('click', (e) => {
+                if (e.target.classList.contains('panel-tab-btn')) {
+                    const tabName = e.target.dataset.tab;
+                    dom.panelTabs.querySelectorAll('.panel-tab-btn').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.panel-tab-content').forEach(content => content.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(`tab-${tabName}`).classList.add('active');
+                }
+            });
+
+            dom.panelViewBtn.addEventListener('click', () => {
+                const targetId = dom.panelViewBtn.dataset.targetId;
+                if (targetId) {
+                    autoZoomToBody(targetId);
+                }
+            });
+            dom.viewAllBtn.addEventListener('click', zoomToSolarSystem); 
+
+            init();
+            requestAnimationFrame(animate);
+        });
+    </script>
+</body>
+</html>
