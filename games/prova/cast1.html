@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Bolsa</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #58a6ff;
+    }
+
+    .chart-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto 40px auto;
+    }
+
+    canvas {
+      background-color: #161b22;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    #cast-button {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 600px) {
+      canvas {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📈 Dashboard Bolsa</h1>
+
+  <!-- Botón de transmitir -->
+  <div id="cast-button">
+    <google-cast-launcher></google-cast-launcher>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="priceChart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="volumeChart"></canvas>
+  </div>
+
+  <script>
+    // Cargar Charts
+    const priceCtx = document.getElementById('priceChart').getContext('2d');
+    const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+
+    new Chart(priceCtx, {
+      type: 'line',
+      data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+        datasets: [{
+          label: 'Precio Acción',
+          data: [122, 125, 120, 130, 128],
+          borderColor: '#58a6ff',
+          backgroundColor: 'rgba(88, 166, 255, 0.2)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#c9d1d9' } } },
+        scales: {
+          x: { ticks: { color: '#c9d1d9' } },
+          y: { ticks: { color: '#c9d1d9' } }
+        }
+      }
+    });
+
+    new Chart(volumeCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+        datasets: [{
+          label: 'Volumen (millones)',
+          data: [5, 7, 3, 8, 6],
+          backgroundColor: '#3fb950'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#c9d1d9' } } },
+        scales: {
+          x: { ticks: { color: '#c9d1d9' } },
+          y: { ticks: { color: '#c9d1d9' } }
+        }
+      }
+    });
+
+    // Inicializar Cast
+    window['__onGCastApiAvailable'] = function(isAvailable) {
+      if (isAvailable) {
+        cast.framework.CastContext.getInstance().setOptions({
+          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+        });
+      }
+    };
+  </script>
+</body>
+</html>
