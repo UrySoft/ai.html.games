@@ -1,0 +1,40 @@
+<!-- receiver.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Web Receiver</title>
+  <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  <style>
+    html, body, iframe {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+    }
+    iframe {
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="viewer" src=""></iframe>
+
+  <script>
+    const context = cast.framework.CastReceiverContext.getInstance();
+    const playerManager = context.getPlayerManager();
+
+    context.addCustomMessageListener('urn:x-cast:webpage.viewer', (event) => {
+      const url = event.data;
+
+      // Validación básica de URL para mayor seguridad
+      if (typeof url === 'string' && url.startsWith('https://')) {
+        document.getElementById('viewer').src = url;
+      }
+    });
+
+    context.start();
+  </script>
+</body>
+</html>
