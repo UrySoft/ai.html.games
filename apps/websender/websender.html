@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Web Caster Sender</title>
+  <script type="module" src="https://www.gstatic.com/cast/sdk/libs/caf_sender/v3/cast_sender_framework.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #121212;
+      color: white;
+      padding: 2rem;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 0.3rem;
+    }
+    input {
+      background: #1e1e1e;
+      color: white;
+    }
+    button {
+      background: #00c3ff;
+      color: black;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00a6d1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Caster Sender</h1>
+  <input type="url" id="urlInput" placeholder="https://ejemplo.com" />
+  <button onclick="sendUrl()">Enviar al Chromecast</button>
+
+  <script>
+    const APP_ID = '112CF30E'; // 🔁 Sustituye esto con tu ID de receptor
+
+    const context = cast.framework.CastContext.getInstance();
+    context.setOptions({
+      receiverApplicationId: APP_ID,
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+    });
+
+    async function sendUrl() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!/^https:\/\/.+/.test(url)) {
+        alert('La URL debe comenzar con https://');
+        return;
+      }
+
+      try {
+        const session = context.getCurrentSession() || await context.requestSession();
+        await session.sendMessage('urn:x-cast:webpage.viewer', url);
+        alert('URL enviada correctamente');
+      } catch (err) {
+        console.error('Error al enviar la URL:', err);
+        alert('Error al conectar o enviar al Chromecast');
+      }
+    }
+  </script>
+</body>
+</html>
