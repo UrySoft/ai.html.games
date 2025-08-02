@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Panel de Velas Japonesas</title>
+  <style>
+    :root {--radius:12px;--shadow:0 10px 25px -5px rgba(0,0,0,0.15);font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;}
+    *{box-sizing:border-box;}
+    body{margin:0;background:#f5f7fa;color:#1f2d3a;}
+    .container{max-width:1200px;margin:0 auto;padding:1rem;}
+    header{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+    h1{margin:0;font-size:1.5rem;}
+    .card{background:#fff;border-radius:var(--radius);padding:1rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+    .grid{display:grid;gap:1rem;}
+    .input-group{display:flex;flex-wrap:wrap;gap:.5rem;}
+    input,select,button{padding:.6rem .9rem;border:1px solid #d1d9e6;border-radius:8px;font-size:1rem;}
+    button{cursor:pointer;border:none;background:#4f46e5;color:#fff;transition:filter .2s;}
+    button:disabled{opacity:.5;cursor:not-allowed;}
+    button:hover:not(:disabled){filter:brightness(1.05);}
+    table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:0.5rem;}
+    th,td{padding:.5rem .7rem;border-bottom:1px solid #e3e9f7;text-align:left;}
+    th{background:#f0f4fb;position:sticky;top:0;}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.6rem;background:#eef3fc;color:#2f4d8f;}
+    .pattern-positive{color:green;font-weight:600;}
+    .pattern-negative{color:#c0392b;font-weight:600;}
+    .flex{display:flex;gap:1rem;}
+    @media (min-width: 900px){.two{grid-template-columns:2fr 1fr;}}
+    .small{font-size:.8rem;color:#555;}
+    .progress{background:#e8ecf7;border-radius:999px;overflow:hidden;height:10px;}
+    .progress-inner{height:100%;}
+    .tooltip{position:relative;}
+    .tooltip:hover .tt{visibility:visible;opacity:1;}
+    .tt{position:absolute;top:110%;left:50%;transform:translateX(-50%);background:#1f2d3a;color:#fff;padding:6px 10px;border-radius:6px;font-size:.7rem;white-space:nowrap;visibility:hidden;opacity:0;transition:opacity .2s;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div><h1>Panel de Velas Japonesas</h1><div class="small">Carga histórico o usa símbolo (Yahoo Finance) y analiza patrones, frecuencia y acierto.</div></div>
+      <div class="input-group">
+        <input id="symbol" placeholder="Símbolo, e.g. AAPL" aria-label="Símbolo" />
+        <select id="interval"><option value="1d">Diario</option><option value="1wk">Semanal</option><option value="1mo">Mensual</option></select>
+        <button id="load">Cargar y Analizar</button>
+        <label style="display:flex;align-items:center;gap:4px;">o arrastra CSV <input type="file" id="csv" accept=".csv" style="display:none;" /></label>
+      </div>
+    </header>
+
+    <div class="grid two">
+      <div class="card" style="overflow:auto;" id="summary-card">
+        <h2>Resumen de patrones</h2>
+        <div id="stats">Cargando datos...</div>
+        <div style="margin-top:1rem;">
+          <label>Lookahead para acierto (velas siguientes): <input type="number" id="lookahead" value="3" min="1" style="width:60px;" /></label>
+          <button id="recompute" style="margin-left:8px;">Recalcular aciertos</button>
+        </div>
+      </div>
+      <div class="card" id="patterns-card">
+        <h2>Detalles por patrón</h2>
+        <div id="table-wrapper">Sin datos aún.</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Instrucciones</h2>
+      <ul>
+        <li>Introduce un símbolo y pulsa "Cargar y Analizar". Si la API falla, puedes subir un CSV con columnas: Date, Open, High, Low, Close (formato ISO 8601 o similar).</li>
+        <li>El panel detecta patrones comunes: Hammer, Hanging Man, Engulfing, Doji, Shooting Star, Morning/Evening Star, Three Soldiers, Harami, Piercing, Dark Cloud, etc.</li>
+        <li>"Acierto" se calcula como que tras la aparición del patrón, en las siguientes <strong>n</strong> velas (configurable) el precio haya evolucionado en la dirección esperada (alcista para señales alcistas, bajista para bajistas) por al menos un umbral relativo.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // util
+    function parseCSV(text){
+      const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
+      const headers = lines[0].split(/,|;|\t/).map(h=>h.trim().toLowerCase());
+      const data = lines.slice(1).map(l=>{
+        const parts = l.split(/,|;|\t/).map(p=>p.trim());
+        const obj = {};
+        headers.forEach((h,i)=>{ obj[h] = parts[i]; });
+        return obj;
+      });
+      return data.map(r=>({
+        date: new Date(r.date || r.timestamp),
+        open: parseFloat(r.open),
+        high: parseFloat(r.high),
+        low: parseFloat(r.low),
+        close: parseFloat(r.close),
+      })).filter(o=>o.date && !isNaN(o.open));
+    }
+
+    async function fetchYahoo(symbol, interval) {
+      const period2 = Math.floor(Date.now() / 1000);
+      const period1 = 0;
+      const base = `https://query1.finance.yahoo.com/v7/finance/download/${encodeURIComponent(
+        symbol
+      )}?period1=${period1}&period2=${period2}&interval=${interval}&events=history&includeAdjustedClose=true`;
+
+      const validarCSV = (text) => {
+        return (
+          typeof text === 'string' &&
+          text.toLowerCase().includes('date') &&
+          text.split(/\r?\n/).length > 5
+        );
+      };
+
+      const attempts = [
+        { name: 'directo', url: base },
+        { name: 'allorigins', url: `https://api.allorigins.win/raw?url=${encodeURIComponent(base)}` },
+        { name: 'thingproxy', url: `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(base)}` },
+      ];
+
+      for (let i = 0; i < attempts.length; i++) {
+        const { name, url } = attempts[i];
+        try {
+          const res = await fetch(url);
+          console.log(`[fetchYahoo] intento ${name} status:`, res.status);
+          const text = await res.text();
+          console.log(
+            `[fetchYahoo] intento ${name} snippet:`,
+            text.slice(0, 120).replace(/\n/g, '\\n')
+          );
+          if (res.ok && validarCSV(text)) {
+            return text;
+          } else {
+            console.warn(`[fetchYahoo] intento ${name} no válido, reintentando siguiente fallback.`);
+          }
+        } catch (e) {
+          console.warn(`[fetchYahoo] error en intento ${name}:`, e.message);
+        }
+        if (i < attempts.length - 1) {
+          await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+        }
+      }
+      throw new Error('No se pudo obtener datos de Yahoo Finance (todos los fallbacks fallaron).');
+    }
+
+    // pattern detection helpers
+    function candleDirection(c){ return c.close > c.open ? 1 : c.close < c.open ? -1 : 0; }
+    function isDoji(c){ const body = Math.abs(c.close - c.open); const range = c.high - c.low; return range>0 && body / range < 0.1; }
+    function isSpinningTop(c){ const body = Math.abs(c.close - c.open); const range = c.high - c.low; return range>0 && body / range >= 0.1 && body / range <= 0.4; }
+    function isMarubozu(c){ const body = Math.abs(c.close - c.open); const range = c.high - c.low; return range>0 && ( (Math.abs(c.open - c.low) < 0.001*(c.high||1) && Math.abs(c.close-c.high)<0.001*(c.high||1)) || (Math.abs(c.close - c.low)<0.001*(c.high||1) && Math.abs(c.open-c.high)<0.001*(c.high||1)) ); }
+    function isHammer(c){ const body = Math.abs(c.close - c.open); const lowerShadow = Math.min(c.open,c.close) - c.low; const upperShadow = c.high - Math.max(c.open,c.close); return lowerShadow >= 2*body && upperShadow <= body; }
+    function isHangingMan(c){ return isHammer(c); }
+    function isInvertedHammer(c){ const body = Math.abs(c.close - c.open); const upperShadow = c.high - Math.max(c.open,c.close); const lowerShadow = Math.min(c.open,c.close) - c.low; return upperShadow >= 2*body && lowerShadow <= body; }
+    function isShootingStar(c){ return isInvertedHammer(c); }
+    function isEngulfing(prev,c){ const dirPrev = candleDirection(prev); const dirCurr = candleDirection(c); if(dirPrev===0||dirCurr===0) return null; if(dirPrev===-1 && dirCurr===1){ return (c.close > prev.open && c.open < prev.close) ? 'bullish' : null; } else if(dirPrev===1 && dirCurr===-1){ return (c.open > prev.close && c.close < prev.open) ? 'bearish' : null; } return null; }
+    function isHarami(prev,c){ const dirPrev=candleDirection(prev); const dirCurr=candleDirection(c); if(dirPrev===0||dirCurr===0) return null; const prevHigh = Math.max(prev.open, prev.close); const prevLow = Math.min(prev.open, prev.close); const currHigh = Math.max(c.open, c.close); const currLow = Math.min(c.open, c.close); if(currHigh < prevHigh && currLow > prevLow){ return dirPrev===1 && dirCurr===-1 ? 'bearish' : dirPrev===-1 && dirCurr===1 ? 'bullish' : null; } return null; }
+    function isPiercing(prev,c){ if(candleDirection(prev)===-1 && candleDirection(c)===1){ const midpoint = (prev.open + prev.close)/2; return c.close > midpoint ? 'bullish' : null; } return null; }
+    function isDarkCloud(prev,c){ if(candleDirection(prev)===1 && candleDirection(c)===-1){ const midpoint = (prev.open + prev.close)/2; return c.close < midpoint ? 'bearish' : null; } return null; }
+    function classifyThree(prev2, prev1, curr){
+      if(candleDirection(prev2)===-1 && (isSpinningTop(prev1)||isDoji(prev1)) && candleDirection(curr)===1){
+        return 'Morning Star';
+      }
+      if(candleDirection(prev2)===1 && (isSpinningTop(prev1)||isDoji(prev1)) && candleDirection(curr)===-1){
+        return 'Evening Star';
+      }
+      if(candleDirection(prev2)===1 && candleDirection(prev1)===1 && candleDirection(curr)===1){
+        return 'Three White Soldiers';
+      }
+      if(candleDirection(prev2)===-1 && candleDirection(prev1)===-1 && candleDirection(curr)===-1){
+        return 'Three Black Crows';
+      }
+      return null;
+    }
+
+    function detectPatterns(data){
+      const results = [];
+      for(let i=0;i<data.length;i++){
+        const c = data[i];
+        const entry = {index:i,date:c.date.toISOString().slice(0,10),patterns:[]};
+        if(isDoji(c)) entry.patterns.push({name:'Doji',type:'neutral'});
+        if(isSpinningTop(c)) entry.patterns.push({name:'Spinning Top',type:'neutral'});
+        if(isMarubozu(c)) entry.patterns.push({name:'Marubozu',type:'continuation'});
+        if(isHammer(c)) entry.patterns.push({name:'Hammer',type:'reversal',bias:'bullish'});
+        if(isHangingMan(c)) entry.patterns.push({name:'Hanging Man',type:'reversal',bias:'bearish'});
+        if(isInvertedHammer(c)) entry.patterns.push({name:'Inverted Hammer',type:'reversal',bias:'bullish'});
+        if(isShootingStar(c)) entry.patterns.push({name:'Shooting Star',type:'reversal',bias:'bearish'});
+        if(i>0){
+          const prev = data[i-1];
+          const engulf = isEngulfing(prev,c);
+          if(engulf) entry.patterns.push({name:engulf==='bullish'?'Bullish Engulfing':'Bearish Engulfing',type:'reversal',bias:engulf});
+          const harami = isHarami(prev,c);
+          if(harami) entry.patterns.push({name:harami==='bullish'?'Bullish Harami':'Bearish Harami',type:'reversal',bias:harami});
+          const piercing = isPiercing(prev,c);
+          if(piercing) entry.patterns.push({name:'Piercing Pattern',type:'reversal',bias:'bullish'});
+          const darkcloud = isDarkCloud(prev,c);
+          if(darkcloud) entry.patterns.push({name:'Dark Cloud Cover',type:'reversal',bias:'bearish'});
+        }
+        if(i>1){
+          const p2 = data[i-2], p1 = data[i-1];
+          const three = classifyThree(p2,p1,c);
+          if(three) {
+            let bias = null;
+            if(three.toLowerCase().includes('white') || three === 'Morning Star') bias='bullish';
+            if(three.toLowerCase().includes('black') || three === 'Evening Star') bias='bearish';
+            entry.patterns.push({name:three,type:'reversal',bias:bias});
+          }
+        }
+        if(entry.patterns.length) results.push(entry);
+      }
+      return results;
+    }
+
+    function evaluateAccuracy(data,patterns,lookahead){
+      const summary = {};
+      for(const hit of patterns){
+        for(const p of hit.patterns){
+          const key = p.name;
+          if(!summary[key]) summary[key] = {name:key,occ:0,correct:0,type:p.type,bias:p.bias||null};
+          summary[key].occ++;
+          const baseIdx = hit.index;
+          const targetIdx = Math.min(data.length-1, baseIdx+lookahead);
+          if(targetIdx<=baseIdx) continue;
+          const future = data[targetIdx];
+          const curr = data[baseIdx];
+          const priceChange = (future.close - curr.close)/curr.close;
+          let expected = null;
+          if(p.name.toLowerCase().includes('bullish')||p.bias==='bullish'||['Hammer','Morning Star','Three White Soldiers','Piercing Pattern'].includes(p.name)) expected='up';
+          if(p.name.toLowerCase().includes('bearish')||p.bias==='bearish'||['Hanging Man','Evening Star','Three Black Crows','Dark Cloud Cover','Shooting Star'].includes(p.name)) expected='down';
+          if(expected){
+            const actual = priceChange>0 ? 'up' : priceChange<0 ? 'down' : 'flat';
+            if((expected==='up' && actual==='up') || (expected==='down' && actual==='down')) summary[key].correct++;
+          }
+        }
+      }
+      return Object.values(summary).map(o=>({
+        pattern:o.name,
+        occurrences:o.occ,
+        accuracy: o.occ? (o.correct/o.occ):0,
+        type:o.type,
+        bias:o.bias || '',
+        success:o.correct,
+      })).sort((a,b)=>b.occurrences - a.occurrences);
+    }
+
+    function renderSummary(table){
+      const totalPatterns = table.reduce((sum,r)=>sum+r.occurrences,0);
+      const html = [];
+      html.push(`<div><strong>Total apariciones de patrones:</strong> ${totalPatterns}</div>`);
+      html.push(`<div><strong>Patrones únicos:</strong> ${table.length}</div>`);
+      html.push(`<div style="margin-top:8px;">Top 5 por frecuencia:</div>`);
+      html.push('<ol>');
+      table.slice(0,5).forEach(r=>{
+        html.push(`<li>${r.pattern} — ${r.occurrences} veces, acierto ${(r.accuracy*100).toFixed(1)}%</li>`);
+      });
+      html.push('</ol>');
+      document.getElementById('stats').innerHTML = html.join('');
+    }
+    function renderTable(data){
+      if(!data.length){ document.getElementById('table-wrapper').innerHTML='<div>No se detectó ningún patrón.</div>'; return; }
+      const rows = data.map(r=>{
+        return `<tr>
+          <td>${r.pattern}</td>
+          <td>${r.type}</td>
+          <td>${r.bias}</td>
+          <td>${r.occurrences}</td>
+          <td>${(r.accuracy*100).toFixed(1)}%</td>
+          <td>${r.success}</td>
+        </tr>`;
+      }).join('');
+      const table = `
+        <table aria-label="Patrones">
+          <thead><tr><th>Patrón</th><th>Tipo</th><th>Bias</th><th>Veces</th><th>Acierto</th><th>Éxitos</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+      document.getElementById('table-wrapper').innerHTML = table;
+    }
+
+    async function runAnalysis(rawData){
+      const lookahead = parseInt(document.getElementById('lookahead').value)||3;
+      const sorted = rawData.sort((a,b)=>a.date - b.date);
+      window._lastData = sorted;
+      const patterns = detectPatterns(sorted);
+      const table = evaluateAccuracy(sorted,patterns,lookahead);
+      renderSummary(table);
+      renderTable(table);
+    }
+
+    document.getElementById('load').addEventListener('click', async ()=>{
+      const sym = document.getElementById('symbol').value.trim();
+      if(!sym){ alert('Pon un símbolo o carga CSV.'); return; }
+      document.getElementById('stats').textContent='Cargando...';
+      try{
+        const txt = await fetchYahoo(sym, document.getElementById('interval').value);
+        const parsed = parseCSV(txt);
+        if(parsed.length<10) throw new Error('Pocos datos.');
+        await runAnalysis(parsed);
+      }catch(e){
+        document.getElementById('stats').textContent='Error al cargar desde Yahoo. Sube CSV.'; console.error(e);
+      }
+    });
+
+    document.getElementById('csv').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const text = await file.text();
+      const parsed = parseCSV(text);
+      await runAnalysis(parsed);
+    });
+    document.getElementById('recompute').addEventListener('click', ()=>{
+      if(window._lastData) runAnalysis(window._lastData);
+    });
+  </script>
+</body>
+</html>
