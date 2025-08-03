@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Indemnización y Paro en España</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-50: #EFF6FF; --primary-100: #DBEAFE; --primary-600: #2563EB; --primary-700: #1D4ED8;
+            --gray-100: #F3F4F6; --gray-300: #D1D5DB; --gray-500: #6B7280; --gray-700: #374151; --gray-900: #111827;
+            --white: #FFFFFF; --body-bg: #F9FAFB;
+            --card-bg: var(--white);
+            --border-color: var(--gray-300);
+            --text-color: var(--gray-700);
+            --title-color: var(--gray-900);
+            --kpi-bg: var(--gray-100);
+            --explanation-bg: var(--primary-50);
+            --explanation-text: var(--primary-700);
+            --chart-grid-color: rgba(0, 0, 0, 0.1);
+            --chart-tick-color: var(--gray-500);
+        }
+        body.dark-mode {
+            --body-bg: #111827;
+            --card-bg: #1F2937;
+            --border-color: #374151;
+            --text-color: #D1D5DB;
+            --title-color: #F9FAFB;
+            --gray-500: #9CA3AF;
+            --kpi-bg: #374151;
+            --explanation-bg: #1E293B; /* Azul oscuro */
+            --explanation-text: #93C5FD; /* Azul claro */
+            --primary-600: #3B82F6; /* Azul más brillante para contraste */
+            --chart-grid-color: rgba(255, 255, 255, 0.1);
+            --chart-tick-color: #9CA3AF;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--body-bg); color: var(--text-color); line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        header { text-align: center; margin-bottom: 2.5rem; position: relative; }
+        header h1 { color: var(--title-color); font-size: 2.25rem; font-weight: 700; }
+        header p { color: var(--gray-500); font-size: 1.125rem; margin-top: 0.5rem; }
+        .attribution { font-size: 0.9rem; margin-top: 1rem; }
+        .attribution a { color: var(--primary-600); text-decoration: none; font-weight: 500; }
+        .attribution a:hover { text-decoration: underline; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        @media (min-width: 992px) { .dashboard-grid { grid-template-columns: 420px 1fr; } }
+        .card { background-color: var(--card-bg); border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); padding: 1.75rem; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
+        .card-title { font-size: 1.25rem; font-weight: 600; color: var(--title-color); margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-color); }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem; background-color: var(--card-bg); color: var(--text-color); transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-600); box-shadow: 0 0 0 3px var(--primary-100); }
+        .segmented-control { display: flex; width: 100%; border: 1px solid var(--border-color); border-radius: 0.5rem; overflow: hidden; }
+        .segmented-control button { flex: 1; padding: 0.75rem 0.5rem; border: none; background-color: transparent; color: var(--gray-500); font-weight: 500; cursor: pointer; transition: background-color 0.2s, color 0.2s; font-size: 0.875rem; }
+        .segmented-control button:not(:last-child) { border-right: 1px solid var(--border-color); }
+        .segmented-control button.active { background-color: var(--primary-50); color: var(--primary-700); }
+        body.dark-mode .segmented-control button.active { background-color: var(--primary-700); color: var(--white); }
+        .input-group { margin-top: 1rem; }
+        .input-pane { display: none; }
+        .input-pane.active { display: block; }
+        .input-inline-group { display: flex; gap: 1rem; }
+        .input-inline-group > div { flex: 1; }
+        .helper-text { font-size: 0.8rem; color: var(--gray-500); margin-top: 0.5rem; }
+        #results-area { display: block; }
+        .kpi-grid { display: grid; gap: 1rem; margin-bottom: 2rem; grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+        .kpi-item { background-color: var(--kpi-bg); padding: 1rem; border-radius: 0.5rem; text-align: center; transition: background-color 0.3s; }
+        .kpi-label { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 0.25rem; }
+        .kpi-value { font-size: 1.75rem; font-weight: 700; color: var(--primary-600); line-height: 1.2; }
+        .kpi-subvalue { font-size: 0.8rem; color: var(--gray-500); }
+        .tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .tabs button { padding: 0.75rem 1.25rem; border: none; border-bottom: 3px solid transparent; background: none; font-size: 1rem; font-weight: 500; color: var(--gray-500); cursor: pointer; margin-bottom: -2px; transition: color 0.2s, border-color 0.2s; }
+        .tabs button.active { color: var(--primary-600); border-bottom-color: var(--primary-600); }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .detail-item .detail-label { font-weight: 500; color: var(--text-color); }
+        .detail-item .detail-value { font-size: 1.125rem; color: var(--title-color); }
+        .chart-container { height: 300px; width: 100%; margin-bottom: 1.5rem; }
+        .explanation-box { background-color: var(--explanation-bg); border-left: 4px solid var(--primary-600); padding: 1rem 1.5rem; border-radius: 0.5rem; font-size: 0.9rem; color: var(--explanation-text); display: flex; align-items: flex-start; gap: 0.75rem; transition: background-color 0.3s; }
+        .explanation-box svg { flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px; }
+        .disclaimer { text-align: center; margin-top: 2rem; padding: 1rem; font-size: 0.875rem; color: var(--gray-500); }
+        /* --- Selector de Tema --- */
+        #theme-toggle { position: absolute; top: 0; right: 0; background: none; border: 1px solid var(--border-color); border-radius: 0.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color); }
+        #theme-toggle svg { width: 20px; height: 20px; }
+        #moon-icon { display: block; } #sun-icon { display: none; }
+        body.dark-mode #moon-icon { display: none; } body.dark-mode #sun-icon { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <!-- BOTÓN DE TEMA -->
+            <button id="theme-toggle" title="Cambiar tema">
+                <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+                <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 4.343a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 01-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.192 9.192a.75.75 0 010 1.06l-1.06 1.06a.75.75 0 01-1.06-1.06l1.06-1.061a.75.75 0 011.06 0zM18 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0118 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM4.343 4.343a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.192 9.192a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+            </button>
+            <h1>Dashboard de Indemnización y Paro en España</h1>
+            <p>Estima tu finiquito y prestaciones de forma rápida e intuitiva.</p>
+            <p class="attribution">Creado por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer">Oriol Badia Campanera</a></p>
+        </header>
+        <main class="dashboard-grid">
+            <aside class="card">
+                <h2 class="card-title">Parámetros de Simulación</h2>
+                <form id="calculation-form">
+                    <div class="form-group"><label>Antigüedad en la empresa</label><div class="segmented-control" id="antiquity-selector"><button type="button" data-target="duracion-input-container">Años/Meses</button><button type="button" data-target="fechas-input-container">Fechas</button></div><div class="input-group"><div id="duracion-input-container" class="input-pane antiquity-pane"><div class="input-inline-group"><input type="number" id="antiguedadAnios" placeholder="Años" min="0"><input type="number" id="antiguedadMeses" placeholder="Meses" min="0" max="11"></div><p class="helper-text">Calculado hasta la fecha de hoy.</p></div><div id="fechas-input-container" class="input-pane antiquity-pane"><div class="form-group"><label for="startDate">Fecha inicio</label><input type="date" id="startDate"></div><div class="form-group"><label for="endDate">Fecha fin</label><input type="date" id="endDate"></div></div></div></div>
+                    <hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0">
+                    <div class="form-group"><label>Tu Salario</label><div class="segmented-control" id="salary-selector"><button type="button" data-target="anual-input-container">Bruto Anual</button><button type="button" data-target="mensual-input-container">Bruto Mensual</button><button type="button" class="active" data-target="neto-input-container">Neto Mensual</button></div><div class="input-group"><div id="anual-input-container" class="input-pane salary-pane"><input type="number" id="salarioBrutoAnual" placeholder="Ej: 30000" min="0"></div><div id="mensual-input-container" class="input-pane salary-pane"><div class="input-inline-group"><input type="number" id="salarioBrutoMensual" placeholder="€/mes" min="0"><select id="numPagasBruto"><option value="12">12 pagas</option><option value="14" selected>14 pagas</option></select></div></div><div id="neto-input-container" class="input-pane salary-pane active"><div class="input-inline-group"><input type="number" id="salarioNetoMensual" placeholder="Ej: 1800" min="0"><select id="numPagasNeto"><option value="12" selected>12 pagas</option><option value="14">14 pagas</option></select></div><p class="helper-text">La conversión a bruto es una estimación.</p></div></div></div>
+                    <hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0">
+                    <div class="input-inline-group"><div class="form-group"><label for="dismissalType">Tipo de despido</label><select id="dismissalType" required><option value="improcedente">Improcedente</option><option value="objetivo">Objetivo</option><option value="disciplinario">Disciplinario</option><option value="voluntario">Voluntario</option></select></div><div class="form-group"><label for="hijosACargo">Hijos a cargo</label><select id="hijosACargo" required><option value="0">0</option><option value="1">1</option><option value="2">2+</option></select></div></div>
+                    <div class="form-group"><label for="diasCotizados">Días cotizados (últimos 6 años)</label><input type="number" id="diasCotizados" placeholder="Se autocalculará" required min="0"><p class="helper-text">Estimado según antigüedad. Ajústalo si es necesario.</p></div>
+                </form>
+            </aside>
+            <section id="results-area" class="card">
+                <div class="kpi-grid">
+                    <div class="kpi-item"><div class="kpi-label">Indemnización</div><div id="indemnizacion-total" class="kpi-value"></div></div>
+                    <div class="kpi-item"><div class="kpi-label">Duración Paro</div><div id="paro-duracion" class="kpi-value"></div><div id="paro-duracion-ymd" class="kpi-subvalue"></div></div>
+                    <div class="kpi-item"><div class="kpi-label">Autonomía Financiera</div><div id="autonomia-financiera" class="kpi-value"></div><div id="autonomia-financiera-ym" class="kpi-subvalue"></div></div>
+                    <div class="kpi-item"><div class="kpi-label">Paro 1er-6º mes</div><div id="paro-mensual" class="kpi-value"></div></div>
+                </div>
+                <div class="tabs" id="results-tabs"><button type="button" class="active" data-target="resumen-pane">Resumen</button><button type="button" data-target="indemnizacion-pane">Indemnización</button><button type="button" data-target="paro-pane">Paro</button><button type="button" data-target="autonomia-pane">Autonomía</button></div>
+                <div class="tab-content">
+                    <div id="resumen-pane" class="tab-pane active"><div id="resumen-details" class="details-grid"></div><div id="resumen-explanation" class="explanation-box"></div></div>
+                    <div id="indemnizacion-pane" class="tab-pane"><div class="chart-container"><canvas id="indemnizacionChart"></canvas></div><div id="indemnizacion-details" class="details-grid"></div><div id="indemnizacion-explanation" class="explanation-box"></div></div>
+                    <div id="paro-pane" class="tab-pane"><div class="chart-container"><canvas id="paroChart"></canvas></div><div id="paro-details" class="details-grid"></div><div id="paro-explanation" class="explanation-box"></div></div>
+                    <div id="autonomia-pane" class="tab-pane"><div class="chart-container"><canvas id="autonomiaChart"></canvas></div><div class="form-group"><label for="gastosMensuales">Tu gasto mensual para vivir (€)</label><input type="number" id="gastosMensuales"></div><div id="autonomia-explanation" class="explanation-box"></div></div>
+                </div>
+            </section>
+        </main>
+        <footer class="disclaimer"><strong>Aviso Legal:</strong> Esta herramienta ofrece una estimación con carácter orientativo.</footer>
+    </div>
+    <script>
+        const IPREM_MENSUAL_2023 = 600; const TOPE_MAX_PARO = { '0': IPREM_MENSUAL_2023 * 1.75, '1': IPREM_MENSUAL_2023 * 2.00, '2': IPREM_MENSUAL_2023 * 2.25 }; const TOPE_MIN_PARO = { '0': IPREM_MENSUAL_2023 * 0.80, '1': IPREM_MENSUAL_2023 * 1.07 };
+        let indemnizacionChartInstance, paroChartInstance, autonomiaChartInstance;
+        let lastCalculationData = {};
+        
+        const createDetailItem = (label, value) => `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-value">${value}</div></div>`;
+        const createExplanation = (text) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" /></svg><div>${text}</div>`;
+        const formatCurrency = (val) => { if (typeof val !== 'number' || isNaN(val)) { return '€0'; } return val.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+
+        function setupSegmentedControl(selectorId, paneClassName) { const selector = document.getElementById(selectorId); selector.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') { const targetId = e.target.dataset.target; selector.querySelectorAll('button').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll(`.${paneClassName}`).forEach(pane => pane.classList.remove('active')); document.getElementById(targetId).classList.add('active'); runFullCalculation(); } }); }
+        setupSegmentedControl('antiquity-selector', 'antiquity-pane'); setupSegmentedControl('salary-selector', 'salary-pane');
+        const tabsContainer = document.getElementById('results-tabs'); tabsContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') { tabsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active')); document.getElementById(e.target.dataset.target).classList.add('active'); } });
+        document.getElementById('calculation-form').addEventListener('input', runFullCalculation);
+        document.getElementById('gastosMensuales').addEventListener('input', recalculateAutonomia);
+        window.addEventListener('DOMContentLoaded', initializeApp);
+
+        // --- LÓGICA DE TEMA OSCURO ---
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+            runFullCalculation(); // Para redibujar los gráficos con los nuevos colores
+        });
+
+        function applyInitialTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+
+        function initializeApp() { applyInitialTheme(); if (!loadDataFromLocalStorage()) { setDefaultValues(); } runFullCalculation(); }
+        function runFullCalculation() { const { startDate, endDate } = getContractDates(); if (!startDate || !endDate || endDate < startDate) { displayEmptyResults(); return; } estimateCotizacion(); const monthlySalary = getMonthlyProratedSalary(); if (isNaN(monthlySalary) || monthlySalary <= 0) { displayEmptyResults(); return; } const dismissalType = document.getElementById('dismissalType').value; const diasCotizados = parseInt(document.getElementById('diasCotizados').value) || 0; const hijosACargo = document.getElementById('hijosACargo').value; const indemnizacionResult = calculateIndemnizacion(startDate, endDate, monthlySalary, dismissalType); const paroResult = calculateParo(monthlySalary, diasCotizados, hijosACargo); lastCalculationData = { indemnizacionResult, paroResult, monthlySalary }; displayResults(indemnizacionResult, paroResult, monthlySalary); saveDataToLocalStorage(); }
+        function displayEmptyResults() { const emptyIndemnizacion = { total: 0, calculadaSinTope: 0, diasPorAnio: 0, antiguedadAnios: 0, salarioDiario: 0, topeLegal: 0, explanation: "Introduce datos válidos para ver la estimación." }; const emptyParo = { duracionDias: 0, importePrimeros6Meses: 0, importeResto: 0, baseReguladoraDiaria: 0, topeMax: 0, topeMin: 0, explanation: "Introduce datos válidos para ver la estimación." }; lastCalculationData = { indemnizacionResult: emptyIndemnizacion, paroResult: emptyParo, monthlySalary: 0 }; displayResults(emptyIndemnizacion, emptyParo, 0); }
+        function saveDataToLocalStorage() { const data = { antiquityType: document.querySelector('#antiquity-selector .active').dataset.target, antiguedadAnios: document.getElementById('antiguedadAnios').value, antiguedadMeses: document.getElementById('antiguedadMeses').value, startDate: document.getElementById('startDate').value, endDate: document.getElementById('endDate').value, salaryType: document.querySelector('#salary-selector .active').dataset.target, salarioBrutoAnual: document.getElementById('salarioBrutoAnual').value, salarioBrutoMensual: document.getElementById('salarioBrutoMensual').value, numPagasBruto: document.getElementById('numPagasBruto').value, salarioNetoMensual: document.getElementById('salarioNetoMensual').value, numPagasNeto: document.getElementById('numPagasNeto').value, dismissalType: document.getElementById('dismissalType').value, hijosACargo: document.getElementById('hijosACargo').value, diasCotizados: document.getElementById('diasCotizados').value }; localStorage.setItem('calculadoraLaboralData', JSON.stringify(data)); }
+        function loadDataFromLocalStorage() { const data = JSON.parse(localStorage.getItem('calculadoraLaboralData')); if (!data) return false; document.querySelector(`#antiquity-selector button[data-target='${data.antiquityType}']`).click(); document.getElementById('antiguedadAnios').value = data.antiguedadAnios; document.getElementById('antiguedadMeses').value = data.antiguedadMeses; document.getElementById('startDate').value = data.startDate; document.getElementById('endDate').value = data.endDate; document.querySelector(`#salary-selector button[data-target='${data.salaryType}']`).click(); document.getElementById('salarioBrutoAnual').value = data.salarioBrutoAnual; document.getElementById('salarioBrutoMensual').value = data.salarioBrutoMensual; document.getElementById('numPagasBruto').value = data.numPagasBruto; document.getElementById('salarioNetoMensual').value = data.salarioNetoMensual; document.getElementById('numPagasNeto').value = data.numPagasNeto; document.getElementById('dismissalType').value = data.dismissalType; document.getElementById('hijosACargo').value = data.hijosACargo; document.getElementById('diasCotizados').value = data.diasCotizados; return true; }
+        function setDefaultValues() { document.querySelector("#antiquity-selector button[data-target='duracion-input-container']").click(); document.getElementById('antiguedadAnios').value = 5; document.getElementById('antiguedadMeses').value = 3; document.querySelector("#salary-selector button[data-target='neto-input-container']").click(); document.getElementById('salarioNetoMensual').value = 1850; document.getElementById('numPagasNeto').value = 14; document.getElementById('dismissalType').value = 'improcedente'; document.getElementById('hijosACargo').value = '0'; }
+        function getContractDates() { const type = document.querySelector('#antiquity-selector .active').dataset.target; let startDate, endDate; if (type === 'duracion-input-container') { const years = parseInt(document.getElementById('antiguedadAnios').value) || 0; const months = parseInt(document.getElementById('antiguedadMeses').value) || 0; endDate = new Date(); startDate = new Date(); startDate.setFullYear(startDate.getFullYear() - years); startDate.setMonth(startDate.getMonth() - months); } else { startDate = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : null; endDate = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : null; } return { startDate, endDate }; }
+        function estimateCotizacion() { const { startDate, endDate } = getContractDates(); if (startDate && endDate && endDate > startDate) { const sixYearsInMs = 6 * 365.25 * 24 * 60 * 60 * 1000; const sixYearsAgo = new Date(endDate.getTime() - sixYearsInMs); const effectiveStartDate = startDate < sixYearsAgo ? sixYearsAgo : startDate; const diffDays = Math.ceil(Math.abs(endDate - effectiveStartDate) / (1000 * 60 * 60 * 24)); document.getElementById('diasCotizados').value = Math.min(diffDays, 2190); } }
+        function getMonthlyProratedSalary() { const type = document.querySelector('#salary-selector .active').dataset.target; let salarioAnualBruto = 0; if (type === 'anual-input-container') { salarioAnualBruto = parseFloat(document.getElementById('salarioBrutoAnual').value); } else if (type === 'mensual-input-container') { const brutoMensual = parseFloat(document.getElementById('salarioBrutoMensual').value); const numPagas = parseInt(document.getElementById('numPagasBruto').value); if (!isNaN(brutoMensual) && !isNaN(numPagas)) { salarioAnualBruto = brutoMensual * numPagas; } } else if (type === 'neto-input-container') { const netoMensual = parseFloat(document.getElementById('salarioNetoMensual').value); const numPagasNeto = parseInt(document.getElementById('numPagasNeto').value); if (!isNaN(netoMensual) && !isNaN(numPagasNeto)) { const netoAnual = netoMensual * numPagasNeto; salarioAnualBruto = netoAnual / (1 - 0.22); } } return salarioAnualBruto / 12; }
+        function formatDaysToYMD(totalDays) { if (totalDays <= 0) return ''; const years = Math.floor(totalDays / 365); let remainingDays = totalDays % 365; const months = Math.floor(remainingDays / 30); const days = remainingDays % 30; let parts = []; if (years > 0) parts.push(`${years} año${years > 1 ? 's' : ''}`); if (months > 0) parts.push(`${months} mes${months > 1 ? 'es' : ''}`); if (days > 0 && years === 0) parts.push(`${days} día${days > 1 ? 's' : ''}`); return `(${parts.join(', ')})`; }
+        function formatMonthsToYM(totalMonths) { if (totalMonths <= 0) return ''; const years = Math.floor(totalMonths / 12); const months = Math.round(totalMonths % 12); let parts = []; if (years > 0) parts.push(`${years} año${years > 1 ? 's' : ''}`); if (months > 0) parts.push(`${months} mes${months > 1 ? 'es' : ''}`); return `(${parts.join(' y ')})`; }
+        function calculateIndemnizacion(start, end, salary, type) { if (type === 'disciplinario' || type === 'voluntario') { return { total: 0, calculadaSinTope: 0, diasPorAnio: 0, antiguedadAnios: 0, salarioDiario: 0, topeLegal: 0, explanation: "Para este caso no corresponde indemnización." }; } const antiguedadEnDias = (end - start) / (1000 * 60 * 60 * 24); const antiguedadAnios = antiguedadEnDias / 365.25; const salarioAnual = salary * 12; const salarioDiario = salarioAnual / 365; let diasPorAnio, topeMensualidades, explanation; if (type === 'improcedente') { diasPorAnio = 33; topeMensualidades = 24; explanation = `Corresponden <strong>33 días/año</strong>, con un tope de <strong>24 mensualidades</strong>.`; } else { diasPorAnio = 20; topeMensualidades = 12; explanation = `Corresponden <strong>20 días/año</strong>, con un tope de <strong>12 mensualidades</strong>.`; } const indemnizacionCalculada = salarioDiario * diasPorAnio * antiguedadAnios; const topeLegal = salary * topeMensualidades; const indemnizacionFinal = Math.min(indemnizacionCalculada, topeLegal); return { total: indemnizacionFinal, calculadaSinTope: indemnizacionCalculada, diasPorAnio, antiguedadAnios, salarioDiario, topeLegal, explanation }; }
+        function calculateParo(salary, dias, hijos) { let duracionParoDias = 0; if (dias >= 360 && dias < 540) duracionParoDias = 120; else if (dias >= 540 && dias < 720) duracionParoDias = 180; else if (dias >= 720 && dias < 900) duracionParoDias = 240; else if (dias >= 900 && dias < 1080) duracionParoDias = 300; else if (dias >= 1080 && dias < 1260) duracionParoDias = 360; else if (dias >= 1260 && dias < 1440) duracionParoDias = 420; else if (dias >= 1440 && dias < 1620) duracionParoDias = 480; else if (dias >= 1620 && dias < 1800) duracionParoDias = 540; else if (dias >= 1800 && dias < 1980) duracionParoDias = 600; else if (dias >= 1980 && dias < 2160) duracionParoDias = 660; else if (dias >= 2160) duracionParoDias = 720; if (duracionParoDias === 0) { return { duracionDias: 0, importePrimeros6Meses: 0, importeResto: 0, explanation: "Con menos de 360 días cotizados no hay derecho a prestación contributiva." }; } const baseReguladoraDiaria = (salary * 12) / 365; let importePrimeros6Meses = baseReguladoraDiaria * 0.70 * 30; let importeResto = baseReguladoraDiaria * 0.60 * 30; const topeMax = TOPE_MAX_PARO[hijos] || TOPE_MAX_PARO['2']; const topeMin = hijos > 0 ? TOPE_MIN_PARO['1'] : TOPE_MIN_PARO['0']; importePrimeros6Meses = Math.max(topeMin, Math.min(importePrimeros6Meses, topeMax)); importeResto = Math.max(topeMin, Math.min(importeResto, topeMax)); const explanation = `Se cobra el <strong>70%</strong> de la base reguladora los 6 primeros meses y el <strong>60%</strong> después, con topes legales.`; return { duracionDias: duracionParoDias, importePrimeros6Meses, importeResto, baseReguladoraDiaria, topeMax, topeMin, explanation }; }
+        function displayResults(indemnizacion, paro, monthlyProratedSalary) { document.getElementById('indemnizacion-total').textContent = formatCurrency(indemnizacion.total); document.getElementById('paro-duracion').textContent = `${paro.duracionDias} días`; document.getElementById('paro-duracion-ymd').textContent = formatDaysToYMD(paro.duracionDias); document.getElementById('paro-mensual').textContent = formatCurrency(paro.importePrimeros6Meses); const netoMensualEstimado = (document.getElementById('salarioNetoMensual').value > 0 && document.querySelector('#salary-selector .active').dataset.target === 'neto-input-container') ? parseFloat(document.getElementById('salarioNetoMensual').value) : monthlyProratedSalary * (1-0.22); document.getElementById('gastosMensuales').value = Math.round(netoMensualEstimado); recalculateAutonomia(); let resumenHTML = createDetailItem('Salario Neto Mensual (Estimado)', formatCurrency(netoMensualEstimado)); resumenHTML += createDetailItem('Antigüedad Computable', `${indemnizacion.antiguedadAnios.toFixed(2)} años`); resumenHTML += createDetailItem('Tipo de Despido', document.getElementById('dismissalType').options[document.getElementById('dismissalType').selectedIndex].text); document.getElementById('resumen-details').innerHTML = resumenHTML; document.getElementById('resumen-explanation').innerHTML = createExplanation("Este es un resumen de los datos clave. Navega por las pestañas para ver el desglose completo de cada concepto."); let indemHTML = createDetailItem('Salario Diario', formatCurrency(indemnizacion.salarioDiario)); indemHTML += createDetailItem('Días por Año', indemnizacion.diasPorAnio); indemHTML += createDetailItem('Importe sin Topes', formatCurrency(indemnizacion.calculadaSinTope)); indemHTML += createDetailItem('Tope Legal (mensualidades)', formatCurrency(indemnizacion.topeLegal)); document.getElementById('indemnizacion-details').innerHTML = indemHTML; document.getElementById('indemnizacion-explanation').innerHTML = createExplanation(indemnizacion.explanation); updateIndemnizacionChart(indemnizacion.total, indemnizacion.topeLegal); let paroHTML = createDetailItem('Base Reguladora Diaria', formatCurrency(paro.baseReguladoraDiaria)); paroHTML += createDetailItem('Importe Mes 7+', formatCurrency(paro.importeResto)); paroHTML += createDetailItem('Tope Mínimo Aplicable', formatCurrency(paro.topeMin)); paroHTML += createDetailItem('Tope Máximo Aplicable', formatCurrency(paro.topeMax)); document.getElementById('paro-details').innerHTML = paroHTML; document.getElementById('paro-explanation').innerHTML = createExplanation(paro.explanation); updateParoChart(paro.duracionDias, paro.importePrimeros6Meses, paro.importeResto); }
+        function recalculateAutonomia() { const { indemnizacionResult, paroResult } = lastCalculationData; if (!indemnizacionResult) return; const gastosMensuales = parseFloat(document.getElementById('gastosMensuales').value) || 0; const mesesParo = paroResult.duracionDias / 30; const totalParoRecibido = (paroResult.importePrimeros6Meses * Math.min(6, mesesParo)) + (paroResult.importeResto * Math.max(0, mesesParo - 6)); const dineroTotal = indemnizacionResult.total + totalParoRecibido; const mesesAutonomia = gastosMensuales > 0 ? dineroTotal / gastosMensuales : 0; document.getElementById('autonomia-financiera').textContent = `${mesesAutonomia.toFixed(1)} meses`; document.getElementById('autonomia-financiera-ym').textContent = formatMonthsToYM(mesesAutonomia); document.getElementById('autonomia-explanation').innerHTML = createExplanation(`La <strong>Autonomía Financiera</strong> suma tu indemnización y todo el paro que recibirías, y lo divide por tu gasto mensual. El resultado muestra cuántos meses podrías mantener tu nivel de vida actual sin otros ingresos.`); updateAutonomiaChart(dineroTotal, gastosMensuales); }
+        function getGlobalChartOptions() { const isDarkMode = document.body.classList.contains('dark-mode'); const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'; const tickColor = isDarkMode ? '#9CA3AF' : '#6B7280'; const titleColor = isDarkMode ? '#F9FAFB' : '#111827'; return { plugins: { legend: { display: false, labels: { color: tickColor } }, title: { display: true, color: titleColor } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor, callback: value => formatCurrency(value) } }, x: { grid: { color: gridColor }, ticks: { color: tickColor } } } }; }
+        function updateIndemnizacionChart(calculada, tope) { const ctx = document.getElementById('indemnizacionChart').getContext('2d'); if (indemnizacionChartInstance) indemnizacionChartInstance.destroy(); const options = getGlobalChartOptions(); options.plugins.title.text = 'Comparativa Indemnización vs. Tope Legal'; indemnizacionChartInstance = new Chart(ctx, { type: 'bar', data: { labels: ['Indemnización Final', 'Tope Máximo Legal'], datasets: [{ data: [calculada, tope], backgroundColor: [ 'rgba(59, 130, 246, 0.7)', 'rgba(107, 114, 128, 0.7)'], borderColor: [ 'rgba(59, 130, 246, 1)', 'rgba(107, 114, 128, 1)'], borderWidth: 1 }] }, options }); }
+        function updateParoChart(duracionDias, importe1, importe2) { const ctx = document.getElementById('paroChart').getContext('2d'); if (paroChartInstance) paroChartInstance.destroy(); const duracionMeses = duracionDias / 30; const labels = []; const data = []; for (let i = 1; i <= duracionMeses; i++) { labels.push(`Mes ${i}`); data.push(i <= 6 ? importe1 : importe2); } const options = getGlobalChartOptions(); options.plugins.title.text = 'Evolución de la Prestación por Desempleo'; options.scales.y.beginAtZero = false; paroChartInstance = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: 'Importe Mensual Bruto', data, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', tension: 0.2, pointBackgroundColor: 'rgba(59, 130, 246, 1)' }] }, options }); }
+        function updateAutonomiaChart(dineroTotal, gastoMensual) { const ctx = document.getElementById('autonomiaChart').getContext('2d'); if (autonomiaChartInstance) autonomiaChartInstance.destroy(); const labels = []; const data = []; if (gastoMensual > 0) { let saldo = dineroTotal; for (let i = 0; saldo >= 0 && i < 60; i++) { labels.push(`Mes ${i}`); data.push(saldo); saldo -= gastoMensual; } } const options = getGlobalChartOptions(); options.plugins.title.text = 'Consumo del "Colchón" Financiero'; autonomiaChartInstance = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: 'Saldo Restante', data, fill: true, backgroundColor: 'rgba(22, 163, 74, 0.2)', borderColor: 'rgba(22, 163, 74, 1)', tension: 0.2, pointBackgroundColor: 'rgba(22, 163, 74, 1)' }] }, options }); }
+    </script>
+</body>
+</html>
