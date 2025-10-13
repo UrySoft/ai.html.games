@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Detecció de Tendències (dades d’Internet, amb proxy CORS)</title>
+<style>
+  :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#38bdf8;
+          --up:#16a34a; --down:#ef4444; --warn:#f59e0b; }
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;background:var(--bg);color:var(--text)}
+  header{padding:20px;border-bottom:1px solid #1f2937;background:linear-gradient(90deg,#0b1220,#0f172a 40%,#0b1220)}
+  h1{margin:0;font-size:18px}
+  .container{max-width:1200px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid #1f2937;border-radius:14px;padding:14px;margin-top:12px}
+  label{font-size:12px;color:var(--muted)}
+  input,select{background:#0b1020;color:var(--text);border:1px solid #1f2937;border-radius:10px;padding:8px 10px}
+  button{background:var(--accent);color:#041017;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px 8px;border-bottom:1px solid #1f2937;font-size:14px}
+  th{color:var(--muted);user-select:none;cursor:pointer}
+  tr:hover td{background:#0d1325}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700}
+  .up{color:var(--up)} .down{color:var(--down)} .warn{color:var(--warn)}
+  .status-up{background:#052e1a;color:#86efac;border:1px solid #14532d}
+  .status-down{background:#3b0a0a;color:#fecaca;border:1px solid #7f1d1d}
+  .status-flat{background:#2a1d09;color:#fde68a;border:1px solid #92400e}
+  .status-u{background:#0b2431;color:#a5f3fc;border:1px solid #0e7490}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+  .hint{color:var(--muted);font-size:12px}
+  progress{width:220px;height:10px}
+  .err{color:#fecaca}
+</style>
+</head>
+<body>
+<header>
+  <h1>Tauler de tendències (constituents + preus via Internet, amb proxy CORS)</h1>
+  <div class="hint">
+    Funciona directament des del navegador gràcies a un petit proxy públic que afegeix els encapçalaments CORS.
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Mercat</label><br>
+        <select id="market">
+          <option value="sp500" selected>S&P 500 (USA)</option>
+        </select>
+      </div>
+      <div>
+        <label>Dies d’anàlisi</label><br>
+        <input id="win" type="number" min="20" max="365" value="120">
+      </div>
+      <div>
+        <label>Sensibilitat pendent (%/dia)</label><br>
+        <input id="slope" type="number" step="0.01" value="0.12">
+      </div>
+      <div>
+        <label>Força patró “U” (R² mínim)</label><br>
+        <input id="r2" type="number" step="0.01" value="0.85">
+      </div>
+      <div>
+        <label>Màx. valors (per no saturar)</label><br>
+        <input id="limit" type="number" min="20" max="500" value="120" />
+      </div>
+      <div>
+        <button id="go">Analitza</button><br>
+        <div class="hint">Progrés: <progress id="prog" value="0" max="1"></progress> <span id="pc">0%</span></div>
+      </div>
+      <div style="flex:1 1 200px">
+        <label>Cerca</label><br>
+        <input id="q" placeholder="Ticker, nom, estat…">
+      </div>
+    </div>
+    <div id="msg" class="hint" style="margin-top:8px">
+      Nota: descarregar moltes sèries pot tardar i el servidor pot limitar. Redueix “Màx. valors” si cal.
+    </div>
+  </div>
+
+  <div class="card">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th data-k="ticker">Ticker</th>
+          <th data-k="name">Nom</th>
+          <th data-k="trend">Tendència</th>
+          <th data-k="slope">Pendent (%/dia)</th>
+          <th data-k="pattern">Patró</th>
+          <th data-k="uScore">U R²</th>
+          <th data-k="last">Darrer preu</th>
+          <th data-k="n">Mostres</th>
+        </tr>
+      </thead>
+      <tbody id="body"><tr><td class="hint" colspan="8">Prem “Analitza”.</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="card hint">
+    Consell: clica els encapçalaments de la taula per **ordenar**. Escriu al camp de **cerca** per filtrar.
+  </div>
+</div>
+
+<script>
+/* ===== Utilitats ===== */
+const $ = s => document.querySelector(s);
+const fmt = n => isFinite(n) ? Number(n).toFixed(3) : '—';
+const sum = a => a.reduce((x,y)=>x+y,0);
+
+/* ===== Matemàtiques ===== */
+function linreg(y){
+  const n=y.length; const x=Array.from({length:n},(_,i)=>i);
+  const xbar=sum(x)/n, ybar=sum(y)/n;
+  let num=0, den=0;
+  for(let i=0;i<n;i++){ num += (x[i]-xbar)*(y[i]-ybar); den += (x[i]-xbar)**2; }
+  const b = den? num/den : 0; const a = ybar - b*xbar;
+  let ssr=0, sst=0;
+  for(let i=0;i<n;i++){ const fi=a+b*x[i]; ssr += (fi-ybar)**2; sst += (y[i]-ybar)**2; }
+  return {a,b,r2: sst? ssr/sst : 0};
+}
+function poly2(y){
+  const n=y.length; const x=Array.from({length:n},(_,i)=>i);
+  let Sx=0,Sx2=0,Sx3=0,Sx4=0,Sy=0,Sxy=0,Sx2y=0;
+  for(let i=0;i<n;i++){
+    const xi=x[i], yi=y[i], xi2=xi*xi;
+    Sx += xi; Sx2 += xi2; Sx3 += xi2*xi; Sx4 += xi2*xi2;
+    Sy += yi; Sxy += xi*yi; Sx2y += xi2*yi;
+  }
+  const D = (n*Sx2*Sx4 + 2*Sx*Sx2*Sx3 - Sx2**3 - n*Sx3**2 - Sx**2*Sx4);
+  if(Math.abs(D) < 1e-9) return {a:0,b:0,c:0,r2:0};
+  const a = (n*Sx2y*Sx2 + Sx*Sy*Sx3 + Sx2*Sxy*Sx - Sx2*Sx2*Sy - n*Sx3*Sxy - Sx*Sx2y*Sx2)/D;
+  const b = (n*Sx2*Sxy + Sx*Sy*Sx4 + Sx2*Sx2y - Sx2*Sy*Sx2 - n*Sx4*Sxy - Sx*Sx3*Sx2y)/D;
+  const c = (Sy*Sx2*Sx4 + Sx*Sx3*Sx2y + Sx2*Sx3*Sxy - Sx2*Sy*Sx3 - Sx*Sx2*Sx2y - Sx4*Sxy)/D;
+  const ybar=Sy/n; let ssr=0,sst=0;
+  for(let i=0;i<n;i++){ const fi=a*x[i]*x[i]+b*x[i]+c; ssr+=(fi-ybar)**2; sst+=(y[i]-ybar)**2; }
+  return {a:a,b:b,c:c,r2: sst? ssr/sst : 0};
+}
+function classifyTrend(slopePct, thr){
+  if(slopePct > thr) return {trend:'Alça', cls:'status-up'};
+  if(slopePct < -thr) return {trend:'Baixa', cls:'status-down'};
+  return {trend:'Lateral', cls:'status-flat'};
+}
+function classifyPattern(y, r2min){
+  const q = poly2(y);
+  if(q.a>0 && q.r2>=r2min) return {pattern:'Patró U', cls:'status-u', uScore:q.r2};
+  const last= y.slice(-20);
+  if(last.length>=20){
+    const hi1=Math.max(...last.slice(0,10)), hi2=Math.max(...last.slice(10));
+    const lo1=Math.min(...last.slice(0,10)), lo2=Math.min(...last.slice(10));
+    if(hi2>hi1 && lo2>lo1) return {pattern:'Alcista', cls:'status-up', uScore:q.r2};
+    if(hi2<hi1 && lo2<lo1) return {pattern:'Baixista', cls:'status-down', uScore:q.r2};
+  }
+  return {pattern:'Indefinit', cls:'status-flat', uScore:q.r2};
+}
+
+/* ===== Fonts d’internet ===== */
+const SOURCES = {
+  sp500: {
+    name: "S&P 500",
+    url: "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv", // camps: Symbol,Security
+    symbolCol: "Symbol",
+    nameCol: "Security",
+    stooqSuffix: ".us"
+  }
+};
+function stooqUrl(t){ return `https://stooq.com/q/d/l/?s=${t}&i=d`; }
+
+/* ===== Proxy CORS =====
+   AllOrigins retorna el contingut amb CORS permès.
+   Si prefereixes un altre servei o un backend propi, substitueix getText().
+*/
+const PROXY = "https://api.allorigins.win/raw?url=";
+async function getText(url){
+  const res = await fetch(PROXY + encodeURIComponent(url));
+  if(!res.ok) throw new Error(`Error de descàrrega: ${url}`);
+  return await res.text();
+}
+
+/* ===== CSV helpers ===== */
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/);
+  const head = lines.shift().split(',').map(x=>x.trim());
+  const rows = lines.filter(l=>l.trim().length).map(l => {
+    const parts = l.split(','); const o={};
+    head.forEach((h,i)=>o[h]= (parts[i]??'').replace(/^"|"$/g,''));
+    return o;
+  });
+  return {head, rows};
+}
+
+/* ===== Lògica principal ===== */
+let dataAll = [];
+
+async function fetchConstituents(code){
+  const s = SOURCES[code];
+  const text = await getText(s.url);
+  const csv = parseCSV(text);
+  let arr = csv.rows.map(r => ({
+    ticker: r[s.symbolCol].trim(),
+    name: r[s.nameCol]?.trim() || r[s.symbolCol].trim()
+  }));
+  const lim = Math.min(Number($("#limit").value||120), arr.length);
+  arr = arr.slice(0, lim);
+  return arr.map(x => ({
+    ...x,
+    stooq: x.ticker.toLowerCase() + SOURCES[code].stooqSuffix
+  }));
+}
+
+async function fetchPrices(stooqTicker){
+  const text = await getText(stooqUrl(stooqTicker));
+  const csv = parseCSV(text);
+  const rows = csv.rows
+    .filter(r => r.Date && r.Close && !isNaN(+r.Close))
+    .map(r => ({date:r.Date, close:Number(r.Close)}));
+  return rows;
+}
+
+function render(rows){
+  const tb = $("#body");
+  tb.innerHTML = "";
+  const q = ($("#q").value||"").toLowerCase();
+  rows.filter(r =>
+    !q || r.ticker.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) ||
+    r.trend.toLowerCase().includes(q) || r.pattern.toLowerCase().includes(q)
+  ).forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.ticker}</b></td>
+      <td>${r.name}</td>
+      <td><span class="pill ${r.clsTrend}">${r.trend}</span></td>
+      <td class="${r.slope>0?'up':(r.slope<0?'down':'warn')}">${fmt(r.slope)}</td>
+      <td><span class="pill ${r.clsPat}">${r.pattern}</span></td>
+      <td>${fmt(r.uScore)}</td>
+      <td>${fmt(r.last)}</td>
+      <td>${r.n}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function sortBy(key){
+  dataAll.sort((a,b)=> (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0));
+  render(dataAll);
+}
+
+async function analyze(){
+  $("#go").disabled = true;
+  $("#msg").classList.remove("err");
+  $("#msg").textContent = "Baixant dades…";
+  $("#prog").value = 0; $("#pc").textContent = "0%";
+
+  try{
+    const win = Number($("#win").value||120);
+    const thr = Number($("#slope").value||0.12);
+    const r2min = Number($("#r2").value||0.85);
+    const code = $("#market").value;
+
+    let list = await fetchConstituents(code);
+    const total = list.length;
+    const out = [];
+    let done=0;
+
+    // Concurrència limitada per ser amables amb el proxy
+    const CONC = 6;
+    async function worker(items){
+      for(const it of items){
+        try{
+          const series = await fetchPrices(it.stooq);
+          if(series && series.length){
+            const tail = series.slice(-win);
+            const y = tail.map(d=>d.close);
+            if(y.length<5){ done++; continue; }
+            const lr = linreg(y);
+            const slopePct = (lr.b / (y[0]||1)) * 100; // % per dia aproximat
+            const patt = classifyPattern(y, r2min);
+            const tr = classifyTrend(slopePct, thr);
+            out.push({
+              ticker: it.ticker, name: it.name,
+              trend: tr.trend, clsTrend: tr.cls,
+              slope: slopePct, pattern: patt.pattern, clsPat: patt.cls,
+              uScore: patt.uScore, last: y.at(-1), n: y.length
+            });
+          }
+        }catch(e){
+          console.warn("Error amb", it.stooq, e);
+        }finally{
+          done++; $("#prog").value = done/total; $("#pc").textContent = Math.round(done/total*100)+"%";
+        }
+      }
+    }
+    const chunks = Array.from({length:CONC},()=>[]);
+    list.forEach((x,i)=>chunks[i%CONC].push(x));
+    await Promise.all(chunks.map(worker));
+
+    dataAll = out;
+    render(dataAll);
+    $("#msg").textContent = "Fet.";
+  }catch(err){
+    $("#msg").classList.add("err");
+    $("#msg").textContent = "S'ha produït un error: " + err.message;
+  }finally{
+    $("#go").disabled = false;
+  }
+}
+
+/* ===== UI ===== */
+$("#go").addEventListener("click", analyze);
+$("#q").addEventListener("input", ()=>render(dataAll));
+document.querySelectorAll("th[data-k]").forEach(th=>{
+  th.addEventListener("click", ()=>sortBy(th.dataset.k));
+});
+</script>
+</body>
+</html>
