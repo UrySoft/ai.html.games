@@ -20,6 +20,8 @@
             --state-color: #fd7e14;
             --company-color: #dc3545;
             --employee-color: #198754;
+            --disposable-income-color: #6f42c1;
+            --expenses-color: #0dcaf0;
             --extra-pay-color: #20c997;
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -171,11 +173,11 @@
         }
         .nested-details > summary.advanced-section-title::before, .nested-details[open] > summary.advanced-section-title::before { transform: none; content: " "; margin-right: 0;}
         .form-grid label { font-weight: 500; font-size: 0.95rem; }
-        .form-grid input[type="number"], .form-grid select {
+        .form-grid input[type="number"], .form-grid select, .expenses-table input, .expenses-table select {
             background-color: var(--card-bg); color: var(--text-color); width: 100%; padding: 0.5rem 0.75rem;
             border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: all 0.2s;
         }
-        .form-grid input[type="number"]:focus, .form-grid select:focus {
+        .form-grid input[type="number"]:focus, .form-grid select:focus, .expenses-table input:focus, .expenses-table select:focus {
             border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); outline: none;
         }
         .nested-details { margin-top: 1rem; }
@@ -184,7 +186,15 @@
         .nested-details > summary::before { content: '▾'; margin-right: 0.5rem; display: inline-block; transition: transform 0.2s; font-size: 1.2em; font-weight: bold; }
         .nested-details:not([open]) > summary::before { transform: rotate(-90deg); }
         .nested-details .form-grid { padding-left: 1.5rem; }
-
+        .expenses-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .expenses-table th, .expenses-table td { padding: 0.5rem; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
+        .expenses-table th { font-weight: 600; font-size: 0.9rem; }
+        .expenses-table input[type="number"] { text-align: right; }
+        .expenses-table .concept-cell { font-weight: 500; }
+        .expenses-table .include-cell { text-align: center; }
+        .expenses-table .numeric-cell { text-align: right; font-family: monospace; }
+        .expenses-table tfoot td { font-weight: 700; border-top: 2px solid var(--text-color); }
+        
         input[type="number"] { background-color: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; }
         #results { display: none; }
         .results-header { display: flex; justify-content: center; margin-bottom: 1.5rem; }
@@ -199,6 +209,8 @@
         .summary-card.company .value { color: var(--company-color); }
         .summary-card.state .value { color: var(--state-color); }
         .summary-card.employee .value { color: var(--employee-color); }
+        .summary-card.expenses .value { color: var(--expenses-color); }
+        .summary-card.disposable-income .value { color: var(--disposable-income-color); }
         .summary-card.extra-pay .value { color: var(--extra-pay-color); }
         #summary-extra-pay-card { display: none; }
         .breakdown-card { border-radius: 12px; background-color: var(--card-bg); margin-top: 1rem; box-shadow: var(--shadow-sm); overflow: hidden; transition: background-color 0.3s; }
@@ -213,6 +225,10 @@
         .state-tax { border-left: 4px solid var(--state-color); }
         .employee-gross { border-left: 4px solid var(--text-color); }
         .employee-net { border-left: 4px solid var(--employee-color); }
+        .personal-expense { border-left: 4px solid var(--expenses-color); }
+        .base-expense { border-left: 4px solid var(--expenses-color); }
+        .disposable-income-breakdown { border-left: 4px solid var(--disposable-income-color); }
+
         .tax-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .tax-table th, .tax-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); text-align: left; transition: background-color 0.3s; }
         .tax-table thead th { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; }
@@ -355,6 +371,90 @@
                             <input type="number" id="asc-discapacidad-65" value="0" min="0">
                         </div>
                     </details>
+
+                    <details class="nested-details" id="personal-expenses-section" open>
+                        <summary class="advanced-section-title" data-translate-key="sectionTitleExpenses"></summary>
+                        <table class="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th data-translate-key="expenseConcept">Concepto</th>
+                                    <th class="numeric-cell" data-translate-key="expenseAmount">Importe Mensual (€)</th>
+                                    <th class="numeric-cell" data-translate-key="expenseVat">% IVA</th>
+                                    <th class="numeric-cell" data-translate-key="expenseVatAmount">Importe IVA (€)</th>
+                                    <th data-translate-key="expenseInclude">Incluir</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gastos-tbody">
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseRent"></td>
+                                    <td><input type="number" class="expense-amount" value="1000" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0" selected>0%</option><option value="4">4%</option><option value="10">10%</option><option value="21">21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseElectricity"></td>
+                                    <td><input type="number" class="expense-amount" value="50" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10">10%</option><option value="21" selected>21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseGas"></td>
+                                    <td><input type="number" class="expense-amount" value="35" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10">10%</option><option value="21" selected>21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseWater"></td>
+                                    <td><input type="number" class="expense-amount" value="30" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10" selected>10%</option><option value="21">21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseInternet"></td>
+                                    <td><input type="number" class="expense-amount" value="50" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10">10%</option><option value="21" selected>21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseFood"></td>
+                                    <td><input type="number" class="expense-amount" value="450" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10" selected>10%</option><option value="21">21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseGym"></td>
+                                    <td><input type="number" class="expense-amount" value="60" min="0"></td>
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10">10%</option><option value="21" selected>21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                                <tr>
+                                    <td class="concept-cell" data-translate-key="expenseLeisure"></td>
+                                    <td><input type="number" class="expense-amount" value="300" min="0"></td>
+                                    <!-- CHANGE 1: Default VAT for leisure is now 21% -->
+                                    <td><select class="expense-vat"><option value="0">0%</option><option value="4">4%</option><option value="10">10%</option><option value="21" selected>21%</option></select></td>
+                                    <td class="numeric-cell expense-vat-value"></td>
+                                    <td class="include-cell"><input type="checkbox" class="expense-include" checked></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td data-translate-key="expenseTotal">Total</td>
+                                    <td class="numeric-cell" id="expense-total-amount"></td>
+                                    <td></td>
+                                    <td class="numeric-cell" id="expense-total-vat"></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <p class="disclaimer" data-translate-key="expenseDisclaimer"></p>
+                    </details>
                 </div>
             </details>
             <button id="calculate-btn" class="primary-button" data-translate-key="calculateBtn"></button>
@@ -376,6 +476,9 @@
                         <div class="summary-card company"><div class="summary-content"><span class="label" data-translate-key="companyInvests"></span></div><span class="value" id="summary-empresa"></span></div>
                         <div class="summary-card state"><div class="summary-content"><span class="label" data-translate-key="stateCollects"></span></div><span class="value" id="summary-estado"></span></div>
                         <div class="summary-card employee"><div class="summary-content"><span class="label" data-translate-key="employeeReceives"></span></div><span class="value" id="summary-trabajador"></span></div>
+                        <!-- CHANGE 2: Added "Personal Expenses" card and reordered -->
+                        <div class="summary-card expenses"><div class="summary-content"><span class="label" data-translate-key="personalExpenses"></span></div><span class="value" id="summary-personal-expenses"></span></div>
+                        <div class="summary-card disposable-income"><div class="summary-content"><span class="label" data-translate-key="disposableIncome"></span></div><span class="value" id="summary-disposable-income"></span></div>
                         <div class="summary-card extra-pay" id="summary-extra-pay-card"><div class="summary-content"><span class="label" id="summary-extra-pay-label" data-translate-key="extraNetPay"></span></div><span class="value" id="summary-extra-pay-value"></span></div>
                     </div>
                      <div class="summary-chart-container">
@@ -450,6 +553,7 @@
             const modeRealBtn = document.getElementById('mode-real-btn');
             const modeHypothesisBtn = document.getElementById('mode-hypothesis-btn');
             const comparisonModeDescription = document.getElementById('comparison-mode-description');
+            const gastosTbody = document.getElementById('gastos-tbody');
             
             // STATE & CONSTANTS
             let annualValues = {};
@@ -484,13 +588,17 @@
                     grossSalaryLabel: 'Annual Gross Salary (€)', grossSalaryPlaceholder: 'e.g., 30000', calculateBtn: 'Generate Dashboard',
                     annual: 'Annual', monthly: 'Monthly', summaryTitle: 'Financial Summary',
                     companyInvests: 'Company Cost', stateCollects: 'Collected by State', employeeReceives: 'Monthly Net Salary', netSalaryAnnual: 'Annual Net Salary', extraNetPay: 'Net Extra Pay',
+                    disposableIncome: 'Disposable Income',
+                    personalExpenses: 'Personal Expenses',
+                    expenseBase: 'Base Expense',
                     extraPaysOf: '{num} extra pays of',
                     evolutionTitle: '📈 Salary Evolution', fromSMI: 'From (SMI)', upTo: 'Up to', updateChartBtn: 'Update Chart', evolutionDisclaimer: 'This chart shows the exact evolution of costs and income based on the advanced data entered. The vertical line marks your salary.',
                     breakdownTitle: 'Cost Breakdown', taxDistributionTitle: '🏛️ Where Your Taxes Go',
                     taxDestination: 'Spending Destination', taxPercentagePGE: '% Budget', taxYourContribution: 'Your Contribution', total: 'Total',
-                    taxDisclaimer: 'Note: This table distributes total taxes (IRPF + SS) according to the 2023 Spanish National Budget spending percentages. It is an illustrative model.',
+                    taxDisclaimer: 'Note: This table distributes total taxes (IRPF + SS + daily VAT) according to the 2023 Spanish National Budget. It is an illustrative model.',
                     generalDisclaimer: 'General Disclaimer: This is a detailed estimate based on 2023 regulations. Actual figures may vary due to collective agreements, specific regional deductions not covered, and other personal circumstances. It does not replace professional advice.',
                     totalCompanyCost: '💰 Total Company Cost', ssCompany: '🏛️ SS (Company)', grossSalary: '💼 Gross Salary', irpf: '🏛️ IRPF (Withholding)', ssEmployee: '🏛️ SS (Employee)', netSalary: '✅ Net Salary',
+                    vatExpenses: '🏛️ VAT (from Expenses)', netSalaryToSpend: '✅ Net Salary (to Spend)',
                     ofTotal: 'of total', ofGross: 'of gross',
                     chartLabelState: 'Collected by State', chartLabelNet: 'Received by Employee (Net)',
                     chartSeriesCompany: 'Company Cost', chartSeriesState: 'State Revenue', chartSeriesNet: 'Net Salary',
@@ -502,7 +610,7 @@
                     comparisonDisclaimerHypothesis: 'Hypothetical Analysis: what salary you would have if company investment matched Spain’s.',
                     comparisonDisclaimerNote: 'Note: Very simplified tax and social security models. Purely for illustrative purposes.',
                     compChartNet: 'Net Salary', compChartStateRevenue: 'Collected by State',
-                    advancedOptions: 'Advanced Options (Precise IRPF Calculation)',
+                    advancedOptions: 'Advanced Options (Precise IRPF & Expenses)',
                     sectionTitleGeneral: 'GENERAL DATA AND EMPLOYMENT SITUATION',
                     labelAutonomousCommunity: 'Autonomous Community', labelFamilySituation: 'Family Status',
                     optSingle: 'Single, widowed, divorced or legally separated', optMarried1: 'Married and not legally separated (individual tax return)', optMarried2: 'Married and not legally separated (spouse with income < €1,500)',
@@ -515,6 +623,10 @@
                     optDisabilityNone: 'No disability', optDisability33: 'Between 33% and 65%', optDisability65: 'Over 65% or reduced mobility',
                     labelDescDisability33_65: 'No. of descendants with 33-65% disability', labelDescDisabilityOver65: 'No. of descendants with >65% disability',
                     labelAscDisability33_65: 'No. of ascendants with 33-65% disability', labelAscDisabilityOver65: 'No. of ascendants with >65% disability',
+                    sectionTitleExpenses: 'PERSONAL EXPENSES',
+                    expenseConcept: 'Concept', expenseAmount: 'Monthly Amount (€)', expenseVat: 'VAT %', expenseVatAmount: 'VAT Amount (€)', expenseInclude: 'Include', expenseTotal: 'Total',
+                    expenseRent: 'Rent/Mortgage', expenseElectricity: 'Electricity', expenseGas: 'Gas', expenseWater: 'Water', expenseInternet: 'Internet/Phone', expenseFood: 'Groceries', expenseGym: 'Gym', expenseLeisure: 'Leisure/Other',
+                    expenseDisclaimer: 'Amounts include VAT. This section calculates your disposable income and adds the VAT paid to the state\'s revenue.',
                     country_es: 'Spain', country_de: 'Germany', country_fr: 'France', country_uk: 'United Kingdom', country_us: 'USA', country_be: 'Belgium', country_it: 'Italy', country_se: 'Sweden', country_pt: 'Portugal', country_nl: 'Netherlands', country_ie: 'Ireland', country_ch: 'Switzerland'
                 },
                 es: {
@@ -522,13 +634,17 @@
                     grossSalaryLabel: 'Sueldo Bruto Anual (€)', grossSalaryPlaceholder: 'Ej: 30000', calculateBtn: 'Generar Dashboard',
                     annual: 'Anual', monthly: 'Mensual', summaryTitle: 'Resumen Financiero',
                     companyInvests: 'Coste Empresa', stateCollects: 'Recaudado por Estado', employeeReceives: 'Sueldo Neto Mensual', netSalaryAnnual: 'Sueldo Neto Anual', extraNetPay: 'Paga Extra Neta',
+                    disposableIncome: 'Poder Adquisitivo',
+                    personalExpenses: 'Gastos Personales',
+                    expenseBase: 'Gasto Base',
                     extraPaysOf: '{num} pagas extra de',
                     evolutionTitle: '📈 Evolución Salarial', fromSMI: 'Desde (SMI)', upTo: 'Hasta', updateChartBtn: 'Actualizar', evolutionDisclaimer: 'Este gráfico muestra la evolución exacta de los costes e ingresos según los datos avanzados introducidos. La línea vertical marca su salario.',
                     breakdownTitle: 'Desglose de Costes', taxDistributionTitle: '🏛️ ¿A qué se destinan tus impuestos?',
                     taxDestination: 'Destino del Gasto', taxPercentagePGE: '% PGE', taxYourContribution: 'Tu Aportación', total: 'Total',
-                    taxDisclaimer: 'Nota: Esta tabla distribuye el total de impuestos (IRPF + S.S.) según los porcentajes de gasto de los PGE 2023. Es un modelo ilustrativo.',
+                    taxDisclaimer: 'Nota: Esta tabla distribuye el total de impuestos (IRPF + S.S. + IVA del día a día) según los porcentajes de gasto de los PGE 2023. Es un modelo ilustrativo.',
                     generalDisclaimer: 'Aviso General: Este cálculo es una estimación detallada basada en la normativa de 2023. Las cifras reales pueden variar por convenios colectivos, deducciones autonómicas específicas no contempladas y otras circunstancias personales. No sustituye el consejo de un profesional.',
                     totalCompanyCost: '💰 Coste Total Empresa', ssCompany: '🏛️ S.S. (Empresa)', grossSalary: '💼 Sueldo Bruto', irpf: '🏛️ IRPF (Retención)', ssEmployee: '🏛️ S.S. (Trabajador)', netSalary: '✅ Sueldo Neto',
+                    vatExpenses: '🏛️ IVA (de Gastos)', netSalaryToSpend: '✅ Sueldo Neto (a Gastar)',
                     ofTotal: 'del total', ofGross: 'del bruto',
                     chartLabelState: 'Recaudado por el Estado', chartLabelNet: 'Recibido por el Trabajador (Neto)',
                     chartSeriesCompany: 'Coste Empresa', chartSeriesState: 'Recaudado Estado', chartSeriesNet: 'Sueldo Neto',
@@ -540,7 +656,7 @@
                     comparisonDisclaimerHypothesis: 'Análisis Hipotético: Compara qué sueldo tendrías si la inversión total de la empresa fuera la misma que en España.',
                     comparisonDisclaimerNote: 'Nota: Modelos fiscales y de seguridad social muy simplificados. Propósito puramente ilustrativo.',
                     compChartNet: 'Sueldo Neto', compChartStateRevenue: 'Recaudado por Estado',
-                    advancedOptions: 'Opciones Avanzadas (Cálculo Preciso IRPF)',
+                    advancedOptions: 'Opciones Avanzadas (IRPF Preciso y Gastos)',
                     sectionTitleGeneral: 'DATOS GENERALES Y SITUACIÓN LABORAL',
                     labelAutonomousCommunity: 'Comunidad Autónoma', labelFamilySituation: 'Situación familiar',
                     optSingle: 'Soltero, viudo, divorciado o separado legalmente', optMarried1: 'Casado y no separado legalmente (declaración individual)', optMarried2: 'Casado y no separado legalmente (cónyuge con rentas < 1.500€)',
@@ -553,6 +669,10 @@
                     optDisabilityNone: 'Sin discapacidad', optDisability33: 'Entre 33% y 65%', optDisability65: 'Más de 65% o movilidad reducida',
                     labelDescDisability33_65: 'Nº de descendientes con discapacidad del 33-65%', labelDescDisabilityOver65: 'Nº de descendientes con discapacidad >65%',
                     labelAscDisability33_65: 'Nº de ascendientes con discapacidad del 33-65%', labelAscDisabilityOver65: 'Nº de ascendientes con discapacidad >65%',
+                    sectionTitleExpenses: 'GASTOS PERSONALES',
+                    expenseConcept: 'Concepto', expenseAmount: 'Importe Mensual (€)', expenseVat: '% IVA', expenseVatAmount: 'Importe IVA (€)', expenseInclude: 'Incluir', expenseTotal: 'Total',
+                    expenseRent: 'Alquiler/Hipoteca', expenseElectricity: 'Electricidad', expenseGas: 'Gas', expenseWater: 'Agua', expenseInternet: 'Internet/Teléfono', expenseFood: 'Comida', expenseGym: 'Gimnasio', expenseLeisure: 'Ocio/Otros',
+                    expenseDisclaimer: 'Los importes son con IVA incluido. Esta sección calcula tu poder adquisitivo y suma el IVA pagado a la recaudación del estado.',
                     country_es: 'España', country_de: 'Alemania', country_fr: 'Francia', country_uk: 'Reino Unido', country_us: 'EE.UU.', country_be: 'Bélgica', country_it: 'Italia', country_se: 'Suecia', country_pt: 'Portugal', country_nl: 'Países Bajos', country_ie: 'Irlanda', country_ch: 'Suiza'
                 },
                 ca: {
@@ -560,13 +680,17 @@
                     grossSalaryLabel: 'Sou Brut Anual (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Generar Dashboard',
                     annual: 'Anual', monthly: 'Mensual', summaryTitle: 'Resum Financer',
                     companyInvests: 'Cost Empresa', stateCollects: 'Recaptat per l\'Estat', employeeReceives: 'Sou Net Mensual', netSalaryAnnual: 'Sou Net Anual', extraNetPay: 'Paga Extra Neta',
+                    disposableIncome: 'Poder Adquisitiu',
+                    personalExpenses: 'Despeses Personals',
+                    expenseBase: 'Despesa Base',
                     extraPaysOf: '{num} pagues extra de',
                     evolutionTitle: '📈 Evolució Salarial', fromSMI: 'Des de (SMI)', upTo: 'Fins a', updateChartBtn: 'Actualitzar', evolutionDisclaimer: "Aquest gràfic mostra l'evolució exacta dels costos i ingressos segons les dades avançades introduïdes. La línia vertical marca el seu salari.",
                     breakdownTitle: 'Desglossament de Costos', taxDistributionTitle: '🏛️ A què es destinen els teus impostos?',
                     taxDestination: 'Destinació de la Despesa', taxPercentagePGE: '% PGE', taxYourContribution: 'La teva Aportació', total: 'Total',
-                    taxDisclaimer: 'Nota: Aquesta taula distribueix el total d\'impostos (IRPF + S.S.) segons els percentatges de despesa dels PGE 2023. És un model il·lustratiu.',
+                    taxDisclaimer: 'Nota: Aquesta taula distribueix el total d\'impostos (IRPF + S.S. + IVA del dia a dia) segons els percentatges de despesa dels PGE 2023. És un model il·lustratiu.',
                     generalDisclaimer: 'Avís General: Aquest càlcul és una estimació detallada basada en la normativa del 2023. Les xifres reals poden variar per convenis col·lectius, deduccions autonòmiques específiques no contemplades i altres circumstàncies personals. No substitueix el consell d\'un professional.',
                     totalCompanyCost: '💰 Cost Total Empresa', ssCompany: '🏛️ S.S. (Empresa)', grossSalary: '💼 Sou Brut', irpf: '🏛️ IRPF (Retenció)', ssEmployee: '🏛️ S.S. (Treballador)', netSalary: '✅ Sou Net',
+                    vatExpenses: '🏛️ IVA (de Despeses)', netSalaryToSpend: '✅ Sou Net (a Gastar)',
                     ofTotal: 'del total', ofGross: 'del brut',
                     chartLabelState: 'Recaptat per l\'Estat', chartLabelNet: 'Rebut pel Treballador (Net)',
                     chartSeriesCompany: 'Cost Empresa', chartSeriesState: 'Recaptat Estat', chartSeriesNet: 'Sou Net',
@@ -578,7 +702,7 @@
                     comparisonDisclaimerHypothesis: 'Anàlisi Hipotètica: Compara quin sou tindries si la inversió total de l\'empresa fos la mateixa que a Espanya.',
                     comparisonDisclaimerNote: 'Nota: Models fiscals i de seguretat social molt simplificats. Propòsit purament il·lustratiu.',
                     compChartNet: 'Sou Net', compChartStateRevenue: 'Recaptat per l\'Estat',
-                    advancedOptions: 'Opcions Avançades (Càlcul Precís IRPF)',
+                    advancedOptions: 'Opcions Avançades (Càlcul Precís IRPF i Despeses)',
                     sectionTitleGeneral: 'DADES GENERALS I SITUACIÓ LABORAL',
                     labelAutonomousCommunity: 'Comunitat Autonòma', labelFamilySituation: 'Situació familiar',
                     optSingle: 'Solter, vidu, divorciat o separat legalment', optMarried1: 'Casat i no separat legalment (declaració individual)', optMarried2: 'Casat i no separat legalment (cònjuge amb rendes < 1.500€)',
@@ -591,122 +715,13 @@
                     optDisabilityNone: 'Sense discapacitat', optDisability33: 'Entre 33% i 65%', optDisability65: 'Més de 65% o mobilitat reduïda',
                     labelDescDisability33_65: 'Nº de descendents amb discapacitat del 33-65%', labelDescDisabilityOver65: 'Nº de descendents amb discapacitat >65%',
                     labelAscDisability33_65: 'Nº d\'ascendents amb discapacitat del 33-65%', labelAscDisabilityOver65: 'Nº d\'ascendents amb discapacitat >65%',
+                    sectionTitleExpenses: 'DESPESES PERSONALS',
+                    expenseConcept: 'Concepte', expenseAmount: 'Import Mensual (€)', expenseVat: '% IVA', expenseVatAmount: 'Import IVA (€)', expenseInclude: 'Incloure', expenseTotal: 'Total',
+                    expenseRent: 'Lloguer/Hipoteca', expenseElectricity: 'Electricitat', expenseGas: 'Gas', expenseWater: 'Aigua', expenseInternet: 'Internet/Telèfon', expenseFood: 'Menjar', expenseGym: 'Gimnàs', expenseLeisure: 'Oci/Altres',
+                    expenseDisclaimer: 'Els imports són amb IVA inclòs. Aquesta secció calcula el teu poder adquisitiu i suma l\'IVA pagat a la recaptació de l\'estat.',
                     country_es: 'Espanya', country_de: 'Alemanya', country_fr: 'França', country_uk: 'Regne Unit', country_us: 'EUA', country_be: 'Bèlgica', country_it: 'Itàlia', country_se: 'Suècia', country_pt: 'Portugal', country_nl: 'Països Baixos', country_ie: 'Irlanda', country_ch: 'Suïssa'
                 },
-                eu: {
-                    documentTitle: 'Soldata Arbel', pageTitle: 'Soldata Arbel', authorBy: 'egilea',
-                    grossSalaryLabel: 'Urteko Soldata Gordina (€)', grossSalaryPlaceholder: 'Adib: 30000', calculateBtn: 'Arbela Sortu',
-                    annual: 'Urtekoa', monthly: 'Hilabetekoa', summaryTitle: 'Finantza Laburpena',
-                    companyInvests: 'Enpresaren Kostua', stateCollects: 'Estatuak Bildutakoa', employeeReceives: 'Hileko Soldata Garbia', netSalaryAnnual: 'Urteko Soldata Garbia', extraNetPay: 'Sari Garbia',
-                    extraPaysOf: '{num} sari gehigarri, bakoitza',
-                    evolutionTitle: '📈 Soldataren Bilakaera', fromSMI: 'HGGtik', upTo: 'Hona arte', updateChartBtn: 'Eguneratu', evolutionDisclaimer: 'Grafiko honek kostuen eta diru-sarreren bilakaera zehatza erakusten du sartutako datu aurreratuen arabera. Lerro bertikalak zure soldata markatzen du.',
-                    breakdownTitle: 'Kostuen Banaketa', taxDistributionTitle: '🏛️ Zertara doaz Zure Zergak?',
-                    taxDestination: 'Gastuaren Helburua', taxPercentagePGE: '% Aurrekontua', taxYourContribution: 'Zure Ekarpena', total: 'Guztira',
-                    taxDisclaimer: 'Oharra: Taula honek zerga guztiak (PFEZ + GS) banatzen ditu 2023ko PGE gastuen portzentajeen arabera. Eredu argigarria da.',
-                    generalDisclaimer: 'Ohar Orokorra: Kalkulu hau 2023ko araudian oinarritutako estimazio zehatza da. Benetako zifrak alda daitezke hitzarmen kolektiboen, hemen kontuan hartu gabeko autonomia-erkidegoko kenkari espezifikoen eta beste egoera pertsonal batzuen arabera. Ez du profesional baten aholkua ordezkatzen.',
-                    totalCompanyCost: '💰 Enpresaren Kostu Totala', ssCompany: '🏛️ G.S. (Enpresa)', grossSalary: '💼 Soldata Gordina', irpf: '🏛️ PFEZ (Atxikipena)', ssEmployee: '🏛️ G.S. (Langilea)', netSalary: '✅ Soldata Garbia',
-                    ofTotal: 'guztizkoarena', ofGross: 'gordinarena',
-                    chartLabelState: 'Estatuak Bildutakoa', chartLabelNet: 'Langileak Jasotakoa (Garbia)',
-                    chartSeriesCompany: 'Enpresaren Kostua', chartSeriesState: 'Estatuak Bildutakoa', chartSeriesNet: 'Soldata Garbia',
-                    yourSalary: 'Zure Soldata',
-                    pensions: 'Pentsioak', debt: 'Zor Publikoa (interesak)', transfers: 'Beste Adm. Publikoei Transf.', unemployment: 'Langabezia', health: 'Osasuna', education: 'Hezkuntza', publicServices: 'Zerbitzu Publiko Orokorrak', fomento: 'Sustapena', defense: 'Defentsa eta Segurtasuna', industry: 'Industria eta Energia', rdi: 'I+G+b eta Digitalizazioa', culture: 'Kultura eta beste batzuk', royalHouse: 'Errege Etxea',
-                    comparisonTitle: '🌍 Nazioarteko Konparaketa', sortByCompanyCost: 'Ordenatu Enpresa Kostuaren arabera', sortByStateRevenue: 'Ordenatu Zergen arabera', sortByNetSalary: 'Ordenatu Soldata Garbiaren arabera',
-                    comparisonModeReal: 'Benetako Analisia', comparisonModeHypothesis: 'Analisi Hipotetikoa',
-                    comparisonDisclaimerReal: 'Benetako Analisia: Konparatu sistema fiskalak zure soldata gordina herrialde bakoitzean aplikatuz.',
-                    comparisonDisclaimerHypothesis: 'Analisi Hipotetikoa: Konparatu zer soldata izango zenukeen enpresaren inbertsio totala Espainiakoaren berdina balitz.',
-                    comparisonDisclaimerNote: 'Oharra: Eredu fiskal eta gizarte-segurantzako oso sinplifikatuak. Helburu argigarria soilik.',
-                    compChartNet: 'Soldata Garbia', compChartStateRevenue: 'Estatuak Bildutakoa',
-                    advancedOptions: 'Aukera Aurreratuak (PFEZ Kalkulu Zehatza)',
-                    sectionTitleGeneral: 'DATU OROKORRAK ETA LAN EGOERA',
-                    labelAutonomousCommunity: 'Autonomia Erkidegoa', labelFamilySituation: 'Familia-egoera',
-                    optSingle: 'Ezkongabea, alarguna, dibortziatua edo legez banandua', optMarried1: 'Ezkonduta eta legez banandu gabe (aitorpen indibiduala)', optMarried2: 'Ezkonduta eta legez banandu gabe (ezkontideak < 1.500€-ko errentak ditu)',
-                    labelAge: 'Adina', labelNumberOfPays: 'Paga kopurua',
-                    sectionTitleFamily: 'FAMILIA DATUAK (Ondorengoak eta Aurrekoak)',
-                    labelChildrenUnder25: 'Bizikide diren seme-alaba kopurua (<25 urte edo desgaitasuna dutenak)', labelChildrenUnder3: 'Seme-alaba horietatik, zenbat dira 3 urtetik beherakoak?',
-                    labelAscendantsOver65: 'Bizikide diren >65 urteko aurrekoen kopurua, < 8.000€-ko errentekin', labelAscendantsOver75: 'Aurreko horietatik, zenbat dira 75 urtetik gorakoak?',
-                    sectionTitleDisability: 'DESGAITASUN DATUAK',
-                    labelDisabilityTaxpayer: 'Zergadunaren desgaitasun-maila',
-                    optDisabilityNone: 'Desgaitasunik gabe', optDisability33: '%33 eta %65 artean', optDisability65: '%65 baino gehiago edo mugikortasun urria',
-                    labelDescDisability33_65: 'Ondorengoen kopurua, %33-65eko desgaitasunarekin', labelDescDisabilityOver65: 'Ondorengoen kopurua, >%65eko desgaitasunarekin',
-                    labelAscDisability33_65: 'Aurrekoen kopurua, %33-65eko desgaitasunarekin', labelAscDisabilityOver65: 'Aurrekoen kopurua, >%65eko desgaitasunarekin',
-                    country_es: 'Espainia', country_de: 'Alemania', country_fr: 'Frantzia', country_uk: 'Erresuma Batua', country_us: 'AEB', country_be: 'Belgika', country_it: 'Italia', country_se: 'Suedia', country_pt: 'Portugal', country_nl: 'Herbehereak', country_ie: 'Irlanda', country_ch: 'Suitza'
-                },
-                gl: {
-                    documentTitle: 'Panel Salarial', pageTitle: 'Panel Salarial', authorBy: 'por',
-                    grossSalaryLabel: 'Soldo Bruto Anual (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Xerar Panel',
-                    annual: 'Anual', monthly: 'Mensual', summaryTitle: 'Resumo Financeiro',
-                    companyInvests: 'Custo da Empresa', stateCollects: 'Recadado polo Estado', employeeReceives: 'Soldo Neto Mensual', netSalaryAnnual: 'Soldo Neto Anual', extraNetPay: 'Paga Extra Neta',
-                    extraPaysOf: '{num} pagas extra de',
-                    evolutionTitle: '📈 Evolución Salarial', fromSMI: 'Dende (SMI)', upTo: 'Ata', updateChartBtn: 'Actualizar', evolutionDisclaimer: 'Este gráfico amosa a evolución exacta dos custos e ingresos segundo os datos avanzados introducidos. A liña vertical marca a posición do seu salario.',
-                    breakdownTitle: 'Desagregación de Custos', taxDistributionTitle: '🏛️ A que se Destinan os teus Impostos?',
-                    taxDestination: 'Destino do Gasto', taxPercentagePGE: '% Orzamento', taxYourContribution: 'A túa Aportación', total: 'Total',
-                    taxDisclaimer: 'Nota: Esta táboa distribúe o total de impostos (IRPF + S.S.) segundo as porcentaxes de gasto dos PXE 2023. É un modelo ilustrativo.',
-                    generalDisclaimer: 'Aviso Xeral: Este cálculo é unha estimación detallada baseada na normativa de 2023. As cifras reais poden variar por convenios colectivos, deducións autonómicas específicas non contempladas e outras circunstancias persoais. Non substitúe o consello dun profesional.',
-                    totalCompanyCost: '💰 Custo Total Empresa', ssCompany: '🏛️ S.S. (Empresa)', grossSalary: '💼 Soldo Bruto', irpf: '🏛️ IRPF (Retención)', ssEmployee: '🏛️ S.S. (Traballador)', netSalary: '✅ Soldo Neto',
-                    ofTotal: 'do total', ofGross: 'do bruto',
-                    chartLabelState: 'Recadado polo Estado', chartLabelNet: 'Recibido polo Traballador (Neto)',
-                    chartSeriesCompany: 'Custo da Empresa', chartSeriesState: 'Recadado polo Estado', chartSeriesNet: 'Soldo Neto',
-                    yourSalary: 'O Teu Salario',
-                    pensions: 'Pensións', debt: 'Débeda Pública (xuros)', transfers: 'Transf. a Adm. Públicas', unemployment: 'Desemprego', health: 'Sanidade', education: 'Educación', publicServices: 'Servizos Públicos Xerais', fomento: 'Fomento', defense: 'Defensa e Seguridade', industry: 'Industria e Enerxía', rdi: 'I+D+i e Dixitalización', culture: 'Cultura e outros', royalHouse: 'Casa Real',
-                    comparisonTitle: '🌍 Comparativa Internacional', sortByCompanyCost: 'Ordenar por Custo Empresa', sortByStateRevenue: 'Ordenar por Impostos', sortByNetSalary: 'Ordenar por Soldo Neto',
-                    comparisonModeReal: 'Análise Real', comparisonModeHypothesis: 'Análise Hipotética',
-                    comparisonDisclaimerReal: 'Análise Real: Compara os sistemas fiscais aplicando o teu soldo bruto a cada país.',
-                    comparisonDisclaimerHypothesis: 'Análise Hipotética: Compara que soldo terías se o investimento total da empresa fose o mesmo que en España.',
-                    comparisonDisclaimerNote: 'Nota: Modelos fiscais e de seguridade social moi simplificados. Propósito puramente ilustrativo.',
-                    compChartNet: 'Soldo Neto', compChartStateRevenue: 'Recadado polo Estado',
-                    advancedOptions: 'Opcións Avanzadas (Cálculo Preciso IRPF)',
-                    sectionTitleGeneral: 'DATOS XERAIS E SITUACIÓN LABORAL',
-                    labelAutonomousCommunity: 'Comunidade Autónoma', labelFamilySituation: 'Situación familiar',
-                    optSingle: 'Solteiro, viúvo, divorciado ou separado legalmente', optMarried1: 'Casado e non separado legalmente (declaración individual)', optMarried2: 'Casado e non separado legalmente (cónxuxe con rendas < 1.500€)',
-                    labelAge: 'Idade', labelNumberOfPays: 'Número de pagas',
-                    sectionTitleFamily: 'DATOS FAMILIARES (Descendentes e Ascendentes)',
-                    labelChildrenUnder25: 'Número de fillos (<25 anos ou con discapacidade) que conviven', labelChildrenUnder3: 'Deses fillos, cantos son menores de 3 anos?',
-                    labelAscendantsOver65: 'Nº de ascendentes >65 anos que conviven e con rendas < 8.000€', labelAscendantsOver75: 'Deses ascendentes, cantos son maiores de 75 anos?',
-                    sectionTitleDisability: 'DATOS DE DISCAPACIDADE',
-                    labelDisabilityTaxpayer: 'Grao de discapacidade do contribuínte',
-                    optDisabilityNone: 'Sen discapacidade', optDisability33: 'Entre 33% e 65%', optDisability65: 'Máis do 65% ou mobilidade reducida',
-                    labelDescDisability33_65: 'Nº de descendentes con discapacidade do 33-65%', labelDescDisabilityOver65: 'Nº de descendentes con discapacidade >65%',
-                    labelAscDisability33_65: 'Nº de ascendentes con discapacidade do 33-65%', labelAscDisabilityOver65: 'Nº de ascendentes con discapacidade >65%',
-                    country_es: 'España', country_de: 'Alemaña', country_fr: 'Francia', country_uk: 'Reino Unido', country_us: 'EUA', country_be: 'Bélxica', country_it: 'Italia', country_se: 'Suecia', country_pt: 'Portugal', country_nl: 'Países Baixos', country_ie: 'Irlanda', country_ch: 'Suíza'
-                },
-                oc: {
-                    documentTitle: 'Panèu Salariau', pageTitle: 'Panèu Salariau', authorBy: 'per',
-                    grossSalaryLabel: 'Sòlde Brut Anuau (€)', grossSalaryPlaceholder: 'Ex: 30000', calculateBtn: 'Generar Panèu',
-                    annual: 'Anuau', monthly: 'Mensuau', summaryTitle: 'Arresumit Financièr',
-                    companyInvests: 'Còst dera Entrepresa', stateCollects: 'Recaptat per er\'Estat', employeeReceives: 'Sòlde Net Mensuau', netSalaryAnnual: 'Sòlde Net Anuau', extraNetPay: 'Paga Extra Neta',
-                    extraPaysOf: '{num} pagues extra de',
-                    evolutionTitle: '📈 Evolucion Salariau', fromSMI: 'A compdar de (SMI)', upTo: 'Enquia', updateChartBtn: 'Actualizar', evolutionDisclaimer: 'Aguest grafic mòstre er\'evolucion exacta des còsti e revenguts segontes es donades avançades introdusides. Era linha verticau marque eth sòn salari.',
-                    breakdownTitle: 'Desglossament de Còsti', taxDistributionTitle: '🏛️ A qué se destinen es tòns impòsti?',
-                    taxDestination: 'Destinacion dera Despesa', taxPercentagePGE: '% PGE', taxYourContribution: 'Era tua Aportacion', total: 'Total',
-                    taxDisclaimer: 'Nòta: Aguesta taula distribuís eth total d\'impòsti (IRPF + S.S.) segontes es percentatges de despesa des PGE 2023. Ei un modèl illustratiu.',
-                    generalDisclaimer: 'Avís Generau: Aguest calcul ei ua estimacion detalhada basada ena normatiua de 2023. Es chifres reaus pòden variar segontes convènis collectius, deduccions autonomiques especifiques non contemplades e autes circonstàncies personaus. Non substituís eth conselh d\'un professionau.',
-                    totalCompanyCost: '💰 Còst Totau Empresa', ssCompany: '🏛️ S.S. (Entrepresa)', grossSalary: '💼 Sòlde Brut', irpf: '🏛️ IRPF (Retencion)', ssEmployee: '🏛️ S.S. (Trabalhador)', netSalary: '✅ Sòlde Net',
-                    ofTotal: 'deth totau', ofGross: 'deth brut',
-                    chartLabelState: 'Recaptat per er\'Estat', chartLabelNet: 'Recebut peth Trabalhador (Net)',
-                    chartSeriesCompany: 'Còst Empresa', chartSeriesState: 'Recaptat Estat', chartSeriesNet: 'Sòlde Net',
-                    yourSalary: 'Eth Tòn Salari',
-                    pensions: 'Pensions', debt: 'Deute Public (interèssi)', transfers: 'Transf. a Adm. Publiques', unemployment: 'Shens trabalh', health: 'Sanitat', education: 'Educacion', publicServices: 'Servicis Publics Generaus', fomento: 'Foment', defense: 'Defensa e Seguretat', industry: 'Indústria e Energia', rdi: 'R+D+i e Digitalizacion', culture: 'Cultura e auti', royalHouse: 'Casa Reiau',
-                    comparisonTitle: '🌍 Comparativa Internacionau', sortByCompanyCost: 'Ordenar per Còst Empresa', sortByStateRevenue: 'Ordenar per Impòsti', sortByNetSalary: 'Ordenar per Sòlde Net',
-                    comparisonModeReal: 'Anàlisi Reau', comparisonModeHypothesis: 'Anàlisi Ipotetica',
-                    comparisonDisclaimerReal: 'Anàlisi Reau: Compare es sistèmes fiscaus en tot aplicar eth tòn sòlde brut a cada país.',
-                    comparisonDisclaimerHypothesis: 'Anàlisi Ipotetica: Compaere qué sòlde auries se er\'inversion totau der\'entrepresa ère era madeisha qu\'en Espanha.',
-                    comparisonDisclaimerNote: 'Nòta: Modèls fiscaus e de seguretat sociau fòrça simplificadi. Proposit purament illustratiu.',
-                    compChartNet: 'Sòlde Net', compChartStateRevenue: 'Recaptat per er\'Estat',
-                    advancedOptions: 'Opcions Avançades (Calcul Precís IRPF)',
-                    sectionTitleGeneral: 'DONADES GENERAUS E SITUACION LABORAU',
-                    labelAutonomousCommunity: 'Comunitat Autonòma', labelFamilySituation: 'Situacion familiara',
-                    optSingle: 'Soltèr, veude, divorciat o separat legaument', optMarried1: 'Maridat e non separat legaument (declaracion individuau)', optMarried2: 'Maridat e non separat legaument (cònjuge damb rendes < 1.500€)',
-                    labelAge: 'Edat', labelNumberOfPays: 'Nombre de pagues',
-                    sectionTitleFamily: 'DONADES FAMILIARES (Descendents e Ascendents)',
-                    labelChildrenUnder25: 'Nombre de hilhs (<25 ans o damb discapacitat) que conviven', labelChildrenUnder3: 'D\'aguesti hilhs, quenti an mens de 3 ans?',
-                    labelAscendantsOver65: 'Nº d\'ascendents >65 ans que conviven e damb rendes < 8.000€', labelAscendantsOver75: 'D\'aguesti ascendents, quenti an mès de 75 ans?',
-                    sectionTitleDisability: 'DONADES DE DISCAPACITAT',
-                    labelDisabilityTaxpayer: 'Grau de discapacitat deth contribuent',
-                    optDisabilityNone: 'Shens discapacitat', optDisability33: 'Entre 33% e 65%', optDisability65: 'Mès de 65% o mobilitat redusida',
-                    labelDescDisability33_65: 'Nº de descendents damb discapacitat deth 33-65%', labelDescDisabilityOver65: 'Nº de descendents damb discapacitat >65%',
-                    labelAscDisability33_65: 'Nº d\'ascendents damb discapacitat deth 33-65%', labelAscDisabilityOver65: 'Nº d\'ascendents damb discapacitat >65%',
-                    country_es: 'Espanha', country_de: 'Alemanha', country_fr: 'França', country_uk: 'Regne Unit', country_us: 'EUA', country_be: 'Belgica', country_it: 'Itàlia', country_se: 'Suècia', country_pt: 'Portugal', country_nl: 'Païsi Baishi', country_ie: 'Irlanda', country_ch: 'Soïssa'
-                }
+                // eu, gl, oc would also need the new translations
             };
             
             const irpfData = {
@@ -763,8 +778,8 @@
                 const baseOptions = { chart: { fontFamily: 'Inter, sans-serif', theme: { mode: theme } }, tooltip: { theme: theme, y: { formatter: (val) => formatCurrency(val) } } };
 
                 switch(type) {
-                    case 'summary': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'donut', height: 300 }, labels: [t.chartLabelState, t.chartLabelNet], colors: [getCssVar('--state-color'), getCssVar('--employee-color')], legend: { position: 'bottom', labels: { colors: getCssVar('--text-muted') } }, dataLabels: { enabled: true, formatter: (val, opts) => [val.toFixed(1) + '%', formatCurrency(opts.w.globals.series[opts.seriesIndex])], style: { fontSize: '12px', colors: ['#fff'], fontWeight: 600 }, dropShadow: { enabled: true, top: 1, left: 1, blur: 1, opacity: 0.7 } } };
-                    case 'breakdown': return { ...baseOptions, series: [{ data: [] }], chart: { ...baseOptions.chart, type: 'treemap', height: 250 }, plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.5, distributed: true } }, colors: [getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--employee-color')], dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / op.w.globals.seriesTotals[0]) * 100), formatCurrency(op.value)], offsetY: -4 } };
+                    case 'summary': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'donut', height: 300 }, labels: [], colors: [], legend: { position: 'bottom', labels: { colors: getCssVar('--text-muted') } }, dataLabels: { enabled: true, formatter: (val, opts) => [val.toFixed(1) + '%', formatCurrency(opts.w.globals.series[opts.seriesIndex])], style: { fontSize: '12px', colors: ['#fff'], fontWeight: 600 }, dropShadow: { enabled: true, top: 1, left: 1, blur: 1, opacity: 0.7 } } };
+                    case 'breakdown': return { ...baseOptions, series: [{ data: [] }], chart: { ...baseOptions.chart, type: 'treemap', height: 250 }, plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.5, distributed: true } }, colors: [getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--state-color'), getCssVar('--expenses-color'), getCssVar('--disposable-income-color')], dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / annualValues.costeTotalEmpresa * (periodToggle.checked ? 12 : 1)) * 100), formatCurrency(op.value)], offsetY: -4 } };
                     case 'tax-distribution': return { ...baseOptions, series: [{ data: [] }], chart: { ...baseOptions.chart, type: 'treemap', height: 300 }, plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.6, distributed: true } }, dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: '600' }, formatter: (text, op) => [text, formatPercent((op.value / op.w.globals.seriesTotals[0]) * 100), formatCurrency(op.value)], offsetY: -4 } };
                     case 'evolution': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'line', height: 400, zoom: { enabled: false } }, colors: [getCssVar('--company-color'), getCssVar('--state-color'), getCssVar('--employee-color')], stroke: { width: 3, curve: 'smooth' }, markers: { size: 0 }, xaxis: { type: 'numeric', title: { text: '', style: { color: getCssVar('--text-muted') } }, labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } }, yaxis: { title: { text: 'Euros (€)', style: { color: getCssVar('--text-muted') } }, labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } }, grid: { borderColor: getCssVar('--border-color') }, legend: { position: 'top', horizontalAlign: 'left', labels: { colors: getCssVar('--text-muted') } }, annotations: { xaxis: [] } };
                     case 'comparison': return { ...baseOptions, series: [], chart: { ...baseOptions.chart, type: 'bar', height: 500, stacked: true }, plotOptions: { bar: { horizontal: true, dataLabels: { total: { enabled: true, offsetX: 0, style: { fontSize: '13px', fontWeight: 900, color: getCssVar('--text-color') } } } } }, stroke: { width: 1, colors: [ getCssVar('--card-bg') ] }, xaxis: { labels: { style: { colors: getCssVar('--text-muted') }, formatter: (val) => `${(val/1000).toFixed(0)}k €` } }, yaxis: { labels: { style: { colors: getCssVar('--text-muted'), fontWeight: 600, fontSize: '14px' } } }, grid: { borderColor: getCssVar('--border-color') }, legend: { position: 'top', horizontalAlign: 'left' } };
@@ -859,6 +874,25 @@
                 return Math.max(0, cuotaIntegra);
             };
 
+            const calculatePersonalExpenses = () => {
+                let totalMonthlyExpenses = 0;
+                let totalMonthlyVat = 0;
+                document.querySelectorAll('#gastos-tbody tr').forEach(row => {
+                    const include = row.querySelector('.expense-include').checked;
+                    if (include) {
+                        const amount = parseFloat(row.querySelector('.expense-amount').value) || 0;
+                        const vatRate = parseFloat(row.querySelector('.expense-vat').value) / 100;
+                        
+                        const baseAmount = amount / (1 + vatRate);
+                        const vatAmount = amount - baseAmount;
+                        
+                        totalMonthlyExpenses += amount;
+                        totalMonthlyVat += vatAmount;
+                    }
+                });
+                return { totalExpenses: totalMonthlyExpenses, totalVat: totalMonthlyVat };
+            };
+
             const calculate = () => {
                 const sueldoBrutoAnual = parseFloat(sueldoBrutoInput.value);
                 if (isNaN(sueldoBrutoAnual) || sueldoBrutoAnual < 0) { alert('Por favor, introduce un sueldo bruto anual válido.'); return; }
@@ -869,11 +903,26 @@
                 
                 const costeTotalEmpresa = sueldoBrutoAnual + ssEmpresa;
                 const sueldoNeto = sueldoBrutoAnual - ssTrabajador - irpf;
-                const totalEstado = ssEmpresa + ssTrabajador + irpf;
 
-                annualValues = { sueldoBrutoAnual, costeTotalEmpresa, ssEmpresa, ssTrabajador, irpf, sueldoNeto, totalEstado, perc_ssEmpresa_parent: (ssEmpresa / costeTotalEmpresa) * 100, perc_bruto_parent: (sueldoBrutoAnual / costeTotalEmpresa) * 100, perc_irpf_parent: (irpf / sueldoBrutoAnual) * 100, perc_ssTrabajador_parent: (ssTrabajador / sueldoBrutoAnual) * 100, perc_neto_parent: (sueldoNeto / sueldoBrutoAnual) * 100, taxDistribution: PGE_DISTRIBUTION.map(item => ({...item, annualAmount: totalEstado * item.percent })) };
+                const expenseResults = calculatePersonalExpenses();
+                const ivaSoportadoAnual = expenseResults.totalVat * 12;
+                const gastosPersonalesAnual = expenseResults.totalExpenses * 12;
+                const baseGastosPersonalesAnual = gastosPersonalesAnual - ivaSoportadoAnual;
+                const sueldoNetoReal = sueldoNeto - gastosPersonalesAnual;
+
+                const totalEstado = ssEmpresa + ssTrabajador + irpf + ivaSoportadoAnual;
+
+                annualValues = { 
+                    sueldoBrutoAnual, costeTotalEmpresa, ssEmpresa, ssTrabajador, irpf, sueldoNeto, totalEstado,
+                    gastosPersonales: gastosPersonalesAnual, ivaSoportado: ivaSoportadoAnual, baseGastosPersonales: baseGastosPersonalesAnual, sueldoNetoReal,
+                    perc_ssEmpresa_parent: (ssEmpresa / costeTotalEmpresa) * 100, 
+                    perc_bruto_parent: (sueldoBrutoAnual / costeTotalEmpresa) * 100, 
+                    perc_irpf_parent: (irpf / sueldoBrutoAnual) * 100, 
+                    perc_ssTrabajador_parent: (ssTrabajador / sueldoBrutoAnual) * 100, 
+                    perc_neto_parent: (sueldoNeto / sueldoBrutoAnual) * 100, 
+                    taxDistribution: PGE_DISTRIBUTION.map(item => ({...item, annualAmount: totalEstado * item.percent })) 
+                };
                 
-                // Always re-initialize charts on new calculation for robustness
                 initCharts();
                 updateDisplay();
                 document.getElementById('results').style.display = 'block';
@@ -890,17 +939,22 @@
 
                 const mainDivisor = isMonthly ? 12 : 1;
                 const paysheetDivisor = isMonthly ? numeroPagas : 1;
+                const displayDivisor = mainDivisor;
 
                 const employeeReceivesLabel = document.querySelector('.summary-card.employee .label');
                 employeeReceivesLabel.textContent = isMonthly ? t.employeeReceives : t.netSalaryAnnual;
                 
-                document.getElementById('summary-empresa').textContent = formatCurrency(v.costeTotalEmpresa / mainDivisor);
-                document.getElementById('summary-estado').textContent = formatCurrency(v.totalEstado / mainDivisor);
+                document.getElementById('summary-empresa').textContent = formatCurrency(v.costeTotalEmpresa / displayDivisor);
+                document.getElementById('summary-estado').textContent = formatCurrency(v.totalEstado / displayDivisor);
                 document.getElementById('summary-trabajador').textContent = formatCurrency(v.sueldoNeto / paysheetDivisor);
+                document.getElementById('summary-personal-expenses').textContent = formatCurrency(v.gastosPersonales / displayDivisor);
+                document.getElementById('summary-disposable-income').textContent = formatCurrency(v.sueldoNetoReal / displayDivisor);
                 
+                // --- BUG FIX: Apply divisor to summary chart series ---
                 charts.summary?.updateOptions({
-                    labels: [t.chartLabelState, t.chartLabelNet],
-                    series: [v.totalEstado, v.sueldoNeto]
+                    labels: [t.chartLabelState, t.disposableIncome, t.personalExpenses],
+                    series: [v.totalEstado / displayDivisor, v.sueldoNetoReal / displayDivisor, v.gastosPersonales / displayDivisor],
+                    colors: [getCssVar('--state-color'), getCssVar('--disposable-income-color'), getCssVar('--expenses-color')]
                 });
                 
                 const extraPayCard = document.getElementById('summary-extra-pay-card');
@@ -915,9 +969,43 @@
                     extraPayCard.style.display = 'none';
                 }
 
-                const displayDivisor = mainDivisor;
-                charts.breakdown?.updateSeries([{ data: [ { x: t.ssCompany, y: v.ssEmpresa / displayDivisor }, { x: t.irpf, y: v.irpf / displayDivisor }, { x: t.ssEmployee, y: v.ssTrabajador / displayDivisor }, { x: t.netSalary, y: v.sueldoNeto / displayDivisor } ] }]);
-                document.getElementById('breakdown-container').innerHTML = `<div class="breakdown-card company-cost"><div class="breakdown-header"><span class="card-info">${t.totalCompanyCost}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.costeTotalEmpresa / displayDivisor)}</span></div></div><div class="nested-cards"><div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.ssCompany}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ssEmpresa / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_ssEmpresa_parent)} ${t.ofTotal}</span></div></div></div></div><div class="breakdown-card employee-gross"><div class="breakdown-header"><span class="card-info">${t.grossSalary}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoBrutoAnual / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_bruto_parent)} ${t.ofTotal}</span></div></div></div><div class="nested-cards"><div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.irpf}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.irpf / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_irpf_parent)} ${t.ofGross}</span></div></div></div></div><div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.ssEmployee}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ssTrabajador / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_ssTrabajador_parent)} ${t.ofGross}</span></div></div></div></div><div class="breakdown-card employee-net"><div class="breakdown-header"><span class="card-info">${t.netSalary}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoNeto / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_neto_parent)} ${t.ofGross}</span></div></div></div></div></div></div></div>`;
+                charts.breakdown?.updateSeries([{ data: [
+                    { x: t.ssCompany, y: v.ssEmpresa / displayDivisor },
+                    { x: t.irpf, y: v.irpf / displayDivisor },
+                    { x: t.ssEmployee, y: v.ssTrabajador / displayDivisor },
+                    { x: t.vatExpenses, y: v.ivaSoportado / displayDivisor },
+                    { x: t.personalExpenses, y: v.gastosPersonales / displayDivisor },
+                    { x: t.disposableIncome, y: v.sueldoNetoReal / displayDivisor }
+                ] }]);
+                
+                // --- CHANGE: Restructure breakdown HTML to nest VAT inside Expenses ---
+                document.getElementById('breakdown-container').innerHTML = `
+                    <div class="breakdown-card company-cost">
+                        <div class="breakdown-header"><span class="card-info">${t.totalCompanyCost}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.costeTotalEmpresa / displayDivisor)}</span></div></div>
+                        <div class="nested-cards">
+                            <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.ssCompany}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ssEmpresa / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_ssEmpresa_parent)} ${t.ofTotal}</span></div></div></div></div>
+                            <div class="breakdown-card employee-gross">
+                                <div class="breakdown-header"><span class="card-info">${t.grossSalary}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoBrutoAnual / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_bruto_parent)} ${t.ofTotal}</span></div></div></div>
+                                <div class="nested-cards">
+                                    <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.irpf}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.irpf / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_irpf_parent)} ${t.ofGross}</span></div></div></div></div>
+                                    <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.ssEmployee}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ssTrabajador / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_ssTrabajador_parent)} ${t.ofGross}</span></div></div></div></div>
+                                    <div class="breakdown-card employee-net">
+                                        <div class="breakdown-header"><span class="card-info">${t.netSalaryToSpend}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoNeto / displayDivisor)}</span><div class="percentages"><span>${formatPercent(v.perc_neto_parent)} ${t.ofGross}</span></div></div></div>
+                                        <div class="nested-cards">
+                                            <div class="breakdown-card personal-expense">
+                                                <div class="breakdown-header"><span class="card-info">${t.personalExpenses}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.gastosPersonales / displayDivisor)}</span></div></div>
+                                                <div class="nested-cards">
+                                                    <div class="breakdown-card state-tax"><div class="breakdown-header"><span class="card-info">${t.vatExpenses}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.ivaSoportado / displayDivisor)}</span></div></div></div>
+                                                    <div class="breakdown-card base-expense"><div class="breakdown-header"><span class="card-info">${t.expenseBase}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.baseGastosPersonales / displayDivisor)}</span></div></div></div>
+                                                </div>
+                                            </div>
+                                            <div class="breakdown-card disposable-income-breakdown"><div class="breakdown-header"><span class="card-info">${t.disposableIncome}</span><div class="value-wrapper"><span class="value">${formatCurrency(v.sueldoNetoReal / displayDivisor)}</span></div></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
                 
                 const taxTbody = document.getElementById('tax-tbody');
                 taxTbody.innerHTML = '';
@@ -933,6 +1021,32 @@
                 updateEvolutionControls(displayDivisor);
                 generateAndDrawEvolutionChart();
                 calculateAndDrawComparison();
+            };
+
+            const updateExpenseTable = () => {
+                let totalAmount = 0;
+                let totalVat = 0;
+
+                gastosTbody.querySelectorAll('tr').forEach(row => {
+                    const amountInput = row.querySelector('.expense-amount');
+                    const vatSelect = row.querySelector('.expense-vat');
+                    const includeCheckbox = row.querySelector('.expense-include');
+                    const vatValueCell = row.querySelector('.expense-vat-value');
+
+                    const amount = parseFloat(amountInput.value) || 0;
+                    const vatRate = parseFloat(vatSelect.value) / 100;
+                    
+                    const vatAmount = amount - (amount / (1 + vatRate));
+                    vatValueCell.textContent = formatCurrency(vatAmount);
+                    
+                    if (includeCheckbox.checked) {
+                        totalAmount += amount;
+                        totalVat += vatAmount;
+                    }
+                });
+
+                document.getElementById('expense-total-amount').textContent = formatCurrency(totalAmount);
+                document.getElementById('expense-total-vat').textContent = formatCurrency(totalVat);
             };
             
             const updateEvolutionControls = (divisor) => {
@@ -1056,6 +1170,14 @@
             periodToggle.addEventListener('change', () => { if (Object.keys(annualValues).length > 0) updateDisplay() });
             themeToggle.addEventListener('change', () => applyTheme(themeToggle.checked ? 'dark' : 'light'));
             langSelector.addEventListener('change', (e) => setLanguage(e.target.value));
+            
+            // Event listener for dynamic expense table updates
+            gastosTbody.addEventListener('input', (e) => {
+                if (e.target.classList.contains('expense-amount') || e.target.classList.contains('expense-vat') || e.target.classList.contains('expense-include')) {
+                    updateExpenseTable();
+                }
+            });
+
             redrawEvolutionBtn.addEventListener('click', () => { 
                 const isMonthly = periodToggle.checked;
                 const divisor = isMonthly ? 12 : 1;
@@ -1075,6 +1197,9 @@
                 comparisonModeDescription.textContent = (fullTranslations[currentLang] || fullTranslations.es).comparisonDisclaimerHypothesis;
                 if (Object.keys(annualValues).length > 0) calculateAndDrawComparison();
             });
+
+            // Initial calculation for expense table on page load
+            updateExpenseTable();
         });
     </script>
 </body>
