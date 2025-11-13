@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Dashboard Vivienda vs Sueldo – Oriol Badia Campanera</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Chart.js 4.x -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+    --bg: #0b0f19;
+    --bg-card: #111827;
+    --bg-soft: #1f2937;
+    --txt: #e5e7eb;
+    --txt-soft: #9ca3af;
+
+    --c1: #38bdf8;
+    --c2: #4ade80;
+    --c3: #f97316;
+    --mean: #ffffffcc;
+
+    --radius: 16px;
+    --shadow: 0 10px 28px rgba(0,0,0,0.35);
+}
+
+/* GLOBAL */
+
+body,
+select,
+input,
+button {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji","Segoe UI",system-ui,sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+}
+
+.wrapper {
+    max-width: 1500px;
+    margin: auto;
+}
+
+/* HEADER */
+
+header h1 {
+    font-size: 2.8rem;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    color: var(--txt-soft);
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+}
+
+.purpose {
+    color: var(--txt-soft);
+    font-size: 0.9rem;
+    margin-top: 4px;
+    max-width: 900px;
+}
+
+a {
+    color: #38bdf8;
+    text-decoration: none;
+}
+
+.card {
+    background: var(--bg-card);
+    padding: 22px;
+    border-radius: var(--radius);
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+}
+
+/* CONTROLS */
+
+.controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap: 14px;
+}
+
+.controls label {
+    font-size: 0.75rem;
+    color: var(--txt-soft);
+}
+
+.controls select,
+.controls input {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    border: 1px solid #333;
+    color: var(--txt);
+    font-size: 0.9rem;
+}
+
+/* GRÁFICOS */
+
+.chart-container {
+    width: 100%;
+    height: 370px;
+    position: relative;
+}
+
+@media (max-width: 700px) {
+    .chart-container {
+        height: 460px !important;
+    }
+}
+
+/* TABLA */
+
+.table-card {
+    background: var(--bg-card);
+    padding: 22px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+th, td {
+    padding: 10px;
+    word-wrap: break-word;
+}
+
+th {
+    text-transform: uppercase;
+    background: var(--bg-soft);
+    font-size: 0.72rem;
+    color: var(--txt-soft);
+    cursor: pointer;
+}
+
+tbody tr:nth-child(odd) { background:#0f172a; }
+tbody tr:nth-child(even){ background:#111827; }
+tbody tr:hover{ background:#1f2937; }
+
+/* ICONO BANDERA */
+
+.flag-icon {
+    width: 20px;
+    height: 14px;
+    object-fit: cover;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 25px;
+    color: var(--txt-soft);
+    font-size: 0.8rem;
+}
+
+.footer h3 {
+    margin-top: 0;
+    font-size: 0.9rem;
+    color: var(--txt);
+}
+.footer ul {
+    margin-top: 4px;
+    padding-left: 18px;
+}
+.footer li {
+    margin-bottom: 3px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<!-- ========================= HEADER ========================= -->
+
+<header class="card">
+    <h1>Dashboard Vivienda vs Sueldo</h1>
+    <div class="subtitle">
+        por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank">Oriol Badia Campanera</a>
+    </div>
+    <div class="purpose">
+        Este dashboard pretende ofrecer una visión comparativa global para determinar si el problema de acceso a la vivienda
+        proviene principalmente del precio del mercado inmobiliario o de la insuficiencia de los salarios.
+    </div>
+</header>
+
+<!-- ========================= CONTROLS ========================= -->
+
+<section class="controls card">
+
+    <div>
+        <label>Buscar ciudad</label>
+        <input id="searchInput" type="search" placeholder="Ej: París, Madrid…">
+    </div>
+
+    <div>
+        <label>Ámbito</label>
+        <select id="scopeSelect">
+            <option value="world">Todo el mundo</option>
+            <option value="europe">Europa</option>
+            <option value="spain">España</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Moneda base</label>
+        <select id="currencySelect">
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Perfil salarial</label>
+        <select id="salaryProfile">
+            <option value="medio">Sueldo medio</option>
+            <option value="ingeniero">Ingeniero senior</option>
+            <option value="doctor">Doctor especialista</option>
+            <option value="funcionario">Funcionario A1</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Tipo de sueldo</label>
+        <select id="salaryMode">
+            <option value="bruto">Bruto anual</option>
+            <option value="neto">Neto anual</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Ciudades en los gráficos</label>
+        <select id="cityLimit">
+            <option value="10">Top 10</option>
+            <option value="20">Top 20</option>
+            <option value="30">Top 30</option>
+            <option value="40">Top 40</option>
+            <option value="50">Top 50</option>
+            <option value="9999" selected>Todas (por defecto)</option>
+        </select>
+    </div>
+
+</section>
+
+<!-- ========================= GRÁFICOS ========================= -->
+
+<section class="card">
+    <h2>Años de Sueldo Necesarios</h2>
+    <div class="chart-container"><canvas id="chartAnios"></canvas></div>
+</section>
+
+<section class="card">
+    <h2>Precio Vivienda 100 m²</h2>
+    <div class="chart-container"><canvas id="chartPrecio"></canvas></div>
+</section>
+
+<section class="card">
+    <h2>Sueldo Anual Seleccionado</h2>
+    <div class="chart-container"><canvas id="chartSueldo"></canvas></div>
+</section>
+
+<!-- ========================= TABLA ========================= -->
+
+<section class="table-card">
+    <table>
+        <thead>
+        <tr>
+            <th data-sort="rank">Rank</th>
+            <th data-sort="estado">País</th>
+            <th data-sort="ciudad">Ciudad</th>
+            <th data-sort="price100Base">Precio 100m²</th>
+            <th data-sort="priceM2Base">€/m²</th>
+            <th data-sort="salaryBase">Sueldo</th>
+            <th data-sort="yearsBase">Años</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</section>
+
+<div class="footer">
+    <h3>Referencias y fuentes de datos</h3>
+    <ul>
+        <li>Precios de vivienda aproximados basados en medias de portales inmobiliarios internacionales (Numbeo, Idealista, Zillow) y estadísticas públicas.</li>
+        <li>Datos salariales estimados según portales de empleo (Glassdoor, Indeed) y fuentes oficiales por país.</li>
+        <li>Tipos de cambio aproximados basados en datos recientes del Banco Central Europeo y fuentes financieras públicas.</li>
+        <li>Todos los valores son aproximados y se ofrecen únicamente con finalidad comparativa, no contractual.</li>
+    </ul>
+</div>
+
+</div>
+
+<!-- ========================= JS COMPLETO ========================= -->
+<script>
+/* ========= 1. Tipos de cambio ========= */
+const exchangeRates = {
+  EUR: { toEUR: 1,     toUSD: 1.09 },
+  USD: { toEUR: 0.92,  toUSD: 1 },
+  GBP: { toEUR: 1.17,  toUSD: 1.25 },
+  JPY: { toEUR: 0.0062, toUSD: 0.0067 }
+};
+
+function convertToBase(amount, from, to) {
+  if (amount == null) return null;
+  const r = exchangeRates[from];
+  if (!r) return amount;
+  if (to === "EUR") return amount * r.toEUR;
+  if (to === "USD") return amount * r.toUSD;
+  return amount;
+}
+
+function formatCurrency(v, c) {
+  if (v == null || isNaN(v)) return "—";
+  const n = Math.round(v).toLocaleString("es-ES");
+  return c === "EUR" ? "€" + n : "$" + n;
+}
+
+/* ========= 2. Banderas via flagcdn ========= */
+const countryCodes = {
+  "España": "es",
+  "Francia": "fr",
+  "Italia": "it",
+  "Alemania": "de",
+  "Reino Unido": "gb",
+  "Países Bajos": "nl",
+  "Bélgica": "be",
+  "Portugal": "pt",
+  "Suiza": "ch",
+  "Suecia": "se",
+  "Noruega": "no",
+  "Dinamarca": "dk",
+  "Polonia": "pl",
+  "Austria": "at",
+  "Grecia": "gr",
+  "Irlanda": "ie",
+  "Japón": "jp",
+  "India": "in",
+  "China": "cn",
+  "Corea del Sur": "kr",
+  "Hong Kong": "hk",
+  "Singapur": "sg",
+  "México": "mx",
+  "Brasil": "br",
+  "Argentina": "ar",
+  "Estados Unidos": "us",
+  "Canadá": "ca",
+  "Egipto": "eg",
+  "Nigeria": "ng",
+  "Sudáfrica": "za",
+  "Australia": "au"
+};
+
+function flagForCountry(estado) {
+  const code = countryCodes[estado];
+  if (!code) return "";
+  return `<img src="https://flagcdn.com/24x18/${code}.png"
+               alt="${estado}"
+               class="flag-icon">`;
+}
+
+/* ========= 3. Dataset España: capitals ========= */
+const spanishCapitals = [
+  { ciudad:"Madrid",     factorPrice:3.2, factorSalary:1.15 },
+  { ciudad:"Barcelona",  factorPrice:3.0, factorSalary:1.12 },
+  { ciudad:"Valencia",   factorPrice:2.4, factorSalary:1.05 },
+  { ciudad:"Sevilla",    factorPrice:2.2, factorSalary:1.03 },
+  { ciudad:"Zaragoza",   factorPrice:2.1, factorSalary:1.02 },
+  { ciudad:"Málaga",     factorPrice:2.2, factorSalary:1.03 },
+  { ciudad:"Murcia",     factorPrice:1.9, factorSalary:0.98 },
+  { ciudad:"Palma",      factorPrice:2.8, factorSalary:1.05 },
+  { ciudad:"Bilbao",     factorPrice:2.7, factorSalary:1.08 },
+  { ciudad:"A Coruña",   factorPrice:2.0, factorSalary:0.97 },
+  { ciudad:"Valladolid", factorPrice:1.8, factorSalary:0.95 },
+  { ciudad:"Oviedo",     factorPrice:1.9, factorSalary:0.97 },
+  { ciudad:"Santander",  factorPrice:2.1, factorSalary:0.99 },
+  { ciudad:"Pamplona",   factorPrice:2.3, factorSalary:1.02 },
+  { ciudad:"Logroño",    factorPrice:1.7, factorSalary:0.93 },
+  { ciudad:"Toledo",     factorPrice:1.8, factorSalary:0.94 },
+  { ciudad:"Salamanca",  factorPrice:1.8, factorSalary:0.93 },
+  { ciudad:"Badajoz",    factorPrice:1.5, factorSalary:0.88 },
+  { ciudad:"Cádiz",      factorPrice:2.0, factorSalary:0.96 },
+  { ciudad:"Huelva",     factorPrice:1.6, factorSalary:0.90 },
+  { ciudad:"Jaén",       factorPrice:1.5, factorSalary:0.88 },
+  { ciudad:"Almería",    factorPrice:1.6, factorSalary:0.90 },
+  { ciudad:"Granada",    factorPrice:1.9, factorSalary:0.96 },
+  { ciudad:"Córdoba",    factorPrice:1.7, factorSalary:0.92 },
+  { ciudad:"Tarragona",  factorPrice:2.2, factorSalary:1.00 },
+  { ciudad:"Girona",     factorPrice:2.3, factorSalary:1.03 },
+  { ciudad:"Lleida",     factorPrice:1.7, factorSalary:0.92 },
+  { ciudad:"Castellón",  factorPrice:1.8, factorSalary:0.94 },
+  { ciudad:"Alicante",   factorPrice:2.0, factorSalary:0.98 },
+  { ciudad:"Cuenca",     factorPrice:1.4, factorSalary:0.85 },
+  { ciudad:"Guadalajara",factorPrice:1.8, factorSalary:0.94 },
+  { ciudad:"Ciudad Real",factorPrice:1.5, factorSalary:0.88 },
+  { ciudad:"Albacete",   factorPrice:1.6, factorSalary:0.89 },
+  { ciudad:"Burgos",     factorPrice:1.9, factorSalary:0.97 },
+  { ciudad:"León",       factorPrice:1.7, factorSalary:0.92 },
+  { ciudad:"Soria",      factorPrice:1.4, factorSalary:0.85 },
+  { ciudad:"Segovia",    factorPrice:1.8, factorSalary:0.93 },
+  { ciudad:"Ávila",      factorPrice:1.4, factorSalary:0.85 },
+  { ciudad:"Zamora",     factorPrice:1.4, factorSalary:0.84 },
+  { ciudad:"Huesca",     factorPrice:1.5, factorSalary:0.88 },
+  { ciudad:"Teruel",     factorPrice:1.3, factorSalary:0.82 },
+  { ciudad:"Lugo",       factorPrice:1.4, factorSalary:0.85 },
+  { ciudad:"Ourense",    factorPrice:1.4, factorSalary:0.85 },
+  { ciudad:"Pontevedra", factorPrice:1.6, factorSalary:0.90 },
+  { ciudad:"Cáceres",    factorPrice:1.4, factorSalary:0.86 },
+  { ciudad:"Las Palmas", factorPrice:2.3, factorSalary:1.02 },
+  { ciudad:"Tenerife",   factorPrice:2.2, factorSalary:1.00 }
+];
+
+/* ========= 4. Europa: 3 ciutats per país ========= */
+const europeBig = [
+  { estado:"Francia", ciudades:["París","Marsella","Lyon"] },
+  { estado:"Italia", ciudades:["Roma","Milán","Nápoles"] },
+  { estado:"Alemania", ciudades:["Berlín","Hamburgo","Múnich"] },
+  { estado:"Reino Unido", ciudades:["Londres","Birmingham","Manchester"] },
+  { estado:"Países Bajos", ciudades:["Ámsterdam","Róterdam","La Haya"] },
+  { estado:"Bélgica", ciudades:["Bruselas","Amberes","Gante"] },
+  { estado:"Portugal", ciudades:["Lisboa","Oporto","Braga"] },
+  { estado:"Suiza", ciudades:["Zúrich","Ginebra","Basilea"] },
+  { estado:"Suecia", ciudades:["Estocolmo","Gotemburgo","Malmö"] },
+  { estado:"Noruega", ciudades:["Oslo","Bergen","Trondheim"] },
+  { estado:"Dinamarca", ciudades:["Copenhague","Aarhus","Odense"] },
+  { estado:"Polonia", ciudades:["Varsovia","Cracovia","Lodz"] },
+  { estado:"Austria", ciudades:["Viena","Graz","Linz"] },
+  { estado:"Grecia", ciudades:["Atenas","Tesalónica","Patras"] },
+  { estado:"Irlanda", ciudades:["Dublín","Cork","Limerick"] }
+];
+
+/* ========= 5. Món A ========= */
+const worldA = [
+  // ÀSIA
+  { estado:"Japón", ciudad:"Tokio",     currency:"JPY", price:9800, salaries:{medio:32000,ingeniero:68000,doctor:110000,funcionario:40000}},
+  { estado:"India", ciudad:"Delhi",     currency:"USD", price:2500, salaries:{medio:8000,ingeniero:24000,doctor:35000,funcionario:9000}},
+  { estado:"China", ciudad:"Shanghai",  currency:"USD", price:5500, salaries:{medio:18000,ingeniero:42000,doctor:60000,funcionario:20000}},
+  { estado:"China", ciudad:"Beijing",   currency:"USD", price:5200, salaries:{medio:17000,ingeniero:40000,doctor:58000,funcionario:19000}},
+  { estado:"China", ciudad:"Guangzhou", currency:"USD", price:4800, salaries:{medio:15000,ingeniero:35000,doctor:55000,funcionario:17000}},
+  { estado:"China", ciudad:"Shenzhen",  currency:"USD", price:5000, salaries:{medio:16000,ingeniero:38000,doctor:56000,funcionario:18000}},
+  { estado:"Corea del Sur", ciudad:"Seúl", currency:"USD", price:7200, salaries:{medio:25000,ingeniero:52000,doctor:80000,funcionario:26000}},
+  { estado:"Hong Kong", ciudad:"Hong Kong",currency:"USD",price:14000,salaries:{medio:35000,ingeniero:70000,doctor:100000,funcionario:32000}},
+  { estado:"Singapur", ciudad:"Singapur",currency:"USD",price:16000,salaries:{medio:38000,ingeniero:75000,doctor:120000,funcionario:35000}},
+  // AMÈRICA
+  { estado:"México", ciudad:"Ciudad de México",currency:"USD",price:3000,salaries:{medio:12000,ingeniero:30000,doctor:45000,funcionario:14000}},
+  { estado:"Brasil", ciudad:"São Paulo",currency:"USD",price:3500,salaries:{medio:13000,ingeniero:28000,doctor:50000,funcionario:15000}},
+  { estado:"Argentina", ciudad:"Buenos Aires",currency:"USD",price:2600,salaries:{medio:9000,ingeniero:22000,doctor:40000,funcionario:12000}},
+  { estado:"Estados Unidos", ciudad:"Nueva York",currency:"USD",price:14500,salaries:{medio:45000,ingeniero:100000,doctor:160000,funcionario:50000}},
+  { estado:"Estados Unidos", ciudad:"Los Ángeles",currency:"USD",price:10000,salaries:{medio:42000,ingeniero:90000,doctor:150000,funcionario:45000}},
+  { estado:"Estados Unidos", ciudad:"Chicago",currency:"USD",price:6500,salaries:{medio:38000,ingeniero:85000,doctor:140000,funcionario:40000}},
+  { estado:"Canadá", ciudad:"Toronto", currency:"USD", price:7800, salaries:{medio:40000,ingeniero:85000,doctor:130000,funcionario:42000}},
+  // ÀFRICA
+  { estado:"Egipto", ciudad:"El Cairo", currency:"USD", price:1200, salaries:{medio:6000,ingeniero:15000,doctor:25000,funcionario:7000}},
+  { estado:"Nigeria", ciudad:"Lagos",   currency:"USD", price:1500, salaries:{medio:5000,ingeniero:13000,doctor:20000,funcionario:6000}},
+  { estado:"Sudáfrica", ciudad:"Johannesburgo",currency:"USD",price:3000,salaries:{medio:14000,ingeniero:33000,doctor:55000,funcionario:15000}},
+  // OCEANIA
+  { estado:"Australia", ciudad:"Sydney", currency:"USD",price:11000,salaries:{medio:42000,ingeniero:90000,doctor:150000,funcionario:47000}},
+  { estado:"Australia", ciudad:"Melbourne",currency:"USD",price:9000,salaries:{medio:38000,ingeniero:85000,doctor:140000,funcionario:44000}}
+];
+
+/* ========= 6. Construir llista de ciutats ========= */
+const cities = [];
+// Espanya (totes les capitals)
+spanishCapitals.forEach(c => {
+  cities.push({
+    estado: "España",
+    ciudad: c.ciudad,
+    region: "Europa",
+    currency: "EUR",
+    pricePerSqmLocal: 2500 * c.factorPrice,
+    salariesLocal: {
+      medio: 26000 * c.factorSalary,
+      ingeniero: 60000 * c.factorSalary,
+      doctor: 80000 * c.factorSalary,
+      funcionario: 32000 * c.factorSalary
+    }
+  });
+});
+// Europa 3 per país
+europeBig.forEach(entry => {
+  entry.ciudades.forEach(city => {
+    cities.push({
+      estado: entry.estado,
+      ciudad: city,
+      region: "Europa",
+      currency: "EUR",
+      pricePerSqmLocal: 3500 + Math.random() * 3000,
+      salariesLocal: {
+        medio: 28000 + Math.random() * 12000,
+        ingeniero: 55000 + Math.random() * 30000,
+        doctor: 75000 + Math.random() * 60000,
+        funcionario: 35000 + Math.random() * 15000
+      }
+    });
+  });
+});
+// Món A
+worldA.forEach(c => {
+  cities.push({
+    estado: c.estado,
+    ciudad: c.ciudad,
+    region: "Global",
+    currency: c.currency,
+    pricePerSqmLocal: c.price,
+    salariesLocal: c.salaries
+  });
+});
+
+/* ========= 7. Càlcul global amb filtres ========= */
+const topSpain = ["Madrid","Barcelona","Valencia"];
+
+function computeAllRows(baseCurrency, salaryProfile, salaryMode, scope, searchText) {
+
+  let filtered = cities.filter(c => {
+    if (scope === "europe" && c.region !== "Europa") return false;
+    if (scope === "spain"  && c.estado !== "España") return false;
+
+    if (searchText) {
+      const s = searchText.toLowerCase();
+      if (!c.ciudad.toLowerCase().includes(s) &&
+          !c.estado.toLowerCase().includes(s)) return false;
+    }
+    return true;
+  });
+
+  // Fora d'"España", només 3 ciutats espanyoles (Madrid/Barcelona/Valencia)
+  if (scope !== "spain") {
+    filtered = filtered.filter(c => {
+      if (c.estado !== "España") return true;
+      return topSpain.includes(c.ciudad);
+    });
+  }
+
+  return filtered.map(c => {
+    const priceM2 = convertToBase(c.pricePerSqmLocal, c.currency, baseCurrency);
+    const price100 = priceM2 * 100;
+
+    let salLocal = c.salariesLocal[salaryProfile];
+    if (salaryMode === "neto") salLocal *= 0.70;
+    const salBase = convertToBase(salLocal, c.currency, baseCurrency);
+
+    return {
+      ...c,
+      priceM2Base: priceM2,
+      price100Base: price100,
+      salaryBase: salBase,
+      yearsBase: price100 / salBase
+    };
+  });
+}
+
+/* ========= 8. Ranking global (1 = millor) ========= */
+function buildRankMap(rows) {
+  const sortedByYears = [...rows].sort((a,b) => a.yearsBase - b.yearsBase);
+  const map = {};
+  sortedByYears.forEach((r,i) => {
+    const key = r.estado + "|" + r.ciudad;
+    map[key] = i + 1;
+  });
+  return map;
+}
+
+/* ========= 9. Ordenació ========= */
+let currentSortKey = "rank";
+let currentSortDesc = false;
+
+function orderRows(rows, rankMap, key = "rank", desc = false) {
+  return [...rows].sort((a,b) => {
+    if (key === "rank") {
+      const ra = rankMap[a.estado + "|" + a.ciudad] ?? 9999;
+      const rb = rankMap[b.estado + "|" + b.ciudad] ?? 9999;
+      return desc ? rb - ra : ra - rb;
+    }
+
+    const va = a[key];
+    const vb = b[key];
+    if (typeof va === "string") {
+      return desc ? vb.localeCompare(va) : va.localeCompare(vb);
+    }
+    return desc ? vb - va : va - vb;
+  });
+}
+
+/* ========= 10. Taula ========= */
+function renderTable(rows, rankMap, currency) {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  rows.forEach(r => {
+    const key = r.estado + "|" + r.ciudad;
+    const rank = rankMap[key] ?? "–";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${rank}</td>
+      <td>${flagForCountry(r.estado)}${r.estado}</td>
+      <td>${r.ciudad}</td>
+      <td>${formatCurrency(r.price100Base, currency)}</td>
+      <td>${formatCurrency(r.priceM2Base, currency)}</td>
+      <td>${formatCurrency(r.salaryBase, currency)}</td>
+      <td>${r.yearsBase.toFixed(1)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ========= 11. Chart.js ========= */
+let chartPrecio = null;
+let chartSueldo = null;
+let chartAnios  = null;
+
+function createBarChart(ctx, labels, data, meanValue, colorBar, isMoney, baseCurrency) {
+  return new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Valor",
+          data,
+          backgroundColor: colorBar,
+          order: 1
+        },
+        {
+          label: isMoney
+            ? "Media (" + formatCurrency(meanValue, baseCurrency) + ")"
+            : "Media (" + meanValue.toFixed(1) + " años)",
+          data: labels.map(() => meanValue),
+          type: "line",
+          borderColor: "#ffffff",
+          borderWidth: 3,
+          pointRadius: 0,
+          order: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: "#e5e7eb" } }
+      },
+      scales: {
+        x: { 
+          ticks: { 
+            color: "#e5e7eb",
+            autoSkip: false,
+            maxRotation: 90,
+            minRotation: 60
+          } 
+        },
+        y: {
+          ticks: {
+            color: "#e5e7eb",
+            callback: function(value) {
+              if (isMoney) return formatCurrency(value, baseCurrency);
+              return value.toFixed ? value.toFixed(0) : value;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateCharts(chartRows, baseCurrency) {
+  const labels = chartRows.map(r => r.ciudad);
+
+  // Años
+  const anios = chartRows.map(r => r.yearsBase);
+  const meanA = anios.reduce((a,b) => a+b, 0) / anios.length;
+  if (chartAnios) chartAnios.destroy();
+  chartAnios = createBarChart(
+    document.getElementById("chartAnios"),
+    labels,
+    anios,
+    meanA,
+    "rgba(249,115,22,0.8)",
+    false,
+    baseCurrency
+  );
+
+  // Precio
+  const precios = chartRows.map(r => r.price100Base);
+  const meanP = precios.reduce((a,b)=>a+b,0) / precios.length;
+  if (chartPrecio) chartPrecio.destroy();
+  chartPrecio = createBarChart(
+    document.getElementById("chartPrecio"),
+    labels,
+    precios,
+    meanP,
+    "rgba(56,189,248,0.8)",
+    true,
+    baseCurrency
+  );
+
+  // Sueldos
+  const sueldos = chartRows.map(r => r.salaryBase);
+  const meanS = sueldos.reduce((a,b)=>a+b,0) / sueldos.length;
+  if (chartSueldo) chartSueldo.destroy();
+  chartSueldo = createBarChart(
+    document.getElementById("chartSueldo"),
+    labels,
+    sueldos,
+    meanS,
+    "rgba(74,222,128,0.8)",
+    true,
+    baseCurrency
+  );
+}
+
+/* ========= 12. Events i refresc global ========= */
+const searchInput   = document.getElementById("searchInput");
+const scopeSelect   = document.getElementById("scopeSelect");
+const currencySelect= document.getElementById("currencySelect");
+const salaryProfile = document.getElementById("salaryProfile");
+const salaryMode    = document.getElementById("salaryMode");
+const cityLimitSel  = document.getElementById("cityLimit");
+
+searchInput.addEventListener("input", refreshAll);
+scopeSelect.addEventListener("change", refreshAll);
+currencySelect.addEventListener("change", refreshAll);
+salaryProfile.addEventListener("change", refreshAll);
+salaryMode.addEventListener("change", refreshAll);
+cityLimitSel.addEventListener("change", refreshAll);
+
+document.querySelectorAll("th[data-sort]").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.sort;
+    if (currentSortKey === key) {
+      currentSortDesc = !currentSortDesc;
+    } else {
+      currentSortKey = key;
+      currentSortDesc = false;
+    }
+    refreshAll();
+  });
+});
+
+function refreshAll() {
+  const baseCurrency = currencySelect.value;
+  const profile      = salaryProfile.value;
+  const mode         = salaryMode.value;
+  const scope        = scopeSelect.value;
+  const search       = searchInput.value.trim();
+  const limit        = parseInt(cityLimitSel.value, 10);
+
+  // Totes les files calculades segons àmbit + filtres
+  const allRows = computeAllRows(baseCurrency, profile, mode, scope, search);
+
+  // Ranking global
+  const rankMap = buildRankMap(allRows);
+
+  // Files per taula (sense límit)
+  const sortedTableRows = orderRows(allRows, rankMap, currentSortKey, currentSortDesc);
+  renderTable(sortedTableRows, rankMap, baseCurrency);
+
+  // Files per gràfics: mateix ordre que la taula
+  const sortedForCharts = orderRows(allRows, rankMap, currentSortKey, currentSortDesc);
+  const chartRows = sortedForCharts.slice(0, limit);
+
+  if (chartRows.length > 0) {
+    updateCharts(chartRows, baseCurrency);
+  }
+}
+
+refreshAll();
+</script>
+
+</body>
+</html>
