@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora IPC Real & Salario</title>
+    
+    <!-- Librerías Externas -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Iconos FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           1. SISTEMA DE COLORES (VARIABLES CSS)
+           ========================================= */
+        :root {
+            /* MODO CLARO */
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-input: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            --primary: #2563eb;
+            --accent-green: #10b981; 
+            --accent-red: #ef4444;
+            
+            --chart-grid: #e2e8f0;
+            --chart-text: #64748b;
+        }
+
+        /* MODO OSCURO */
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            
+            --primary: #60a5fa;
+            --chart-grid: #334155;
+            --chart-text: #cbd5e1;
+        }
+
+        /* =========================================
+           2. ESTILOS GENERALES Y LAYOUT
+           ========================================= */
+        
+        /* CORRECCIÓN FONDO: Usamos min-height en body para cubrir scroll */
+        html {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh; /* Cubre toda la pantalla verticalmente */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            width: 100%;
+            flex: 1; /* Hace que el contenedor ocupe el espacio disponible */
+        }
+
+        a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        a:hover { color: var(--accent-green); text-decoration: underline; }
+
+        /* HEADER Y BOTÓN MODO OSCURO */
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* Para posicionar el botón en desktop */
+            margin-bottom: 40px;
+        }
+
+        h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; text-align: center; }
+        .author { margin-top: 8px; font-size: 0.95rem; color: var(--text-muted); text-align: center; }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* ESTILOS RESPONSIVOS PARA HEADER */
+        /* En pantallas grandes: Botón absoluto a la derecha */
+        @media (min-width: 769px) {
+            .theme-toggle {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+        }
+
+        /* CORRECCIÓN SOLAPAMIENTO: En móviles el botón deja de flotar */
+        @media (max-width: 768px) {
+            header {
+                margin-top: 10px;
+            }
+            .theme-toggle {
+                position: static; /* Ya no flota encima del texto */
+                align-self: flex-end; /* Se alinea a la derecha */
+                margin-bottom: 15px; /* Empuja el título hacia abajo */
+            }
+            h1 { font-size: 1.5rem; }
+        }
+
+        /* DASHBOARD GRID */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
+
+        /* TARJETAS */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        h2 {
+            font-size: 1.1rem; font-weight: 700; margin-top: 0; margin-bottom: 20px;
+            padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-main);
+        }
+
+        /* INPUTS */
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .col { flex: 1; }
+
+        input[type="number"], select {
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid var(--border-color); background-color: var(--bg-input);
+            color: var(--text-main); font-size: 1rem; box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
+
+        /* LISTA GASTOS */
+        .spend-row {
+            display: flex; align-items: center; margin-bottom: 12px;
+            padding: 8px; border-radius: 8px; transition: background 0.2s;
+        }
+        .spend-row:hover { background-color: rgba(128, 128, 128, 0.05); }
+
+        .checkbox-wrapper { margin-right: 10px; display: flex; align-items: center; }
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        
+        .spend-name { flex: 1; font-size: 0.95rem; font-weight: 500; }
+        .spend-input { width: 110px; position: relative; }
+        .spend-input input { text-align: right; padding-right: 25px; }
+        .spend-input span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; }
+
+        .info-box {
+            background: rgba(37, 99, 235, 0.1); border-left: 4px solid var(--primary);
+            padding: 12px; border-radius: 6px; font-size: 0.85rem; line-height: 1.4;
+            color: var(--text-main); margin-bottom: 20px;
+        }
+
+        /* KPIS */
+        .kpi-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px; margin-bottom: 25px;
+        }
+        .kpi {
+            background-color: var(--bg-body); padding: 15px; border-radius: 10px;
+            text-align: center; border: 1px solid var(--border-color);
+        }
+        .kpi-val { display: block; font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
+        .kpi-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+
+        .text-green { color: var(--accent-green); }
+        .text-red { color: var(--accent-red); }
+
+        .chart-container { position: relative; height: 400px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="container">
+        
+        <header>
+            <!-- El botón ahora se adapta: Absolute en desktop, Static en móvil -->
+            <button class="theme-toggle" @click="toggleTheme">
+                <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                {{ isDark ? 'Modo Claro' : 'Modo Oscuro' }}
+            </button>
+
+            <div>
+                <h1>📈 IPC Real vs. Salario</h1>
+                <div class="author">
+                    Realizado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            
+            <!-- COLUMNA IZQUIERDA: INPUTS -->
+            <div class="card">
+                <h2>1. Tu Salario</h2>
+                
+                <div class="row">
+                    <div class="col">
+                        <label>Formato</label>
+                        <select v-model="salaryType">
+                            <option value="gross">Bruto</option>
+                            <option value="net">Neto</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Frecuencia</label>
+                        <select v-model="salaryFreq">
+                            <option value="annual">Anual</option>
+                            <option value="monthly">Mensual (12p)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Año 2018 (€)</label>
+                        <input type="number" v-model.number="rawStart" step="100">
+                    </div>
+                    <div class="col">
+                        <label>Año 2024 (€)</label>
+                        <input type="number" v-model.number="rawEnd" step="100">
+                    </div>
+                </div>
+
+                <div class="info-box" v-if="salaryType === 'gross'">
+                    <i class="fas fa-info-circle"></i> 
+                    Se ha aplicado una estimación de IRPF automática. <br>
+                    <strong>Neto Mensual 2024 est: {{ formatMoney(netMonthlyEnd) }}</strong>
+                </div>
+
+                <h2 style="margin-top: 20px;">2. Tus Gastos (2024)</h2>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Define tu gasto mensual actual. Marca el <i class="fas fa-check-square text-green"></i> para ver la evolución de precio de esa categoría en el gráfico.
+                </p>
+
+                <div v-for="(cat, idx) in categories" :key="idx" class="spend-row">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" v-model="cat.showOnChart" title="Graficar esta categoría">
+                    </div>
+                    <div class="spend-name">{{ cat.name }}</div>
+                    <div class="spend-input">
+                        <input type="number" v-model.number="cat.spend" min="0">
+                        <span>€</span>
+                    </div>
+                </div>
+                
+                <div style="text-align: right; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                    Total Gasto: {{ totalSpend }} €
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: GRÁFICO -->
+            <div class="card">
+                
+                <div class="kpi-container">
+                    <div class="kpi">
+                        <span class="kpi-val text-red">{{ cumulativeInflation }}%</span>
+                        <span class="kpi-label">Tu Inflación (18-24)</span>
+                    </div>
+                    <div class="kpi">
+                        <span class="kpi-val text-green">{{ cumulativeSalary }}%</span>
+                        <span class="kpi-label">Tu Aumento Salarial</span>
+                    </div>
+                    <div class="kpi">
+                        <span class="kpi-val" :class="netBalance >= 0 ? 'text-green' : 'text-red'">
+                            {{ netBalance > 0 ? '+' : '' }}{{ netBalance }} €
+                        </span>
+                        <span class="kpi-label">Capacidad Ahorro Mensual</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+                    El gráfico muestra tu <strong>Salario Neto Mensual (Verde)</strong> vs. el coste histórico de mantener tu <strong>Cesta de la Compra actual (Roja)</strong>.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, computed, watch, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            // --- 1. TEMA ---
+            const isDark = ref(false);
+            const toggleTheme = () => {
+                isDark.value = !isDark.value;
+                applyTheme();
+            };
+            const applyTheme = () => {
+                document.body.classList.toggle('dark-mode', isDark.value);
+                renderChart();
+            };
+
+            // --- 2. DATOS Y LOGICA ---
+            const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024];
+            const historicalData = {
+                'Alimentación': [100, 102, 105, 109, 124, 138, 145], 
+                'Vivienda y Suministros': [100, 99, 98, 115, 145, 135, 138],
+                'Transporte': [100, 102, 99, 111, 125, 128, 132],
+                'Restaurantes y Ocio': [100, 101, 103, 105, 112, 119, 125],
+                'Tecnología': [100, 99, 98, 97, 96, 96, 95],
+                'Otros Gastos': [100, 101, 102, 103, 105, 107, 110]
+            };
+
+            const salaryType = ref('gross');
+            const salaryFreq = ref('annual');
+            const rawStart = ref(24000);
+            const rawEnd = ref(32000);
+
+            const categories = ref([
+                { name: 'Alimentación', spend: 350, key: 'Alimentación', showOnChart: false, color: '#f59e0b' },
+                { name: 'Vivienda y Suministros', spend: 700, key: 'Vivienda y Suministros', showOnChart: true, color: '#8b5cf6' },
+                { name: 'Transporte', spend: 120, key: 'Transporte', showOnChart: false, color: '#06b6d4' },
+                { name: 'Restaurantes y Ocio', spend: 200, key: 'Restaurantes y Ocio', showOnChart: false, color: '#ec4899' },
+                { name: 'Tecnología', spend: 60, key: 'Tecnología', showOnChart: false, color: '#94a3b8' },
+                { name: 'Otros Gastos', spend: 100, key: 'Otros Gastos', showOnChart: false, color: '#64748b' }
+            ]);
+
+            // Estimación IRPF
+            const estimateNetMonthly = (val) => {
+                if(!val) return 0;
+                let grossAnnual = val;
+                if (salaryType.value === 'net') {
+                    return salaryFreq.value === 'annual' ? val / 12 : val;
+                }
+                if (salaryFreq.value === 'monthly') grossAnnual = val * 12;
+
+                const ss = 0.0635;
+                let irpf = 0;
+                if (grossAnnual < 12450) irpf = 0.02;
+                else if (grossAnnual < 20200) irpf = 0.12;
+                else if (grossAnnual < 35200) irpf = 0.17;
+                else if (grossAnnual < 60000) irpf = 0.24;
+                else irpf = 0.35;
+
+                return (grossAnnual * (1 - (ss + irpf))) / 12; 
+            };
+
+            const netMonthlyStart = computed(() => estimateNetMonthly(rawStart.value));
+            const netMonthlyEnd = computed(() => estimateNetMonthly(rawEnd.value));
+
+            // Series
+            const salarySeries = computed(() => {
+                const s = netMonthlyStart.value;
+                const e = netMonthlyEnd.value;
+                const arr = [];
+                const step = (e - s) / (years.length - 1);
+                for(let i=0; i<years.length; i++) arr.push(s + (step * i));
+                return arr;
+            });
+
+            const totalSpend = computed(() => categories.value.reduce((a,c) => a + c.spend, 0));
+            
+            const costSeries = computed(() => {
+                if(totalSpend.value === 0) return years.map(() => 0);
+                const indices = years.map((_, yIdx) => {
+                    let sum = 0;
+                    categories.value.forEach(cat => {
+                        const weight = cat.spend / totalSpend.value;
+                        sum += historicalData[cat.key][yIdx] * weight;
+                    });
+                    return sum;
+                });
+                const idx24 = indices[indices.length - 1];
+                const baseCost = totalSpend.value / (idx24 / 100);
+                return indices.map(idx => baseCost * (idx/100));
+            });
+
+            // KPIs
+            const cumulativeInflation = computed(() => {
+                const s = costSeries.value;
+                if(!s[0]) return 0;
+                return (((s[s.length-1] - s[0]) / s[0]) * 100).toFixed(1);
+            });
+            const cumulativeSalary = computed(() => {
+                if(!netMonthlyStart.value) return 0;
+                return (((netMonthlyEnd.value - netMonthlyStart.value) / netMonthlyStart.value) * 100).toFixed(1);
+            });
+            const netBalance = computed(() => (netMonthlyEnd.value - totalSpend.value).toFixed(0));
+            const formatMoney = (v) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0}).format(v);
+
+            // Chart
+            let chartInstance = null;
+            const renderChart = () => {
+                const ctx = document.getElementById('mainChart').getContext('2d');
+                if(chartInstance) chartInstance.destroy();
+
+                const style = getComputedStyle(document.body);
+                const gridColor = style.getPropertyValue('--chart-grid').trim();
+                const textColor = style.getPropertyValue('--chart-text').trim();
+
+                const datasets = [
+                    {
+                        label: 'Salario Neto',
+                        data: salarySeries.value,
+                        borderColor: '#10b981', backgroundColor: '#10b981',
+                        borderWidth: 3, tension: 0.3, pointRadius: 3
+                    },
+                    {
+                        label: 'Coste de Vida (Tu IPC)',
+                        data: costSeries.value,
+                        borderColor: '#ef4444', backgroundColor: '#ef4444',
+                        borderWidth: 3, borderDash: [6,6], tension: 0.3, pointRadius: 0
+                    }
+                ];
+
+                categories.value.forEach(cat => {
+                    if(cat.showOnChart && cat.spend > 0) {
+                        const hData = historicalData[cat.key];
+                        const idx24 = hData[hData.length-1];
+                        const base = cat.spend / (idx24/100);
+                        const data = hData.map(v => base * (v/100));
+                        datasets.push({
+                            label: cat.name, data: data, borderColor: cat.color,
+                            borderWidth: 2, fill: false, tension: 0.3, pointRadius: 0
+                        });
+                    }
+                });
+
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: years, datasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { labels: { color: textColor } },
+                            tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + Math.round(c.raw) + ' €' } }
+                        },
+                        scales: {
+                            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                            y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                        }
+                    }
+                });
+            };
+
+            watch([rawStart, rawEnd, salaryType, salaryFreq, categories], () => renderChart(), { deep: true });
+
+            onMounted(() => {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    isDark.value = true;
+                    applyTheme();
+                } else {
+                    renderChart();
+                }
+            });
+
+            return {
+                isDark, toggleTheme, salaryType, salaryFreq, rawStart, rawEnd,
+                categories, netMonthlyEnd, cumulativeInflation, cumulativeSalary, netBalance, totalSpend, formatMoney
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
