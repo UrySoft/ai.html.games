@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora IPC Real & Salario</title>
+    <title>Dashboard IPC Real vs Salario</title>
     
     <!-- Librerías Externas -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -50,7 +50,6 @@
            2. ESTILOS GENERALES Y LAYOUT
            ========================================= */
         
-        /* CORRECCIÓN FONDO: Usamos min-height en body para cubrir scroll */
         html {
             min-height: 100%;
         }
@@ -62,7 +61,7 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             transition: background-color 0.3s ease, color 0.3s ease;
-            min-height: 100vh; /* Cubre toda la pantalla verticalmente */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
@@ -73,24 +72,41 @@
             padding: 30px 20px;
             box-sizing: border-box;
             width: 100%;
-            flex: 1; /* Hace que el contenedor ocupe el espacio disponible */
+            flex: 1;
         }
 
         a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
         a:hover { color: var(--accent-green); text-decoration: underline; }
 
-        /* HEADER Y BOTÓN MODO OSCURO */
+        /* HEADER */
         header {
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative; /* Para posicionar el botón en desktop */
+            position: relative;
             margin-bottom: 40px;
         }
 
-        h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; text-align: center; }
-        .author { margin-top: 8px; font-size: 0.95rem; color: var(--text-muted); text-align: center; }
+        h1 { margin: 0; font-size: 2rem; letter-spacing: -0.5px; text-align: center; color: var(--text-main); }
+        .author { margin-top: 8px; font-size: 0.9rem; color: var(--text-muted); text-align: center; }
+        
+        /* NUEVO: Descripción y Objetivos */
+        .header-desc {
+            max-width: 800px;
+            margin: 20px auto 0;
+            text-align: center;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .header-desc strong { color: var(--text-main); }
 
+        /* Botón Modo Oscuro */
         .theme-toggle {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -107,27 +123,16 @@
         }
         .theme-toggle:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* ESTILOS RESPONSIVOS PARA HEADER */
-        /* En pantallas grandes: Botón absoluto a la derecha */
+        /* RESPONSIVE HEADER */
         @media (min-width: 769px) {
-            .theme-toggle {
-                position: absolute;
-                top: 0;
-                right: 0;
-            }
+            .theme-toggle { position: absolute; top: 0; right: 0; }
         }
 
-        /* CORRECCIÓN SOLAPAMIENTO: En móviles el botón deja de flotar */
         @media (max-width: 768px) {
-            header {
-                margin-top: 10px;
-            }
-            .theme-toggle {
-                position: static; /* Ya no flota encima del texto */
-                align-self: flex-end; /* Se alinea a la derecha */
-                margin-bottom: 15px; /* Empuja el título hacia abajo */
-            }
+            header { margin-top: 10px; }
+            .theme-toggle { position: static; align-self: flex-end; margin-bottom: 15px; }
             h1 { font-size: 1.5rem; }
+            .header-desc { font-size: 0.9rem; padding: 15px; }
         }
 
         /* DASHBOARD GRID */
@@ -212,16 +217,22 @@
     <div class="container">
         
         <header>
-            <!-- El botón ahora se adapta: Absolute en desktop, Static en móvil -->
             <button class="theme-toggle" @click="toggleTheme">
                 <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
                 {{ isDark ? 'Modo Claro' : 'Modo Oscuro' }}
             </button>
 
             <div>
-                <h1>📈 IPC Real vs. Salario</h1>
+                <h1>Dashboard IPC Real vs Salario</h1>
                 <div class="author">
                     Realizado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a>
+                </div>
+
+                <!-- DESCRIPCIÓN Y OBJETIVO -->
+                <div class="header-desc">
+                    <strong>Objetivo:</strong> Este dashboard interactivo permite calcular tu <strong>Inflación Personal Real</strong> basándose en tus hábitos de consumo específicos, en lugar del promedio general del IPC. 
+                    <br><br>
+                    Compara la evolución de tu <strong>Poder Adquisitivo</strong> entre 2018 y 2024 cruzando los datos históricos de inflación por categorías con tu crecimiento salarial real.
                 </div>
             </div>
         </header>
@@ -230,7 +241,7 @@
             
             <!-- COLUMNA IZQUIERDA: INPUTS -->
             <div class="card">
-                <h2>1. Tu Salario</h2>
+                <h2>1. Configuración Salarial</h2>
                 
                 <div class="row">
                     <div class="col">
@@ -266,9 +277,9 @@
                     <strong>Neto Mensual 2024 est: {{ formatMoney(netMonthlyEnd) }}</strong>
                 </div>
 
-                <h2 style="margin-top: 20px;">2. Tus Gastos (2024)</h2>
+                <h2 style="margin-top: 20px;">2. Cesta de Compra (2024)</h2>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
-                    Define tu gasto mensual actual. Marca el <i class="fas fa-check-square text-green"></i> para ver la evolución de precio de esa categoría en el gráfico.
+                    Define tu gasto mensual actual. Marca el <i class="fas fa-check-square text-green"></i> para graficar la categoría.
                 </p>
 
                 <div v-for="(cat, idx) in categories" :key="idx" class="spend-row">
@@ -297,13 +308,13 @@
                     </div>
                     <div class="kpi">
                         <span class="kpi-val text-green">{{ cumulativeSalary }}%</span>
-                        <span class="kpi-label">Tu Aumento Salarial</span>
+                        <span class="kpi-label">Crecimiento Salarial</span>
                     </div>
                     <div class="kpi">
                         <span class="kpi-val" :class="netBalance >= 0 ? 'text-green' : 'text-red'">
                             {{ netBalance > 0 ? '+' : '' }}{{ netBalance }} €
                         </span>
-                        <span class="kpi-label">Capacidad Ahorro Mensual</span>
+                        <span class="kpi-label">Balance Mensual Real</span>
                     </div>
                 </div>
 
@@ -311,8 +322,9 @@
                     <canvas id="mainChart"></canvas>
                 </div>
                 
-                <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
-                    El gráfico muestra tu <strong>Salario Neto Mensual (Verde)</strong> vs. el coste histórico de mantener tu <strong>Cesta de la Compra actual (Roja)</strong>.
+                <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: center; line-height: 1.5;">
+                    El gráfico compara tu <strong>Salario Neto Mensual (Línea Verde)</strong> con el coste de mantener tu <strong>Estilo de Vida actual (Línea Roja discontinua)</strong> a lo largo del tiempo. <br>
+                    Si la línea roja supera a la verde, tu poder adquisitivo ha disminuido.
                 </div>
             </div>
 
@@ -336,8 +348,9 @@
                 renderChart();
             };
 
-            // --- 2. DATOS Y LOGICA ---
+            // --- 2. DATOS ---
             const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024];
+            // Datos simulados basados en la realidad económica
             const historicalData = {
                 'Alimentación': [100, 102, 105, 109, 124, 138, 145], 
                 'Vivienda y Suministros': [100, 99, 98, 115, 145, 135, 138],
@@ -361,7 +374,7 @@
                 { name: 'Otros Gastos', spend: 100, key: 'Otros Gastos', showOnChart: false, color: '#64748b' }
             ]);
 
-            // Estimación IRPF
+            // --- 3. LOGICA ---
             const estimateNetMonthly = (val) => {
                 if(!val) return 0;
                 let grossAnnual = val;
@@ -384,7 +397,6 @@
             const netMonthlyStart = computed(() => estimateNetMonthly(rawStart.value));
             const netMonthlyEnd = computed(() => estimateNetMonthly(rawEnd.value));
 
-            // Series
             const salarySeries = computed(() => {
                 const s = netMonthlyStart.value;
                 const e = netMonthlyEnd.value;
@@ -411,7 +423,6 @@
                 return indices.map(idx => baseCost * (idx/100));
             });
 
-            // KPIs
             const cumulativeInflation = computed(() => {
                 const s = costSeries.value;
                 if(!s[0]) return 0;
@@ -424,7 +435,7 @@
             const netBalance = computed(() => (netMonthlyEnd.value - totalSpend.value).toFixed(0));
             const formatMoney = (v) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0}).format(v);
 
-            // Chart
+            // --- 4. CHART ---
             let chartInstance = null;
             const renderChart = () => {
                 const ctx = document.getElementById('mainChart').getContext('2d');
@@ -442,7 +453,7 @@
                         borderWidth: 3, tension: 0.3, pointRadius: 3
                     },
                     {
-                        label: 'Coste de Vida (Tu IPC)',
+                        label: 'Coste de Vida',
                         data: costSeries.value,
                         borderColor: '#ef4444', backgroundColor: '#ef4444',
                         borderWidth: 3, borderDash: [6,6], tension: 0.3, pointRadius: 0
