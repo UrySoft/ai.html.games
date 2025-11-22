@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Siege v32: Dynamic Pulse</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Share+Tech+Mono&display=swap');
+        body { margin: 0; overflow: hidden; background-color: #050814; color: #eef; font-family: 'Share Tech Mono', monospace; user-select: none; touch-action: none; }
+        canvas { display: block; cursor: crosshair; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+
+        /* Panels ajustats per no solapar amb OPCIONES */
+        .hud-panel { background: rgba(5, 10, 15, 0.95); border: 1px solid #00ccff; border-left: 4px solid #00ccff; padding: 6px 8px; pointer-events: auto; box-shadow: 0 0 20px rgba(0, 204, 255, 0.3); transform: skewX(-5deg); min-width: 140px; max-width: 210px; }
+        #shield-panel { position:absolute; top:10px; left:10px; }
+        #score-panel { position:absolute; top:10px; right:10px; border-left:none; border-right:4px solid #ffd700; text-align:right; }
+
+        .hud-content { transform: skewX(5deg); }
+        .stat-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 2px; color: #00ccff; }
+        .bar-frame { width: 100%; height: 6px; background: #111; margin-top: 2px; border: 1px solid #444; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #ff3333, #ffff00, #00ff00); width: 100%; transition: width 0.2s; }
+
+        .wave-announcement { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); font-family: 'Teko'; font-size: 5rem; color: #ff3333; text-shadow: 0 0 20px red; opacity: 0; transition: opacity 0.5s; pointer-events: none; text-align: center; line-height: 1; z-index: 20; }
+        .wave-sub { font-size: 2rem; color: #fff; text-shadow: none; letter-spacing: 5px; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(20,40,60,0.9) 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.3s; backdrop-filter: blur(8px); }
+        .hidden { opacity: 0; pointer-events: none; display: none !important; }
+        h1 { font-family: 'Teko', sans-serif; font-size: 10vmin; color: #00ccff; margin: 0; text-shadow: 0 0 30px #00ccff; }
+        .btn-main { background: rgba(0, 204, 255, 0.1); border: 2px solid #00ccff; color: #00ccff; padding: 15px 40px; font-size: 1.5rem; font-family: 'Teko', sans-serif; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 2px; margin-top: 20px; pointer-events: auto; }
+        .btn-main:hover { background: #00ccff; color: #000; box-shadow: 0 0 30px #00ccff; }
+
+        #btn-shop-open { position: absolute; bottom: 20px; left: 20px; pointer-events: auto; z-index: 50; background: #000; border: 2px solid #ffd700; color: #ffd700; padding: 10px 30px; font-family: 'Teko'; font-size: 1.8rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        #btn-shop-open:hover { background: #ffd700; color: #000; }
+
+        #btn-options { position: absolute; bottom: 20px; right: 20px; pointer-events: auto; z-index: 50; background: #000; border: 2px solid #00ccff; color: #00ccff; padding: 10px 24px; font-family: 'Teko'; font-size: 1.6rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; box-shadow: 0 0 15px rgba(0,204,255,0.3); }
+        #btn-options:hover { background: #00ccff; color: #000; }
+
+        .sort-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .sort-btn { background: transparent; border: 1px solid #666; color: #888; padding: 5px 15px; cursor: pointer; font-family: 'Share Tech Mono'; font-size: 0.8rem; }
+        .sort-btn.active { border-color: #00ccff; color: #00ccff; background: rgba(0,204,255,0.1); }
+
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; width: 95%; max-width: 1200px; max-height: 65vh; overflow-y: auto; padding: 10px; }
+        .card { background: rgba(15,20,25,0.95); border: 1px solid #444; padding: 10px; display: flex; flex-direction: column; position: relative; transition: 0.2s; }
+        .card:hover { border-color: #00ccff; box-shadow: 0 0 15px rgba(0,204,255,0.2); transform: translateY(-2px); }
+        .card canvas { width: 100%; height: 80px; background: radial-gradient(circle, #222 0%, #000 100%); margin-bottom: 5px; border: 1px solid #333; border-radius: 4px; display: block; }
+        .card h3 { margin: 0; font-family: 'Teko'; font-size: 1.5rem; color: #fff; letter-spacing: 1px; line-height: 1; display:flex; align-items:center; gap:6px; }
+        .card h3 .icon { font-size: 1.3rem; }
+        .card .info { font-size: 0.7rem; color: #aaa; display: flex; justify-content: space-between; margin-top: 5px; }
+        .card .desc-box { font-size: 0.75rem; color: #ccc; margin: 5px 0; line-height: 1.2; flex-grow: 1; }
+        .card .pros { color: #00ff99; font-size: 0.7rem; margin-top: 4px; }
+        .card .cons { color: #ff5555; font-size: 0.7rem; }
+        .card .stats { font-size: 0.9rem; color: #00ccff; display: flex; justify-content: space-between; margin-top: 8px; font-weight: bold; border-top: 1px solid #333; padding-top: 5px;}
+        .card button { background: rgba(0,204,255,0.1); border: 1px solid #00ccff; color: #00ccff; padding: 8px; width: 100%; margin-top: 8px; cursor: pointer; font-weight: bold; font-family: 'Teko'; font-size: 1.2rem; transition: 0.2s; }
+        .card button:hover { background: #00ccff; color: #000; }
+
+        .dmg-pop { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 1s forwards; color: #fff; text-shadow: 0 0 3px #000; font-size: 1.2rem; z-index: 50; }
+        @keyframes floatUp { 0% { transform:translateY(0) scale(1); opacity:1; } 100% { transform:translateY(-40px); opacity:0; } }
+
+        .opt-row { width: 80%; max-width: 400px; margin: 8px 0; font-size: 0.9rem; color:#ddd; }
+        .opt-row label { display:block; margin-bottom:4px; font-family:'Teko'; font-size:1.3rem; letter-spacing:1px; }
+        .opt-row input[type=range] { width:100%; }
+        .opt-row input[type=checkbox] { transform:scale(1.2); margin-right:6px; }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="wave-msg" class="wave-announcement">ALERTA DE PROXIMIDAD<div class="wave-sub">NUEVA OLEADA</div></div>
+    <button id="btn-shop-open" onclick="Game.openShop()">ARSENAL</button>
+    <button id="btn-options" onclick="Game.openOptions()">OPCIONES</button>
+
+    <div id="ui-layer">
+        <div id="shield-panel" class="hud-panel">
+            <div class="hud-content">
+                <div class="stat-row">
+                    <span>ESCUDO TIERRA</span><span id="hp-txt">100%</span>
+                </div>
+                <div class="bar-frame"><div id="hp-bar" class="bar-fill"></div></div>
+                <div style="font-size:0.8rem; color:#aaa; margin-top:5px;" id="wave-txt">SISTEMAS ONLINE</div>
+            </div>
+        </div>
+        <div id="score-panel" class="hud-panel">
+            <div class="hud-content">
+                <div style="font-size: 2rem; color: #ffd700; font-family:'Teko';" id="money-txt">0 CR</div>
+                <div style="font-size: 0.8rem; color: #00ff00;" id="target-status">AUTO</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="start-screen" class="screen">
+        <h1>ORBITAL SIEGE</h1>
+        <p>Comanda la defensa planetaria.<br>Música adaptativa y gráficos HD.</p>
+        <button class="btn-main" onclick="Game.start()">DESPLEGAR</button>
+    </div>
+
+    <div id="shop-screen" class="screen hidden">
+        <h2 style="font-family:'Teko'; font-size:3rem; color:#ffd700; margin:0;">ARSENAL</h2>
+        <div style="font-size: 2rem; color: #fff; text-align: center; margin-bottom: 10px; font-family: 'Teko';">
+            CRÉDITOS: <span id="shop-money" style="color:#ffd700">0</span>
+        </div>
+        <div class="sort-bar">
+            <button class="sort-btn active" onclick="Game.sortShop('cost', event)">COSTE</button>
+            <button class="sort-btn" onclick="Game.sortShop('dmg', event)">DAÑO</button>
+            <button class="sort-btn" onclick="Game.sortShop('range', event)">ALCANCE</button>
+        </div>
+        <div class="shop-grid" id="shop-grid"></div>
+        <button class="btn-main" onclick="Game.closeShop()">VOLVER AL COMBATE</button>
+    </div>
+
+    <div id="options-screen" class="screen hidden">
+        <h2 style="font-family:'Teko'; font-size:3rem; color:#00ccff; margin:0;">OPCIONES</h2>
+        <div class="opt-row">
+            <label>Brillo escena / estrellas</label>
+            <input id="opt-brightness" type="range" min="0.5" max="2.0" step="0.1" value="1.0" onchange="Game.updateSettings()">
+        </div>
+        <div class="opt-row">
+            <label>Volumen general</label>
+            <input id="opt-volume" type="range" min="0" max="1" step="0.05" value="0.8" onchange="Game.updateSettings()">
+        </div>
+        <div class="opt-row">
+            <label><input id="opt-sfx" type="checkbox" checked onchange="Game.updateSettings()"> Sonidos de disparo / explosión</label>
+        </div>
+        <div class="opt-row">
+            <label><input id="opt-music" type="checkbox" checked onchange="Game.updateSettings()"> Música ambiente</label>
+        </div>
+        <button class="btn-main" onclick="Game.closeOptions()">VOLVER</button>
+    </div>
+
+    <div id="gameover-screen" class="screen hidden">
+        <h1 style="color:#ff4444;">CRÍTICO</h1>
+        <p>Oleadas: <span id="final-wave"></span></p>
+        <button class="btn-main" onclick="Game.reset()">REINICIAR</button>
+    </div>
+
+    <script>
+        const COLORS = { bullet: 0xffff00, plasma: 0x00ffcc, laser: 0xff00ff, missile: 0xff4400, fire:0xff8800, rail: 0x8800ff };
+
+        const WEAPONS = {
+            'blaster': { icon:'◆', name: 'Autocañón', cost: 80,  dmg: 15,  range: 450,  rate: 30,  color: COLORS.bullet, type: 'proj',    speed: 7,  hp: 50,  desc: "Dispara balas de energía estándar.", pros: "Equilibrada, barata.", cons: "Bajo daño contra blindados." },
+            'gatling': { icon:'≡', name: 'Gatling',   cost: 150, dmg: 4,   range: 100,  rate: 5,   color: 0xffaa00,     type: 'scatter', speed: 8,  hp: 80,  desc: "Ametralladora rotativa.", pros: "Alta cadencia, barre enjambres.", cons: "Alcance muy corto (100)." },
+            'flak':    { icon:'✹', name: 'Flak AA',   cost: 180, dmg: 25,  range: 450,  rate: 60,  color: 0xffaa00,     type: 'aoe',     speed: 5,  hp: 120, desc: "Proyectiles de fragmentación explosiva.", pros: "Daño en área con onda expansiva.", cons: "Lenta recarga." },
+            'laser':   { icon:'⚡', name: 'Láser',     cost: 220, dmg: 1.2, range: 500,  rate: 0,   color: 0x00ffff,     type: 'beam',    hp: 60,  desc: "Haz continuo de energía pura.", pros: "Puntería perfecta, muy visible.", cons: "Sin daño masivo." },
+            'missile': { icon:'☢', name: 'Enjambre',  cost: 260, dmg: 35,  range: 900,  rate: 120, color: COLORS.missile,type: 'swarm',  speed: 5,  hp: 100, count: 6, desc: "Lanza micromisiles guiados.", pros: "Persecución automática en curva.", cons: "Proyectiles lentos." },
+            'sniper':  { icon:'✛', name: 'Railgun',   cost: 320, dmg: 180, range: 1200, rate: 180, color: COLORS.rail,  type: 'railgun', hp: 40, desc: "Acelerador magnético perforante.", pros: "Atraviesa enemigos, alcance extremo.", cons: "Recarga muy lenta." },
+            'tesla':   { icon:'⚙', name: 'Tesla',     cost: 260, dmg: 15,  range: 300,  rate: 40,  color: 0x8888ff,     type: 'chain',   hp: 90,  desc: "Generador de arcos voltaicos.", pros: "Salta entre enemigos.", cons: "Alcance muy corto." },
+            'cryo':    { icon:'✵', name: 'Cryo',      cost: 260, dmg: 3,   range: 350,  rate: 0,   color: 0x0088ff,     type: 'cryo',    hp: 100, desc: "Emisor de partículas bajo cero.", pros: "Ralentiza enemigos.", cons: "Daño muy bajo." },
+            'plasma':  { icon:'●', name: 'Plasma',    cost: 320, dmg: 25,  range: 400,  rate: 60,  color: COLORS.plasma,type: 'pierce',  speed: 4,  hp: 150, desc: "Orbes de materia supercaliente.", pros: "Ignora blindaje, bola brillante con estela.", cons: "Proyectil lento." },
+            'artillery':{icon:'☄',name:'Artillería',  cost: 400, dmg: 200, range: 1500, rate: 300, color: 0xffffff,      type: 'aoe',     speed: 4,  hp: 200, radius: 140, desc: "Cañón pesado orbital.", pros: "Daño masivo en área, gran onda.", cons: "Recarga lentísima." }
+        };
+
+        const Game = {
+            state:'start',
+            wave:1,
+            hp:2000, maxHp:2000, money:800,
+            turrets:[], enemies:[], projs:[], vfx:[], rings:[],
+            target:null, spawnQueue:0, spawnTimer:0, frameCount:0,
+            camRad:800, camTheta:0, camPhi:Math.PI/3,
+            isDragging:false, prevMouse:{x:0,y:0}, orbitTime:0,
+            paused: false, sortMode:'cost', shopTime:0,
+            starFields: [],
+            earth:null,
+            ui: { hpBar:null, hpTxt:null, moneyTxt:null, waveTxt:null },
+            settings: { brightness:1.0, volume:0.8, sfx:true, music:true },
+            audioScale: 1,
+
+            openShop: () => {
+                Game.paused = true;
+                document.getElementById('shop-screen').classList.remove('hidden');
+                Game.renderShop();
+            },
+            closeShop: () => {
+                Game.paused = false;
+                document.getElementById('shop-screen').classList.add('hidden');
+            },
+            openOptions: () => {
+                Game.paused = true;
+                document.getElementById('options-screen').classList.remove('hidden');
+            },
+            closeOptions: () => {
+                Game.paused = false;
+                document.getElementById('options-screen').classList.add('hidden');
+            },
+            updateSettings: () => {
+                const b = parseFloat(document.getElementById('opt-brightness').value);
+                const v = parseFloat(document.getElementById('opt-volume').value);
+                const sfx = document.getElementById('opt-sfx').checked;
+                const mus = document.getElementById('opt-music').checked;
+                Game.settings.brightness = b;
+                Game.settings.volume = v;
+                Game.settings.sfx = sfx;
+                Game.settings.music = mus;
+                Game.audioScale = v;
+                if(MusicSys.gain){
+                    MusicSys.gain.gain.value = (Game.settings.music?1:0) * (0.15 + 0.2*MusicSys.intensity) * Game.settings.volume;
+                }
+                // Adjust light + stars
+                if(Game.sunLight) Game.sunLight.intensity = Game.sunBaseIntensity * b;
+                Game.starFields.forEach(f=>{
+                    f.baseOpacity = f.baseBase * b;
+                });
+            }
+        };
+
+        /* --- MUSIC SYSTEM --- */
+        const MusicSys = {
+            ctx: null, gain: null, intensity: 0,
+            notes: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25],
+            init: () => {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                MusicSys.ctx = new AudioContext();
+                MusicSys.gain = MusicSys.ctx.createGain();
+                MusicSys.gain.gain.value = 0.15 * Game.settings.volume;
+                const delay = MusicSys.ctx.createDelay(); delay.delayTime.value = 0.5;
+                const feedback = MusicSys.ctx.createGain(); feedback.gain.value = 0.6;
+                const filter = MusicSys.ctx.createBiquadFilter(); filter.frequency.value = 1000;
+                MusicSys.gain.connect(delay); delay.connect(feedback); feedback.connect(delay); delay.connect(filter); filter.connect(MusicSys.ctx.destination); MusicSys.gain.connect(MusicSys.ctx.destination);
+                MusicSys.schedule();
+            },
+            update: (enemyCount) => {
+                MusicSys.intensity = Math.min(1, enemyCount / 20);
+                if(MusicSys.gain && Game.settings.music){
+                    MusicSys.gain.gain.setTargetAtTime(
+                        (0.15 + (0.2 * MusicSys.intensity)) * Game.settings.volume,
+                        MusicSys.ctx.currentTime,
+                        0.5
+                    );
+                }
+                if(MusicSys.gain && !Game.settings.music){
+                    MusicSys.gain.gain.setTargetAtTime(0.0001, MusicSys.ctx.currentTime, 0.2);
+                }
+            },
+            schedule: () => {
+                if(!MusicSys.ctx) return;
+                const osc = MusicSys.ctx.createOscillator(); const env = MusicSys.ctx.createGain();
+                osc.type = MusicSys.intensity > 0.5 ? 'sawtooth' : 'sine';
+                const freq = MusicSys.notes[Math.floor(Math.random()*MusicSys.notes.length)] * (Math.random()>0.5?0.5:1);
+                osc.frequency.setValueAtTime(freq, MusicSys.ctx.currentTime);
+
+                env.gain.setValueAtTime(0, MusicSys.ctx.currentTime);
+                env.gain.linearRampToValueAtTime(Game.settings.music?0.3*Game.settings.volume:0.0001, MusicSys.ctx.currentTime + 0.1);
+                env.gain.linearRampToValueAtTime(0, MusicSys.ctx.currentTime + 1.5);
+
+                osc.connect(env); env.connect(MusicSys.gain);
+                osc.start(); osc.stop(MusicSys.ctx.currentTime + 2);
+
+                const baseDelay = 4000;
+                const minDelay = 200;
+                const delay = baseDelay - ((baseDelay - minDelay) * MusicSys.intensity);
+                setTimeout(MusicSys.schedule, delay + Math.random()*500);
+            }
+        };
+
+        /* --- AUDIO DISPAROS CINEMATOGRÁFICOS --- */
+        const AudioSys = {
+            ctx: new (window.AudioContext||window.webkitAudioContext)(),
+            play: (t,f,d,v=0.1,opts={}) => {
+                if(!AudioSys.ctx || !Game.settings.sfx) return;
+                if(AudioSys.ctx.state==='suspended') AudioSys.ctx.resume();
+                const o1=AudioSys.ctx.createOscillator();
+                const o2=AudioSys.ctx.createOscillator();
+                const g=AudioSys.ctx.createGain();
+                const filter=AudioSys.ctx.createBiquadFilter();
+                filter.type=opts.filterType||'lowpass';
+                filter.frequency.value=opts.filterFreq||2000;
+                o1.type=t;
+                o2.type=opts.secondType||t;
+                o1.frequency.setValueAtTime(f,AudioSys.ctx.currentTime);
+                o2.frequency.setValueAtTime(f*(opts.detuneFactor||0.98),AudioSys.ctx.currentTime);
+                if(opts.slideTo){
+                    o1.frequency.linearRampToValueAtTime(opts.slideTo,AudioSys.ctx.currentTime+d);
+                    o2.frequency.linearRampToValueAtTime(opts.slideTo*(opts.detuneFactor||1.02),AudioSys.ctx.currentTime+d);
+                }
+                const vol = v * Game.settings.volume;
+                g.gain.setValueAtTime(0,AudioSys.ctx.currentTime);
+                g.gain.linearRampToValueAtTime(vol,AudioSys.ctx.currentTime+0.03);
+                g.gain.exponentialRampToValueAtTime(0.0001,AudioSys.ctx.currentTime+d);
+                o1.connect(filter); o2.connect(filter); filter.connect(g); g.connect(AudioSys.ctx.destination);
+                o1.start(); o2.start();
+                o1.stop(AudioSys.ctx.currentTime+d+0.05);
+                o2.stop(AudioSys.ctx.currentTime+d+0.05);
+            },
+            shot: ()=>AudioSys.play('square',360,0.22,0.28,{secondType:'sawtooth',slideTo:180,filterFreq:2200,detuneFactor:1.05}),
+            boom: ()=>AudioSys.play('sawtooth',60,0.9,0.4,{secondType:'square',slideTo:30,filterFreq:1000,detuneFactor:0.97}),
+            zap:  ()=>AudioSys.play('triangle',900,0.18,0.2,{secondType:'square',slideTo:1300,filterFreq:3000,detuneFactor:1.1}),
+            ui:   ()=>AudioSys.play('sine',1200,0.08,0.1,{filterFreq:2500}),
+            rail: ()=>AudioSys.play('sawtooth',700,0.5,0.3,{secondType:'square',slideTo:260,filterFreq:2400,detuneFactor:1.02})
+        };
+
+        /* --- TEXTURAS --- */
+        const TexGen = {
+            glow: (c) => {
+                const cv=document.createElement('canvas');cv.width=64;cv.height=64;
+                const x=cv.getContext('2d');
+                const g=x.createRadialGradient(32,32,0,32,32,32);
+                g.addColorStop(0,c);
+                g.addColorStop(1,'transparent');
+                x.fillStyle=g;
+                x.fillRect(0,0,64,64);
+                return new THREE.CanvasTexture(cv);
+            },
+            spark: () => {
+                const cv=document.createElement('canvas');cv.width=32;cv.height=32;
+                const x=cv.getContext('2d');
+                x.fillStyle='#fff';
+                x.beginPath();x.arc(16,16,4,0,7);x.fill();
+                const g=x.createRadialGradient(16,16,4,16,16,16);
+                g.addColorStop(0,'rgba(255,255,255,0.8)');
+                g.addColorStop(1,'transparent');
+                x.fillStyle=g;
+                x.beginPath();x.arc(16,16,16,0,7);x.fill();
+                return new THREE.CanvasTexture(cv);
+            },
+            earth: () => {
+                const c = document.createElement('canvas');
+                c.width=512; c.height=512;
+                const ctx=c.getContext('2d');
+                const baseCols = ['#000a1a', '#1a0500', '#001a05', '#1a1a1a'];
+                const baseC = baseCols[Math.floor(Math.random()*baseCols.length)];
+                ctx.fillStyle=baseC;
+                ctx.fillRect(0,0,512,512);
+                ctx.fillStyle='#444';
+                for(let i=0;i<50;i++){
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*512,Math.random()*512,Math.random()*50+10,0,7);
+                    ctx.fill();
+                }
+                return new THREE.CanvasTexture(c);
+            }
+        };
+        const flashTex = TexGen.glow('rgba(255,255,255,1)');
+        const sparkTex = TexGen.spark();
+
+        /* --- ESCENA --- */
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 30000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        document.getElementById('game-container').appendChild(renderer.domElement);
+
+        // SOL ALEATORIO
+        const sunPos = new THREE.Vector3(8000, 2000, -2000);
+        const sunRadius = 180 + Math.random() * 220;
+        const sunColor = new THREE.Color();
+        sunColor.setHSL(Math.random(), 0.7 + Math.random()*0.2, 0.55 + Math.random()*0.1);
+        const sunMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(sunRadius, 32, 32),
+            new THREE.MeshBasicMaterial({color: sunColor.getHex()})
+        );
+        sunMesh.position.copy(sunPos);
+        scene.add(sunMesh);
+
+        const sunIntensity = 1.0 + Math.random() * 1.5;
+        const sunRange     = 20000 + Math.random() * 10000;
+        const sunLight = new THREE.PointLight(sunColor.getHex(), sunIntensity, sunRange);
+        sunLight.position.copy(sunPos);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
+        Game.sunLight = sunLight;
+        Game.sunBaseIntensity = sunIntensity;
+
+        scene.add(new THREE.AmbientLight(0x222244, 0.7));
+
+        const World = new THREE.Group(); scene.add(World);
+
+        const sunGlow = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: TexGen.glow(sunColor.getStyle()),
+                blending: THREE.AdditiveBlending,
+                color: sunColor,
+                transparent: true
+            })
+        );
+        sunGlow.scale.set(sunRadius * 20, sunRadius * 20, 1);
+        sunMesh.add(sunGlow);
+
+        const Draw = {
+            animate: (canvas, type, colorHex, time) => {
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width, h = canvas.height;
+                const col = '#' + colorHex.toString(16).padStart(6,'0');
+                ctx.clearRect(0,0,w,h);
+                ctx.fillStyle = '#444'; ctx.beginPath(); ctx.arc(30, h/2, 15, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 3;
+
+                if(type === 'missile' || type === 'swarm') {
+                    ctx.fillRect(25, h/2-10, 20, 20);
+                    let px = 30 + (time % 100) * 2; if(px > w) px = 30;
+                    if(px > 50) {
+                        ctx.beginPath(); ctx.arc(px, h/2, 4, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.moveTo(50, h/2); ctx.lineTo(px, h/2);
+                        ctx.strokeStyle='#555'; ctx.setLineDash([3,3]); ctx.stroke();
+                    }
+                } else if(type === 'railgun') {
+                    ctx.fillRect(20, h/2-3, 40, 6);
+                    if(time % 60 < 10) {
+                        ctx.beginPath(); ctx.moveTo(60, h/2); ctx.lineTo(w, h/2);
+                        ctx.lineWidth=4; ctx.strokeStyle=col; ctx.setLineDash([]); ctx.stroke();
+                        ctx.lineWidth=1; ctx.strokeStyle='#fff'; ctx.stroke();
+                    }
+                } else if(type === 'beam' || type === 'cryo') {
+                    ctx.beginPath(); ctx.arc(30, h/2, 10, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(40, h/2); ctx.lineTo(w, h/2);
+                    ctx.lineWidth=2; ctx.strokeStyle=col; ctx.setLineDash([]); ctx.stroke();
+                } else if(type === 'chain') {
+                    ctx.fillRect(20, h/2-8, 10, 16);
+                    if(time % 20 < 10) {
+                        ctx.beginPath();
+                        ctx.moveTo(30, h/2);
+                        ctx.lineTo(60, h/2-15);
+                        ctx.lineTo(90, h/2+15);
+                        ctx.lineTo(120, h/2);
+                        ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke();
+                    }
+                } else if(type === 'aoe') {
+                    ctx.fillRect(20, h/2-6, 20, 12);
+                    if(time % 60 > 40) {
+                        ctx.beginPath(); ctx.arc(w-40, h/2, (time%20), 0, Math.PI*2);
+                        ctx.strokeStyle=col; ctx.stroke();
+                    }
+                } else {
+                    ctx.fillRect(20, h/2-5, 20, 10);
+                    let bx = 40 + (time * 5) % (w-40);
+                    ctx.beginPath(); ctx.arc(bx, h/2, 3, 0, Math.PI*2); ctx.fill();
+                }
+            }
+        };
+
+        class Earth {
+            constructor() {
+                this.group = new THREE.Group();
+                this.mesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(50,48,48),
+                    new THREE.MeshPhongMaterial({map:TexGen.earth(), specular:0x111111, shininess:10})
+                );
+                this.group.add(this.mesh);
+                this.shieldHex = new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(56, 2),
+                    new THREE.MeshPhongMaterial({
+                        color: 0x00ffff,
+                        wireframe: true,
+                        transparent: true,
+                        opacity: 0,
+                        emissive: 0x00ffff,
+                        emissiveIntensity: 0,
+                        blending: THREE.AdditiveBlending
+                    })
+                );
+                this.group.add(this.shieldHex);
+                this.shieldAlpha = 0;
+                World.add(this.group);
+            }
+            update() {
+                this.mesh.rotation.y+=0.001;
+                this.shieldHex.rotation.y+=0.0005;
+                if(this.shieldAlpha > 0) {
+                    this.shieldAlpha -= 0.02;
+                    if(this.shieldAlpha < 0) this.shieldAlpha = 0;
+                    this.shieldHex.material.opacity = this.shieldAlpha * 0.5;
+                    this.shieldHex.material.emissiveIntensity = this.shieldAlpha;
+                }
+            }
+            onHit() { this.shieldAlpha = 1.0; AudioSys.zap(); }
+        }
+
+        class Enemy {
+            constructor(wave) {
+                const types = [
+                    {id:0, hp:30,  spd:0.5, col:0xff5555},
+                    {id:1, hp:150, spd:0.2, col:0xffaa00},
+                    {id:2, hp:20,  spd:1.0, col:0xffffaa},
+                    {id:3, hp:800, spd:0.1, col:0xffffff}
+                ];
+                let t = types[0];
+                if(wave>2 && Math.random()>0.7) t=types[2];
+                if(wave>4 && Math.random()>0.8) t=types[1];
+                if(wave%5===0 && Game.spawnQueue===1) t=types[3];
+
+                // Vida x10, recompensa /10
+                this.maxHp = t.hp*(1+wave*0.2) * 10;
+                this.hp=this.maxHp;
+                this.val=Math.max(1, Math.floor((this.maxHp * 0.8)/10));
+                this.speed=t.spd;
+                this.frozen=0;
+                this.typeId = t.id;
+
+                let geo, mat;
+                if(t.id===0) { // caza
+                    geo = new THREE.DodecahedronGeometry(7,0);
+                    mat = new THREE.MeshStandardMaterial({color:t.col, roughness:0.6, metalness:0.1});
+                }
+                else if(t.id===1) { // corbeta
+                    geo = new THREE.BoxGeometry(10,4,20);
+                    mat = new THREE.MeshStandardMaterial({color:t.col, metalness:0.7, roughness:0.3});
+                }
+                else if(t.id===2) { // dron
+                    geo = new THREE.IcosahedronGeometry(6,1);
+                    mat = new THREE.MeshPhongMaterial({color:t.col, emissive:t.col, emissiveIntensity:0.5});
+                }
+                else { // boss
+                    geo = new THREE.TorusKnotGeometry(15, 5, 100, 16);
+                    geo.scale(1,0.3,1);
+                    mat = new THREE.MeshStandardMaterial({color:t.col, metalness:0.8, roughness:0.2});
+                }
+
+                this.mesh = new THREE.Mesh(geo, mat); this.mesh.castShadow=true;
+
+                const dist=1000; const phi=Math.acos(2*Math.random()-1); const theta=Math.random()*Math.PI*2;
+                this.mesh.position.set(
+                    dist*Math.sin(phi)*Math.cos(theta),
+                    dist*Math.sin(phi)*Math.sin(theta),
+                    dist*Math.cos(phi)
+                );
+                this.mesh.lookAt(0,0,0);
+                World.add(this.mesh);
+
+                const c=document.createElement('canvas'); c.width=32; c.height=4;
+                const x=c.getContext('2d');
+                x.fillStyle='#0f0'; x.fillRect(0,0,32,4);
+                this.bar = new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));
+                this.bar.scale.set(20,3,1);
+                World.add(this.bar);
+                this.active=true;
+            }
+            update() {
+                let s = this.speed;
+                if(this.frozen>0) { s*=0.5; this.frozen--; }
+                this.mesh.position.add(
+                    new THREE.Vector3().sub(this.mesh.position).normalize().multiplyScalar(s)
+                );
+                this.bar.position.copy(this.mesh.position);
+                const camVec=camera.position.clone().sub(this.bar.position).normalize();
+                this.bar.position.add(camVec.multiplyScalar(-20));
+                const pct=this.hp/this.maxHp;
+                this.bar.scale.x=20*pct;
+                this.bar.material.color.setHex(pct<0.3?0xff0000:0x00ff00);
+
+                // Estelas ligeras según tipo
+                if(this.typeId === 1 && Game.frameCount%3===0) {
+                    const t=new THREE.Sprite(new THREE.SpriteMaterial({
+                        map:sparkTex, color:0x00aaff, blending:THREE.AdditiveBlending,
+                        transparent:true, opacity:0.6
+                    }));
+                    t.scale.set(5,5,1);
+                    t.position.copy(this.mesh.position);
+                    World.add(t);
+                    Game.vfx.push({t:'fade', m:t, l:20});
+                }
+                if((this.typeId === 0 || this.typeId === 2) && Game.frameCount%2===0) {
+                    const t=new THREE.Sprite(new THREE.SpriteMaterial({
+                        map:sparkTex, color:this.mesh.material.color,
+                        blending:THREE.AdditiveBlending, transparent:true, opacity:0.4
+                    }));
+                    t.scale.set(15,15,1);
+                    t.position.copy(this.mesh.position);
+                    World.add(t);
+                    Game.vfx.push({t:'fade', m:t, l:40});
+                }
+            }
+            hit(dmg, type) {
+                this.hp-=dmg;
+                if(type==='cryo') this.frozen=60;
+                const worldPos = new THREE.Vector3();
+                this.mesh.getWorldPosition(worldPos);
+                Game.spawnFloat(Math.floor(dmg), worldPos, type==='cryo'?'#0ff':'#fff');
+                if(this.hp<=0) this.die();
+            }
+            die() {
+                this.active=false;
+                World.remove(this.mesh);
+                World.remove(this.bar);
+                Game.money+=this.val;
+                AudioSys.boom();
+                Game.fxExplode(this.mesh.position, this.mesh.material.color);
+                if(Game.target===this) Game.target=null;
+            }
+        }
+
+        class Turret {
+            constructor(key) {
+                this.key=key; this.stats=WEAPONS[key];
+                this.reload=0; this.angle=0;
+                this.targetRad=0; this.spd=0;
+                this.hp=this.stats.hp; this.orbitRot=new THREE.Euler(0,0,0);
+                this.group=new THREE.Group(); this.state='deploy'; this.deployT=0;
+
+                // Base
+                const baseGeo = new THREE.CylinderGeometry(4,6,3,10);
+                const baseMat = new THREE.MeshPhongMaterial({color:0x20252a, shininess:20});
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                this.group.add(base);
+
+                this.head=new THREE.Group(); this.head.position.y=3;
+
+                // Geometries diferents per arma
+                if(key==='blaster'){
+                    const body = new THREE.Mesh(
+                        new THREE.BoxGeometry(4,3,10),
+                        new THREE.MeshLambertMaterial({color:this.stats.color})
+                    );
+                    body.position.z=5;
+                    this.head.add(body);
+                } else if(key==='gatling'){
+                    const drum = new THREE.Mesh(
+                        new THREE.CylinderGeometry(4,4,4,16),
+                        new THREE.MeshPhongMaterial({color:0x444444, metalness:0.5, roughness:0.4})
+                    );
+                    drum.rotation.z=Math.PI/2;
+                    this.head.add(drum);
+                    for(let i=0;i<4;i++){
+                        const barrel = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.6,0.6,6,8),
+                            new THREE.MeshPhongMaterial({color:this.stats.color})
+                        );
+                        barrel.rotation.x=Math.PI/2;
+                        const a=i*Math.PI/2;
+                        barrel.position.set(Math.cos(a)*2,Math.sin(a)*2,5);
+                        this.head.add(barrel);
+                    }
+                } else if(key==='flak'){
+                    const tube = new THREE.Mesh(
+                        new THREE.CylinderGeometry(1.5,1.2,10,12),
+                        new THREE.MeshPhongMaterial({color:this.stats.color})
+                    );
+                    tube.rotation.x=Math.PI/2;
+                    tube.position.z=6;
+                    this.head.add(tube);
+                    const loader = new THREE.Mesh(
+                        new THREE.BoxGeometry(4,3,4),
+                        new THREE.MeshLambertMaterial({color:0x333333})
+                    );
+                    loader.position.z=2;
+                    this.head.add(loader);
+                } else if(key==='laser'){
+                    const core = new THREE.Mesh(
+                        new THREE.CylinderGeometry(1.2,1.2,14,16),
+                        new THREE.MeshPhongMaterial({color:this.stats.color, emissive:this.stats.color, emissiveIntensity:1.2})
+                    );
+                    core.rotation.x=Math.PI/2;
+                    core.position.z=7;
+                    this.head.add(core);
+                } else if(key==='missile'){
+                    const box = new THREE.Mesh(
+                        new THREE.BoxGeometry(8,6,8),
+                        new THREE.MeshPhongMaterial({color:0x333333, metalness:0.6})
+                    );
+                    box.position.z=3;
+                    this.head.add(box);
+                    for(let i=0;i<3;i++){
+                        const pod = new THREE.Mesh(
+                            new THREE.CylinderGeometry(1.4,1.4,5,10),
+                            new THREE.MeshPhongMaterial({color:this.stats.color})
+                        );
+                        pod.rotation.x=Math.PI/2;
+                        pod.position.set(-3 + i*3, 1.5, 7);
+                        this.head.add(pod);
+                    }
+                } else if(key==='sniper'){
+                    const rail = new THREE.Mesh(
+                        new THREE.BoxGeometry(3,3,16),
+                        new THREE.MeshPhongMaterial({color:this.stats.color, metalness:0.8, roughness:0.2})
+                    );
+                    rail.position.z=8;
+                    this.head.add(rail);
+                } else if(key==='tesla'){
+                    const ring = new THREE.Mesh(
+                        new THREE.TorusGeometry(4,1,12,20),
+                        new THREE.MeshPhongMaterial({color:this.stats.color, emissive:this.stats.color, emissiveIntensity:0.8})
+                    );
+                    ring.rotation.y=Math.PI/2;
+                    this.head.add(ring);
+                } else if(key==='cryo'){
+                    // FIX: ninguna CapsuleGeometry, només cilindres i esferes -> sense errors
+                    const cyl = new THREE.Mesh(
+                        new THREE.CylinderGeometry(2, 2, 6, 16),
+                        new THREE.MeshPhongMaterial({
+                            color: this.stats.color,
+                            emissive: 0x0044ff,
+                            emissiveIntensity: 0.6,
+                            shininess: 80
+                        })
+                    );
+                    cyl.rotation.x = Math.PI / 2;
+                    cyl.position.z = 6;
+                    this.head.add(cyl);
+
+                    const capFront = new THREE.Mesh(
+                        new THREE.SphereGeometry(2, 16, 16),
+                        new THREE.MeshPhongMaterial({
+                            color: this.stats.color,
+                            emissive: 0x66ddff,
+                            emissiveIntensity: 0.8
+                        })
+                    );
+                    capFront.position.set(0, 0, 9);
+                    this.head.add(capFront);
+
+                    const tank = new THREE.Mesh(
+                        new THREE.BoxGeometry(5, 3, 4),
+                        new THREE.MeshLambertMaterial({ color: 0x003366 })
+                    );
+                    tank.position.z = 1;
+                    this.head.add(tank);
+                } else if(key==='plasma'){
+                    const orb = new THREE.Mesh(
+                        new THREE.SphereGeometry(3,16,16),
+                        new THREE.MeshPhongMaterial({
+                            color:this.stats.color,
+                            emissive:this.stats.color,
+                            emissiveIntensity:1.3
+                        })
+                    );
+                    orb.position.z=6;
+                    this.head.add(orb);
+                } else if(key==='artillery'){
+                    const barrel = new THREE.Mesh(
+                        new THREE.CylinderGeometry(2,2,18,16),
+                        new THREE.MeshPhongMaterial({color:0xffffff, metalness:0.9, roughness:0.3})
+                    );
+                    barrel.rotation.x=Math.PI/2;
+                    barrel.position.z=10;
+                    this.head.add(barrel);
+                    const baseGun = new THREE.Mesh(
+                        new THREE.BoxGeometry(6,4,6),
+                        new THREE.MeshLambertMaterial({color:0x333333})
+                    );
+                    baseGun.position.z=3;
+                    this.head.add(baseGun);
+                }
+
+                // HUD recarga
+                this.group.add(this.head);
+                this.bar=new THREE.Mesh(
+                    new THREE.PlaneGeometry(10,1.5),
+                    new THREE.MeshBasicMaterial({color:0x0f0, side:THREE.DoubleSide})
+                );
+                this.bar.position.y=12;
+                this.group.add(this.bar);
+
+                // Luz del cañón
+                this.light = new THREE.PointLight(this.stats.color, 1.5, 60);
+                this.light.position.z=8;
+                this.head.add(this.light);
+
+                // Muzzle flash
+                this.muzzleFlash = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map:flashTex, color:this.stats.color,
+                    blending:THREE.AdditiveBlending,
+                    transparent:true, opacity:0
+                }));
+                this.muzzleFlash.scale.set(22,22,1);
+                this.muzzleFlash.position.z=16;
+                this.head.add(this.muzzleFlash);
+
+                World.add(this.group);
+            }
+            setOrbit(rad, ang, spd, rot) {
+                this.targetRad=rad;
+                this.angle=ang;
+                this.spd=spd;
+                this.orbitRot=rot;
+                if(this.state==='deploy') this.group.position.set(0,0,0);
+            }
+            update(enemies, priority) {
+                if(this.muzzleFlash.material.opacity>0){
+                    this.muzzleFlash.material.opacity*=0.7;
+                    if(this.muzzleFlash.material.opacity<0.02) this.muzzleFlash.material.opacity=0;
+                }
+
+                if(this.state==='deploy') {
+                    this.deployT+=0.02;
+                    const r=this.deployT*this.targetRad;
+                    const lp=new THREE.Vector3(Math.cos(this.angle)*r,0,Math.sin(this.angle)*r);
+                    lp.applyEuler(this.orbitRot);
+                    this.group.position.copy(lp);
+                    this.group.lookAt(0,0,0);
+                    if(this.deployT>=1) this.state='active';
+                    return;
+                }
+                this.angle+=this.spd;
+                const lp=new THREE.Vector3(Math.cos(this.angle)*this.targetRad,0,Math.sin(this.angle)*this.targetRad);
+                lp.applyEuler(this.orbitRot);
+                this.group.position.copy(lp);
+                this.group.lookAt(0,0,0);
+                this.bar.lookAt(camera.position);
+
+                if(this.reload>0) {
+                    this.reload--;
+                    this.bar.scale.x=1-(this.reload/Math.max(1,this.stats.rate||1));
+                    this.bar.material.color.setHex(0xff0000);
+                    this.light.intensity=0.4 * Game.settings.brightness;
+                } else {
+                    this.bar.scale.x=1;
+                    this.bar.material.color.setHex(0x00ff00);
+                    this.light.intensity=1.8 * Game.settings.brightness;
+                }
+
+                let target=null;
+                if(priority && priority.active && this.group.position.distanceTo(priority.mesh.position)<=this.stats.range)
+                    target=priority;
+                if(!target) {
+                    let min=Infinity;
+                    for(let e of enemies) {
+                        let d=this.group.position.distanceTo(e.mesh.position);
+                        if(d<=this.stats.range && d<min) { min=d; target=e; }
+                    }
+                }
+                if(target) {
+                    const tl=this.group.worldToLocal(target.mesh.position.clone());
+                    this.head.rotation.y=Math.atan2(tl.x, tl.z);
+                    if(this.reload<=0) this.fire(target);
+                } else this.head.rotation.y*=0.9;
+            }
+            fire(target) {
+                const origin=new THREE.Vector3();
+                this.head.getWorldPosition(origin);
+                this.muzzleFlash.material.opacity=1;
+                Game.fxFlash(origin, this.stats.color, 26);
+
+                if(this.stats.type==='beam'||this.stats.type==='cryo') {
+                    this.reload=this.stats.rate;
+                    AudioSys.zap();
+                    target.hit(this.stats.dmg, this.stats.type);
+                    const end = target.mesh.position.clone();
+                    Game.fxLaserBeam(origin, end, this.stats.color, this.key==='laser');
+                    return;
+                }
+                if(this.stats.type==='chain') {
+                    this.reload=this.stats.rate;
+                    AudioSys.zap();
+                    let l=[target]; target.hit(this.stats.dmg,'tesla');
+                    let c=target;
+                    for(let i=0;i<3;i++){
+                        let n=Game.enemies.find(e=>e!==c && !l.includes(e) && e.mesh.position.distanceTo(c.mesh.position)<150);
+                        if(n){n.hit(this.stats.dmg*0.8,'tesla'); l.push(n); c=n;} else break;
+                    }
+                    Game.fxChain(origin, l, this.stats.color);
+                    return;
+                }
+                if(this.stats.type==='railgun') {
+                    this.reload=this.stats.rate;
+                    AudioSys.rail();
+                    const firingDir = target.mesh.position.clone().sub(origin).normalize();
+                    const endPoint = origin.clone().add(firingDir.multiplyScalar(this.stats.range));
+                    const rayLine = new THREE.Line3(origin, endPoint);
+                    Game.enemies.forEach(e => {
+                        const cp = new THREE.Vector3();
+                        rayLine.closestPointToPoint(e.mesh.position, true, cp);
+                        if(cp.distanceTo(e.mesh.position) < 15) {
+                            e.hit(this.stats.dmg, 'rail');
+                            Game.fxFlash(e.mesh.position, this.stats.color, 20);
+                        }
+                    });
+                    Game.fxSpiralFade(origin, endPoint, this.stats.color);
+                    return;
+                }
+                if(this.stats.type==='swarm') {
+                    this.reload=this.stats.rate;
+                    AudioSys.shot();
+                    for(let i=0;i<this.stats.count;i++){
+                        const offsetDir = new THREE.Vector3(
+                            (Math.random()-.5),
+                            (Math.random()-.5),
+                            (Math.random()-.5)
+                        ).normalize();
+                        Game.spawnProjectile(origin, target, this.stats, offsetDir);
+                    }
+                    return;
+                }
+                this.reload=this.stats.rate;
+                AudioSys.shot();
+                const cnt=this.stats.type==='scatter'?3:1;
+                for(let i=0;i<cnt;i++) Game.spawnProjectile(origin, target, this.stats);
+            }
+            takeDmg(d) {
+                this.hp-=d;
+                if(this.hp<=0) {
+                    this.active=false;
+                    World.remove(this.group);
+                    Game.fxExplode(this.group.position, this.stats.color);
+                    AudioSys.boom();
+                    Game.turrets=Game.turrets.filter(t=>t!==this);
+                    Game.reorg();
+                }
+            }
+        }
+
+        Game.spawnProjectile = (posGlobal, target, stats, offset=null) => {
+            const radius = (stats.type==='swarm' || stats.type==='pierce') ? 3 : 2.5;
+            const mat = new THREE.MeshPhongMaterial({
+                color:stats.color,
+                emissive:stats.color,
+                emissiveIntensity: stats.type==='pierce'?1.5:1.0,
+                shininess:80
+            });
+            const m = new THREE.Mesh(
+                new THREE.SphereGeometry(radius, 12, 12),
+                mat
+            );
+            const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+                map:flashTex, color:stats.color,
+                blending:THREE.AdditiveBlending,
+                transparent:true, opacity:0.9
+            }));
+            glow.scale.set(radius*7, radius*7, 1);
+            m.add(glow);
+
+            const posLocal = posGlobal.clone();
+            World.worldToLocal(posLocal);
+            m.position.copy(posLocal);
+            World.add(m);
+
+            let vel;
+            if(offset){
+                vel = offset.clone().normalize().multiplyScalar(stats.speed * 0.8);
+            } else {
+                let tpLocal = target.mesh.position.clone();
+                if(stats.type==='scatter')
+                    tpLocal.add(new THREE.Vector3(
+                        (Math.random()-.5)*30,
+                        (Math.random()-.5)*30,
+                        (Math.random()-.5)*30
+                    ));
+                vel = tpLocal.sub(posLocal).normalize().multiplyScalar(stats.speed);
+            }
+
+            const proj = { m:m, t:target, s:stats, active:true, life:280, vel: vel, age:0 };
+            Game.projs.push(proj);
+        };
+
+        Game.spawnFloat = (n, pos, col) => {
+            const v = pos.clone().project(camera);
+            const x=(v.x*.5+.5)*window.innerWidth;
+            const y=(-(v.y*.5)+.5)*window.innerHeight;
+            const d=document.createElement('div');
+            d.className='dmg-pop';
+            d.innerText=n;
+            d.style.left=x+'px';
+            d.style.top=y+'px';
+            d.style.color=col;
+            document.body.appendChild(d);
+            setTimeout(()=>d.remove(),1000);
+        };
+
+        Game.fxExplode = (pos, col) => {
+            Game.fxFlash(pos, col, 40);
+            const p=[];
+            const mat=new THREE.SpriteMaterial({
+                map:sparkTex, color:col,
+                blending:THREE.AdditiveBlending,
+                transparent:true, opacity:0.9
+            });
+            const matHot=new THREE.SpriteMaterial({
+                map:sparkTex, color:0xffaa55,
+                blending:THREE.AdditiveBlending,
+                transparent:true, opacity:0.8
+            });
+            for(let i=0;i<30;i++){
+                const useHot = Math.random()>0.5;
+                const m=new THREE.Sprite(useHot?matHot:mat);
+                const sc = useHot?14+Math.random()*16:8+Math.random()*10;
+                m.scale.set(sc,sc,1);
+                m.position.copy(pos);
+                World.add(m);
+                p.push({
+                    m:m,
+                    v:new THREE.Vector3(
+                        (Math.random()-.5)*9,
+                        (Math.random()-.5)*9,
+                        (Math.random()-.5)*9
+                    )
+                });
+            }
+            Game.vfx.push({t:'boom', p:p, l:40});
+        };
+
+        Game.fxFlash = (pos, col, scale) => {
+            const s=new THREE.Sprite(new THREE.SpriteMaterial({
+                map:flashTex, color:col,
+                blending:THREE.AdditiveBlending,
+                transparent:true, opacity:1
+            }));
+            s.position.copy(pos);
+            s.scale.set(scale,scale,1);
+            World.add(s);
+            Game.vfx.push({t:'flash', m:s, l:10});
+        };
+
+        Game.fxLine = (a,b,c) => {
+            const aL = a.clone(); World.worldToLocal(aL);
+            const l=new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([aL, b]),
+                new THREE.LineBasicMaterial({
+                    color:c, blending:THREE.AdditiveBlending,
+                    transparent:true, opacity:0.8
+                })
+            );
+            World.add(l);
+            Game.vfx.push({t:'line', m:l, l:5});
+        };
+
+        Game.fxChain = (a,list,c) => {
+            const aL = a.clone(); World.worldToLocal(aL);
+            const pts=[aL];
+            list.forEach(e=>pts.push(e.mesh.position));
+            const l=new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({color:c, blending:THREE.AdditiveBlending, transparent:true, opacity:0.9})
+            );
+            World.add(l);
+            Game.vfx.push({t:'line', m:l, l:7});
+        };
+
+        Game.fxSpiralFade = (a,b,c) => {
+            const aL=a.clone(); World.worldToLocal(aL);
+            const bL=b.clone(); World.worldToLocal(bL);
+            const pts=[];
+            const dir=bL.clone().sub(aL).normalize();
+            const p1=new THREE.Vector3(0,1,0).cross(dir).normalize();
+            const p2=dir.clone().cross(p1).normalize();
+            for(let i=0;i<=30;i++){
+                const t=i/30;
+                const pos=aL.clone().lerp(bL,t);
+                const ang=t*Math.PI*8;
+                const r=Math.sin(t*Math.PI)*10;
+                pos.add(p1.clone().multiplyScalar(Math.cos(ang)*r))
+                   .add(p2.clone().multiplyScalar(Math.sin(ang)*r));
+                pts.push(pos);
+            }
+            const mat = new THREE.LineBasicMaterial({
+                color:c, blending:THREE.AdditiveBlending, transparent:true, opacity:1
+            });
+            const l=new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                mat
+            );
+            World.add(l);
+            Game.vfx.push({t:'rail', m:l, l:18});
+        };
+
+        Game.fxLaserBeam = (a,b,c,extraBright=false) => {
+            const aL=a.clone(); World.worldToLocal(aL);
+            const g = new THREE.BufferGeometry().setFromPoints([aL,b]);
+            const mat = new THREE.LineBasicMaterial({
+                color:c, blending:THREE.AdditiveBlending, transparent:true, linewidth:extraBright?4:2, opacity:extraBright?1:0.6
+            });
+            const l = new THREE.Line(g, mat);
+            World.add(l);
+            Game.vfx.push({t:'laser', m:l, l:15});
+        };
+
+        Game.fxShockwave = (pos, color, radius, damage) => {
+            const geo = new THREE.RingGeometry(radius*0.2, radius, 64);
+            const mat = new THREE.MeshBasicMaterial({
+                color:color, side:THREE.DoubleSide,
+                transparent:true, opacity:0.8,
+                blending:THREE.AdditiveBlending
+            });
+            const ring = new THREE.Mesh(geo, mat);
+            ring.rotation.x=Math.PI/2;
+            ring.position.copy(pos);
+            World.add(ring);
+            Game.vfx.push({t:'shock', m:ring, l:25, maxR:radius});
+            Game.enemies.forEach(e=>{
+                if(e.mesh.position.distanceTo(pos)<radius){
+                    e.hit(damage, 'aoe');
+                }
+            });
+        };
+
+        Game.pick = (x, y) => {
+            const ray = new THREE.Raycaster();
+            ray.setFromCamera(
+                new THREE.Vector2((x/window.innerWidth)*2-1, -(y/window.innerHeight)*2+1),
+                camera
+            );
+            const hits = ray.intersectObjects(Game.enemies.map(e=>e.mesh));
+            if(hits.length>0) {
+                Game.target = Game.enemies.find(e=>e.mesh===hits[0].object);
+                document.getElementById('target-status').innerText="FIJADO";
+                document.getElementById('target-status').style.color="red";
+                AudioSys.ui();
+            } else {
+                Game.target=null;
+                document.getElementById('target-status').innerText="AUTO";
+                document.getElementById('target-status').style.color="#0f0";
+            }
+        };
+
+        Game.resize = () => {
+            camera.aspect=window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        Game.start = () => {
+            document.getElementById('start-screen').classList.add('hidden');
+            if(AudioSys.ctx.state==='suspended') AudioSys.ctx.resume();
+            MusicSys.init();
+            if(!Game.earth) Game.earth = new Earth();
+            Game.reset();
+            Game.addT('blaster');
+            Game.nextWave();
+        };
+
+        Game.reset = () => {
+            Game.wave=0;
+            Game.money=800;
+            Game.hp=2000;
+            Game.turrets.forEach(t=>World.remove(t.group)); Game.turrets=[];
+            Game.enemies.forEach(e=>e.die());
+            Game.rings.forEach(r=>World.remove(r)); Game.rings=[];
+            Game.projs.forEach(p=>World.remove(p.m));
+            Game.vfx.forEach(v=>{
+                if(v.m) World.remove(v.m);
+                if(v.p) v.p.forEach(pp=>World.remove(pp.m));
+            });
+            Game.projs=[];
+            Game.vfx=[];
+            document.getElementById('gameover-screen').classList.add('hidden');
+            Game.paused=false;
+            Game.waveDelay=false;
+        };
+
+        Game.nextWave = () => {
+            if(Game.paused) Game.closeShop();
+            Game.wave++;
+            const msg = document.getElementById('wave-msg');
+            msg.style.opacity = 1;
+            setTimeout(() => {
+                msg.style.opacity = 0;
+                Game.spawnQueue = 10 + Game.wave * 2;
+                if(Game.ui.waveTxt) Game.ui.waveTxt.innerText="OLEADA "+Game.wave;
+            }, 3000);
+        };
+
+        Game.addT = (k) => { Game.turrets.push(new Turret(k)); Game.reorg(); };
+
+        Game.reorg = () => {
+            Game.rings.forEach(r=>World.remove(r)); Game.rings=[];
+            let layer=0, idx=0;
+            while(idx < Game.turrets.length) {
+                const cap=6+layer*3;
+                const rad=80+layer*35;
+                const spd=(0.005-layer*0.001)*(layer%2===0?1:-1);
+                const orbitRot=new THREE.Euler(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                const rMesh=new THREE.Mesh(
+                    new THREE.RingGeometry(rad-0.5, rad+0.5, 64),
+                    new THREE.MeshBasicMaterial({
+                        color:0x00ccff, opacity:0.1,
+                        transparent:true, side:THREE.DoubleSide,
+                        blending:THREE.AdditiveBlending
+                    })
+                );
+                const rHolder=new THREE.Group();
+                rMesh.rotation.x=Math.PI/2;
+                rHolder.add(rMesh);
+                rHolder.rotation.copy(orbitRot);
+                World.add(rHolder);
+                Game.rings.push(rHolder);
+                let c=0;
+                while(c<cap && idx<Game.turrets.length) {
+                    Game.turrets[idx].setOrbit(rad, (Math.PI*2/cap)*c, spd, orbitRot);
+                    idx++; c++;
+                }
+                layer++;
+            }
+        };
+
+        Game.sortShop = (mode, e) => {
+            Game.sortMode = mode;
+            document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+            if(e && e.target) e.target.classList.add('active');
+            Game.renderShop();
+        };
+
+        Game.renderShop = () => {
+            const moneyEl = document.getElementById('shop-money');
+            if(moneyEl) moneyEl.innerText=Game.money+" CR";
+            const g = document.getElementById('shop-grid'); if(!g) return;
+            g.innerHTML='';
+            const repair = document.createElement('div');
+            repair.className='card';
+            repair.innerHTML=`
+                <h3><span class="icon">✚</span>REPARAR</h3>
+                <div class="info">Mantenimiento</div>
+                <div class="desc-box">Repara el casco de la base.</div>
+                <div class="stats"><span>+600 HP</span></div>
+                <button onclick="Game.pay(100,'rep')">100 CR</button>`;
+            g.appendChild(repair);
+
+            const keys = Object.keys(WEAPONS).sort((a,b) => {
+                if(Game.sortMode === 'dmg') return WEAPONS[b].dmg - WEAPONS[a].dmg;
+                if(Game.sortMode === 'range') return WEAPONS[b].range - WEAPONS[a].range;
+                return WEAPONS[a].cost - WEAPONS[b].cost;
+            });
+            keys.forEach(k => {
+                const w = WEAPONS[k];
+                const n = Game.turrets.filter(t=>t.key===k).length;
+                const card = document.createElement('div'); card.className = 'card';
+                const cvs = document.createElement('canvas');
+                cvs.width=200; cvs.height=100;
+                cvs.setAttribute('data-type', w.type);
+                cvs.setAttribute('data-col', w.color);
+                card.appendChild(cvs);
+                const badge = n>0 ? `<span style="color:#0ff; font-size:0.8rem"> (x${n})</span>` : '';
+                card.innerHTML += `
+                    <h3><span class="icon">${w.icon}</span>${w.name}${badge}</h3>
+                    <div class="type">${w.type.toUpperCase()}</div>
+                    <div class="desc-box">
+                        ${w.desc}
+                        <div class="pros">✓ ${w.pros}</div>
+                        <div class="cons">✕ ${w.cons}</div>
+                    </div>
+                    <div class="stats">
+                        <span>DMG: ${w.dmg}</span>
+                        <span>ALC: ${w.range}</span>
+                    </div>
+                    <button onclick="Game.pay(${w.cost},'${k}')">${w.cost} CR</button>`;
+                g.appendChild(card);
+            });
+        };
+
+        Game.pay = (c,k) => {
+            if(Game.money>=c){
+                if(k==='rep'){
+                    if(Game.hp<Game.maxHp){
+                        Game.money-=c;
+                        Game.hp=Math.min(Game.maxHp,Game.hp+600);
+                        AudioSys.ui();
+                        Game.renderShop();
+                    }
+                } else {
+                    Game.money-=c;
+                    Game.addT(k);
+                    AudioSys.ui();
+                    Game.renderShop();
+                }
+            }
+        };
+
+        Game.init = () => {
+            // Estrelles molt més brillants i amb parpelleig
+            const genStars = (cnt, sz, dist, baseOp) => {
+                const p=[];
+                for(let i=0;i<cnt;i++){
+                    const r=dist+Math.random()*2000;
+                    const theta=Math.random()*Math.PI*2;
+                    const phi=Math.acos(2*Math.random()-1);
+                    p.push(
+                        r*Math.sin(phi)*Math.cos(theta),
+                        r*Math.sin(phi)*Math.sin(theta),
+                        r*Math.cos(phi)
+                    );
+                }
+                const g=new THREE.BufferGeometry();
+                g.setAttribute('position', new THREE.Float32BufferAttribute(p,3));
+                const mat = new THREE.PointsMaterial({
+                    color:0xe0f4ff,
+                    size:sz,
+                    transparent:true,
+                    opacity:baseOp,
+                    depthWrite:false,
+                    blending:THREE.AdditiveBlending
+                });
+                const points = new THREE.Points(g, mat);
+                scene.add(points);
+                Game.starFields.push({
+                    points,
+                    material: mat,
+                    baseBase: baseOp,
+                    baseOpacity: baseOp,
+                    phase: Math.random()*Math.PI*2,
+                    speed: 0.6 + Math.random()*0.8
+                });
+            };
+            genStars(6000, 4.0, 9000, 0.9);
+            genStars(3000, 5.5, 17000, 1.0);
+            genStars(2000, 6.5, 23000, 1.2);
+
+            window.addEventListener('resize', Game.resize);
+            window.addEventListener('wheel', e => {
+                Game.camRad = Math.max(300, Math.min(1500, Game.camRad + e.deltaY*0.5));
+            });
+            const canvas = document.querySelector('canvas');
+            canvas.addEventListener('mousedown', e => {
+                Game.isDragging=true;
+                Game.prevMouse={x:e.clientX, y:e.clientY};
+            });
+            window.addEventListener('mouseup', e => {
+                if(Game.isDragging && Math.hypot(e.clientX-Game.prevMouse.x, e.clientY-Game.prevMouse.y)<5)
+                    Game.pick(e.clientX, e.clientY);
+                Game.isDragging=false;
+            });
+            window.addEventListener('mousemove', e => {
+                if(Game.isDragging) {
+                    Game.camTheta-=(e.clientX-Game.prevMouse.x)*0.005;
+                    Game.camPhi-=(e.clientY-Game.prevMouse.y)*0.005;
+                    Game.camPhi=Math.max(0.1, Math.min(Math.PI-0.1, Game.camPhi));
+                    Game.prevMouse={x:e.clientX, y:e.clientY};
+                }
+            });
+            let touchDist = 0;
+            canvas.addEventListener('touchstart', e => {
+                if(e.touches.length===1){
+                    Game.isDragging=true;
+                    Game.prevMouse={x:e.touches[0].clientX, y:e.touches[0].clientY};
+                }
+                if(e.touches.length===2)
+                    touchDist=Math.hypot(
+                        e.touches[0].pageX-e.touches[1].pageX,
+                        e.touches[0].pageY-e.touches[1].pageY
+                    );
+            }, {passive:false});
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                if(e.touches.length===1 && Game.isDragging) {
+                    Game.camTheta-=(e.touches[0].clientX-Game.prevMouse.x)*0.005;
+                    Game.camPhi-=(e.touches[0].clientY-Game.prevMouse.y)*0.005;
+                    Game.camPhi=Math.max(0.1, Math.min(Math.PI-0.1, Game.camPhi));
+                    Game.prevMouse={x:e.touches[0].clientX, y:e.touches[0].clientY};
+                }
+                if(e.touches.length===2) {
+                    const d=Math.hypot(
+                        e.touches[0].pageX-e.touches[1].pageX,
+                        e.touches[1].pageX-e.touches[0].pageX
+                    );
+                    Game.camRad+=(touchDist-d)*2;
+                    Game.camRad=Math.max(300,Math.min(1500,Game.camRad));
+                    touchDist=d;
+                }
+            }, {passive:false});
+            canvas.addEventListener('touchend', e => { Game.isDragging=false; });
+
+            Game.ui.hpBar = document.getElementById('hp-bar');
+            Game.ui.hpTxt = document.getElementById('hp-txt');
+            Game.ui.moneyTxt = document.getElementById('money-txt');
+            Game.ui.waveTxt = document.getElementById('wave-txt');
+            Game.resize();
+            Game.loop();
+        };
+
+        Game.loop = () => {
+            requestAnimationFrame(Game.loop);
+            if(MusicSys.ctx) MusicSys.update(Game.enemies.length);
+
+            // Fons d’estrelles parpellejant fort
+            if(Game.starFields.length>0){
+                const t = Game.frameCount * 0.03;
+                Game.starFields.forEach(f=>{
+                    let tw = 0.6 + 0.4 * Math.sin(t * f.speed + f.phase);
+                    f.material.opacity = Math.max(0.2, Math.min(1.5, f.baseOpacity * tw * Game.settings.brightness));
+                });
+            }
+
+            if(!Game.paused) {
+                Game.frameCount++;
+                if(Game.earth) Game.earth.update();
+                Game.orbitTime += 0.0005;
+                const earthX=Math.cos(Game.orbitTime)*4000;
+                const earthZ=Math.sin(Game.orbitTime)*4000;
+                World.position.set(earthX, 0, earthZ);
+
+                if(Game.spawnQueue>0 && ++Game.spawnTimer>50) {
+                    Game.enemies.push(new Enemy(Game.wave));
+                    Game.spawnQueue--; Game.spawnTimer=0;
+                }
+                if(Game.spawnQueue===0 && Game.enemies.length===0 && !Game.waveDelay) {
+                    Game.waveDelay=true;
+                    setTimeout(()=>{Game.nextWave(); Game.waveDelay=false;}, 3000);
+                }
+
+                Game.turrets.forEach(t=>t.update(Game.enemies, Game.target));
+                Game.enemies.forEach(e=>{
+                    e.update();
+                    if(e.mesh.position.length()<60) {
+                        Game.hp-=100;
+                        e.die();
+                        Game.earth.onHit();
+                    }
+                    Game.turrets.forEach(t=>{
+                        if(t.active && t.state!=='deploy' && e.mesh.position.distanceTo(t.group.position)<15) {
+                            t.takeDmg(50);
+                            e.hit(20,'ram');
+                        }
+                    });
+                });
+
+                Game.projs.forEach(p=>{
+                    p.age++;
+                    // Missiles cambian trayectoria más paulatinamente
+                    if(p.s.type==='swarm'){
+                        if(!p.t.active && Game.enemies.length>0) {
+                            let min=Infinity; let closest=null;
+                            for(let e of Game.enemies){
+                                let d=p.m.position.distanceTo(e.mesh.position);
+                                if(d<min){min=d; closest=e;}
+                            }
+                            p.t = closest;
+                        }
+                        if(p.t && p.t.active) {
+                            const desired = p.t.mesh.position.clone()
+                                .sub(p.m.position)
+                                .normalize()
+                                .multiplyScalar(p.s.speed);
+                            const lerpFactor = 0.05; // curva suave
+                            p.vel.lerp(desired, lerpFactor);
+                        }
+                    }
+                    p.m.position.add(p.vel);
+                    p.life--;
+
+                    // Plasma con estela larga
+                    if(p.s.type==='pierce' && p.age%2===0){
+                        const trail = new THREE.Sprite(new THREE.SpriteMaterial({
+                            map:sparkTex, color:p.s.color,
+                            blending:THREE.AdditiveBlending,
+                            transparent:true, opacity:0.8
+                        }));
+                        trail.scale.set(8,8,1);
+                        trail.position.copy(p.m.position);
+                        World.add(trail);
+                        Game.vfx.push({t:'fade', m:trail, l:25});
+                    }
+
+                    let hit=false;
+                    for(let e of Game.enemies) {
+                        if(p.m.position.distanceTo(e.mesh.position)<(p.s.type==='aoe'?25:18)) {
+                            if(p.s.type==='aoe') {
+                                const rad = p.s.radius || 100;
+                                Game.fxShockwave(p.m.position, p.s.color, rad, p.s.dmg);
+                                hit=true;
+                            } else {
+                                e.hit(p.s.dmg, p.s.type);
+                                hit=true;
+                            }
+                            if(hit) break;
+                        }
+                    }
+                    if(hit||p.life<=0){
+                        p.active=false;
+                        World.remove(p.m);
+                    }
+                });
+                Game.projs=Game.projs.filter(p=>p.active);
+                Game.enemies=Game.enemies.filter(e=>e.active);
+
+                if(Game.hp<=0) {
+                    Game.paused=true;
+                    document.getElementById('gameover-screen').classList.remove('hidden');
+                    document.getElementById('final-wave').innerText=Game.wave;
+                }
+
+                Game.vfx=Game.vfx.filter(v=>{
+                    v.l--;
+                    if(v.t==='boom'){
+                        v.p.forEach(p=>p.m.position.add(p.v));
+                        if(v.l<=0) v.p.forEach(p=>World.remove(p.m));
+                    }
+                    if(v.t==='line'||v.t==='laser'||v.t==='rail'){
+                        if(v.m.material && v.m.material.opacity!==undefined){
+                            v.m.material.opacity*=0.8;
+                        }
+                        if(v.l<=0) World.remove(v.m);
+                    }
+                    if(v.t==='shock'){
+                        const scale = 1 + 0.08;
+                        v.m.scale.multiplyScalar(scale);
+                        v.m.material.opacity *= 0.85;
+                        if(v.l<=0) World.remove(v.m);
+                    }
+                    if(v.t==='fade'||v.t==='flash'){
+                        v.m.material.opacity-=0.08;
+                        if(v.l<=0) World.remove(v.m);
+                    }
+                    return v.l>0;
+                });
+            } else {
+                if(!Game.shopTime) Game.shopTime=0;
+                Game.shopTime++;
+                document.querySelectorAll('.card canvas').forEach(c=>{
+                    Draw.animate(c, c.getAttribute('data-type'), parseInt(c.getAttribute('data-col')), Game.shopTime);
+                });
+            }
+
+            camera.position.x = World.position.x + Game.camRad * Math.sin(Game.camPhi) * Math.cos(Game.camTheta);
+            camera.position.y = Game.camRad * Math.cos(Game.camPhi);
+            camera.position.z = World.position.z + Game.camRad * Math.sin(Game.camPhi) * Math.sin(Game.camTheta);
+            camera.lookAt(World.position);
+
+            if(Game.ui.hpBar) Game.ui.hpBar.style.width=Math.max(0,Game.hp/Game.maxHp*100)+'%';
+            if(Game.ui.hpTxt) Game.ui.hpTxt.innerText=Game.hp;
+            if(Game.ui.moneyTxt) Game.ui.moneyTxt.innerText=Game.money+" CR";
+
+            renderer.render(scene, camera);
+        };
+
+        // Inicialització
+        Game.init();
+    </script>
+</body>
+</html>
