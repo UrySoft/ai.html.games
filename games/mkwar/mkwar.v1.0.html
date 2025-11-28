@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SUB-MISSION: MK-WAR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --phos-color: #00ff41;
+            --bg-color: #020502;
+            --panel-bg: #0a110a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--phos-color);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Scrollbar Personalizado Táctico */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #001100; }
+        ::-webkit-scrollbar-thumb { background: #004400; border: 1px solid #00ff41; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff41; }
+
+        .crt-fx {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+            background-size: 100% 3px, 100% 100%;
+            pointer-events: none; z-index: 50; opacity: 0.3;
+        }
+
+        .glitch-anim { animation: glitch 0.2s infinite; }
+        @keyframes glitch {
+            0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) } 100% { transform: translate(0) }
+        }
+
+        .control-panel {
+            background: linear-gradient(180deg, #0f1a0f 0%, #050a05 100%);
+            border: 1px solid #1a441a;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .tac-btn {
+            background: #002200; border: 1px solid #005500; color: #00aa00;
+            transition: all 0.1s; text-transform: uppercase; font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; letter-spacing: 1px; cursor: pointer;
+        }
+        .tac-btn:active, .tac-btn.active { 
+            background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; border-color: #fff;
+        }
+        
+        .big-btn { height: 100%; border-radius: 4px; }
+        .fire-btn { border-color: #660000; color: #ff3333; }
+        .fire-btn:active { background: #ff3333; box-shadow: 0 0 15px #ff3333; }
+        .tac-btn.multi-btn { border-color: #aaa; color: #fff; background: #222; }
+        .tac-btn.zoom-btn { 
+            font-size: 1.5rem; width: 36px; height: 36px; background: rgba(0,20,0,0.9); 
+            border: 1px solid #0f0; color: #0f0; border-radius: 4px;
+        }
+        
+        .mission-btn {
+            background: #002200; border: 1px solid #00ff41; color: #00ff41;
+            padding: 12px; margin-bottom: 8px; width: 100%; font-family: 'Share Tech Mono';
+            cursor: pointer; transition: 0.2s; text-align: left; border-left: 5px solid #00ff41;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            display: flex; flex-direction: column;
+        }
+        .mission-btn:hover { background: #00ff41; color: #000; }
+        .mission-btn div:last-child { font-size: 0.7rem; color: #88aa88; margin-top: 2px; }
+        .mission-btn:hover div:last-child { color: #004400; }
+
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range].h-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 30px; width: 20px; 
+            background: #00ff41; border: 2px solid #fff; margin-top: -10px; cursor: pointer;
+            box-shadow: 0 0 10px #00ff41;
+        }
+        input[type=range].h-slider::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #003300; border: 1px solid #005500; }
+        input[type=range].v-slider { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 40px; height: 100%; }
+
+        .digital-readout {
+            font-family: 'Share Tech Mono'; background: #001100; border: 1px solid #004400;
+            color: #00ff41; padding: 2px 6px; text-align: right; font-size: 1.1rem;
+            text-shadow: 0 0 5px #00ff41;
+        }
+        .label-text { font-size: 0.65rem; color: #008844; text-transform: uppercase; letter-spacing: 1px; }
+        .preset-btn { font-size: 0.65rem; padding: 2px; height: 24px; border: 1px solid #004400; background: #001100; color: #008800; }
+        .preset-btn:hover { background: #003300; color: #0f0; }
+
+        .tape-container { overflow: hidden; position: relative; background: #000; border: 1px solid #1a441a; height: 24px; margin-bottom: 4px; }
+        .tape-scale { display: flex; position: absolute; height: 100%; transition: transform 0.1s linear; }
+        .tape-tick { width: 40px; flex-shrink: 0; border-right: 1px solid #1a441a; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #2a772a; }
+        .tape-center-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: red; z-index: 10; transform: translateX(-50%); }
+
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="crt-fx"></div>
+    
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" class="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center">
+        <img src="https://urysoft.github.io/ai.html.games/games/mkwar/mk_war_horizontal.png" class="hidden md:block w-full h-full object-cover absolute inset-0 opacity-80">
+        <img src="https://urysoft.github.io/ai.html.games/games/mkwar/mk_war_vertical.png" class="block md:hidden w-full h-full object-cover absolute inset-0 opacity-80">
+        
+        <div class="absolute bottom-10 w-full flex flex-col items-center p-4 bg-gradient-to-t from-black via-black/80 to-transparent">
+            <h1 class="text-4xl md:text-6xl text-green-500 font-bold mb-2 tracking-widest drop-shadow-[0_0_10px_rgba(0,255,65,1)]">SUB-MISSION: MK-WAR</h1>
+            <p class="text-green-400 text-sm mb-6 font-mono">Realizado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank" class="underline hover:text-white font-bold">Oriol Badia Campanera</a></p>
+            <button onclick="game.showMenu()" class="tac-btn px-12 py-4 text-2xl border-green-500 text-green-500 hover:bg-green-900 animate-pulse shadow-[0_0_20px_rgba(0,255,65,0.4)]">
+                INICIAR SISTEMAS
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="flex justify-between items-center px-4 py-2 bg-black border-b border-green-900 shrink-0 z-10 h-12">
+        <div class="flex gap-4 text-sm">
+            <span>CASCO: <span id="hull-disp" class="text-white font-bold">100%</span></span>
+            <span>BAT: <span id="batt-disp" class="text-white">100%</span></span>
+        </div>
+        <div id="alert-box" class="hidden text-red-500 font-bold uppercase tracking-widest animate-pulse">ALERTA</div>
+        <div class="flex gap-3 text-right text-sm">
+            <span>PROF: <span id="depth-disp" class="text-white">0</span>m</span>
+            <span>VEL: <span id="speed-disp" class="text-white">0.0</span> kts</span>
+            <span>OP: <span id="mission-disp" class="text-yellow-400">---</span></span>
+        </div>
+    </header>
+
+    <!-- Main View -->
+    <main id="main-container" class="flex-grow relative bg-black flex items-center justify-center overflow-hidden p-2">
+        <div id="viewport-frame" class="relative w-full h-full border-2 border-green-900 shadow-[0_0_30px_rgba(0,255,65,0.15)] bg-black max-w-6xl rounded-lg overflow-hidden">
+            <canvas id="gameCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            
+            <!-- Zoom Controls -->
+            <div id="zoom-controls" class="absolute top-4 right-4 hidden flex-col gap-2 z-20">
+                <button class="tac-btn zoom-btn" onclick="game.adjZoom(0.2)">+</button>
+                <button class="tac-btn zoom-btn" onclick="game.adjZoom(-0.2)">-</button>
+                <div id="zoom-level" class="text-green-500 text-xs text-center bg-black/50">x1.0</div>
+            </div>
+
+            <!-- Overlay Menu -->
+            <div id="overlay-screen" class="hidden absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-30 p-6 text-center">
+                <h2 class="text-2xl text-green-500 mb-2 font-bold tracking-widest uppercase">ORDEN DE BATALLA</h2>
+                <div id="ov-content" class="text-gray-400 text-xs md:text-sm mb-4 max-w-md leading-relaxed border-b border-green-900 pb-2">
+                    SELECCIONE MISIÓN:
+                </div>
+                
+                <!-- Fixed overflow container -->
+                <div id="mission-select" class="flex flex-col w-full max-w-sm gap-2 overflow-y-auto overflow-x-hidden max-h-96 pr-2 pb-2">
+                    <button onclick="game.selectMission('INTERCEPT')" class="mission-btn">
+                        <div>1. INTERCEPTACIÓN VIP</div>
+                        <div>Hundir transporte prioritario enemigo.</div>
+                    </button>
+                    <button onclick="game.selectMission('INFILTRATE')" class="mission-btn">
+                        <div>2. INFILTRACIÓN</div>
+                        <div>Alcanzar zona objetivo en sigilo.</div>
+                    </button>
+                    <button onclick="game.selectMission('WARFARE')" class="mission-btn">
+                        <div>3. GUERRA TOTAL</div>
+                        <div>Destruir 5 navíos enemigos.</div>
+                    </button>
+                    <button onclick="game.selectMission('DEFEND')" class="mission-btn">
+                        <div>4. DEFENSA DE CONVOY</div>
+                        <div>Proteger al VIP aliado hasta su destino.</div>
+                    </button>
+                </div>
+                <div id="game-over-ctrls" class="hidden mt-4">
+                    <h2 id="ov-title" class="text-4xl font-bold mb-4"></h2>
+                    <p id="ov-desc" class="text-white mb-6"></p>
+                    <button onclick="location.reload()" class="tac-btn px-10 py-4 text-xl border-green-500 text-green-500 hover:bg-green-900">REINICIAR SISTEMA</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Controls Panel -->
+    <footer class="bg-[#050a05] border-t border-green-900 p-2 shrink-0 z-10 flex flex-col gap-2 h-auto min-h-[160px]">
+        <div class="flex w-full gap-1 h-8">
+            <button class="tac-btn flex-1 multi-btn" id="btn-all" onclick="game.setScreen('ALL')">::: TODO :::</button>
+            <button class="tac-btn flex-1 active" id="btn-map" onclick="game.setScreen('MAP')">MAPA TÁCTICO</button>
+            <button class="tac-btn flex-1" id="btn-sonar" onclick="game.setScreen('SONAR')">SONAR</button>
+            <button class="tac-btn flex-1" id="btn-peri" onclick="game.setScreen('PERISCOPE')">VISUAL</button>
+            <button class="tac-btn flex-1" id="btn-status" onclick="game.setScreen('STATUS')">ESTADO</button>
+        </div>
+
+        <div class="grid grid-cols-10 gap-2 h-full max-w-6xl mx-auto w-full pb-1">
+            
+            <!-- HELM -->
+            <div class="col-span-4 control-panel rounded p-2 flex flex-col justify-between relative">
+                <div class="flex justify-between items-end mb-1">
+                    <div class="flex flex-col">
+                        <span class="label-text">RUMBO</span>
+                        <div id="heading-readout" class="digital-readout text-2xl">000°</div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="label-text">ORDEN</span>
+                        <div id="heading-order" class="text-yellow-500 font-mono text-lg">000°</div>
+                    </div>
+                </div>
+                <div class="tape-container rounded w-full border-green-800">
+                    <div class="tape-center-marker"></div>
+                    <div id="compass-tape" class="tape-scale" style="width: 1440px;"></div>
+                </div>
+                <div class="relative h-12 w-full flex items-center gap-2 mt-1">
+                    <button class="tac-btn big-btn flex-1 border-green-500 text-green-500 text-xs md:text-xl" onmousedown="game.startTurn(-1)" onmouseup="game.stopTurn()" onmouseleave="game.stopTurn()">◄ BABOR</button>
+                    <button class="tac-btn big-btn flex-1 border-green-500 text-green-500 text-xs md:text-xl" onmousedown="game.startTurn(1)" onmouseup="game.stopTurn()" onmouseleave="game.stopTurn()">ESTRIBOR ►</button>
+                </div>
+            </div>
+
+            <!-- DEPTH -->
+            <div class="col-span-2 control-panel rounded p-2 flex flex-row gap-2 items-center justify-between">
+                <div class="flex flex-col justify-between h-full w-1/2">
+                    <div><span class="label-text">ACTUAL</span><div id="depth-readout" class="digital-readout text-xl">0m</div></div>
+                    <div class="flex flex-col gap-1 mt-1">
+                        <button class="tac-btn preset-btn" onclick="game.setDepth(0)">SUP</button>
+                        <button class="tac-btn preset-btn" onclick="game.setDepth(12)">PER</button>
+                        <button class="tac-btn preset-btn" onclick="game.setDepth(150)">MAX</button>
+                    </div>
+                </div>
+                <div class="h-full w-12 relative bg-black border border-green-800 rounded-md overflow-hidden">
+                    <div id="depth-fill" class="absolute top-0 w-full bg-blue-900/50 transition-all duration-500" style="height: 0%; border-bottom: 2px solid #0ff;"></div>
+                    <input type="range" orient="vertical" min="0" max="200" value="0" id="depth-slider" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" oninput="game.setDepth(this.value)">
+                    <div class="absolute inset-0 pointer-events-none flex flex-col justify-between py-1 px-1 text-[9px] text-green-600 font-mono">
+                        <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPEED -->
+            <div class="col-span-2 control-panel rounded p-2 flex flex-row gap-2 items-center justify-between">
+                <div class="flex flex-col justify-between h-full w-1/2">
+                    <span class="label-text">VELOCIDAD</span>
+                    <div><div id="speed-gauge-val" class="digital-readout text-xl">0</div></div>
+                    <div class="flex flex-col gap-1 mt-1">
+                        <button class="tac-btn preset-btn" onclick="game.setSpeed(3)">FLK</button>
+                        <button class="tac-btn preset-btn" onclick="game.setSpeed(2)">STD</button>
+                        <button class="tac-btn preset-btn" onclick="game.setSpeed(0)">STP</button>
+                    </div>
+                </div>
+                <div class="h-full w-12 relative bg-black border border-green-800 rounded-md overflow-hidden">
+                    <div id="speed-fill" class="absolute bottom-0 w-full bg-yellow-900/60 transition-all duration-500" style="height: 0%; border-top: 2px solid #ff0;"></div>
+                    <input type="range" orient="vertical" min="0" max="3" step="1" value="0" id="speed-slider" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" oninput="game.setSpeed(this.value)">
+                    <div class="absolute inset-0 pointer-events-none flex flex-col justify-between py-1 px-1 text-[9px] text-green-600 font-mono">
+                         <span>MAX</span><span>2/3</span><span>1/3</span><span>STP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEAPONS -->
+            <div class="col-span-2 control-panel rounded p-2 flex flex-col justify-center gap-2 bg-red-900/10 border-red-900/30">
+                <span class="label-text text-red-500 text-center">ARMAS</span>
+                <div id="torp-status" class="text-center text-xs text-red-400 mb-1">TUBO 1: OK</div>
+                <button class="tac-btn fire-btn h-full text-xl rounded border-2 border-red-600 text-red-500 shadow-[0_0_10px_rgba(255,0,0,0.2)] hover:bg-red-600 hover:text-black" onclick="game.pFire()">LANZAR</button>
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        const AudioSys = {
+            ctx: null,
+            init() { window.AudioContext=window.AudioContext||window.webkitAudioContext; this.ctx=new AudioContext(); },
+            osc(f,t,d,v=0.1){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=t;o.frequency.setValueAtTime(f,this.ctx.currentTime);g.gain.setValueAtTime(v,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+d);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+d);},
+            nse(d,v=0.2){if(!this.ctx)return;const b=this.ctx.createBuffer(1,this.ctx.sampleRate*d,this.ctx.sampleRate),dt=b.getChannelData(0);for(let i=0;i<dt.length;i++)dt[i]=Math.random()*2-1;const s=this.ctx.createBufferSource();s.buffer=b;const g=this.ctx.createGain();g.gain.setValueAtTime(v,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+d);s.connect(g);g.connect(this.ctx.destination);s.start();},
+            ping(){this.osc(800,'sine',0.6,0.05)}, fire(){this.nse(0.5,0.3);this.osc(150,'sawtooth',0.5,0.1)}, explode(){this.nse(2.5,0.6);this.osc(40,'square',1.0,0.3)}, alarm(){this.osc(600,'square',0.2,0.1);this.osc(800,'square',0.2,0.1)}, staticNoise(){this.nse(0.2,0.1);}
+        };
+        function d2r(d){return d*(Math.PI/180)} function r2d(r){return r*(180/Math.PI)} function dist(x1,y1,x2,y2){return Math.sqrt((x2-x1)**2+(y2-y1)**2)} function wrap(n,m){return((n%m)+m)%m}
+
+        const W_SIZE = 12000;
+        const SCR_ALL='ALL', SCR_MAP='MAP', SCR_SONAR='SONAR', SCR_PERI='PERISCOPE', SCR_STAT='STATUS';
+
+        class Island {
+            constructor() {
+                this.x = Math.random() * W_SIZE;
+                this.y = Math.random() * W_SIZE;
+                this.r = 150 + Math.random() * 200;
+                this.pts = []; const segs = 32; 
+                for(let i=0; i<segs; i++) {
+                    const ang = (i/segs) * Math.PI * 2;
+                    const noise = Math.random() * 0.3;
+                    const rVar = this.r * (0.7 + noise); 
+                    this.pts.push({x: Math.cos(ang)*rVar, y: Math.sin(ang)*rVar, h: 0.3 + Math.random()*0.7});
+                }
+            }
+        }
+
+        class Player {
+            constructor() {
+                this.x = W_SIZE/2; this.y = W_SIZE/2;
+                this.h = 0; this.th = 0;
+                this.spd = 0; this.tspd = 0;
+                this.d = 0; this.td = 0;
+                this.torps = 24; this.reload = 0;
+                this.hp = {torp:100, son:100, peri:100, eng:100};
+                this.batt = 100;
+                this.auto = false; this.wp = null; this.docked = false;
+                this.turnRate = 0; 
+            }
+            update() {
+                if(this.spd > 0) {
+                    this.batt -= 0.005 * this.spd; 
+                    if(this.batt <= 0) { this.batt=0; this.tspd=0; game.alert("BATERÍA AGOTADA"); }
+                }
+                if(this.d < 10 && this.spd < 0.1 && this.batt < 100) { this.batt += 0.05; }
+
+                let engEff = (this.hp.eng/100) * (this.batt > 0 ? 1 : 0);
+                let maxSpd = engEff < 0.5 ? 0.5 : 1.5;
+                let actualTarget = Math.min(this.tspd, maxSpd);
+                if(this.spd < actualTarget) this.spd += 0.005 * engEff; 
+                if(this.spd > actualTarget) this.spd -= 0.01;
+                if(this.spd < 0) this.spd = 0;
+
+                let dDiff = this.td - this.d; 
+                if(Math.abs(dDiff) > 0.1) this.d += Math.sign(dDiff) * 0.15;
+
+                if(this.turnRate !== 0) {
+                    this.th = wrap(this.th + this.turnRate, 360);
+                    const sl = document.getElementById('heading-slider');
+                    if(sl) sl.value = Math.floor(this.th);
+                    this.auto = false; this.wp = null;
+                }
+
+                let des = this.th;
+                if(this.auto && this.wp) {
+                    let dx = this.wp.x - this.x;
+                    let dy = this.wp.y - this.y;
+                    des = wrap(r2d(Math.atan2(dx, -dy)), 360);
+                    this.th = des; 
+                    if(dist(this.x, this.y, this.wp.x, this.wp.y) < 100) {
+                        this.auto = false; this.wp = null; game.alert("PUNTO ALCANZADO");
+                    }
+                }
+
+                let diff = des - this.h;
+                if(diff < -180) diff += 360; if(diff > 180) diff -= 360;
+                
+                let turnSpd = (this.hp.eng < 50 ? 0.2 : 0.6) * (this.spd > 0.1 ? 1 : 0.3);
+                if(Math.abs(diff) > turnSpd) this.h += Math.sign(diff) * turnSpd; 
+                else this.h = des;
+                
+                this.h = wrap(this.h, 360);
+
+                this.x += Math.sin(d2r(this.h)) * this.spd;
+                this.y -= Math.cos(d2r(this.h)) * this.spd;
+                this.x = Math.max(0, Math.min(W_SIZE, this.x));
+                this.y = Math.max(0, Math.min(W_SIZE, this.y));
+
+                if(this.reload > 0) this.reload--;
+                
+                const hr = document.getElementById('heading-readout'); if(hr) hr.innerText = Math.floor(this.h).toString().padStart(3,'0') + "°";
+                const ho = document.getElementById('heading-order'); if(ho) ho.innerText = Math.floor(this.th).toString().padStart(3,'0') + "°";
+                const dr = document.getElementById('depth-readout'); if(dr) dr.innerText = Math.floor(this.d) + "m";
+                const doo = document.getElementById('depth-order'); if(doo) doo.innerText = Math.floor(this.td) + "m";
+                const df = document.getElementById('depth-fill'); if(df) df.style.height = (this.d/2) + "%"; 
+                const sd = document.getElementById('speed-disp'); if(sd) sd.innerText = (this.spd * 20).toFixed(1); 
+                const sf = document.getElementById('speed-fill'); if(sf) sf.style.height = ((this.spd/1.5)*100) + "%"; 
+                const sg = document.getElementById('speed-gauge-val'); if(sg) sg.innerText = Math.floor(this.spd * 20);
+                const bd = document.getElementById('batt-disp'); if(bd) bd.innerText = Math.floor(this.batt) + "%";
+                game.updateTape(this.h);
+            }
+            
+            avgHp() { return (this.hp.torp + this.hp.son + this.hp.peri + this.hp.eng) / 4; }
+            dmg(v) {
+                const r = Math.random();
+                if(r<0.25) this.hp.torp = Math.max(0,this.hp.torp-v);
+                else if(r<0.5) this.hp.son = Math.max(0,this.hp.son-v);
+                else if(r<0.75) this.hp.peri = Math.max(0,this.hp.peri-v);
+                else this.hp.eng = Math.max(0,this.hp.eng-v);
+            }
+        }
+
+        class Enemy {
+            constructor(type, x, y, isFriendly=false) {
+                this.x = x || Math.random()*W_SIZE; this.y = y || Math.random()*W_SIZE;
+                this.type = type; this.h = Math.random()*360;
+                this.spd = (type==='VIP'||type==='CARRIER')?0.4 : (type==='SUB'?0.6:1.0);
+                this.hp = (type==='VIP'||type==='CARRIER')?12:4;
+                this.d = type==='SUB' ? Math.floor(Math.random()*150+20) : 0;
+                this.state = 'ALIVE'; this.sinkT=0; this.dest=null; this.cd=0;
+                this.sinkTilt = (Math.random()<0.5?1:-1)*(10+Math.random()*20);
+                this.lastSeen = -99999;
+                this.lastKnownPos = {x:this.x, y:this.y}; 
+                this.isDetectingPlayer = false;
+                this.isFriendly = isFriendly; 
+            }
+            update(p, friendlies) {
+                if(this.state==='DEAD') return;
+                if(this.state==='SINKING') { this.sinkT++; if(this.sinkT>400)this.state='DEAD'; return; }
+                
+                let d = dist(this.x, this.y, p.x, p.y);
+                
+                if (!this.isFriendly) {
+                    let canSee = true;
+                    if(this.type !== 'SUB' && p.d > 15) canSee = false;
+                    let detRange = 1500;
+                    if(p.spd < 0.5) detRange = 800; 
+                    
+                    if(d < detRange && canSee) {
+                        this.isDetectingPlayer = true;
+                    } else {
+                        this.isDetectingPlayer = false;
+                    }
+                }
+
+                if (!this.isFriendly && game.mType === 'DEFEND' && game.friendlyVIP && game.friendlyVIP.state === 'ALIVE') {
+                    let dVIP = dist(this.x, this.y, game.friendlyVIP.x, game.friendlyVIP.y);
+                    if(dVIP < 3000) {
+                        let ang = r2d(Math.atan2(game.friendlyVIP.x-this.x, -(game.friendlyVIP.y-this.y)));
+                        this.turn(ang);
+                        if(this.cd<=0 && dVIP < 1500) {
+                             game.enFire(this, game.friendlyVIP); this.cd=300;
+                        }
+                    }
+                } else if(this.isDetectingPlayer) {
+                    let ang = r2d(Math.atan2(p.x-this.x, -(p.y-this.y)));
+                    this.turn(ang);
+                } else if(this.dest) {
+                    let ang = r2d(Math.atan2(this.dest.x-this.x, -(this.dest.y-this.y)));
+                    this.turn(ang);
+                    if(dist(this.x,this.y,this.dest.x,this.dest.y)<200) {
+                        if (this.isFriendly) game.success();
+                        else if (this.type==='VIP'||this.type==='CARRIER') game.fail("OBJETIVO ESCAPÓ");
+                    }
+                } else if(Math.random()<0.005) {
+                    this.h += (Math.random()-0.5)*90;
+                }
+
+                this.x += Math.sin(d2r(this.h))*this.spd;
+                this.y -= Math.cos(d2r(this.h))*this.spd;
+                if(!this.dest) { if(this.x<0 || this.x>W_SIZE) this.h+=180; if(this.y<0 || this.y>W_SIZE) this.h+=180; }
+
+                if(this.cd>0) this.cd--;
+                if(this.isDetectingPlayer && this.cd<=0 && this.state==='ALIVE' && !this.isFriendly) {
+                    let ang = r2d(Math.atan2(p.x-this.x, -(p.y-this.y)));
+                    let df = Math.abs(wrap(ang-this.h, 360));
+                    if(df<60 || df>300) { game.enFire(this, p); this.cd=400; }
+                }
+            }
+            turn(d){ let df=wrap(d-this.h,360); if(df>180)df-=360; this.h+=Math.sign(df)*0.3; }
+        }
+
+        const game = {
+            cv:null, cx:null, state:'MENU', scr:SCR_MAP,
+            p: new Player(), enemies:[], bases:[], torpedos:[], particles:[], islands:[],
+            blips:[], mType:'NONE', mLevel:1, zoomMap:1.0, zoomSon:1.0, zoomPeri:1.0, sAng:0,
+            lockedTgt: null, lockTimer: 0, friendlyVIP: null,
+
+            init() {
+                this.cv = document.getElementById('gameCanvas');
+                this.cx = this.cv.getContext('2d');
+                this.inpts(); this.rsz(); window.addEventListener('resize', ()=>this.rsz());
+                for(let i=0; i<12; i++) {
+                    let rVar = 100+Math.random()*200;
+                    let isl = {x:Math.random()*W_SIZE, y:Math.random()*W_SIZE, r:rVar, pts:[]};
+                    const segs=16; for(let j=0; j<segs; j++){
+                        let a=(j/segs)*Math.PI*2, rad=rVar*(0.6+Math.random()*0.6);
+                        isl.pts.push({x:Math.cos(a)*rad, y:Math.sin(a)*rad, h:0.2+Math.random()*0.8});
+                    }
+                    this.islands.push(isl);
+                }
+            },
+            
+            showMenu() {
+                 document.getElementById('splash-screen').classList.add('hidden');
+                 document.getElementById('overlay-screen').classList.remove('hidden');
+                 this.loop(); 
+            },
+
+            inpts() {
+                const t=document.getElementById('compass-tape');
+                for(let i=0;i<=36;i++){let d=document.createElement('div');d.className='tape-tick';d.innerText=i*10;t.appendChild(d);}
+                document.getElementById('depth-slider').addEventListener('input',(e)=>{this.p.td=parseInt(e.target.value);});
+                
+                this.cv.addEventListener('pointerdown', (e)=>{
+                    if(this.state!=='PLAYING') return;
+                    let r = this.cv.getBoundingClientRect();
+                    let cx = e.clientX - r.left; let cy = e.clientY - r.top;
+                    
+                    if(this.scr===SCR_MAP || (this.scr===SCR_ALL && cx < this.cv.width/2 && cy < this.cv.height/2)) {
+                        let ma = this.getMA();
+                        let mx = cx - (ma.x + ma.w/2);
+                        let my = cy - (ma.y + ma.h/2);
+                        let sc = this.getSc();
+                        let rd = d2r(this.p.h);
+                        let rx = mx * Math.cos(rd) - my * Math.sin(rd);
+                        let ry = mx * Math.sin(rd) + my * Math.cos(rd);
+                        this.p.wp={x:this.p.x+rx/sc, y:this.p.y+ry/sc};
+                        this.p.auto=true; this.alert("RUMBO FIJADO");
+                    }
+                });
+            },
+
+            startTurn(dir) { this.p.turnRate = dir * 2.0; },
+            stopTurn() { this.p.turnRate = 0; },
+            setDepth(v) { this.p.td = parseInt(v); },
+            setSpeed(v) { this.p.tspd = [0, 0.5, 1.0, 1.5][parseInt(v)]; },
+            adjZoom(v) { 
+                if(this.scr===SCR_MAP||this.scr===SCR_ALL) this.zoomMap=Math.max(0.2,Math.min(3.0,this.zoomMap+v));
+                if(this.scr===SCR_SONAR) this.zoomSon=Math.max(0.5,Math.min(3.0,this.zoomSon+v));
+                if(this.scr===SCR_PERI) this.zoomPeri=Math.max(1.0,Math.min(5.0,this.zoomPeri+v));
+                this.updateZoomLabel();
+            },
+            updateZoomLabel() {
+                let z = this.scr===SCR_MAP?this.zoomMap:(this.scr===SCR_SONAR?this.zoomSon:this.zoomPeri);
+                const zl = document.getElementById('zoom-level');
+                if(zl) zl.innerText = "x" + z.toFixed(1);
+            },
+            updateTape(d){const o=document.getElementById('compass-tape').parentElement.clientWidth/2;const x=o-20-(d*4);document.getElementById('compass-tape').style.transform=`translateX(${x}px)`;},
+            
+            setScreen(s) {
+                this.scr = s; 
+                document.querySelectorAll('.tac-btn').forEach(b => b.classList.remove('active'));
+                const m = {'ALL':'btn-all', 'MAP':'btn-map', 'SONAR':'btn-sonar', 'PERISCOPE':'btn-peri', 'STATUS':'btn-status'};
+                if(m[s]) document.getElementById(m[s]).classList.add('active');
+                
+                let showZoom = (s===SCR_MAP||s===SCR_SONAR||s===SCR_PERI||s===SCR_ALL);
+                const zc = document.getElementById('zoom-controls');
+                if(zc) zc.style.display = showZoom ? 'flex' : 'none';
+                if(showZoom) this.updateZoomLabel();
+            },
+
+            rsz() { const p = this.cv.parentElement; if(p) { this.cv.width = p.clientWidth; this.cv.height = p.clientHeight; } },
+
+            selectMission(t) { this.mType = t; this.mLevel = 1; document.getElementById('mission-select').classList.add('hidden'); this.startM(); },
+            startM() {
+                AudioSys.init();
+                document.getElementById('overlay-screen').classList.add('hidden');
+                this.p = new Player();
+                this.enemies = []; this.bases = []; this.torpedos = []; this.particles = []; this.blips = [];
+                this.state = 'PLAYING'; this.day = Math.random()>0.5;
+                this.bases.push({x:2000, y:W_SIZE-2000, r:80});
+
+                if(this.mType === 'INTERCEPT') {
+                    let vip = new Enemy('VIP', 200, 200); vip.dest = {x: W_SIZE-200, y: W_SIZE-200};
+                    this.enemies.push(vip);
+                    for(let i=0;i<6;i++) this.enemies.push(new Enemy(Math.random()>0.5?'SUB':'DESTROYER'));
+                } else if(this.mType === 'INFILTRATE') {
+                    this.targetZone = {x: W_SIZE-1000, y: 1000, r: 300};
+                    for(let i=0;i<10;i++) this.enemies.push(new Enemy(Math.random()>0.5?'SUB':'DESTROYER'));
+                } else if (this.mType === 'WARFARE') {
+                    this.killTarget = 5; this.killCount = 0;
+                    for(let i=0;i<12;i++) this.enemies.push(new Enemy(Math.random()>0.3?'MERCHANT':'DESTROYER'));
+                } else if (this.mType === 'DEFEND') {
+                    this.friendlyVIP = new Enemy('CARRIER', 200, 200, true); 
+                    this.friendlyVIP.dest = {x: W_SIZE-200, y: W_SIZE-200};
+                    this.enemies.push(this.friendlyVIP); 
+                    for(let i=0; i<8; i++) {
+                         let ex = 200 + Math.random()*(W_SIZE-400);
+                         let ey = 200 + Math.random()*(W_SIZE-400);
+                         this.enemies.push(new Enemy('SUB', ex, ey)); 
+                    }
+                }
+                const md = document.getElementById('mission-disp');
+                if(md) md.innerText = this.mType.substring(0,4);
+                this.setScreen(SCR_MAP);
+                this.alert("MISIÓN INICIADA");
+            },
+            success() {
+                this.state='MENU';
+                document.getElementById('overlay-screen').classList.remove('hidden');
+                document.getElementById('ov-title').innerText = "MISIÓN CUMPLIDA";
+                document.getElementById('ov-title').className = "text-4xl text-green-500 font-bold mb-2";
+                document.getElementById('ov-content').innerHTML = "OBJETIVOS COMPLETADOS. RETORNE A LA BASE.";
+                document.getElementById('mission-select').classList.remove('hidden');
+                document.getElementById('game-over-ctrls').classList.add('hidden');
+            },
+            fail(r) {
+                this.state='GAMEOVER';
+                document.getElementById('overlay-screen').classList.remove('hidden');
+                document.getElementById('ov-title').innerText = "MISIÓN FALLIDA";
+                document.getElementById('ov-title').className = "text-4xl text-red-500 font-bold mb-2";
+                document.getElementById('ov-content').innerHTML = r;
+                document.getElementById('mission-select').classList.add('hidden');
+                document.getElementById('game-over-ctrls').classList.remove('hidden');
+            },
+
+            pFire() {
+                if(this.p.hp.torp < 50) { this.alert("SALA TORPEDOS DAÑADA"); return; }
+                if(this.p.reload > 0 || this.p.torps <= 0) return;
+                this.p.torps--; this.p.reload = 100;
+                let r = d2r(this.p.h);
+                let tgt = this.lockedTgt; 
+                this.torpedos.push({x:this.p.x+Math.sin(r)*30, y:this.p.y-Math.cos(r)*30, h:this.p.h, spd:4, l:600, src:'P', target: tgt});
+                AudioSys.fire();
+                document.getElementById('torp-status').innerText = "RECARGANDO...";
+                setTimeout(() => document.getElementById('torp-status').innerText = "TUBO 1: LISTO", 2000);
+            },
+            enFire(e, target) {
+                let r = d2r(e.h);
+                this.torpedos.push({x:e.x+Math.sin(r)*20, y:e.y-Math.cos(r)*20, h:e.h, spd:3.5, l:500, src:'E', target: target}); 
+                if(target === this.p && dist(this.p.x, this.p.y, e.x, e.y) < 2000) { AudioSys.alarm(); this.alert("¡TORPEDO DETECTADO!"); }
+            },
+            alert(m) {
+                const b = document.getElementById('alert-box');
+                if(b) {
+                    b.innerText = m; b.classList.remove('hidden');
+                    setTimeout(() => b.classList.add('hidden'), 3000);
+                }
+            },
+
+            getMA(){if(this.scr===SCR_ALL)return{x:0,y:0,w:this.cv.width/2,h:this.cv.height/2};else if(this.scr===SCR_MAP)return{x:0,y:0,w:this.cv.width,h:this.cv.height};return{x:-9,y:0,w:0,h:0};},
+            getSc(){let w=this.scr===SCR_ALL?this.cv.width/2:this.cv.width;return Math.max(0.01, 0.15*(w/800)*this.zoomMap);},
+
+            loop() {
+                if(this.state === 'PLAYING') {
+                    this.p.update();
+                    const now = Date.now();
+                    
+                    // --- SONAR SWEEP & GLOBAL DETECTION LOGIC ---
+                    this.sAng = (this.sAng + 4) % 360;
+                    if(Math.floor(this.sAng) % 20 === 0) AudioSys.ping();
+                    
+                    const checkDetection = (obj, type, isEn) => {
+                        let d = dist(this.p.x, this.p.y, obj.x, obj.y);
+                        if(d < 1500) { 
+                            let bearing = wrap(r2d(Math.atan2(obj.x - this.p.x, -(obj.y - this.p.y))) - this.p.h, 360);
+                            if(Math.abs(bearing - this.sAng) < 10 || Math.abs(bearing - this.sAng) > 350) {
+                                this.blips.push({bearing: bearing, dist: d, a: 1.0, type: type, isEn: isEn});
+                                if(isEn) {
+                                    obj.lastSeen = now;
+                                    obj.lastKnownPos = {x: obj.x, y: obj.y};
+                                }
+                            }
+                        }
+                    };
+
+                    this.islands.forEach(isl => {
+                        if(dist(this.p.x, this.p.y, isl.x, isl.y) < isl.r) {
+                            this.p.spd *= -0.5; this.p.dmg(5); this.alert("¡IMPACTO TIERRA!"); AudioSys.explode();
+                        }
+                        checkDetection(isl, 'ISL', false);
+                    });
+
+                    this.p.docked = false;
+                    this.bases.forEach(b => {
+                        if(dist(this.p.x, this.p.y, b.x, b.y) < b.r && this.p.spd < 0.1) {
+                            this.p.docked = true;
+                            if(this.p.avgHp() < 100) this.p.dmg(-0.2);
+                            if(this.p.torps < 24 && Math.random() < 0.05) this.p.torps++;
+                            if(this.p.batt < 100) this.p.batt += 0.1;
+                            this.alert("BASE: REPARANDO...");
+                        }
+                    });
+
+                    this.enemies.forEach(e => {
+                        e.update(this.p);
+                        if(e.isFriendly && e.state === 'DEAD') game.fail("EL VIP ALIADO HA SIDO HUNDIDO");
+                        if(e.state !== 'DEAD') {
+                            let typeCode = 'NAV';
+                            if(e.isFriendly) typeCode = 'VIP'; 
+                            else if (e.isVIP) typeCode = 'VIP';
+                            else if (e.type==='SUB') typeCode = 'SUB';
+                            checkDetection(e, typeCode, true);
+                        }
+                    });
+                    
+                    this.torpedos.forEach(t => checkDetection(t, 'TRP', t.src==='E'));
+                    
+                    if(this.mType === 'INTERCEPT') {
+                        let vip = this.enemies.find(e => e.type === 'VIP' && !e.isFriendly);
+                        if(!vip || vip.state === 'DEAD') setTimeout(() => this.success(), 2000);
+                    } else if(this.mType === 'INFILTRATE') {
+                        if(dist(this.p.x, this.p.y, this.targetZone.x, this.targetZone.y) < this.targetZone.r && this.p.spd < 0.2) this.success();
+                    } else if(this.mType === 'WARFARE') {
+                        let k = this.enemies.filter(e => e.state === 'SINKING' || e.state === 'DEAD').length;
+                        if(k >= this.killTarget) this.success();
+                    }
+
+                    if(this.p.avgHp() <= 0) this.fail("SUBMARINO DESTRUIDO");
+
+                    const hd = document.getElementById('hull-disp');
+                    if(hd) hd.innerText = Math.floor(this.p.avgHp()) + "%";
+                    
+                    if(this.p.avgHp() < 30) document.body.classList.add('glitch-anim'); else document.body.classList.remove('glitch-anim');
+
+                    this.particles.forEach(p => { p.r += 1; p.a -= 0.02; });
+                    this.particles = this.particles.filter(p => p.a > 0);
+                    
+                    this.blips.forEach(b => b.a -= 0.005);
+                    this.blips = this.blips.filter(b => b.a > 0);
+
+                    for(let i=this.torpedos.length-1; i>=0; i--) {
+                        let t = this.torpedos[i];
+                        let tTarget = null;
+                        if(t.src === 'P') tTarget = t.target; 
+                        else if(t.target) tTarget = t.target; 
+                        
+                        if(tTarget && tTarget.state === 'ALIVE') {
+                             let tx = tTarget.x;
+                             let ty = tTarget.y;
+                             let ang = r2d(Math.atan2(tx - t.x, -(ty - t.y)));
+                             let diff = wrap(ang - t.h, 360);
+                             if(diff > 180) diff -= 360;
+                             if(Math.abs(diff) < 60) t.h += Math.sign(diff) * 1.0;
+                        }
+
+                        t.x += Math.sin(d2r(t.h)) * t.spd; t.y -= Math.cos(d2r(t.h)) * t.spd; t.l--;
+                        if(t.l <= 0) { this.torpedos.splice(i, 1); continue; }
+
+                        let hitLand = false;
+                        for(let isl of this.islands) if(dist(t.x, t.y, isl.x, isl.y) < isl.r) { hitL = true; break; }
+                        if(hitLand) { this.particles.push({x:t.x, y:t.y, r:10, a:1}); AudioSys.explode(); this.torpedos.splice(i, 1); continue; }
+
+                        if(t.src === 'P') {
+                            let hit = false;
+                            for(let e of this.enemies) {
+                                if(e.state !== 'ALIVE') continue;
+                                if(e.isFriendly && dist(t.x, t.y, e.x, e.y) < 30) {
+                                     game.fail("HAS HUNDIDO AL VIP ALIADO. CORTE MARCIAL.");
+                                     hit=true; break;
+                                }
+                                if(!e.isFriendly && dist(t.x, t.y, e.x, e.y) < 30) {
+                                    e.hp--; 
+                                    this.particles.push({x:e.x, y:e.y, r:5, a:1}); 
+                                    AudioSys.explode();
+                                    if(e.hp <= 0) { e.state = 'SINKING'; this.alert("BLANCO HUNDIDO"); if(this.mType==='WARFARE') this.killCount++; }
+                                    else this.alert("IMPACTO");
+                                    hit = true; break;
+                                }
+                            }
+                            if(hit) this.torpedos.splice(i, 1);
+                        } else {
+                            if(dist(t.x, t.y, this.p.x, this.p.y) < 20) {
+                                this.p.dmg(15);
+                                this.particles.push({x:this.p.x, y:this.p.y, r:10, a:1});
+                                AudioSys.explode();
+                                this.alert("¡IMPACTO EN CASCO!");
+                                this.torpedos.splice(i, 1);
+                                continue;
+                            }
+                            if(game.friendlyVIP && game.friendlyVIP.state === 'ALIVE' && dist(t.x, t.y, game.friendlyVIP.x, game.friendlyVIP.y) < 30) {
+                                game.friendlyVIP.hp--;
+                                this.particles.push({x:game.friendlyVIP.x, y:game.friendlyVIP.y, r:10, a:1});
+                                AudioSys.explode();
+                                this.alert("¡VIP ALIADO BAJO FUEGO!");
+                                this.torpedos.splice(i, 1);
+                            }
+                        }
+                    }
+                }
+                this.draw();
+                requestAnimationFrame(() => this.loop());
+            },
+
+            // --- DRAWING ---
+            draw() {
+                this.cx.fillStyle = '#020502';
+                this.cx.fillRect(0, 0, this.cv.width, this.cv.height);
+
+                if(this.scr === SCR_ALL) {
+                    const w = this.cv.width/2; const h = this.cv.height/2;
+                    this.cx.strokeStyle = '#003300'; this.cx.lineWidth = 2;
+                    this.cx.beginPath(); this.cx.moveTo(w, 0); this.cx.lineTo(w, this.cv.height); this.cx.moveTo(0, h); this.cx.lineTo(this.cv.width, h); this.cx.stroke();
+                    
+                    this.dMap(0, 0, w, h); this.dSon(w, 0, w, h); this.dPer(0, h, w, h); this.dStat(w, h, w, h);
+                    
+                    this.cx.fillStyle = '#00ff41'; this.cx.font = '10px monospace';
+                    this.cx.fillText("MAPA", 5, 12); this.cx.fillText("SONAR", w+5, 12);
+                    this.cx.fillText("VISUAL", 5, h+12); this.cx.fillText("SISTEMAS", w+5, h+12);
+                } else if(this.scr === SCR_MAP) this.dMap(0, 0, this.cv.width, this.cv.height);
+                else if(this.scr === SCR_SONAR) this.dSon(0, 0, this.cv.width, this.cv.height);
+                else if(this.scr === SCR_PERI) this.dPer(0, 0, this.cv.width, this.cv.height);
+                else if(this.scr === SCR_STAT) this.dStat(0, 0, this.cv.width, this.cv.height);
+            },
+
+            dMap(bx, by, bw, bh) {
+                this.cx.save(); this.cx.beginPath(); this.cx.rect(bx, by, bw, bh); this.cx.clip();
+                const cx = bx + bw/2; const cy = by + bh/2;
+                let wScale = (bw / 800) * 0.15 * this.zoomMap;
+                this.cx.translate(cx, cy); this.cx.rotate(d2r(-this.p.h)); this.cx.translate(-cx, -cy);
+                const toSc = (x, y) => ({ x: cx + (x - this.p.x)*wScale, y: cy + (y - this.p.y)*wScale });
+
+                this.islands.forEach(isl => {
+                    let p = toSc(isl.x, isl.y);
+                    this.cx.fillStyle = '#eebb55'; this.cx.beginPath();
+                    if(isl.pts.length > 0) {
+                        let pt0 = toSc(isl.x+isl.pts[0].x, isl.y+isl.pts[0].y); this.cx.moveTo(pt0.x, pt0.y);
+                        for(let i=1; i<isl.pts.length; i++) { let pt = toSc(isl.x+isl.pts[i].x, isl.y+isl.pts[i].y); this.cx.lineTo(pt.x, pt.y); }
+                    }
+                    this.cx.fill();
+                    this.cx.fillStyle = '#225522'; this.cx.beginPath(); this.cx.arc(p.x, p.y, isl.r*wScale*0.7, 0, Math.PI*2); this.cx.fill();
+                });
+
+                if(this.mType==='INFILTRATE') {
+                    let p = toSc(this.targetZone.x, this.targetZone.y);
+                    this.cx.strokeStyle = '#00ffff'; this.cx.setLineDash([5,5]);
+                    this.cx.beginPath(); this.cx.arc(p.x, p.y, this.targetZone.r*wScale, 0, Math.PI*2); this.cx.stroke();
+                    this.cx.setLineDash([]);
+                }
+
+                // Grid
+                this.cx.strokeStyle = '#003300'; this.cx.lineWidth = 1;
+                let diag = Math.sqrt(bw*bw + bh*bh);
+                let wxStart = Math.floor((this.p.x - (diag/wScale))/1000)*1000;
+                let wxEnd = Math.floor((this.p.x + (diag/wScale))/1000)*1000;
+                let wyStart = Math.floor((this.p.y - (diag/wScale))/1000)*1000;
+                let wyEnd = Math.floor((this.p.y + (diag/wScale))/1000)*1000;
+
+                if (wxEnd - wxStart < 50000) { 
+                    this.cx.beginPath();
+                    for (let xx = wxStart; xx <= wxEnd; xx += 1000) {
+                        let p1 = toSc(xx, wyStart); let p2 = toSc(xx, wyEnd);
+                        this.cx.moveTo(p1.x, p1.y); this.cx.lineTo(p2.x, p2.y);
+                    }
+                    for (let yy = wyStart; yy <= wyEnd; yy += 1000) {
+                        let p1 = toSc(wxStart, yy); let p2 = toSc(wxEnd, yy);
+                        this.cx.moveTo(p1.x, p1.y); this.cx.lineTo(p2.x, p2.y);
+                    }
+                    this.cx.stroke();
+                }
+
+                let tl = toSc(0, 0); let br = toSc(W_SIZE, W_SIZE);
+                this.cx.strokeStyle = '#550000'; this.cx.lineWidth = 2;
+                this.cx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+
+                this.bases.forEach(b => {
+                    let p = toSc(b.x, b.y);
+                    this.cx.fillStyle = 'rgba(0,255,255,0.3)'; this.cx.fillRect(p.x-10, p.y-10, 20, 20);
+                    this.cx.strokeStyle = '#0ff'; this.cx.strokeRect(p.x-10, p.y-10, 20, 20);
+                });
+
+                // ENEMY VISIBILITY LOGIC (MAP)
+                const now = Date.now();
+                this.enemies.forEach(e => {
+                    if(e.state === 'DEAD') return;
+                    
+                    let timeSince = now - e.lastSeen;
+                    let visible = false;
+                    let ghost = false;
+
+                    if (timeSince < 2000) { visible = true; }
+                    else if (timeSince < 20000) { visible = true; ghost = true; }
+                    if(e.type==='VIP' && !e.isFriendly) visible=true; 
+                    if(e.isFriendly) visible=true; // Always see friendly VIP
+
+                    if (visible) {
+                        let dx = ghost ? e.lastKnownPos.x : e.x;
+                        let dy = ghost ? e.lastKnownPos.y : e.y;
+                        let p = toSc(dx, dy);
+
+                        this.cx.globalAlpha = ghost ? 0.4 : 1.0;
+                        // Friendly VIP color: Cyan
+                        this.cx.fillStyle = e.isFriendly ? '#00ffff' : (e.type==='VIP' ? '#f0f' : (e.type==='SUB' ? '#f33' : '#fa0'));
+                        this.cx.fillRect(p.x-4, p.y-4, 8, 8);
+                        
+                        this.cx.save(); 
+                        this.cx.translate(p.x, p.y); this.cx.rotate(d2r(this.p.h)); 
+                        this.cx.font = "10px monospace"; this.cx.fillStyle = "#fff";
+                        let label = e.isFriendly ? 'ALIADO' : (e.type==='VIP'?'V':(e.type==='SUB'?'S':(e.type==='DESTROYER'?'D':'M')));
+                        this.cx.fillText(label, 6, 0);
+                        this.cx.restore();
+
+                        if(ghost === false && !e.isFriendly) {
+                            this.cx.strokeStyle = '#ff3333'; this.cx.setLineDash([2,4]);
+                            let detR = 1500; 
+                            this.cx.beginPath(); this.cx.arc(p.x, p.y, detR*wScale, 0, Math.PI*2); this.cx.stroke();
+                            this.cx.setLineDash([]);
+                        }
+
+                        if(e.type==='VIP' || e.isFriendly) {
+                            this.cx.strokeStyle = e.isFriendly ? '#00ffff' : '#f0f'; 
+                            this.cx.strokeRect(p.x-6, p.y-6, 12, 12);
+                            if(e.dest) {
+                                let d = toSc(e.dest.x, e.dest.y);
+                                this.cx.beginPath(); this.cx.moveTo(p.x, p.y); this.cx.lineTo(d.x, d.y); this.cx.stroke();
+                                this.cx.fillText("X", d.x-3, d.y+3);
+                            }
+                        }
+                        this.cx.globalAlpha = 1.0;
+                    }
+                });
+
+                this.torpedos.forEach(t => {
+                    let p = toSc(t.x, t.y);
+                    this.cx.fillStyle = t.src==='P' ? '#ff0' : '#f00';
+                    this.cx.beginPath(); this.cx.moveTo(p.x, p.y-4); this.cx.lineTo(p.x+3, p.y+3); this.cx.lineTo(p.x-3, p.y+3); this.cx.fill();
+                });
+
+                if(this.p.wp) {
+                    let w = toSc(this.p.wp.x, this.p.wp.y);
+                    this.cx.strokeStyle = '#0f0'; this.cx.setLineDash([5,5]);
+                    this.cx.beginPath(); this.cx.moveTo(cx, cy); this.cx.lineTo(w.x, w.y); this.cx.stroke();
+                    this.cx.setLineDash([]);
+                }
+
+                this.cx.restore(); 
+                this.cx.fillStyle = '#0f0';
+                this.cx.beginPath(); this.cx.moveTo(cx, cy-10); this.cx.lineTo(cx+6, cy+8); this.cx.lineTo(cx-6, cy+8); this.cx.fill();
+            },
+
+            dSon(bx, by, bw, bh) {
+                this.cx.save(); this.cx.beginPath(); this.cx.rect(bx, by, bw, bh); this.cx.clip();
+                const cx = bx + bw/2; const cy = by + bh/2;
+                const r = Math.min(bw, bh)/2 - 10;
+
+                if(this.p.hp.son < 50) {
+                    this.cx.fillStyle = '#000'; this.cx.fillRect(bx, by, bw, bh);
+                    this.cx.fillStyle = 'rgba(255,255,255,0.1)';
+                    for(let i=0; i<50; i++) this.cx.fillRect(bx+Math.random()*bw, by+Math.random()*bh, 2, 2);
+                    this.cx.fillStyle = 'red'; this.cx.textAlign='center'; this.cx.fillText("SONAR FUERA DE LINEA", cx, cy);
+                    this.cx.restore(); return;
+                }
+
+                this.cx.fillStyle = '#000800'; this.cx.fillRect(bx, by, bw, bh);
+                this.cx.strokeStyle = '#004400';
+                this.cx.beginPath(); this.cx.arc(cx, cy, r*0.33, 0, Math.PI*2); this.cx.stroke();
+                this.cx.beginPath(); this.cx.arc(cx, cy, r*0.66, 0, Math.PI*2); this.cx.stroke();
+                this.cx.beginPath(); this.cx.arc(cx, cy, r, 0, Math.PI*2); this.cx.stroke();
+                
+                let rangeMax = 1500 / this.zoomSon;
+                this.cx.fillStyle = '#006600'; this.cx.font="9px monospace"; this.cx.textAlign="center";
+                this.cx.fillText(Math.floor(rangeMax*0.33), cx, cy - r*0.33 - 2);
+                this.cx.fillText(Math.floor(rangeMax*0.66), cx, cy - r*0.66 - 2);
+                this.cx.fillText(Math.floor(rangeMax), cx, cy - r - 2);
+
+                // Rotating Cardinal Points
+                this.cx.save();
+                this.cx.translate(cx, cy);
+                this.cx.rotate(d2r(-this.p.h)); 
+                this.cx.font="12px monospace"; this.cx.fillStyle="#00aa00";
+                this.cx.fillText("N", 0, -r + 15);
+                this.cx.fillText("S", 0, r - 5);
+                this.cx.fillText("E", r - 10, 4);
+                this.cx.fillText("O", -r + 10, 4);
+                this.cx.restore();
+
+                let rad = d2r(this.sAng);
+                this.cx.fillStyle = 'rgba(0, 255, 65, 0.15)';
+                this.cx.beginPath(); this.cx.moveTo(cx, cy);
+                this.cx.arc(cx, cy, r, rad-0.4, rad);
+                this.cx.fill();
+
+                let zoomR = r * this.zoomSon;
+
+                this.blips.forEach(b => {
+                    let dr = (b.dist/1500) * zoomR;
+                    if(dr < r) {
+                        let brRad = d2r(b.bearing);
+                        let px = cx + Math.sin(brRad)*dr;
+                        let py = cy - Math.cos(brRad)*dr;
+                        
+                        let col = b.type==='ISL'?'0,150,0':(b.type==='VIP'?'255,0,255':(b.type==='TRP'?'255,255,0':'0,255,0'));
+                        this.cx.fillStyle = `rgba(${col},${b.a})`;
+                        this.cx.beginPath(); this.cx.arc(px, py, b.type==='ISL'?4:3, 0, Math.PI*2); this.cx.fill();
+                        if(b.a > 0.8 && b.type!=='ISL') { this.cx.font="9px monospace"; this.cx.fillStyle=`rgba(${col},${b.a})`; this.cx.fillText(b.type, px+5, py); }
+                    }
+                });
+                this.cx.restore();
+            },
+
+            dPer(bx, by, bw, bh) {
+                this.cx.save(); this.cx.beginPath(); this.cx.rect(bx, by, bw, bh); this.cx.clip();
+                
+                if(this.p.hp.peri < 50) {
+                    this.cx.fillStyle = '#000'; this.cx.fillRect(bx, by, bw, bh);
+                    this.cx.fillStyle = 'rgba(255,255,255,0.15)';
+                    for(let i=0; i<100; i++) this.cx.fillRect(bx+Math.random()*bw, by+Math.random()*bh, 2, 2);
+                    this.cx.restore(); return;
+                }
+                // Periscope disabled if deep
+                if(this.p.d > 15) {
+                    this.cx.fillStyle='#000'; this.cx.fillRect(bx,by,bw,bh);
+                    this.cx.fillStyle='red'; this.cx.textAlign='center'; this.cx.font='16px monospace';
+                    this.cx.fillText("FUERA DE COTA",bx+bw/2,by+bh/2);
+                    this.cx.restore(); return;
+                }
+
+                const hl = by + bh/2;
+                let st=this.day?'#0077be':'#020510', sb=this.day?'#87ceeb':'#051025';
+                let gs=this.cx.createLinearGradient(bx,by,bx,hl);gs.addColorStop(0,st);gs.addColorStop(1,sb);this.cx.fillStyle=gs;this.cx.fillRect(bx,by,bw,bh/2);
+                let gw=this.cx.createLinearGradient(bx,hl,bx,by+bh);gw.addColorStop(0,this.day?'#006994':'#000810');gw.addColorStop(1,this.day?'#003366':'#000508');this.cx.fillStyle=gw;this.cx.fillRect(bx,hl,bw,bh/2);
+
+                let scaleF = this.zoomPeri; 
+                let fov = 45 / scaleF; 
+
+                this.islands.forEach(isl => {
+                    let d = dist(this.p.x, this.p.y, isl.x, isl.y);
+                    if(d < 5000) {
+                        let bearing = wrap(r2d(Math.atan2(isl.x - this.p.x, -(isl.y - this.p.y))) - this.p.h, 360);
+                        if(bearing > 180) bearing -= 360;
+                        if(Math.abs(bearing) < fov) {
+                            let x = bx + bw/2 + (bearing/fov)*(bw/2);
+                            let w = (isl.r/d) * 1000 * scaleF;
+                            this.cx.fillStyle = '#e6c288'; this.cx.beginPath(); this.cx.arc(x, hl, w, Math.PI, 0); this.cx.fill();
+                            this.cx.fillStyle = this.day ? '#2a552a' : '#0a150a'; 
+                            // Mountains
+                            this.cx.beginPath();
+                            this.cx.moveTo(x-w, hl);
+                            for(let i=0; i<isl.pts.length; i++) {
+                                let px = x - w + (i/isl.pts.length)*2*w;
+                                let py = hl - isl.pts[i].h*w*0.8;
+                                this.cx.lineTo(px, py);
+                            }
+                            this.cx.lineTo(x+w, hl);
+                            this.cx.fill();
+                        }
+                    }
+                });
+
+                let lck=null;
+                this.enemies.forEach(e => {
+                    let d = dist(this.p.x, this.p.y, e.x, e.y);
+                    if(d < 4000) {
+                        let bearing = wrap(r2d(Math.atan2(e.x - this.p.x, -(e.y - this.p.y))) - this.p.h, 360);
+                        if(bearing > 180) bearing -= 360;
+                        if(Math.abs(bearing) < fov) {
+                            let x = bx + bw/2 + (bearing/fov)*(bw/2);
+                            let sc = (1500/d) * scaleF;
+                            let w = 30 * sc; let h = 15 * sc;
+                            let y = hl + (e.state==='SINKING' ? e.sinkT/10 : 0);
+                            
+                            this.cx.save(); this.cx.translate(x, y);
+                            if(e.state==='SINKING') this.cx.rotate(d2r(e.sinkTilt));
+                            
+                            this.cx.fillStyle = e.isFriendly ? '#0055aa' : (this.day ? '#222' : '#000');
+                            if(e.type==='SUB') { this.cx.fillRect(-w/4,-h/4,w/2,h/4); this.cx.fillRect(-w/2,0,w,2); }
+                            else { this.cx.fillRect(-w,-h/2,w*2,h/2); this.cx.fillRect(-w/4,-h,w/2,h/2); }
+                            
+                            if(e.hp < 2 || e.state==='SINKING') {
+                                this.cx.fillStyle = `rgba(20,20,20,0.8)`;
+                                for(let i=0; i<5; i++) { let so = (Date.now()/500 + i) % 1; this.cx.beginPath(); this.cx.arc(0, -h-(so*30), 5+so*15, 0, Math.PI*2); this.cx.fill(); }
+                                if(Math.random()>0.7) { this.cx.fillStyle = 'orange'; this.cx.fillRect(-w/4, -h/2, w/2, h/4); }
+                            }
+                            this.cx.restore();
+                            if(Math.abs(bearing)<2)lck=e;
+                        }
+                    }
+                });
+
+                this.torpedos.forEach(t => {
+                    let d = dist(this.p.x, this.p.y, t.x, t.y); if(d > 3000) return;
+                    let bearing = wrap(r2d(Math.atan2(t.x - this.p.x, -(t.y - this.p.y))) - this.p.h, 360);
+                    if(bearing > 180) bearing -= 360;
+                    if(Math.abs(bearing) < fov) {
+                        let x = bx + bw/2 + (bearing/fov)*(bw/2);
+                        let sc = (1500/d) * scaleF;
+                        this.cx.fillStyle = '#fff'; this.cx.beginPath(); this.cx.arc(x, hl+2, 2*sc, 0, Math.PI*2); this.cx.fill();
+                        this.cx.strokeStyle = 'rgba(255,255,255,0.5)'; this.cx.beginPath(); this.cx.moveTo(x, hl+2); this.cx.lineTo(x, hl+2+10*sc); this.cx.stroke();
+                    }
+                });
+
+                const cx = bx+bw/2; const cy = hl;
+                this.cx.strokeStyle = this.day ? 'rgba(0,0,0,0.6)' : 'rgba(0,255,0,0.5)'; this.cx.lineWidth = 1;
+                this.cx.beginPath(); this.cx.moveTo(cx, by); this.cx.lineTo(cx, by+bh); this.cx.moveTo(bx, cy); this.cx.lineTo(bx+bw, cy); this.cx.stroke();
+                
+                for(let i=1; i<=5; i++) {
+                    let yOff = i * 20;
+                    this.cx.beginPath(); this.cx.moveTo(cx - 5, cy + yOff); this.cx.lineTo(cx + 5, cy + yOff); 
+                    this.cx.stroke();
+                }
+
+                if(lck){
+                    let color = lck.isFriendly ? '#0ff' : '#f00';
+                    this.cx.strokeStyle=color; this.cx.lineWidth=2; this.cx.strokeRect(cx-20,cy-20,40,40);
+                    this.cx.fillStyle=color; this.cx.font="12px monospace"; this.cx.textAlign="center";
+                    this.cx.fillText(lck.isFriendly ? "FRIENDLY" : "[LOCKED]",cx,cy-25); 
+                    this.cx.fillText(`DIST:${Math.floor(dist(this.p.x,this.p.y,lck.x,lck.y))}`,cx,cy+35);
+                    this.lockedTgt = lck;
+                } else if(this.lockTimer > 0) {
+                    this.cx.strokeStyle='#ff0'; this.cx.strokeRect(cx-15,cy-15,30,30);
+                }
+
+                this.cx.restore();
+            },
+
+            dStat(bx, by, bw, bh) {
+                this.cx.save(); this.cx.beginPath(); this.cx.rect(bx, by, bw, bh); this.cx.clip();
+                this.cx.fillStyle = '#0a110a'; this.cx.fillRect(bx, by, bw, bh);
+                
+                const cx = bx + bw/2; const cy = by + bh/2;
+                const p = this.p.hp;
+                const col = (v) => v < 50 ? '#f00' : '#0f0';
+
+                this.cx.fillStyle = col(p.eng); this.cx.beginPath(); this.cx.moveTo(cx-60, cy); this.cx.lineTo(cx-20, cy-15); this.cx.lineTo(cx-20, cy+15); this.cx.fill();
+                this.cx.fillStyle = col(p.son); this.cx.fillRect(cx-20, cy-15, 20, 30); 
+                this.cx.fillStyle = col(p.peri); this.cx.fillRect(cx, cy-15, 20, 30); this.cx.fillRect(cx-10, cy-25, 20, 10); 
+                this.cx.fillStyle = col(p.torp); this.cx.beginPath(); this.cx.moveTo(cx+20, cy-15); this.cx.lineTo(cx+60, cy-10); this.cx.lineTo(cx+60, cy+10); this.cx.lineTo(cx+20, cy+15); this.cx.fill();
+                
+                this.cx.fillStyle = '#fff'; this.cx.font = '14px monospace'; this.cx.textAlign = 'center';
+                this.cx.fillText(`INTEGRIDAD: ${Math.floor(this.p.avgHp())}%`, cx, cy+45);
+                
+                this.cx.font = '12px monospace'; this.cx.textAlign = 'left';
+                this.cx.fillStyle = '#0f0';
+                this.cx.fillText("SISTEMAS:", bx+10, by+20);
+                this.cx.fillStyle = col(p.torp); this.cx.fillText(`TORPEDOS: ${p.torp}%`, bx+10, by+40);
+                this.cx.fillStyle = col(p.son); this.cx.fillText(`SONAR: ${p.son}%`, bx+10, by+55);
+                this.cx.fillStyle = col(p.peri); this.cx.fillText(`VISUAL: ${p.peri}%`, bx+10, by+70);
+                this.cx.fillStyle = col(p.eng); this.cx.fillText(`MOTOR: ${p.eng}%`, bx+10, by+85);
+
+                this.cx.restore();
+            }
+        };
+        window.onload = () => game.init();
+    </script>
+</body>
+</html>
