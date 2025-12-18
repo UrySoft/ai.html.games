@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Scorched Earth versión Oriol Badia Campanera</title>
+    <style>
+:root{--safe-bottom: env(safe-area-inset-bottom, 0px); --vvh: 100dvh;}
+
+        /* --- ESTILO GENERAL --- */
+        body { 
+            margin: 0; overflow: hidden; background-color: #111; color: white; 
+            font-family: 'Segoe UI', sans-serif; touch-action: none; 
+            user-select: none; -webkit-user-select: none;
+            display: flex; flex-direction: column;
+            height: var(--vvh);
+            min-height: 100svh;
+        }
+
+        #game-container { position: relative; flex: 1; width: 100%; overflow: hidden; background: #000; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .hidden { display: none !important; }
+
+        /* --- HUD (Parte Superior) --- */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%; height: 90px; 
+            padding: 10px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            z-index: 10; pointer-events: none;
+        }
+
+        .p-info { display: flex; flex-direction: column; width: 140px; pointer-events: auto; }
+        .p-name { font-weight: 900; font-size: 14px; margin-bottom: 4px; text-shadow: 1px 1px 2px #000; }
+        .bar-container { 
+            width: 100%; height: 14px; background: #333; 
+            border: 2px solid #000; border-radius: 4px; 
+            margin-bottom: 2px; overflow: hidden; 
+        }
+        .bar-fill { height: 100%; transition: width 0.2s; }
+        .money { color: #ffd700; font-family: monospace; font-size: 18px; font-weight: bold; text-shadow: 1px 1px 0 #000; margin-left: 2px;}
+
+        .center-hud { display: flex; flex-direction: column; align-items: center; width: 140px; }
+        #timer { font-size: 32px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #f00; font-family: monospace; margin-bottom: 2px; }
+        /* CORRECCIÓN: Estilos para el minimapa recuperado */
+        #minimap { width: 120px; height: 40px; background: rgba(0,0,0,0.6); border: 1px solid #555; margin-bottom: 2px; border-radius: 4px; }
+        
+        .wind-ctr { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px;}
+        .wind-lbl { color: #aaa; font-size: 10px; font-weight: bold; }
+        .wind-val { font-size: 14px; color: #fff; font-weight: bold; font-family: monospace; }
+
+        /* --- CONTROLES (Parte Inferior) --- */
+        #controls {
+            position: relative; width: 100%; min-height: 140px;
+            background: #1a1a1a; border-top: 4px solid #333;
+            padding: 8px; padding-bottom: calc(8px + var(--safe-bottom)); box-sizing: border-box; z-index: 50; flex-shrink: 0;
+            display: flex; gap: 6px;
+        }
+
+        .panel { 
+            display: flex; flex-direction: column; justify-content: space-between;
+            background: #252525; border-radius: 8px; padding: 6px; border: 1px solid #444; 
+            min-width: 0; flex: 1; 
+        }
+        
+        .p-move { flex: 0.9; } .p-adj { flex: 1.3; } .p-ars { flex: 1.1; } .p-fire { flex: 1.0; }
+
+        label { font-size: 10px; color: #888; text-align: center; display: block; margin-bottom: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Botones grandes */
+        .btn-large {
+            flex: 1; height: 100%; min-height: 50px; 
+            background: #333; color: #fff; border: 1px solid #555; border-radius: 6px;
+            font-size: 24px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-large:active { background: #555; transform: scale(0.95); }
+        
+        .btn-move { 
+            flex: 1; height: 100%; min-height: 50px; 
+            background: #238636; border: 1px solid #2ea043; border-radius: 6px; 
+            color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-move:active { background: #2ea043; transform: scale(0.95); }
+
+        /* Sliders y Valores */
+        .row-btns { display: flex; align-items: center; height: 100%; gap: 6px; }
+        .val-disp { font-family: monospace; font-size: 16px; color: #7ee787; font-weight: bold; min-width: 35px; text-align: center; }
+        input[type=range] { flex:1; height: 30px; accent-color: #238636; margin: 0; cursor: pointer;}
+
+        /* Fuel */
+        .fuel-track { width: 100%; height: 8px; background: #000; border-radius: 4px; margin-bottom: 6px; overflow: hidden; border: 1px solid #444;}
+        .fuel-bar { height: 100%; background: #d29922; width: 100%; transition: width 0.2s; }
+
+        /* Arsenal */
+        .ars-row { display: flex; gap: 4px; height: 100%; }
+        .btn-ars { 
+            flex: 1; border: none; border-radius: 6px; color: white; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 11px; cursor: pointer; background: #333; min-height: 50px;
+        }
+        .btn-wep { border: 1px solid #666; } .btn-item { background: #1f6feb; border: 1px solid #388bfd; }
+        .btn-ars span { color: #ffd700; font-size: 10px; font-weight: bold; margin-top: 2px; }
+
+        #btn-fire { 
+            width: 100%; height: 100%; background: linear-gradient(#d32f2f, #b71c1c); 
+            border: none; border-radius: 8px; color: white; font-size: 22px; font-weight: 900; letter-spacing: 1px;
+            box-shadow: 0 4px #7f0000; cursor: pointer;
+        }
+        #btn-fire:active { transform: translateY(3px); box-shadow: none; }
+        #btn-fire:disabled { background: #333; color: #555; box-shadow: none; cursor: not-allowed; }
+
+        /* MODALES */
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #screen-start{
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+#screen-start::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,0.62);
+}
+#screen-start > *{ position: relative; z-index: 1; }
+        #modal-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 400px; background: #1c1c1c; border: 1px solid #444; border-radius: 12px; z-index: 100; box-shadow: 0 20px 50px rgba(0,0,0,1); display: flex; flex-direction: column; max-height: 80vh; }
+        .modal-header { padding: 15px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; border-radius: 12px 12px 0 0; color: #fff; font-weight: bold;}
+        .list-scroll { overflow-y: auto; padding: 10px; }
+        .card { background: #2a2a2a; border: 1px solid #444; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; cursor: pointer; }
+        .card.active { border-color: #2ea043; background: #1a2e20; }
+        .menu-btn { background: #238636; color: white; border: none; padding: 20px; width: 260px; margin: 10px; font-weight: bold; border-radius: 8px; font-size: 22px; cursor: pointer; box-shadow: 0 5px #104a1d;}
+        .menu-btn:active { transform: translateY(3px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="hud" class="hidden">
+        <div class="p-info">
+            <div class="p-name" style="color:#7ee787">JUGADOR 1</div>
+            <div class="bar-container"><div id="hp1" class="bar-fill" style="background:#7ee787; width:100%"></div></div>
+            <div class="money">$<span id="mon1">1000</span></div>
+        </div>
+        <div class="center-hud">
+            <div id="timer">60</div>
+            <canvas id="minimap" width="120" height="40"></canvas>
+            <div class="wind-ctr"><span class="wind-lbl">VIENTO</span><div class="wind-val" id="wind">0</div></div>
+        </div>
+        <div class="p-info" style="align-items: flex-end; text-align: right;">
+            <div class="p-name" style="color:#ff7b72">JUGADOR 2</div>
+            <div class="bar-container"><div id="hp2" class="bar-fill" style="background:#ff7b72; width:100%"></div></div>
+            <div class="money">$<span id="mon2">1000</span></div>
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="screen-start" class="overlay">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:18px;">
+  <div style="color:#e3b341; font-size:60px; text-shadow:0 0 20px #9a6700; font-weight:900; line-height:1;">Scorched Earth</div>
+  <div style="color:#e3b341; font-size:16px; font-weight:800; letter-spacing:0.5px; opacity:0.95;">
+    versión <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank" rel="noopener" style="color:#e3b341; text-decoration:underline;">Oriol Badia Campanera</a>
+  </div>
+</div>
+
+        <div style="width:320px; max-width:90vw; background:rgba(0,0,0,0.55); border:1px solid #444; border-radius:12px; padding:12px; margin-bottom:18px; box-sizing:border-box;">
+            <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <div style="font-size:12px; color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Tiempo por turno</div>
+                <select id="opt-turntime" style="flex:1; margin-left:10px; background:#111; color:#fff; border:1px solid #444; border-radius:8px; padding:8px;">
+                    <option value="10">10s</option>
+                    <option value="30">30s</option>
+                    <option value="60" selected>60s</option>
+                    <option value="120">120s</option>
+                    <option value="0">Sin tiempo</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+                <div style="font-size:12px; color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Créditos iniciales</div>
+                <select id="opt-startmoney" style="flex:1; margin-left:10px; background:#111; color:#fff; border:1px solid #444; border-radius:8px; padding:8px;">
+                    <option value="100">100</option>
+                    <option value="1000" selected>1000</option>
+                    <option value="10000">10000</option>
+                    <option value="inf">Infinitos</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:10px;">
+                <div style="font-size:12px; color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Nivelar terreno tras impacto</div>
+                <label style="flex:1; margin-left:10px; display:flex; align-items:center; justify-content:flex-end; gap:8px; color:#ddd; font-size:12px;">
+                    <input id="opt-levelterrain" type="checkbox" style="transform:scale(1.2); accent-color:#238636;">
+                    Activado
+                </label>
+            </div>
+        </div>
+
+        <button class="menu-btn" onclick="Game.start('pvc')">1 JUGADOR</button>
+        <button class="menu-btn" style="background:#1f6feb; box-shadow:0 5px #0f3d85" onclick="Game.start('pvp')">2 JUGADORES</button>
+    </div>
+    <div id="screen-over" class="overlay hidden">
+        <h1 id="txt-winner" style="color:#fff; font-size:50px;">FIN</h1>
+        <button class="menu-btn" onclick="location.reload()">REINICIAR</button>
+    </div>
+</div>
+
+<div id="modal-popup" class="hidden">
+    <div class="modal-header"><span id="modal-title">TITULO</span><button onclick="Game.closeModal()" style="background:none; border:none; color:#888; font-size:24px;">&times;</button></div>
+    <div id="modal-list" class="list-scroll"></div>
+</div>
+
+<div id="controls" class="hidden">
+    <div class="panel p-move">
+        <label>MOVER</label>
+        <div class="fuel-track"><div id="fuel-bar" class="fuel-bar"></div></div>
+        <div class="row-btns">
+            <div class="btn-move" onclick="Game.move(-1)">&#9664;</div>
+            <div class="btn-move" onclick="Game.move(1)">&#9654;</div>
+        </div>
+    </div>
+    <div class="panel p-adj">
+        <label>ÁNGULO</label>
+        <input type="range" id="rng-angle" min="0" max="180" value="45">
+        <div class="row-btns">
+            <div class="btn-large" onclick="Game.adjust('angle', -1)">-</div>
+            <span class="val-disp" id="val-angle">45</span>
+            <div class="btn-large" onclick="Game.adjust('angle', 1)">+</div>
+        </div>
+    </div>
+    <div class="panel p-adj">
+        <label>POTENCIA</label>
+        <input type="range" id="rng-power" min="0" max="100" value="65">
+        <div class="row-btns">
+            <div class="btn-large" onclick="Game.adjust('power', -1)">-</div>
+            <span class="val-disp" id="val-power">65</span>
+            <div class="btn-large" onclick="Game.adjust('power', 1)">+</div>
+        </div>
+    </div>
+    <div class="panel p-ars">
+        <label>ARSENAL</label>
+        <div class="ars-row">
+            <button class="btn-ars btn-wep" id="btn-wep-sel" onclick="Game.openArsenal()"><div id="lbl-wep" style="font-weight:bold">MISIL</div><span id="lbl-cost">$0</span></button>
+            <button class="btn-ars btn-item" onclick="Game.openItems()"><div style="font-weight:bold">ITEMS</div><span>+</span></button>
+        </div>
+    </div>
+    <div class="panel p-fire"><button id="btn-fire">FUEGO</button></div>
+</div>
+
+
+<script>
+(function(){
+  function setVvh(){
+    const h = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vvh', h + 'px');
+  }
+  setVvh();
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', setVvh);
+    window.visualViewport.addEventListener('scroll', setVvh);
+  }
+  window.addEventListener('resize', setVvh);
+  window.addEventListener('orientationchange', setVvh);
+})();
+</script>
+<script>
+const C = { W: 2500, GRAV: 0.08, MAX_FUEL: 100, MOVE_COST: 2, TURN_TIME: 60, SHOT_SPEED_MULT: 0.15 };
+
+const WEAPONS = {
+    'baby': { n:'Baby Missile', p:0, r:20, d:15, c:'#fff', t:'std', desc:'Proyectil balístico simple. Trayectoria parabólica afectada por gravedad y viento. Al colisionar genera una explosión circular pequeña con daño radial decreciente. Deforma ligeramente el terreno.', tip:'Balística' },
+    'missile': { n:'Missile', p:300, r:40, d:30, c:'#aaf', t:'std', desc:'Igual al Baby Missile pero con mayor masa y energía. Explosión media. Daño radial mayor y cráter más profundo. Aplica empuje físico a tanques cercanos.', tip:'Balística' },
+    'baby_nuke': { n:'Baby Nuke', p:500, r:70, d:50, c:'#0f0', t:'nuke', desc:'Proyectil balístico. Al impacto crea explosión nuclear reducida. Daño alto en el centro y medio en el borde. Gran deformación vertical del terreno.', tip:'Nuclear' },
+    'small_atom': { n:'Small Atom Bomb', p:700, r:60, d:90, c:'#fa0', t:'nuke', desc:'Explosión atómica compacta. Radio medio pero daño concentrado. Menos cráter que Nuke, más densidad de daño.', tip:'Atómica' },
+    'nuke': { n:'Nuke', p:800, r:110, d:80, c:'#f0f', t:'nuke', desc:'Explosión nuclear grande. Radio amplio. Daño extremo cerca del centro y alto en periferia. Fuerte empuje y gran modificación del mapa.', tip:'Nuclear' },
+    'heavy_nuke': { n:'Heavy Nuke', p:1200, r:150, d:100, c:'#a0a', t:'nuke', desc:'Explosión nuclear masiva. Radio muy grande. Daño casi total. Puede eliminar secciones completas del terreno.', tip:'Nuclear pesada' },
+
+    'mirv': { n:'MIRV', p:600, r:30, d:30, c:'#0ff', t:'split_air', desc:'Proyectil balístico que, en un punto del vuelo, se divide en varias submuniciones. Cada submunición sigue su propia trayectoria y explota de forma independiente.', tip:'Fragmentación aérea' },
+    'death_head': { n:'Death’s Head', p:900, r:30, d:30, c:'#aaa', t:'split_impact', desc:'Al impactar genera varias explosiones secuenciales en posiciones cercanas con pequeños retardos temporales. Simula daño en racimo.', tip:'Fragmentación' },
+
+    'leapfrog': { n:'Leapfrog', p:400, r:30, d:25, c:'#0f0', t:'bounce', desc:'Proyectil que rebota en el terreno. Cada rebote reduce velocidad y energía. Explota tras un número fijo de rebotes o al quedarse sin energía.', tip:'Especial' },
+    'funky': { n:'Funky Bomb', p:350, r:40, d:35, c:'#f0f', t:'funky', desc:'Proyectil con vector de movimiento modificado aleatoriamente cada frame. Rebota de forma impredecible. Explosión estándar al final.', tip:'Experimental' },
+
+    'roller': { n:'Roller Bomb', p:450, r:40, d:40, c:'#888', t:'roll', desc:'Al impactar pasa a estado rodante. Se desplaza siguiendo la pendiente del terreno. Explota tras tiempo o al colisionar con un tanque.', tip:'Terreno' },
+    'h_roller': { n:'Heavy Roller', p:650, r:60, d:60, c:'#444', t:'roll', desc:'Igual que Roller Bomb pero con mayor masa, velocidad y daño. Cráter grande al detonar.', tip:'Terreno pesada' },
+
+    'napalm': { n:'Napalm', p:500, r:40, d:10, c:'#f50', t:'fire', desc:'Al impactar se fragmenta en múltiples partículas incendiarias. Cada partícula genera daño por tiempo y persiste varios turnos.', tip:'Incendiaria' },
+    'hot_napalm': { n:'Hot Napalm', p:800, r:60, d:15, c:'#f20', t:'fire', desc:'Versión avanzada del Napalm. Más partículas, mayor duración del fuego y daño acumulativo superior.', tip:'Incendiaria pesada' },
+    'fire_bomb': { n:'Fire Bomb', p:400, r:30, d:20, c:'#f80', t:'fire', desc:'Explosión inicial seguida de creación simultánea de varios focos de fuego estáticos que causan daño por turno.', tip:'Incendiaria' },
+
+    'scatter': { n:'Scatter Bomb', p:550, r:20, d:20, c:'#ff0', t:'frag', desc:'Explota liberando múltiples fragmentos en direcciones radiales. Cada fragmento causa daño puntual al colisionar.', tip:'Fragmentación' },
+    'shrapnel': { n:'Shrapnel Bomb', p:600, r:25, d:25, c:'#f00', t:'frag', desc:'Similar a Scatter Bomb pero con mayor número de fragmentos y mayor velocidad. Muy letal a corta distancia.', tip:'Fragmentación' },
+
+    'chain': { n:'Chain Gun', p:700, r:15, d:10, c:'#fff', t:'chain', desc:'Disparo en ráfaga de múltiples proyectiles pequeños consecutivos. Cada impacto causa poco daño y casi no deforma terreno.', tip:'Balística rápida' },
+    'riot': { n:'Riot Blast', p:500, r:80, d:5, c:'#00f', t:'force', desc:'Explosión con daño bajo-medio pero gran fuerza de empuje horizontal. Reposiciona tanques más que destruirlos.', tip:'Control de área' },
+    'earth': { n:'Earthquake Bomb', p:600, r:80, d:10, c:'#852', t:'quake', desc:'No genera gran explosión. Provoca colapsos del terreno bajo los tanques cercanos, haciéndolos caer.', tip:'Terreno estratégico' },
+
+    'laser': { n:'Laser', p:1000, r:10, d:50, c:'#f00', t:'beam', desc:'Rayo instantáneo en línea recta. No afectado por gravedad ni viento. Daño directo al primer objeto impactado.', tip:'Energética' },
+    'death_ray': { n:'Death Ray', p:1500, r:20, d:100, c:'#f0f', t:'beam', desc:'Rayo continuo de alta potencia. Puede atravesar varios objetivos. Daño extremo sin dispersión.', tip:'Energética pesada' },
+
+    'funky_death': { n:'Funky Death', p:1200, r:50, d:50, c:'#fff', t:'funky_frag', desc:'Combina explosión inicial, fragmentación y efectos incendiarios con parámetros parcialmente aleatorios.', tip:'Experimental' },
+    'atom': { n:'Atom Bomb', p:1500, r:180, d:120, c:'#f50', t:'nuke', desc:'Explosión atómica masiva. Radio muy amplio. Daño alto y relativamente uniforme. Terreno muy deformado.', tip:'Atómica' },
+    'miracle': { n:'Miracle Bomb', p:2000, r:300, d:200, c:'#fff', t:'std', desc:'Explosión final de radio casi global. Daño cercano al total. Elimina gran parte del terreno.', tip:'Apocalíptica' }
+};
+const ITEMS = {
+  shield: { n:'Shield', type:'Defensa', cost:300, desc:'Absorbe una cantidad fija de daño. Se consume al romperse.' },
+  heavy_shield: { n:'Heavy Shield', type:'Defensa', cost:600, desc:'Absorbe más daño que Shield. Reduce empuje.' },
+  fuel: { n:'Fuel', type:'Movimiento', cost:150, desc:'Aumenta el combustible por turno.' },
+  super_fuel: { n:'Super Fuel', type:'Movimiento', cost:300, desc:'Aumento grande de combustible.' },
+  parachute: { n:'Parachute', type:'Seguridad', cost:200, desc:'Evita daño por caída una vez.' },
+  auto_parachute: { n:'Auto Parachute', type:'Seguridad', cost:500, desc:'Evita daño por caída siempre.' },
+  teleport: { n:'Teleport', type:'Movimiento', cost:400, desc:'Mueve el tanque a otra posición una vez.' },
+  repair_kit: { n:'Repair Kit', type:'Reparación', cost:250, desc:'Recupera vida instantáneamente.' },
+  super_repair: { n:'Super Repair', type:'Reparación', cost:500, desc:'Recupera mucha vida.' },
+  targeting: { n:'Targeting Computer', type:'Precisión', cost:500, desc:'Muestra la trayectoria antes de disparar.' },
+  guidance: { n:'Guidance System', type:'Precisión', cost:800, desc:'Permite ajustar ligeramente el disparo en vuelo.' },
+  armor: { n:'Armor', type:'Defensa', cost:450, desc:'Reduce daño directo recibido.' },
+  heavy_armor: { n:'Heavy Armor', type:'Defensa', cost:800, desc:'Reduce más daño pero penaliza movimiento.' }
+};
+
+const Aud = {
+    ctx: null,
+    _master: null,
+    _flight: new Map(), // id -> {o,g,lp,noise}
+    init() {
+        try {
+            const A = window.AudioContext || window.webkitAudioContext;
+            if (A && !this.ctx) {
+                this.ctx = new A();
+                this._master = this.ctx.createGain();
+                this._master.gain.value = 0.75;
+                this._master.connect(this.ctx.destination);
+            }
+            if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+        } catch(e) {}
+    },
+    _now(){ return this.ctx ? this.ctx.currentTime : 0; },
+    _gain(v){ const g=this.ctx.createGain(); g.gain.value=v; g.connect(this._master||this.ctx.destination); return g; },
+    _osc(type, f){
+        const o=this.ctx.createOscillator();
+        o.type = type; o.frequency.value = f;
+        return o;
+    },
+    _noise(len=0.25) {
+        const sr = this.ctx.sampleRate;
+        const n = Math.max(1, Math.floor(sr * len));
+        const b = this.ctx.createBuffer(1, n, sr);
+        const d = b.getChannelData(0);
+        for(let i=0;i<n;i++) d[i] = (Math.random()*2-1) * (1 - i/n);
+        const s = this.ctx.createBufferSource();
+        s.buffer = b;
+        return s;
+    },
+    tone(f, t, vol=0.1, len=0.3) {
+        if(!this.ctx) return;
+        const o=this._osc(t,f), g=this._gain(vol);
+        const now=this._now();
+        g.gain.setValueAtTime(vol, now);
+        g.gain.exponentialRampToValueAtTime(0.0008, now+len);
+        o.connect(g);
+        o.start(now); o.stop(now+len);
+    },
+
+    // --- Disparo (inicio) ---
+    shotFor(w) {
+        if(!this.ctx) return;
+        const t = w.t;
+        if(t === 'beam') return this._shotBeam(w);
+        if(t === 'nuke') return this._shotNuke(w);
+        if(t === 'fire') return this._shotFire(w);
+        if(t === 'frag' || t === 'split_air' || t === 'split_impact' || t === 'funky_frag') return this._shotFrag(w);
+        if(t === 'force' || t === 'quake') return this._shotHeavy(w);
+        // std / bounce / roll / funky / chain
+        return this._shotStd(w);
+    },
+    _shotStd(w){ this.tone(130, 'sawtooth', 0.12, 0.25); this.tone(95, 'square', 0.08, 0.12); },
+    _shotHeavy(w){ this.tone(95, 'sawtooth', 0.16, 0.35); this.tone(55, 'square', 0.10, 0.25); },
+    _shotFrag(w){ this.tone(220, 'square', 0.10, 0.10); this.tone(170, 'triangle', 0.08, 0.18); },
+    _shotFire(w){ this.tone(160, 'sawtooth', 0.10, 0.20); this.tone(260, 'triangle', 0.06, 0.12); },
+    _shotNuke(w){ this.tone(70, 'square', 0.12, 0.40); this.tone(45, 'sawtooth', 0.10, 0.60); },
+    _shotBeam(w){ this.tone(900, 'sine', 0.08, 0.08); this.tone(420, 'sawtooth', 0.08, 0.22); },
+
+    // --- Explosión (impacto) ---
+    boomFor(w) {
+        if(!this.ctx) return;
+        const t = w.t;
+        const r = Math.max(1, w.r||20);
+        if(t === 'beam') return this._boomZap(r);
+        if(t === 'nuke') return this._boomNuke(r);
+        if(t === 'fire') return this._boomFire(r);
+        if(t === 'frag' || t === 'split_air' || t === 'split_impact' || t === 'funky_frag') return this._boomFrag(r);
+        if(t === 'force') return this._boomThump(r);
+        if(t === 'quake') return this._boomQuake(r);
+        return this._boomStd(r);
+    },
+    _boomStd(r){
+        const f1 = 75 - Math.min(45, r*0.12);
+        this.tone(f1, 'sawtooth', 0.35, 0.55);
+        this.tone(35, 'square', 0.40, 0.90);
+    },
+    _boomThump(r){
+        this.tone(48, 'square', 0.45, 0.60);
+        this.tone(28, 'sine', 0.35, 0.85);
+    },
+    _boomFrag(r){
+        this.tone(120, 'square', 0.22, 0.12);
+        this.tone(65 - Math.min(30, r*0.08), 'sawtooth', 0.28, 0.35);
+        const n = this._noise(0.15);
+        const g = this._gain(0.14);
+        n.connect(g); n.start(this._now());
+    },
+    _boomFire(r){
+        this.tone(95, 'sawtooth', 0.18, 0.30);
+        const n = this._noise(0.30);
+        const g = this._gain(0.16);
+        n.connect(g); n.start(this._now());
+    },
+    _boomZap(r){
+        this.tone(1200, 'sine', 0.10, 0.05);
+        this.tone(600, 'triangle', 0.10, 0.12);
+    },
+    _boomQuake(r){
+        this.tone(40, 'square', 0.35, 0.90);
+        this.tone(22, 'sine', 0.25, 1.20);
+        const n = this._noise(0.35);
+        const g = this._gain(0.12);
+        n.connect(g); n.start(this._now());
+    },
+    _boomNuke(r){
+        this.tone(32, 'square', 0.55, 1.60);
+        this.tone(18, 'sine', 0.35, 2.20);
+        const n = this._noise(0.60);
+        const g = this._gain(0.10);
+        n.connect(g); n.start(this._now());
+    },
+
+    // --- Sonido en vuelo (mientras el disparo se mueve) ---
+    flightStart(id, w) {
+        if(!this.ctx) return null;
+        // evitar fugas si id repetido
+        this.flightStop(id);
+        const t = w.t;
+        const o = this._osc((t==='beam')?'sine':(t==='fire'?'sawtooth':'triangle'), 240);
+        const g = this._gain(0.0001);
+        const lp = this.ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 900;
+        o.connect(lp); lp.connect(g);
+        o.start(this._now());
+        // ruido muy leve para "whoosh"
+        const n = (t==='beam') ? null : this._noise(0.20);
+        let ng = null;
+        if(n){
+            ng = this._gain(0.0001);
+            n.connect(ng);
+            n.start(this._now());
+        }
+        const node = {o, g, lp, n, ng, t, started:this._now()};
+        this._flight.set(id, node);
+        return node;
+    },
+    flightUpdate(id, speed, w) {
+        if(!this.ctx) return;
+        const node = this._flight.get(id);
+        if(!node) return;
+        const sp = Math.max(0, Math.min(40, speed || 0));
+        const now = this._now();
+        const base = (w.t==='fire') ? 180 : (w.t==='nuke' ? 110 : (w.t==='beam' ? 520 : 240));
+        const f = base + sp*18;
+        try {
+            node.o.frequency.setTargetAtTime(f, now, 0.03);
+            const vol = 0.02 + sp*0.003;
+            node.g.gain.setTargetAtTime(Math.min(0.10, vol), now, 0.04);
+            node.lp.frequency.setTargetAtTime(600 + sp*40, now, 0.04);
+            if(node.ng) node.ng.gain.setTargetAtTime(Math.min(0.06, 0.01 + sp*0.002), now, 0.05);
+        } catch(e){}
+    },
+    flightStop(id) {
+        const node = this._flight.get(id);
+        if(!node) return;
+        const now = this._now();
+        try{
+            node.g.gain.setTargetAtTime(0.0001, now, 0.06);
+            if(node.ng) node.ng.gain.setTargetAtTime(0.0001, now, 0.06);
+            node.o.stop(now+0.20);
+        } catch(e){}
+        this._flight.delete(id);
+    },
+
+    hit() { this.tone(600, 'triangle', 0.08, 0.16); },
+    tele() { this.tone(300, 'sine', 0.18, 0.18); this.tone(600, 'sine', 0.18, 0.35); }
+};
+
+const Game = {
+    cvs:null, ctx:null, mapCvs:null, mapCtx:null,
+    w:0, h:0, mode:'pvc', state:'MENU', turn:0, wind:0, timer:0,
+    camX:0, tCamX:0, drag:false, lx:0, lastT:0,
+    shake: 0, zoom: 0.55, targetZoom: 0.55, pinchDist: 0, minZoom: 0.35,
+    terr:[], players:[], projs:[], expls:[], floats:[],
+    clouds:[], mountainsBack:[], mountainsFront:[], trees:[], rain:[], stars:[],
+    traceActive:false, dayTime: 0, liquidLevel: 0, liquidType: 'lava', pendingShots: 0,
+    dayCycleSec: 300, // 5 minutos: amanecer -> día -> atardecer -> noche
+    turnTimeLimit: C.TURN_TIME,
+    postFireT: 0,
+    levelTerrainAfterImpact:false,
+    caveMode:false,
+    terrCvs:null, terrCtx:null,
+    terrMask:null, terrMaskW:0, terrMaskH:0,
+    drops: [],
+    fires: [],
+    _projSeq: 1,
+
+    init() {
+        this.cvs = document.getElementById('gameCanvas'); this.ctx = this.cvs.getContext('2d');
+        this.mapCvs = document.getElementById('minimap'); this.mapCtx = this.mapCvs.getContext('2d');
+        this.resize(); window.onresize = ()=>this.resize();
+
+        const getP = e => e.touches ? e.touches : [{clientX:e.clientX, clientY:e.clientY}];
+        const dist = (t1, t2) => Math.hypot(t1.clientX-t2.clientX, t1.clientY-t2.clientY);
+        const down = e => {
+            if(this.state!=='AIM' && this.state!=='TELEPORT') return;
+            const t = getP(e);
+            if(this.state==='TELEPORT'){
+                const p = this.players[this.turn];
+                if(p.cpu || p.teleportCharge<=0) { this.state='AIM'; return; }
+                // Teleport: toca el mapa para elegir X. Y se ajusta al terreno.
+                const sx = t[0].clientX;
+                const wx = this.camX + (sx / this.zoom);
+                const nx = Math.max(10, Math.min(C.W-10, wx));
+                p.x = nx; p.y = this.getTy(nx); p.vx = 0; p.vy = 0;
+                p.teleportCharge = 0;
+                Aud.tele();
+                const viewW = this.w/this.zoom; const maxCam = Math.max(0, C.W - viewW);
+                this.tCamX = Math.max(0, Math.min(maxCam, p.x - viewW/2));
+                this.state='AIM';
+                this.uiUpd();
+                return;
+            }
+            this.drag = true;
+            if(t.length === 1) { this.lx = t[0].clientX; }
+            else if(t.length === 2) { this.pinchDist = dist(t[0], t[1]); }
+        };
+        const move = e => {
+            if(this.state!=='AIM') return;
+            const t = getP(e);
+            if (!this.drag) return;
+            if(t.length===1) { e.preventDefault(); if (this.pinchDist > 0) { this.pinchDist = 0; this.lx = t[0].clientX; } this.tCamX += (this.lx - t[0].clientX)/this.zoom; this.lx = t[0].clientX; }
+            else if(t.length===2) { e.preventDefault(); const d = dist(t[0], t[1]); if (this.pinchDist > 0) { const scaleFactor = d / this.pinchDist; this.targetZoom *= scaleFactor; this.targetZoom = Math.max(this.minZoom, Math.min(3, this.targetZoom)); } this.pinchDist = d; }
+        };
+        const up = () => { this.drag=false; this.pinchDist=0; };
+        const wheel = e => { if(this.state==='AIM') { this.targetZoom += e.deltaY * -0.001; this.targetZoom = Math.max(this.minZoom, Math.min(3, this.targetZoom)); } };
+
+        this.cvs.addEventListener('mousedown', down); this.cvs.addEventListener('touchstart', down, {passive:false});
+        window.addEventListener('mousemove', move); window.addEventListener('touchmove', move, {passive:false});
+        window.addEventListener('mouseup', up); window.addEventListener('touchend', up);
+        this.cvs.addEventListener('wheel', wheel);
+
+        ['rng-angle','rng-power'].forEach(id => document.getElementById(id).oninput = this.uiInput.bind(this));
+        document.getElementById('btn-fire').onclick = () => this.fire();
+        
+        for(let i=0;i<100;i++) this.stars.push({x:Math.random()*C.W, y:Math.random()*500, s:Math.random()*2});
+        for(let i=0;i<8;i++) this.mountainsBack.push({x:Math.random()*C.W, w:600+Math.random()*400, h:480+Math.random()*320});
+        for(let i=0;i<10;i++) this.mountainsFront.push({x:Math.random()*C.W, w:300+Math.random()*320, h:220+Math.random()*240});
+        for(let i=0;i<15;i++) this.clouds.push({x:Math.random()*C.W, y:50+Math.random()*150, s:0.5+Math.random(), rain: Math.random()>0.7, parts: Array(6).fill(0).map(()=>({dx:(Math.random()-0.5)*70, dy:(Math.random()-0.5)*35, r:20+Math.random()*25}))});
+        
+        this.loop(0);
+    },
+
+    resize() { 
+        const c = document.getElementById('game-container'); 
+        this.w = this.cvs.width = c.clientWidth; 
+        this.h = this.cvs.height = c.clientHeight; 
+        this.minZoom = Math.max(0.35, this.w / C.W); 
+        if(this.zoom < this.minZoom) { this.zoom = this.minZoom; this.targetZoom = this.zoom; }
+    
+        if(this.caveMode){ this.ensureTerrainMask(); }
+    },
+
+    start(m) {
+        document.getElementById('screen-start').classList.add('hidden');
+        document.getElementById('hud').classList.remove('hidden');
+        document.getElementById('controls').classList.remove('hidden');
+        Aud.init(); this.resize();
+        // Opciones de partida (pantalla inicial)
+        const ttSel = document.getElementById('opt-turntime');
+        const smSel = document.getElementById('opt-startmoney');
+        const tt = ttSel ? parseInt(ttSel.value, 10) : C.TURN_TIME;
+        const smVal = smSel ? smSel.value : '1000';
+        const startMoney = (smVal === 'inf') ? Infinity : parseInt(smVal, 10);
+
+        
+        const lt = document.getElementById('opt-levelterrain');
+        this.levelTerrainAfterImpact = !!(lt && lt.checked);
+this.turnTimeLimit = (tt === 0) ? Infinity : tt;
+
+        this.caveMode = !this.levelTerrainAfterImpact;
+        if(this.caveMode) { this.ensureTerrainMask(); } else { this.terrMask=null; this.terrCvs=null; this.terrCtx=null; this.terrMaskW=0; this.terrMaskH=0; }
+
+        this.mode = m; this.genTerr();
+        this.players = [
+            { id:1, col:'#7ee787', x:200, y:0, vx:0, vy:0, hp:100, fuel:100, money:startMoney, ang:45, pow:65, wep:'baby', cpu:false, alive:true, damaged:false, recoil:0, chutes:0, parachutes:0, autoParachute:false, shield:0, pushMult:1, armorMult:1, fuelBonus:0, maxFuel:C.MAX_FUEL, moveMult:1, moveCostMult:1, teleportCharges:0, targeting:false, guidance:false },
+            { id:2, col:'#ff7b72', x:C.W-200, y:0, vx:0, vy:0, hp:100, fuel:100, money:startMoney, ang:135, pow:65, wep:'baby', cpu:(m==='pvc'), alive:true, damaged:false, recoil:0, chutes:0, parachutes:0, autoParachute:false, shield:0, pushMult:1, armorMult:1, fuelBonus:0, maxFuel:C.MAX_FUEL, moveMult:1, moveCostMult:1, teleportCharges:0, targeting:false, guidance:false }
+        ];
+        this.players.forEach(p => p.y=this.getTy(p.x));
+        this.dayTime = 0.2; this.turn = 0; this.startTurn();
+    },
+
+    genTerr() {
+        // Terreno más profundo y escarpado:
+        // - Más diferencia vertical entre crestas y valles.
+        // - Valles cercanos al nivel del líquido para caídas más largas.
+        this.terr = new Array(C.W).fill(0);
+        this.trees = [];
+        // Más “profundo”: el líquido queda cerca del fondo para que la caída sea más larga.
+        this.liquidLevel = this.h - 10;
+        this.liquidType = Math.random() > 0.5 ? 'lava' : 'water';
+
+        const minY = this.h * 0.28;
+        const maxY = this.h * 0.95;
+        const baseY = this.h * 0.58;
+
+        // Random-walk con “acantilados” puntuales y ruido de baja frecuencia.
+        let y = baseY;
+        let slope = 0;
+        for (let i = 0; i < C.W; i++) {
+            // tendencia general (baja frecuencia)
+            const lf = Math.sin(i * 0.003) * 0.25 + Math.sin(i * 0.0012) * 0.35;
+
+            // pendiente local más agresiva
+            slope += (Math.random() - 0.5) * 3.4;
+            slope = Math.max(-5.6, Math.min(5.6, slope));
+
+            // acantilado ocasional
+            if (Math.random() < 0.008) {
+                y += (Math.random() < 0.5 ? -1 : 1) * (60 + Math.random() * 160);
+            }
+
+            y += slope + lf;
+            if (y < minY) { y = minY; slope = Math.abs(slope) * 0.6; }
+            if (y > maxY) { y = maxY; slope = -Math.abs(slope) * 0.6; }
+            this.terr[i] = y;
+        }
+
+        // Suavizado ligero para mantener escarpado (menos smoothing que antes)
+        for (let k = 0; k < 2; k++) {
+            for (let i = 1; i < C.W - 1; i++) {
+                this.terr[i] = (this.terr[i - 1] + this.terr[i] + this.terr[i + 1]) / 3;
+            }
+        }
+
+        let inForest = false;
+        for (let i = 60; i < C.W - 60; i += 14 + Math.random() * 24) {
+            if (Math.random() < 0.09) inForest = !inForest;
+            if (inForest) {
+                this.trees.push({
+                    x: i,
+                    y: this.terr[i],
+                    h: 30 + Math.random() * 35,
+                    w: 10 + Math.random() * 10,
+                    type: Math.random() < 0.6 ? 0 : 1,
+                    color: `rgb(10, ${55 + Math.random() * 60}, 20)`,
+                    state: 'alive',
+                    burnT: 0
+                });
+            }
+        }
+
+        if(this.caveMode){ this.ensureTerrainMask(); this.rebuildMaskFromHeightmap(); }
+    },
+    getTy(x) { 
+        if(this.caveMode && this.terrMask) return this.maskSurfaceY(x);
+        return this.terr[Math.max(0, Math.min(C.W-1, Math.floor(x)))] 
+    },
+    // --- TERRAIN MASK (cavernas reales cuando caveMode=true) ---
+    ensureTerrainMask() {
+        if(!this.caveMode) return;
+        const H = Math.max(1, Math.floor(this.h));
+        if(this.terrMask && this.terrMaskW === C.W && this.terrMaskH === H && this.terrCvs) return;
+
+        this.terrMaskW = C.W;
+        this.terrMaskH = H;
+        this.terrMask = new Uint8Array(this.terrMaskW * this.terrMaskH);
+
+        this.terrCvs = document.createElement('canvas');
+        this.terrCvs.width = this.terrMaskW;
+        this.terrCvs.height = this.terrMaskH;
+        this.terrCtx = this.terrCvs.getContext('2d');
+
+        this.rebuildMaskFromHeightmap();
+    },
+    rebuildMaskFromHeightmap() {
+        if(!this.terrMask) return;
+        const W = this.terrMaskW, H = this.terrMaskH;
+        this.terrMask.fill(0);
+
+        for(let x=0; x<W; x++){
+            const y0 = Math.max(0, Math.min(H-1, Math.floor(this.terr[x] || 0)));
+            for(let y=y0; y<H; y++){
+                this.terrMask[y*W + x] = 1;
+            }
+        }
+
+        // Pintar base del terreno en canvas (visual)
+        if(this.terrCtx){
+            const g = this.terrCtx;
+            g.clearRect(0,0,W,H);
+            g.fillStyle = '#21262d';
+            g.beginPath();
+            g.moveTo(-5000, H + 5000);
+            g.lineTo(-5000, this.terr[0]);
+            for(let i=0; i<W; i+=4) g.lineTo(i, this.terr[i]);
+            g.lineTo(W + 5000, this.terr[W-1]);
+            g.lineTo(W + 5000, H + 5000);
+            g.closePath();
+            g.fill();
+
+            g.strokeStyle = '#2ea043'; g.lineWidth = 2;
+            g.beginPath();
+            g.moveTo(-5000, this.terr[0]);
+            for(let i=0; i<W; i+=4) g.lineTo(i, this.terr[i]);
+            g.lineTo(W + 5000, this.terr[W-1]);
+            g.stroke();
+        }
+    },
+    maskIsSolid(x,y){
+        if(!this.terrMask) return false;
+        const W=this.terrMaskW, H=this.terrMaskH;
+        const xi = Math.max(0, Math.min(W-1, x|0));
+        const yi = Math.max(0, Math.min(H-1, y|0));
+        return this.terrMask[yi*W + xi] === 1;
+    },
+    maskSurfaceY(x){
+        if(!this.terrMask) return this.getTy(x);
+        const W=this.terrMaskW, H=this.terrMaskH;
+        const xi = Math.max(0, Math.min(W-1, x|0));
+        for(let y=0;y<H;y++){
+            if(this.terrMask[y*W + xi]) return y;
+        }
+        return H-1;
+    },
+    maskCarveCircle(cx, cy, r){
+        if(!this.terrMask) return;
+        const W=this.terrMaskW, H=this.terrMaskH;
+        const x0 = Math.max(0, Math.floor(cx - r));
+        const x1 = Math.min(W-1, Math.ceil(cx + r));
+        const y0 = Math.max(0, Math.floor(cy - r));
+        const y1 = Math.min(H-1, Math.ceil(cy + r));
+        const rr = r*r;
+        for(let y=y0; y<=y1; y++){
+            const dy = y - cy;
+            const dy2 = dy*dy;
+            for(let x=x0; x<=x1; x++){
+                const dx = x - cx;
+                if(dx*dx + dy2 <= rr){
+                    this.terrMask[y*W + x] = 0;
+                }
+            }
+        }
+        // Visual: recortar en el canvas del terreno
+        if(this.terrCtx){
+            const g=this.terrCtx;
+            g.save();
+            g.globalCompositeOperation = 'destination-out';
+            g.beginPath();
+            g.arc(cx, cy, r, 0, Math.PI*2);
+            g.fill();
+            g.restore();
+
+            // outline ligero en el borde (opcional)
+            g.save();
+            g.globalCompositeOperation = 'source-over';
+            g.strokeStyle = '#2ea043';
+            g.lineWidth = 1;
+            g.beginPath();
+            g.arc(cx, cy, r, 0, Math.PI*2);
+            g.stroke();
+            g.restore();
+        }
+    },
+
+
+    // --- Ciclo día/noche ---
+    _clamp(v,a,b){ return Math.max(a, Math.min(b, v)); },
+    _lerp(a,b,t){ return a + (b-a)*t; },
+    _lerp3(c1,c2,t){ return [this._lerp(c1[0],c2[0],t), this._lerp(c1[1],c2[1],t), this._lerp(c1[2],c2[2],t)]; },
+    _rgb(c){ return `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`; },
+    _rgba(c,a){ return `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${this._clamp(a,0,1)})`; },
+    _kfLerp(t, keys) {
+        // keys: [{t:0..1, v:any}]
+        if(t <= keys[0].t) return {a:keys[0].v, b:keys[0].v, k:0, u:0};
+        for(let i=0;i<keys.length-1;i++){
+            const a=keys[i], b=keys[i+1];
+            if(t>=a.t && t<=b.t){
+                const u=(t-a.t)/Math.max(1e-6,(b.t-a.t));
+                return {a:a.v, b:b.v, k:i, u:this._clamp(u,0,1)};
+            }
+        }
+        const last=keys[keys.length-1].v;
+        return {a:last,b:last,k:keys.length-2,u:1};
+    },
+    drawSky() {
+        const t = (this.dayTime % 1 + 1) % 1;
+
+        // Paletas (RGB) por fase: amanecer -> día -> atardecer -> noche -> amanecer
+        const topKeys = [
+            {t:0.00, v:[15, 18, 40]},   // amanecer (pre)
+            {t:0.15, v:[140, 90, 160]}, // amanecer
+            {t:0.40, v:[80, 170, 255]}, // día
+            {t:0.60, v:[255, 140, 80]}, // atardecer
+            {t:0.75, v:[10, 12, 28]},   // noche
+            {t:1.00, v:[15, 18, 40]}
+        ];
+        const botKeys = [
+            {t:0.00, v:[35, 30, 55]},
+            {t:0.15, v:[255, 170, 120]},
+            {t:0.40, v:[170, 220, 255]},
+            {t:0.60, v:[255, 90, 60]},
+            {t:0.75, v:[0, 0, 0]},
+            {t:1.00, v:[35, 30, 55]}
+        ];
+        const starKeys = [
+            {t:0.00, v:0.9},
+            {t:0.12, v:0.2},
+            {t:0.40, v:0.0},
+            {t:0.62, v:0.1},
+            {t:0.78, v:1.0},
+            {t:1.00, v:0.9}
+        ];
+
+        const topK = this._kfLerp(t, topKeys);
+        const botK = this._kfLerp(t, botKeys);
+        const starK = this._kfLerp(t, starKeys);
+        const top = this._lerp3(topK.a, topK.b, topK.u);
+        const bot = this._lerp3(botK.a, botK.b, botK.u);
+        const starA = this._lerp(starK.a, starK.b, starK.u);
+
+        // Fondo
+        const grd = this.ctx.createLinearGradient(0, 0, 0, this.h);
+        grd.addColorStop(0, this._rgb(top));
+        grd.addColorStop(1, this._rgb(bot));
+        this.ctx.fillStyle = grd;
+        this.ctx.fillRect(0, 0, this.w, this.h);
+
+        // Sol/Luna (screen space), simple y suave
+        const ang = t * Math.PI * 2;
+        const cx = this.w * 0.5 + Math.cos(ang - Math.PI/2) * this.w * 0.35;
+        const cy = this.h * 0.55 + Math.sin(ang - Math.PI/2) * this.h * 0.35;
+        const isDay = starA < 0.35;
+        const bodyC = isDay ? [255, 245, 200] : [220, 235, 255];
+        const glowC = isDay ? [255, 220, 160] : [180, 210, 255];
+
+        this.ctx.save();
+        this.ctx.globalAlpha = isDay ? 0.9 : 0.7;
+        const g = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, isDay ? 70 : 55);
+        g.addColorStop(0, this._rgba(bodyC, 1));
+        g.addColorStop(0.3, this._rgba(glowC, 0.35));
+        g.addColorStop(1, this._rgba(glowC, 0));
+        this.ctx.fillStyle = g;
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, isDay ? 26 : 20, 0, Math.PI*2);
+        this.ctx.fill();
+        this.ctx.restore();
+
+        // Estrellas en noche
+        if (starA > 0.02) {
+            this.ctx.save();
+            this.ctx.globalAlpha = starA;
+            this.ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            for (let i = 0; i < this.stars.length; i++) {
+                const s = this.stars[i];
+                // leve parallax horizontal según cámara
+                const x = (s.x - this.camX*0.15) % C.W;
+                const sx = (x < 0 ? x + C.W : x);
+                const px = (sx / C.W) * this.w;
+                this.ctx.fillRect(px, s.y, Math.max(1, s.s), Math.max(1, s.s));
+            }
+            this.ctx.restore();
+        }
+    },
+
+    startTurn() {
+        const p = this.players[this.turn];
+
+        // Reset de ítems por turno (salvo los que dicen explícitamente "siempre").
+        p.shield = 0; p.shieldPushMul = 1;
+        p.armorPct = 0;
+        p.targeting = false; p.guidance = false;
+        p.teleportCharge = 0;
+        p.moveSpeedMul = 1; p.moveFuelMul = 1;
+        p.chutes = 0;
+        p.turnFuelMax = C.MAX_FUEL;
+
+        if (!p.damaged) { p.money += 150; this.floats.push({type:'txt', x:p.x, y:p.y-50, txt:"+150$", life:2, c:'#ffd700'}); }
+        p.damaged = false; 
+        this.state = 'AIM';
+        // Targeting Computer: trayectoria siempre visible en AIM
+        this.traceActive = !!p.targeting;
+        p.fuel = p.turnFuelMax;
+        this.timer = this.turnTimeLimit;
+         this.lastT = performance.now();
+        this.wind = (Math.random()-0.5)*30; 
+        if(Math.random() < 0.35) this.spawnDrop();
+
+        this.minZoom = Math.max(0.35, this.w / C.W); 
+        if(this.zoom < this.minZoom) this.zoom = this.minZoom;
+        const viewW = this.w / this.zoom;
+        const maxCam = Math.max(0, C.W - viewW);
+        const targetX = p.x - viewW / 2;
+        this.tCamX = Math.max(0, Math.min(maxCam, targetX));
+        this.pendingShots = 0;
+        document.getElementById('controls').style.borderTopColor = p.col;
+        const btnF = document.getElementById('btn-fire');
+        if(p.cpu) { btnF.innerText = "CPU..."; btnF.disabled = true; setTimeout(() => this.cpuAct(), 600); } 
+        else { btnF.innerText = "FUEGO"; btnF.disabled = false; }
+        this.uiUpd();
+    },
+
+    uiInput() { if(this.state==='AIM') { const p = this.players[this.turn]; p.ang = +document.getElementById('rng-angle').value; p.pow = +document.getElementById('rng-power').value; this.uiUpd(); } },
+    adjust(k, d) { if(this.state==='AIM') { const el = document.getElementById(k==='angle'?'rng-angle':'rng-power'); el.value = (+el.value) + d; this.uiInput(); } },
+    
+    move(d) {
+        const p = this.players[this.turn];
+        if(this.state!=='AIM' || p.cpu || p.fuel<=0) return;
+        const sp = 1.5 * (p.moveMult || 1);
+        const nx = p.x + (d*sp); 
+        if(nx>10 && nx<C.W-10 && Math.abs(this.getTy(nx)-p.y)<10) { 
+            p.x=nx; p.y=this.getTy(nx); p.fuel -= C.MOVE_COST * (p.moveCostMult || 1); 
+            const viewW = this.w / this.zoom;
+            const maxCam = Math.max(0, C.W - viewW);
+            const targetX = p.x - viewW / 2;
+            this.tCamX = Math.max(0, Math.min(maxCam, targetX));
+            this.uiUpd(); 
+        }
+    },
+
+    fire() {
+        const p = this.players[this.turn]; const w = WEAPONS[p.wep];
+        if(w.t === 'tele') {
+            if(p.money < w.p) return; p.money -= w.p; this.uiUpd(); this.state = 'FIRE';
+            let tx=p.x, ty=p.y-15, rad=-p.ang*(Math.PI/180); let vx=Math.cos(rad)*p.pow*C.SHOT_SPEED_MULT, vy=Math.sin(rad)*p.pow*C.SHOT_SPEED_MULT;
+            for(let i=0;i<1000;i++){
+                vx+=this.wind*0.001; vy+=C.GRAV; tx+=vx; ty+=vy;
+                if(tx<0||tx>C.W||ty>this.h) break;
+                if(ty>=this.getTy(tx)) { 
+                    p.x=tx; p.y=ty-10; p.vx=0; p.vy=0; 
+                    const viewW = this.w/this.zoom; const maxCam = Math.max(0, C.W - viewW);
+                    this.tCamX = Math.max(0, Math.min(maxCam, p.x - viewW/2));
+                    Aud.tele(); this.floats.push({type:'txt', x:p.x, y:p.y-30, txt:"TELEPORT!", life:2, c:'#0ff'}); this.nextTurn(); return; 
+                }
+            }
+            this.nextTurn(); return;
+        }
+
+        if (p.money !== Infinity && p.money < w.p) return;
+        if(p.money !== Infinity) p.money -= w.p;
+        this.uiUpd();
+        this.state = 'FIRE'; this.postFireT = 0; document.getElementById('btn-fire').disabled = true; this.pendingShots = (w.t === 'chain') ? 5 : 1;
+        const doShot = (delay=0) => {
+            setTimeout(() => {
+                p.recoil = 10; this.shake = 5;
+                if(w.t === 'beam') {
+                    Aud.shotFor(w);
+let tx=p.x, ty=p.y-15, rad=-p.ang*(Math.PI/180); let vx=Math.cos(rad), vy=Math.sin(rad);
+                    for(let i=0; i<1000; i++) {
+                        tx+=vx*3; ty+=vy*3;
+                        this.floats.push({type:'beam', x:tx, y:ty, life:0.5, c:w.c});
+                        if(tx<0||tx>C.W||ty>this.h) break;
+                        if((this.caveMode && this.terrMask) ? this.maskIsSolid(tx, ty) : (ty >= this.getTy(tx))) { this.explode(tx, ty, w, p.id); break; }
+                        const target = this.players.find(pl=>pl.alive && Math.hypot(pl.x-tx, pl.y-10-ty)<15);
+                        if(target) { this.explode(tx, ty, w, p.id); break; }
+                    }
+                } else {
+                    Aud.shotFor(w);
+const rad = -p.ang * (Math.PI/180);
+                    const vx = Math.cos(rad) * p.pow * C.SHOT_SPEED_MULT; 
+                    const vy = Math.sin(rad) * p.pow * C.SHOT_SPEED_MULT;
+                    this.projs.push({ id:(this._projSeq++), x:p.x, y:p.y-15, vx:vx, vy:vy, w:w, own:p.id, act:true, bounces:0, life:0, rolling:false, splitDone:false, flightAud:null });
+                    const pr = this.projs[this.projs.length-1];
+                    pr.flightAud = Aud.flightStart(pr.id, pr.w);
+
+                }
+                this.pendingShots--;
+            }, delay);
+        };
+        if(w.t === 'chain') for(let i=0; i<5; i++) doShot(i*150); else doShot(0);
+    },
+
+    cpuAct() {
+        const p = this.players[this.turn]; const t = this.players.find(x=>x.id!==p.id); if(!t) return;
+        const dir = t.x > p.x ? 1 : -1; let baseAng = dir===1 ? 30 : 150; p.ang = baseAng + (Math.random()-0.5)*20;
+        const dist = Math.abs(t.x - p.x); const windFactor = (dir===1) ? -this.wind : this.wind; 
+        p.pow = Math.min(100, Math.max(20, Math.sqrt(dist)*3.2 + windFactor));
+        const affordable = Object.keys(WEAPONS).filter(k => WEAPONS[k].p <= p.money);
+        if(affordable.length > 0 && Math.random() > 0.5) p.wep = affordable[Math.floor(Math.random()*affordable.length)]; else p.wep = 'baby';
+        this.fire();
+    },
+
+    erode() {
+        let changed = false;
+        for(let i=1; i<C.W-1; i++) { const d = this.terr[i] - this.terr[i+1]; if(Math.abs(d) > 3) { const flow = d * 0.3; this.terr[i] -= flow; this.terr[i+1] += flow; changed = true; } }
+        this.trees.forEach(t => { if(t.state === 'dead') return; const ty = this.getTy(t.x); if(t.y < ty) t.y += 2; else t.y = ty; });
+        return changed;
+    },
+
+    levelTerrain(minX=0, maxX=C.W-1, passes=3) {
+        // Nivelado local del terreno: suaviza picos tras impactos
+        minX = Math.max(1, Math.floor(minX));
+        maxX = Math.min(C.W-2, Math.floor(maxX));
+        for(let k=0;k<passes;k++){
+            for(let i=minX;i<=maxX;i++){
+                this.terr[i] = (this.terr[i-1] + this.terr[i] + this.terr[i+1]) / 3;
+            }
+        }
+    },
+
+
+    spawnDrop() {
+        // Suministros aleatorios por turno: caen con paracaídas y dan créditos al recoger o al destruirse.
+        const value = 200 + Math.floor(Math.random()*801); // 200..1000
+        const x = 80 + Math.random()*(C.W-160);
+        this.drops.push({x, y:-40, vy:0, value, landed:false});
+    },
+
+    updateDrops(dt) {
+        if(!this.drops.length) return;
+        for(const d of this.drops) {
+            const ty = this.getTy(d.x) - 8;
+            if(!d.landed) {
+                // Caída con paracaídas (lenta)
+                d.vy = Math.min(1.3, d.vy + 0.6*dt);
+                d.y += d.vy * 60 * dt;
+                if(d.y >= ty) { d.y = ty; d.landed = true; }
+            } else {
+                d.y = ty;
+            }
+        }
+        // Recogida por contacto con tanque
+        for(const p of this.players) {
+            if(!p.alive) continue;
+            for(let i=this.drops.length-1; i>=0; i--){
+                const d = this.drops[i];
+                if(Math.hypot(p.x-d.x, (p.y-10)-d.y) < 18) {
+                    if(p.money !== Infinity) p.money += d.value;
+                    this.floats.push({type:'txt', x:d.x, y:d.y-25, txt:`+${d.value}$`, life:2, c:'#ffd700'});
+                    this.drops.splice(i,1);
+                }
+            }
+        }
+    },
+
+    drawDrops() {
+        if(!this.drops.length) return;
+        for(const d of this.drops) {
+            if(!d.landed) {
+                // Paracaídas mientras cae
+                this.ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                this.ctx.beginPath();
+                this.ctx.arc(d.x, d.y-18, 12, Math.PI, 0);
+                this.ctx.fill();
+                this.ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+                this.ctx.beginPath();
+                this.ctx.moveTo(d.x-10, d.y-18); this.ctx.lineTo(d.x-6, d.y-6);
+                this.ctx.moveTo(d.x+10, d.y-18); this.ctx.lineTo(d.x+6, d.y-6);
+                this.ctx.stroke();
+            }
+            // Caja
+            this.ctx.fillStyle = '#d29922';
+            this.ctx.fillRect(d.x-6, d.y-6, 12, 10);
+            this.ctx.fillStyle = '#111';
+            this.ctx.font = "bold 10px monospace";
+            this.ctx.fillText("$", d.x-3, d.y+2);
+        }
+    },
+
+
+    explode(x, y, w, ownerId=null) {
+        // Ajustes por arma (solo efectos)
+        let R = w.r, D = w.d;
+        const NO_CRATER = !!w.noCrater;
+        const NO_SHAKE = !!w.noShake;
+        if(w.n === 'Miracle Bomb') {
+            R = Math.max(C.W, this.h) * 0.9;
+            D = Math.max(D, 260);
+        }
+        // Escala de cráter por familia (misma UI, sin cambiar precios)
+        let craterMul = 1.0;
+        if(w.t === 'nuke') {
+            if(w.n === 'Small Atom Bomb') craterMul = 0.65;
+            else if(w.n === 'Baby Nuke') craterMul = 0.80;
+            else if(w.n === 'Heavy Nuke') craterMul = 1.15;
+            else if(w.n === 'Atom Bomb') craterMul = 0.90;
+        }
+
+        this.expls.push({ x, y, r:1, max:R, c:w.c, act:true, type:w.t });
+        Aud.boomFor(w);
+        if(!NO_SHAKE) this.shake += R * 0.3;
+        this.postFireT = 0;
+
+        // Partículas
+        for(let i=0; i<15; i++) {
+            let pType = 'fire', color = '#f52', sp = 2;
+            if (w.t === 'nuke') { pType = 'mushroom'; color = '#cf0'; sp=1; }
+            else if (w.t === 'beam') { pType = 'spark'; color = '#0ff'; sp=5; }
+            this.floats.push({ type: pType, x, y, vx:(Math.random()-0.5)*sp, vy:(Math.random()-0.5)*sp, life:1.0+Math.random(), c:color });
+        }
+
+        
+        // Efectos especiales por tipo
+        if(w.t === 'fire') {
+            // Fuego persistente: varios focos
+            const n = (w.n === 'Hot Napalm') ? 14 : (w.n === 'Napalm' ? 10 : 8);
+            for(let i=0;i<n;i++){
+                const fx = x + (Math.random()-0.5) * (R*1.2);
+                const fy = this.getTy(fx) - 2;
+                this.fires.push({
+                    x: fx,
+                    y: fy,
+                    r: 16 + Math.random()*18,
+                    dps: (w.n === 'Hot Napalm') ? 9 : 6,
+                    life: (w.n === 'Hot Napalm') ? 6.5 : 4.5
+                });
+            }
+        }
+
+        if(w.t === 'frag' || w.t === 'funky_frag') {
+            // Fragmentación: explosión base pequeña + metralla independiente
+            const count = (w.n === 'Shrapnel Bomb') ? 18 : 12;
+            const parent = { x, y, w, own: ownerId };
+            this.spawnFrag(parent, count, 'std', {
+                baseAng: 0,
+                spread: Math.PI * 2,
+                speedMul: (w.n === 'Shrapnel Bomb') ? 1.35 : 1.15,
+                shardR: 10,
+                shardD: Math.max(10, Math.floor((w.d||25)*0.55)),
+                noCrater: true,
+                noShake: true,
+                inheritWind: true
+            });
+        }
+// Efecto terremoto (colapso)
+        if(w.t === 'quake') {
+            // colapso localizado: hunde el terreno bajo y cerca de tanques
+            const span = 220;
+            const minX = Math.max(0, Math.floor(x-span));
+            const maxX = Math.min(C.W-1, Math.floor(x+span));
+            for(let i=minX; i<=maxX; i++) {
+                const dx = Math.abs(i - x);
+                const sink = (1 - dx/span);
+                // "grieta" irregular
+                const rnd = 0.65 + Math.random()*0.7;
+                this.terr[i] = Math.min(this.liquidLevel-1, this.terr[i] + sink * 55 * rnd);
+            }
+            // sacudida y pequeñas nubes de polvo
+            for(let k=0;k<18;k++){
+                this.floats.push({type:'smoke', x:x+(Math.random()-0.5)*160, y:y-10+Math.random()*30, vx:(Math.random()-0.5)*1.2, vy:-0.5-Math.random(), life:0.9, c:'rgba(200,180,150,0.45)'});
+            }
+        }
+
+        // Deformación de terreno (no en beam/force)
+        if(!NO_CRATER && w.t !== 'beam' && w.t !== 'force') {
+            if(this.caveMode && this.terrMask){
+                this.maskCarveCircle(x, y, (R*craterMul));
+            } else {
+            const minX = Math.max(0, Math.floor(x-(R*craterMul))), maxX = Math.min(C.W, Math.ceil(x+(R*craterMul)));
+            for(let i=minX; i<maxX; i++) {
+                const dx = (i-x);
+                const dy = Math.sqrt(Math.max(0, (R*craterMul)*(R*craterMul) - dx*dx));
+                this.terr[i] = Math.max(this.terr[i], y+dy);
+            }
+        }
+
+        
+        // Opción: nivelar terreno tras impacto (suavizado local)
+        if(this.levelTerrainAfterImpact && !NO_CRATER) {
+            const span = (R*craterMul) * 1.6;
+            this.levelTerrain(x - span, x + span, 4);
+        }
+
+            }
+
+        // Daño / empuje a tanques
+        this.players.forEach(p => {
+            if(!p.alive) return;
+            const dist = Math.hypot(p.x-x, (p.y-10)-y);
+            if(dist < R + 20) {
+                if(w.t === 'force') {
+                    const mul = (p.shieldPushMul||1);
+                    // Gran empuje horizontal, daño bajo-medio
+                    p.vx += (p.x - x) * 0.55 * mul;
+                    p.vy -= 9 * mul;
+
+                    let dmg = Math.floor(D * 0.35 * (1 - dist/(R+20)));
+                    if(dmg > 0) {
+                        const ap = (p.armorPct||0);
+                        dmg = Math.max(0, Math.floor(dmg * (1 - ap)));
+                        if(p.shield > 0 && dmg > 0) {
+                            const abs = Math.min(p.shield, dmg);
+                            p.shield -= abs;
+                            dmg -= abs;
+                        }
+                        if(dmg > 0) p.hp -= dmg;
+                        if(dmg > 0) this.floats.push({type:'dmg', x:p.x, y:p.y-30, txt:`-${dmg}`, life:1, c:'#ff5555'});
+                    }
+                } else {
+                    let dmg = Math.floor(D * (1 - dist/(R+20)));
+                    if(dmg > 0) {
+                        // Armor reduce (daño directo)
+                        const ap = (p.armorPct||0);
+                        dmg = Math.max(0, Math.floor(dmg * (1 - ap)));
+
+                        // Shield absorbe primero
+                        if(p.shield > 0 && dmg > 0) {
+                            const abs = Math.min(p.shield, dmg);
+                            p.shield -= abs;
+                            dmg -= abs;
+                        }
+
+                        if(dmg > 0) {
+                            p.hp -= dmg;
+                            p.damaged = true;
+                            this.floats.push({type:'txt', x:p.x, y:p.y-30, txt:`-${dmg}`, life:2, c:'#ff4444'});
+                            Aud.hit();
+                            if(p.hp<=0) { p.hp=0; p.alive=false; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Suministros: si explota cerca, cobra el dueño del disparo
+        if(this.drops && this.drops.length) {
+            const hitR = (w.r||0) + 10;
+            for(let i=this.drops.length-1; i>=0; i--){
+                const d = this.drops[i];
+                const dd = Math.hypot(d.x-x, d.y-y);
+                if(dd <= hitR){
+                    const pl = this.players.find(pp=>pp.id===ownerId);
+                    if(pl && pl.money !== Infinity) pl.money += d.value;
+                    if(pl) this.floats.push({type:'txt', x:d.x, y:d.y-25, txt:`+${d.value}$`, life:2, c:'#ffd700'});
+                    this.drops.splice(i,1);
+                }
+            }
+        }
+    },
+
+
+    
+    spawnFrag(p, count, type='std', opts={}) {
+        // Genera subproyectiles (metralla / submunición / MIRV)
+        // opts: { baseAng, spread, speedMul, shardR, shardD, noCrater, noShake, inheritWind }
+        const baseAng = (opts.baseAng != null) ? opts.baseAng : 0;
+        const spread = (opts.spread != null) ? opts.spread : Math.PI * 2;
+        const speedMul = (opts.speedMul != null) ? opts.speedMul : 1.0;
+        const shardR = (opts.shardR != null) ? opts.shardR : 10;
+        const shardD = (opts.shardD != null) ? opts.shardD : 10;
+        const noCrater = !!opts.noCrater;
+        const noShake = !!opts.noShake;
+
+        for(let i=0; i<count; i++) {
+            const u = (count <= 1) ? 0.5 : (i / (count - 1));
+            const offset = (spread >= Math.PI*1.99)
+                ? (Math.random() * Math.PI*2)
+                : ((-spread/2) + u * spread);
+
+            const ang = baseAng + offset;
+
+            const sp = (0.9 + Math.random()*0.8) * speedMul;
+            const vx = Math.cos(ang) * sp * 2.8;
+            const vy = Math.sin(ang) * sp * 2.8;
+
+            const w = {
+                ...p.w,
+                t: 'std',
+                r: shardR,
+                d: shardD,
+                c: p.w.c || '#fff',
+                noCrater: noCrater,
+                noShake: noShake,
+                _shard: true
+            };
+
+            this.projs.push({
+                id: (this._projSeq++),
+                x: p.x + (Math.random()-0.5)*6,
+                y: p.y + (Math.random()-0.5)*6,
+                vx: vx + (opts.inheritWind ? (this.wind*0.02) : 0),
+                vy: vy - 0.5,
+                w: w,
+                own: p.own,
+                act: true,
+                bounces: 0,
+                life: 0,
+                rolling: false,
+                splitDone: true,
+                flightAud: null
+            });
+        }
+    },
+
+    loop(now) {
+        requestAnimationFrame(t => this.loop(t));
+        const dt = (now - this.lastT)/1000;
+        this.lastT = now;
+
+        this.dayTime += dt / this.dayCycleSec; if(this.dayTime > 1.0) this.dayTime -= 1.0;
+        this.shake = Math.max(0, this.shake - dt * 60);
+        this.zoom += (this.targetZoom - this.zoom) * 0.1;
+
+        if(this.state==='AIM') {
+            if(this.turnTimeLimit !== Infinity) {
+                this.timer -= dt;
+                if(this.timer <= 0) { this.players[this.turn].hp -= 10; this.nextTurn(); }
+                document.getElementById('timer').innerText = Math.ceil(this.timer);
+            } else {
+                document.getElementById('timer').innerText = '∞';
+            }
+        }
+        
+        this.players.forEach(p => {
+            if(!p.alive) return;
+            p.recoil *= 0.9; p.x += p.vx; p.vx *= 0.9; const gy = this.getTy(p.x);
+            p.rot = Math.atan2(this.getTy(p.x+5)-this.getTy(p.x-5), 10);
+
+            if(p.y < gy) {
+                let gravity = C.GRAV;
+                if((p.autoParachute || (p.parachutes||0) > 0) && p.vy > 2) {
+                gravity = 0.02;
+                p.vy = Math.min(p.vy, 1.5);
+                if(!p.parachuting) {
+                    p.parachuting = true;
+                    if(!p.autoParachute && (p.parachutes||0) > 0) p.parachutes--;
+                }
+            }
+                p.vy += gravity; p.y += p.vy;
+                if(p.y >= gy) { if(p.vy>5) { const dmg=Math.floor((p.vy-5)*8); if(dmg>0){p.hp-=dmg; this.floats.push({type:'txt', x:p.x, y:p.y-30, txt:`-${dmg} CAIDA`, life:2, c:'#fa0'});} } p.y=gy; p.vy=0; p.parachuting=false; }
+            } else if (p.y > gy) { p.y = gy; p.vy = 0; }
+            if(p.y >= this.liquidLevel) { p.hp=0; p.alive=false; }
+        });
+
+        if(this.state==='FIRE') {
+            let busy=false;
+            // --- Proyectiles ---
+            this.projs.forEach(pr => {
+                if(!pr.act) { if(pr.flightAud) Aud.flightStop(pr.id); return; }
+
+                const w = pr.w;
+                pr.life += dt;
+
+                // Movimiento
+                const speed = Math.hypot(pr.vx, pr.vy);
+
+                // Sonido en vuelo
+                if(pr.flightAud) Aud.flightUpdate(pr.id, speed, w);
+
+                // Rolling (roller)
+                if(w.t === 'roll') {
+                    if(!pr.rolling) {
+                        // Primera colisión con el terreno: entra en modo rodar
+                        const ty = this.getTy(pr.x);
+                if(pr.life > 0.04 && pr.y >= ty) {
+                            pr.rolling = true;
+                            pr.y = impactY - 2;
+                            pr.vy = 0;
+                            // conservar dirección principal
+                            pr.vx = (pr.vx === 0 ? (Math.random()<0.5?-1:1) : pr.vx) * 0.95;
+                        }
+                    } else {
+                        // seguir el terreno
+                        pr.x += pr.vx * 2.2;
+                        pr.x = Math.max(2, Math.min(C.W-2, pr.x));
+                        pr.y = this.getTy(pr.x) - 2;
+
+                        // fricción
+                        pr.vx *= 0.985;
+
+                        // explota por tiempo o colisión con tanque
+                        const hitTank = this.players.find(pl=>pl.alive && pl.id!==pr.own && Math.hypot(pl.x-pr.x, (pl.y-10)-pr.y) < 16);
+                        if(hitTank || pr.life > 3.2 || Math.abs(pr.vx) < 0.12) {
+                            pr.act = false;
+                            if(pr.flightAud) Aud.flightStop(pr.id);
+                            this.explode(pr.x, pr.y, w, pr.own);
+                        }
+                        return;
+                    }
+                }
+
+                // Funky: ruido en la trayectoria
+                if(w.t === 'funky' || w.t === 'funky_frag') {
+                    pr.vx += (Math.random()-0.5) * 0.18;
+                    pr.vy += (Math.random()-0.5) * 0.18;
+                }
+
+                // Física balística (no beam)
+                pr.vx += this.wind * 0.001;
+                pr.vy += C.GRAV;
+
+                pr.x += pr.vx;
+                pr.y += pr.vy;
+
+                // Fuera del mundo
+                if(pr.x < -50 || pr.x > C.W+50 || pr.y > this.h+80) {
+                    pr.act = false;
+                    if(pr.flightAud) Aud.flightStop(pr.id);
+                    return;
+                }
+
+                // MIRV: se divide en vuelo
+                if(w.t === 'split_air' && !pr.splitDone && pr.life > 0.65 && pr.vy > 0) {
+                    pr.splitDone = true;
+                    pr.act = false;
+                    if(pr.flightAud) Aud.flightStop(pr.id);
+
+                    const ang = Math.atan2(pr.vy, pr.vx);
+                    const parent = { x: pr.x, y: pr.y, w: pr.w, own: pr.own };
+                    this.spawnFrag(parent, 6, 'std', {
+                        baseAng: ang,
+                        spread: Math.PI * 0.7,
+                        speedMul: 1.2,
+                        shardR: Math.max(14, Math.floor((w.r||30)*0.65)),
+                        shardD: Math.max(12, Math.floor((w.d||30)*0.55)),
+                        noCrater: false,
+                        noShake: false,
+                        inheritWind: true
+                    });
+                    return;
+                }
+
+                // Colisión con terreno
+                const ty = this.getTy(pr.x);
+                const hitTerrain = (this.caveMode && this.terrMask) ? this.maskIsSolid(pr.x, pr.y) : (pr.y >= ty);
+                if(pr.life > 0.04 && hitTerrain) {
+                    let impactY = ty;
+                    if(this.caveMode && this.terrMask){
+                        let iy = pr.y;
+                        iy = Math.max(0, Math.min(this.terrMaskH-1, iy|0));
+                        while(iy>0 && this.maskIsSolid(pr.x, iy)) iy--;
+                        impactY = iy+1;
+                    }
+
+                    // Bounce
+                    if(w.t === 'bounce') {
+                        pr.bounces = (pr.bounces||0) + 1;
+                        pr.y = impactY - 1;
+                        pr.vy = -Math.abs(pr.vy) * 0.72;
+                        pr.vx *= 0.78;
+
+                        if(pr.bounces >= 3 || Math.hypot(pr.vx, pr.vy) < 0.55) {
+                            pr.act = false;
+                            if(pr.flightAud) Aud.flightStop(pr.id);
+                            this.explode(pr.x, pr.y, w, pr.own);
+                        }
+                        return;
+                    }
+
+                    // Death's Head: racimo secuencial al impactar
+                    if(w.t === 'split_impact') {
+                        pr.act = false;
+                        if(pr.flightAud) Aud.flightStop(pr.id);
+
+                        if(!this._shotTimers) this._shotTimers = [];
+                        const baseX = pr.x, baseY = ty;
+                        for(let k=0;k<5;k++){
+                            const t = setTimeout(()=>{
+                                const ox = baseX + (Math.random()-0.5)*55;
+                                const oy = this.getTy(ox);
+                                this.explode(ox, oy, w, pr.own);
+                            }, k*120);
+                            this._shotTimers.push(t);
+                        }
+                        return;
+                    }
+
+                    // Impacto estándar
+                    pr.act = false;
+                    if(pr.flightAud) Aud.flightStop(pr.id);
+                    this.explode(pr.x, impactY, w, pr.own);
+                    return;
+                }
+
+                // Colisión con tanque en vuelo
+                const hit = this.players.find(pl => pl.alive && pl.id!==pr.own && Math.hypot(pl.x-pr.x, (pl.y-10)-pr.y) < 15);
+                if(hit) {
+                    pr.act = false;
+                    if(pr.flightAud) Aud.flightStop(pr.id);
+                    this.explode(pr.x, pr.y, w, pr.own);
+                    return;
+                }
+            });
+            this.expls.forEach(e => { e.r += (e.max - e.r)*0.02; if(e.max - e.r > 2) busy=true; else e.act=false; });
+            // (Nivelación) Eliminado el asentamiento continuo del terreno.
+if (this.players.some(p => p.alive && (Math.abs(p.vx) > 0.1 || p.vy !== 0))) busy = true;
+            if (this.pendingShots > 0) busy = true;
+
+            const target = this.projs.find(p=>p.act) || this.expls.find(e=>e.act);
+            if(target) {
+                this.postFireT = 0;
+                const viewW = this.w / this.zoom;
+                const maxCam = Math.max(0, C.W - viewW);
+                const targetX = target.x - viewW / 2;
+                this.tCamX = Math.max(0, Math.min(maxCam, targetX));
+            } else {
+                this.postFireT += dt;
+                if(!busy || this.postFireT > 2.8) this.nextTurn();
+            }
+        }
+
+        this.clouds.forEach(c => { c.x += this.wind*0.01; if(c.x > C.W) c.x=0; if(c.x < 0) c.x=C.W; if(c.rain && Math.random() < 0.2) this.rain.push({x:c.x+(Math.random()-0.5)*c.s*60, y:c.y+10, vx:0, vy:3+Math.random()*2, life:1}); });
+        this.rain.forEach(r => { r.x += r.vx + this.wind*0.02; r.y += r.vy*0.8; });
+        this.rain = this.rain.filter(r => r.y < this.h + 50 && r.y < this.getTy(r.x)+10);
+
+        this.updateDrops(dt);
+
+// Focos de fuego persistentes (solo efectos de disparos incendiarios)
+if(this.fires && this.fires.length) {
+    for(let i=this.fires.length-1;i>=0;i--){
+        const fz = this.fires[i];
+        fz.life -= dt;
+        // daño por segundo dentro del radio
+        this.players.forEach(p => {
+            if(!p.alive) return;
+            const dist = Math.hypot(p.x - fz.x, (p.y-10) - fz.y);
+            if(dist < fz.r) {
+                const dmg = Math.max(0, Math.floor(fz.dps * dt));
+                if(dmg>0){
+                    let dd = dmg;
+                    const ap = (p.armorPct||0);
+                    dd = Math.max(0, Math.floor(dd * (1 - ap)));
+                    if(p.shield > 0 && dd > 0) {
+                        const abs = Math.min(p.shield, dd);
+                        p.shield -= abs;
+                        dd -= abs;
+                    }
+                    if(dd>0){
+                        p.hp -= dd; p.damaged = true;
+                        if(Math.random()<0.15) this.floats.push({type:'txt', x:p.x, y:p.y-30, txt:`-${dd}`, life:1.2, c:'#ff8844'});
+                        if(p.hp<=0){ p.hp=0; p.alive=false; }
+                    }
+                }
+            }
+        });
+        // visual: chispas/llamas
+        if(Math.random()<0.55) this.floats.push({type:'fire', x:fz.x+(Math.random()-0.5)*fz.r, y:fz.y+(Math.random()-0.5)*fz.r*0.6, vx:(Math.random()-0.5)*0.6, vy:-0.6-Math.random()*1.2, life:0.7, c:fz.c||'#ff8800'});
+        if(fz.life <= 0) this.fires.splice(i,1);
+    }
+}
+
+        
+        this.floats.forEach(f => {
+             f.x += f.vx || 0; f.y += f.vy || 0; f.life -= 0.02;
+        });
+        this.floats = this.floats.filter(f=>f.life>0);
+
+        this.minZoom = Math.max(0.35, this.w / C.W); 
+        if(this.zoom < this.minZoom) this.zoom = this.minZoom;
+        const viewW = this.w / this.zoom;
+        const maxCam = Math.max(0, C.W - viewW);
+        this.tCamX = Math.max(0, Math.min(maxCam, this.tCamX));
+        this.camX += (this.tCamX - this.camX)*0.1;
+        this.camX = Math.max(0, Math.min(maxCam, this.camX));
+
+        // --- DRAW ---
+        this.drawSky();
+
+        this.ctx.save();
+        const shX = (Math.random()-0.5)*this.shake;
+        const shY = (Math.random()-0.5)*this.shake;
+        // Transformación de cámara: origen en (0,0) y desplazamiento por camX.
+        // Evita el "centrado" artificial que impedía llegar a los bordes con el zoom.
+        this.ctx.setTransform(
+            this.zoom, 0, 0, this.zoom,
+            (-this.camX + shX) * this.zoom,
+            // Ancla vertical al "suelo" (y = this.h): al alejar zoom, crece el cielo, no el terreno.
+            (-this.h + shY) * this.zoom + this.h
+        );
+
+        this.ctx.save(); this.ctx.translate(this.camX*0.9, 0); 
+        this.ctx.fillStyle = 'rgba(20,20,30,0.8)';
+        this.mountainsBack.forEach(m => { this.ctx.beginPath(); this.ctx.moveTo(m.x,this.h); this.ctx.lineTo(m.x+m.w/2, this.h-m.h); this.ctx.lineTo(m.x+m.w, this.h); this.ctx.fill(); });
+        this.ctx.translate(-this.camX*0.1, 0);
+        this.ctx.fillStyle = 'rgba(10,10,20,0.9)';
+        this.mountainsFront.forEach(m => { this.ctx.beginPath(); this.ctx.moveTo(m.x,this.h); this.ctx.lineTo(m.x+m.w/2, this.h-m.h); this.ctx.lineTo(m.x+m.w, this.h); this.ctx.fill(); });
+        this.ctx.restore();
+
+        this.clouds.forEach(c => { this.ctx.fillStyle = 'rgba(255,255,255,0.8)'; c.parts.forEach(p => { this.ctx.beginPath(); this.ctx.arc(c.x+p.dx, c.y+p.dy, p.r*c.s, 0, 7); this.ctx.fill(); }); });
+        this.ctx.strokeStyle = 'rgba(220, 240, 255, 0.5)'; this.ctx.lineWidth = 1.5; this.ctx.beginPath(); this.rain.forEach(r => { this.ctx.moveTo(r.x, r.y); this.ctx.lineTo(r.x-this.wind*0.1, r.y+5); }); this.ctx.stroke();
+
+        // 1. LIQUID - LAYER 2 (FULL BACKGROUND)
+        this.ctx.fillStyle = this.liquidType === 'lava' ? '#ff3300' : '#0044cc'; 
+        this.ctx.fillRect(-5000, this.liquidLevel, C.W + 10000, 5000);
+        // 2. TERRAIN - LAYER 3 (FOREGROUND)
+        if(this.caveMode && this.terrCvs){
+            // máscara 2D: permite cavernas reales
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.drawImage(this.terrCvs, 0, 0);
+            this.ctx.imageSmoothingEnabled = true;
+        } else {
+            // heightmap clásico
+            this.ctx.fillStyle = '#21262d'; 
+            this.ctx.beginPath(); 
+            this.ctx.moveTo(-5000, this.h + 5000); 
+            this.ctx.lineTo(-5000, this.terr[0]);
+            for(let i=0; i<C.W; i+=4) { this.ctx.lineTo(i, this.terr[i]); }
+            this.ctx.lineTo(C.W + 5000, this.terr[C.W-1]);
+            this.ctx.lineTo(C.W + 5000, this.h + 5000); 
+            this.ctx.closePath();
+            this.ctx.fill();
+
+            this.ctx.strokeStyle = '#2ea043'; this.ctx.lineWidth=2; 
+            this.ctx.beginPath();
+            this.ctx.moveTo(-5000, this.terr[0]);
+            for(let i=0; i<C.W; i+=4) this.ctx.lineTo(i, this.terr[i]);
+            this.ctx.lineTo(C.W + 5000, this.terr[C.W-1]);
+            this.ctx.stroke();
+        }
+
+        this.drawDrops();
+
+        this.players.forEach(p => {
+            if(!p.alive) return;
+            this.ctx.fillStyle=p.col; 
+            const dir = p.id===1?1:-1; const rx = p.recoil * -dir;
+            this.ctx.save(); this.ctx.translate(p.x + rx, p.y-8); this.ctx.rotate(p.rot); this.ctx.fillRect(-10, -2, 20, 10);
+            this.ctx.rotate( -p.ang * (Math.PI/180) - p.rot ); this.ctx.fillStyle='#fff'; this.ctx.fillRect(0, -2, 18, 4); this.ctx.restore();
+            if(p.parachuting) { this.ctx.fillStyle='#fff'; this.ctx.beginPath(); this.ctx.arc(p.x, p.y-25, 15, Math.PI, 0); this.ctx.fill(); }
+        });
+
+        if(this.traceActive && this.state==='AIM') {
+            const p = this.players[this.turn];
+            this.ctx.strokeStyle = '#ff00ff'; this.ctx.lineWidth=2; this.ctx.beginPath(); this.ctx.moveTo(p.x, p.y-15);
+            let tx=p.x, ty=p.y-15, rad=-p.ang*(Math.PI/180), tvx=Math.cos(rad)*p.pow*0.15, tvy=Math.sin(rad)*p.pow*0.15;
+            const maxSteps = 2200;
+            for(let i=0;i<maxSteps;i++){
+                tvx += this.wind * 0.001;
+                tvy += C.GRAV;
+                tx += tvx;
+                ty += tvy;
+                this.ctx.lineTo(tx, ty);
+                // Impacto con terreno si está dentro del mundo
+                if(tx>=0 && tx<=C.W-1 && ty >= this.getTy(tx)) break;
+                // Si sale del mundo, sigue hasta que caiga al "fondo" y corta
+                if(ty > this.h + 800) break;
+                if(tx < -800 || tx > C.W + 800) {
+                    if(ty > this.h + 200) break;
+                }
+            }
+            this.ctx.stroke();
+        }
+
+        this.projs.forEach(p => { if(p.act) { this.ctx.fillStyle=p.w.c; this.ctx.fillRect(p.x-2,p.y-2,5,5); } });
+        this.expls.forEach(e => { if(e.act) { this.ctx.fillStyle=e.c; this.ctx.beginPath(); this.ctx.arc(e.x,e.y,Math.max(0.1, e.r),0,7); this.ctx.fill(); } });
+        
+        this.floats.forEach(f => {
+            if (f.type === 'txt') { this.ctx.fillStyle = f.c; this.ctx.font = "bold 16px monospace"; this.ctx.fillText(f.txt, f.x-10, f.y); }
+            else { this.ctx.fillStyle = f.c; this.ctx.beginPath(); this.ctx.arc(f.x,f.y, Math.max(0, 2 * f.life), 0, 7); this.ctx.fill(); }
+        });
+
+        this.ctx.restore();
+        this.drawMinimap();
+    },
+
+    drawMinimap() {
+        const cw = this.mapCvs.width, ch = this.mapCvs.height;
+        this.mapCtx.clearRect(0,0,cw,ch);
+        const col = '#238636';
+        this.mapCtx.fillStyle=col; this.mapCtx.beginPath(); this.mapCtx.moveTo(0, ch);
+        const step = C.W / cw;
+        for(let i=0; i<cw; i++) { const ty = this.terr[Math.floor(i*step)]; this.mapCtx.lineTo(i, (ty/this.h)*ch); }
+        this.mapCtx.lineTo(cw, ch); this.mapCtx.fill();
+        this.players.forEach(p => { if(!p.alive) return; const mx = (p.x/C.W)*cw; const my = (p.y/this.h)*ch; this.mapCtx.fillStyle = p.col; this.mapCtx.fillRect(mx-2, my-3, 4, 4); });
+        const cx = (this.camX/C.W)*cw; const ckw = (this.w/C.W)*cw/this.zoom;
+        this.mapCtx.strokeStyle = '#fff'; this.mapCtx.lineWidth = 1; this.mapCtx.strokeRect(cx, 0, ckw, ch);
+    },
+
+    nextTurn() {
+        const alive = this.players.filter(p=>p.alive);
+        if(alive.length < 2) { 
+            document.getElementById('screen-over').classList.remove('hidden'); 
+            document.getElementById('txt-winner').innerText = alive.length ? "GANADOR P"+alive[0].id : "EMPATE"; 
+            return; 
+        }
+        this.turn = (this.turn+1)%2;
+        this.startTurn();
+    },
+
+    useTeleport(p) {
+        if(!p || !p.alive || (p.teleportCharges||0) <= 0) return;
+        p.teleportCharges--;
+
+        // Teleport determinista pero "otra posición": búsqueda aleatoria acotada con validación.
+        const other = this.players.find(x=>x.id!==p.id && x.alive);
+        for(let tries=0; tries<80; tries++){
+            const x = 50 + Math.random()*(C.W-100);
+            const y = this.getTy(x);
+            if(Math.abs(this.getTy(x+10) - y) > 18) continue; // evita laderas imposibles
+            if(other && Math.abs(other.x - x) < 120) continue; // evita telefrag simple
+            p.x = x; p.y = y; p.vx = 0; p.vy = 0;
+            const viewW = this.w/this.zoom; const maxCam = Math.max(0, C.W - viewW);
+            this.tCamX = Math.max(0, Math.min(maxCam, p.x - viewW/2));
+            this.floats.push({type:'txt', x:p.x, y:p.y-30, txt:"TELEPORT!", life:2, c:'#0ff'});
+            return;
+        }
+        // Si no encuentra, no mueve (pierde carga igualmente).
+    },
+
+    closeModal() { document.getElementById('modal-popup').classList.add('hidden'); },
+    openArsenal() { if(this.state==='AIM') this.fillModal('ARSENAL', WEAPONS, (k) => { this.players[this.turn].wep = k; this.closeModal(); this.uiUpd(); }); },
+    openItems() { if(this.state==='AIM') this.fillModal('COMPLEMENTOS', ITEMS, (k) => { 
+        const p = this.players[this.turn];
+        const it = ITEMS[k];
+        const price = it.cost ?? it.p ?? 0;
+        if(p.money !== Infinity && p.money < price) return;
+        if(p.money !== Infinity) p.money -= price;
+
+        // Regla: todo lo que NO diga explícitamente "siempre" dura solo este turno.
+        switch(k){
+          case 'shield':
+            p.shield = Math.max(p.shield, 60); // absorción fija
+            p.shieldPushMul = 1.0;
+            break;
+          case 'heavy_shield':
+            p.shield = Math.max(p.shield, 120);
+            p.shieldPushMul = 0.6; // reduce empuje
+            break;
+          case 'fuel':
+            p.turnFuelMax = Math.min(220, p.turnFuelMax + 30);
+            p.fuel = Math.min(p.turnFuelMax, p.fuel + 30);
+            break;
+          case 'super_fuel':
+            p.turnFuelMax = Math.min(260, p.turnFuelMax + 60);
+            p.fuel = Math.min(p.turnFuelMax, p.fuel + 60);
+            break;
+          case 'parachute':
+            p.chutes = Math.max(p.chutes, 1); // 1 uso este turno
+            p.autoChute = false;
+            break;
+          case 'auto_parachute':
+            p.permAutoChute = true; // permanente
+            break;
+          case 'teleport':
+            p.teleportCharge = 1;
+            this.state = 'TELEPORT';
+            this.floats.push({type:'txt', x:p.x, y:p.y-45, txt:"TOCA EL MAPA PARA TELEPORT", life:2.2, c:'#0ff'});
+            break;
+          case 'repair_kit':
+            p.hp = Math.min(100, p.hp + 25);
+            break;
+          case 'super_repair':
+            p.hp = Math.min(100, p.hp + 55);
+            break;
+          case 'targeting':
+            p.targeting = true;
+            this.traceActive = true;
+            break;
+          case 'guidance':
+            p.guidance = true;
+            break;
+          case 'armor':
+            p.armorPct = Math.max(p.armorPct, 0.20);
+            break;
+          case 'heavy_armor':
+            p.armorPct = Math.max(p.armorPct, 0.35);
+            p.moveSpeedMul = 0.75;
+            p.moveFuelMul = 1.5;
+            break;
+        }
+
+        Aud.hit();
+        this.closeModal(); 
+        this.uiUpd(); 
+    }); },
+    fillModal(title, data, cb) {
+        const p = this.players[this.turn];
+        document.getElementById('modal-title').innerText = title;
+        const lst = document.getElementById('modal-list'); lst.innerHTML = '';
+        Object.keys(data).forEach(k => {
+            const item = data[k];
+            const price = (typeof item.cost==='number') ? item.cost : item.p;
+            const canBuy = p.money >= price;
+            const isSel = (title==='ARSENAL' && p.wep===k) ||
+                          (title==='COMPLEMENTOS' && ((k==='targeting' && p.targeting) || (k==='guidance' && p.guidance) || (k==='auto_parachute' && p.autoParachute)));
+            const div = document.createElement('div');
+            div.className = `card ${isSel?'active':''}`;
+            if (!canBuy) div.style.opacity = 0.5;
+
+            const typeLine = item.type ? `<div style="color:#7ee787; font-size:10px; margin-top:4px;">${item.type}</div>` : ``;
+
+            div.innerHTML = `
+              <div>
+                <div style="color:${item.c||'#fff'}; font-weight:bold">${item.n}</div>
+                <div class="wep-desc" style="color:#ddd; font-size:11px; margin-top:2px;">${item.desc||''}</div>
+                ${typeLine}
+              </div>
+              <div style="color:#ffd700; font-family:monospace">$${price}</div>
+            `;
+
+            div.onclick = () => { if(canBuy && !isSel) cb(k); };
+            lst.appendChild(div);
+        });
+        document.getElementById('modal-popup').classList.remove('hidden');
+    },
+
+    uiUpd() {
+        const p = this.players[this.turn];
+        const txt = (id,t) => { let e=document.getElementById(id); if(e) e.innerText=t; };
+        const val = (id,v) => { let e=document.getElementById(id); if(e) e.value=v; };
+        
+        const fBar = document.getElementById('fuel-bar');
+        if(fBar) { const mf = Math.max(1, p.maxFuel || C.MAX_FUEL);
+            fBar.style.width = (p.fuel / mf * 100) + '%'; fBar.style.backgroundColor = p.col; }
+
+        txt('mon1', (this.players[0].money===Infinity?'∞':Math.floor(this.players[0].money)));
+        txt('mon2', (this.players[1].money===Infinity?'∞':Math.floor(this.players[1].money)));
+        document.getElementById('hp1').style.width = this.players[0].hp + '%'; 
+        document.getElementById('hp2').style.width = this.players[1].hp + '%';
+        const wnd = document.getElementById('wind'); wnd.innerText = Math.abs(this.wind).toFixed(1) + (this.wind>0?" →":" ←"); wnd.style.color = this.wind>0?'#7ee787':'#ff7b72';
+        
+        txt('val-angle', p.ang + '°'); val('rng-angle', p.ang);
+        txt('val-power', p.pow); val('rng-power', p.pow);
+        const wInfo = WEAPONS[p.wep]; txt('lbl-wep', wInfo.n.toUpperCase()); txt('lbl-cost', "$"+wInfo.p);
+        
+        const canFire = p.money >= wInfo.p;
+        const lock = p.cpu || (this.state!=='AIM' && !(this.state==='FIRE' && p.guidance));
+        ['rng-angle','rng-power','btn-wep-sel'].forEach(id=>document.getElementById(id).disabled=lock);
+        
+        const btnF = document.getElementById('btn-fire');
+        if (!lock) { btnF.disabled = !canFire; btnF.style.opacity = canFire ? 1 : 0.5; btnF.innerText = canFire ? "FUEGO" : "NO CASH"; }
+    }
+};
+
+function setMenuBG(){
+  const el = document.getElementById('screen-start');
+  if(!el) return;
+  const isPortrait = window.innerHeight >= window.innerWidth;
+  const url = isPortrait
+    ? "https://urysoft.github.io/ai.html.games/games/scorchedearth/scorchedearth_vertical.png"
+    : "https://urysoft.github.io/ai.html.games/games/scorchedearth/scorchedearth_horizontal.png";
+  el.style.backgroundImage = `url('${url}')`;
+}
+window.addEventListener('resize', setMenuBG);
+window.addEventListener('orientationchange', setMenuBG);
+window.onload = ()=>{ setMenuBG(); Game.init(); };
+</script>
+</body>
+</html>
