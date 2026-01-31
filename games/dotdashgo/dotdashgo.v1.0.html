@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>DotDash Go</title>
+  <style>
+    :root{
+      --bg:#0b0f14;--txt:#e8f0ff;--mut:#9fb3c8;--acc:#35d0ff;
+      --ok:#7CFF6B;--bad:#ff5c73;--warn:#ffd166;--br:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 700px at 50% 0%,#152b46 0%,var(--bg) 55%,#070a0f 100%);
+      color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;overflow:hidden}
+    #app{height:100%;display:flex;flex-direction:column}
+
+    header{
+      padding:12px 12px 10px; position:sticky;top:0;z-index:10;
+      background:linear-gradient(to bottom, rgba(11,15,20,.92), rgba(11,15,20,.65));
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .topRow{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+    h1{font-size:16px;margin:0;line-height:1.2}
+    .sub{font-size:12px;color:var(--mut);margin-top:4px}
+    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(53,208,255,.10);border:1px solid rgba(53,208,255,.25);color:var(--txt);white-space:nowrap}
+
+    .tabs{
+      display:flex;gap:8px;margin-top:10px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;padding:4px;
+    }
+    .tabBtn{
+      flex:1; padding:10px 12px;border-radius:999px;border:1px solid transparent;
+      background:transparent;color:var(--mut);cursor:pointer;
+      user-select:none; touch-action: manipulation; font-weight:800;
+    }
+    .tabBtn.active{
+      background:rgba(53,208,255,.16);
+      border-color:rgba(53,208,255,.35);
+      color:var(--txt);
+      box-shadow:0 6px 16px rgba(0,0,0,.20);
+    }
+
+    #content{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 14px}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--br);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      overflow:hidden; margin-bottom:10px;
+    }
+    .card .hd{
+      padding:12px 12px 8px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0));
+    }
+    .card .hd .t{font-weight:900}
+    .badge{padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18);font-size:12px;color:var(--mut)}
+    .card .bd{padding:0 12px 12px}
+
+    .grid2{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:760px){ .grid2{grid-template-columns:1fr 1fr;} }
+
+    textarea, input[type="number"], input[type="text"], select{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(15,22,34,.85);
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{min-height:96px;resize:vertical}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button{
+      padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+      background:rgba(28,42,58,.85);color:var(--txt);cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.25);
+      user-select:none; touch-action: manipulation;
+    }
+    button.primary{background:rgba(53,208,255,.16);border-color:rgba(53,208,255,.35)}
+    button.good{background:rgba(124,255,107,.14);border-color:rgba(124,255,107,.30)}
+    button.bad{background:rgba(255,92,115,.14);border-color:rgba(255,92,115,.30)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .small{font-size:12px}
+    .kpi{font-size:12px;color:var(--mut)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+    .sep{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+    .hint{font-size:12px;color:var(--mut);line-height:1.35}
+    .log{
+      height:140px;overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.20);padding:8px;
+    }
+    video, canvas{
+      width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+    }
+
+    #flashStage{position:fixed;inset:0;background:#000;display:none;z-index:50}
+    #flashStage.on{background:#fff}
+    #flashStage .overlay{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      color:#111;font-weight:900;mix-blend-mode:difference;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      padding:16px;text-align:center;
+    }
+
+    .footer{
+      padding:10px 12px 14px;color:var(--mut);font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.12);
+    }
+
+    .fileRow{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:760px){ .fileRow{grid-template-columns: 1fr 1fr;} }
+    .rxFiles .item{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:10px;
+      background:rgba(0,0,0,.16);
+      margin-top:8px;
+    }
+    .rxFiles a{color:var(--acc)}
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="topRow">
+      <div>
+        <h1>DotDash Go</h1>
+        <div class="sub">Creado por Oriol Badia Campanera</div>
+      </div>
+      <div class="pill mono" id="statusPill">Listo</div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Pestañas">
+      <button class="tabBtn active" id="tabSend" role="tab" aria-selected="true">Enviar</button>
+      <button class="tabBtn" id="tabRecv" role="tab" aria-selected="false">Recibir</button>
+    </div>
+  </header>
+
+  <div id="content">
+    <!-- SEND -->
+    <div id="viewSend">
+      <section class="card">
+        <div class="hd">
+          <div class="t">Texto / Fichero → Morse</div>
+          <span class="badge" id="txState">TX: idle</span>
+        </div>
+        <div class="bd">
+          <div class="grid2">
+            <div>
+              <label class="small kpi">Modo de envío</label>
+              <select id="txMode">
+                <option value="text">Texto</option>
+                <option value="file">Fichero</option>
+              </select>
+              <div class="hint">En “Fichero”, se convierte a Base32 y se envía en chunks.</div>
+            </div>
+            <div>
+              <label class="small kpi">Prefijo/sufijo</label>
+              <select id="framing">
+                <option value="vv">Con marcadores (VV … AR) recomendado</option>
+                <option value="none">Sin marcadores</option>
+              </select>
+              <div class="hint">Ayuda a decodificar con menos ambigüedad.</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Text block -->
+          <div id="txTextBlock">
+            <label class="small kpi">Texto a enviar</label>
+            <textarea id="txText" placeholder="Ej: HOLA ORIOL 123"></textarea>
+          </div>
+
+          <!-- File block -->
+          <div id="txFileBlock" style="display:none;">
+            <div class="fileRow">
+              <div>
+                <label class="small kpi">Seleccionar fichero</label>
+                <input id="fileInput" type="file"/>
+                <div class="hint">Tamaño recomendado para pruebas: &lt; 10 KB (Morse es lento).</div>
+              </div>
+              <div>
+                <label class="small kpi">Tamaño de chunk (Base32 chars)</label>
+                <input id="chunkSize" type="number" min="128" max="4096" step="128" value="768"/>
+                <div class="hint">Más grande = menos cabeceras, pero más sensible a errores.</div>
+              </div>
+            </div>
+            <div class="sep"></div>
+            <div class="small kpi">Info del fichero</div>
+            <div class="log mono" id="fileInfo">(ninguno)</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="grid2">
+            <div>
+              <label class="small kpi">Velocidad (WPM aprox.)</label>
+              <input id="wpm" type="number" min="5" max="35" step="1" value="15"/>
+              <div class="hint">Para ficheros: 10–16 WPM suele ser más robusto.</div>
+            </div>
+            <div>
+              <label class="small kpi">Tono audio (Hz)</label>
+              <input id="toneHz" type="number" min="200" max="2000" step="10" value="700"/>
+              <div class="hint">Pitido por altavoz.</div>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px;">
+            <div>
+              <label class="small kpi">Modo flash</label>
+              <select id="flashMode">
+                <option value="torch">Linterna (si disponible)</option>
+                <option value="screen">Pantalla blanca</option>
+              </select>
+              <div class="hint">Linterna depende del navegador/dispositivo.</div>
+            </div>
+            <div>
+              <label class="small kpi">ID de envío (solo ficheros)</label>
+              <input id="fileId" type="text" class="mono" value="A1"/>
+              <div class="hint">Para distinguir transferencias (BF/CF/EF).</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <button class="primary" id="btnGen">Generar Morse</button>
+            <button class="good" id="btnPlayAudio" disabled>Emitir audio</button>
+            <button class="good" id="btnFlash" disabled>Emitir flash</button>
+            <button class="bad" id="btnStopTx" disabled>Parar</button>
+          </div>
+
+          <div style="margin-top:10px;">
+            <div class="small kpi">Morse generado</div>
+            <div class="log mono" id="morseOut">(vacío)</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RECEIVE -->
+    <div id="viewRecv" style="display:none;">
+      <section class="card">
+        <div class="hd">
+          <div class="t">Morse → Texto / Fichero</div>
+          <span class="badge" id="rxState">RX: idle</span>
+        </div>
+        <div class="bd">
+          <div class="grid2">
+            <div>
+              <label class="small kpi">Umbral audio (sensibilidad)</label>
+              <input id="audioThresh" type="number" min="0.01" max="0.60" step="0.01" value="0.10"/>
+              <div class="hint">Si detecta ruido: súbelo. Si no detecta pitidos: bájalo.</div>
+            </div>
+            <div>
+              <label class="small kpi">Umbral luz (sensibilidad)</label>
+              <input id="lightThresh" type="number" min="0.01" max="0.60" step="0.01" value="0.10"/>
+              <div class="hint">Brillo actual vs línea base.</div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="primary" id="btnRxMic">Escuchar (mic)</button>
+            <button class="primary" id="btnRxCam">Ver luz (cámara)</button>
+            <button class="bad" id="btnStopRx" disabled>Parar RX</button>
+            <button id="btnClearRx">Limpiar</button>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="grid2">
+            <div>
+              <div class="small kpi">Cámara</div>
+              <video id="video" playsinline muted></video>
+              <div class="hint">Apunta a una luz emitiendo Morse (mejor centrada).</div>
+            </div>
+            <div>
+              <div class="small kpi">Diagnóstico (brillo centro)</div>
+              <canvas id="scope" width="480" height="270"></canvas>
+              <div class="hint">Ajusta el umbral de luz mirando el gráfico.</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="grid2">
+            <div>
+              <div class="small kpi">Morse detectado</div>
+              <div class="log mono" id="rxMorse">(vacío)</div>
+            </div>
+            <div>
+              <div class="small kpi">Texto transcrito</div>
+              <div class="log mono" id="rxText">(vacío)</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <button class="primary" id="btnParseFiles">Procesar fichero(s) desde texto</button>
+            <span class="badge" id="fileParseState">Ficheros: 0</span>
+          </div>
+          <div class="rxFiles" id="rxFiles"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="footer">
+    Permisos: micrófono (RX audio), cámara (RX luz / TX linterna). Para ficheros: prueba primero con tamaños pequeños.
+  </div>
+</div>
+
+<div id="flashStage">
+  <div class="overlay">FLASH MORSE · toca para salir</div>
+</div>
+
+<script>
+(() => {
+  const el = (id)=>document.getElementById(id);
+  const statusPill = el('statusPill');
+  const content = el('content');
+
+  const tabSend = el('tabSend');
+  const tabRecv = el('tabRecv');
+  const viewSend = el('viewSend');
+  const viewRecv = el('viewRecv');
+
+  function setTab(which){
+    const send = which === 'send';
+    tabSend.classList.toggle('active', send);
+    tabRecv.classList.toggle('active', !send);
+    tabSend.setAttribute('aria-selected', send ? 'true':'false');
+    tabRecv.setAttribute('aria-selected', !send ? 'true':'false');
+    viewSend.style.display = send ? '' : 'none';
+    viewRecv.style.display = !send ? '' : 'none';
+    content.scrollTop = 0;
+  }
+  tabSend.addEventListener('click', ()=>setTab('send'));
+  tabRecv.addEventListener('click', ()=>setTab('recv'));
+
+  const setStatus = (msg, kind='') => {
+    statusPill.textContent = msg;
+    statusPill.style.borderColor =
+      kind==='ok' ? 'rgba(124,255,107,.35)' :
+      kind==='bad'? 'rgba(255,92,115,.35)' :
+      kind==='warn'? 'rgba(255,209,102,.35)' :
+      'rgba(53,208,255,.25)';
+    statusPill.style.background =
+      kind==='ok' ? 'rgba(124,255,107,.12)' :
+      kind==='bad'? 'rgba(255,92,115,.12)' :
+      kind==='warn'? 'rgba(255,209,102,.12)' :
+      'rgba(53,208,255,.10)';
+  };
+
+  // Send controls
+  const txState = el('txState');
+  const txMode = el('txMode');
+  const txTextBlock = el('txTextBlock');
+  const txFileBlock = el('txFileBlock');
+
+  const txText = el('txText');
+  const fileInput = el('fileInput');
+  const fileInfo = el('fileInfo');
+  const chunkSizeEl = el('chunkSize');
+  const fileIdEl = el('fileId');
+
+  const wpm = el('wpm');
+  const toneHz = el('toneHz');
+  const flashMode = el('flashMode');
+  const framing = el('framing');
+
+  const btnGen = el('btnGen');
+  const btnPlayAudio = el('btnPlayAudio');
+  const btnFlash = el('btnFlash');
+  const btnStopTx = el('btnStopTx');
+  const morseOut = el('morseOut');
+
+  // Receive controls
+  const rxState = el('rxState');
+  const audioThresh = el('audioThresh');
+  const lightThresh = el('lightThresh');
+  const btnRxMic = el('btnRxMic');
+  const btnRxCam = el('btnRxCam');
+  const btnStopRx = el('btnStopRx');
+  const btnClearRx = el('btnClearRx');
+  const btnParseFiles = el('btnParseFiles');
+  const fileParseState = el('fileParseState');
+  const rxFiles = el('rxFiles');
+
+  const rxMorse = el('rxMorse');
+  const rxText = el('rxText');
+
+  const video = el('video');
+  const scope = el('scope');
+  const sctx = scope.getContext('2d', { willReadFrequently: true });
+
+  const flashStage = el('flashStage');
+
+  txMode.addEventListener('change', ()=>{
+    const isFile = txMode.value === 'file';
+    txTextBlock.style.display = isFile ? 'none' : '';
+    txFileBlock.style.display = isFile ? '' : 'none';
+  });
+
+  // Morse tables
+  const CHAR_TO_MORSE = {
+    'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
+    'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
+    'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..',
+    '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+    '.':'.-.-.-', ',':'--..--', '?':'..--..', "'":'.----.', '!':'-.-.--', '/':'-..-.', '(':'-.--.', ')':'-.--.-',
+    '&':'.-...', ':':'---...', ';':'-.-.-.', '=':'-...-', '+':'.-.-.', '-':'-....-', '_':'..--.-',
+    '"':'.-..-.', '$':'...-..-', '@':'.--.-.'
+  };
+  const MORSE_TO_CHAR = Object.fromEntries(Object.entries(CHAR_TO_MORSE).map(([k,v])=>[v,k]));
+
+  function normalizeText(s){ return (s||'').toUpperCase().replace(/\s+/g,' ').trim(); }
+  function textToMorse(text){
+    const t = normalizeText(text);
+    if(!t) return '';
+    const parts = [];
+    for(const ch of t){
+      if(ch === ' ') parts.push('/');
+      else if(CHAR_TO_MORSE[ch]) parts.push(CHAR_TO_MORSE[ch]);
+    }
+    return parts.join(' ');
+  }
+  function morseToText(morse){
+    const tokens = (morse||'').trim().split(/\s+/).filter(Boolean);
+    const out = [];
+    for(const tok of tokens){
+      if(tok === '/' || tok === '|') out.push(' ');
+      else if(MORSE_TO_CHAR[tok]) out.push(MORSE_TO_CHAR[tok]);
+      else out.push('�');
+    }
+    return out.join('').replace(/\s+/g,' ').trim();
+  }
+
+  // Base32
+  const B32_ALPH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  function base32Encode(bytes){
+    let out = '';
+    let bits = 0, value = 0;
+    for(const b of bytes){
+      value = (value << 8) | b;
+      bits += 8;
+      while(bits >= 5){
+        out += B32_ALPH[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+    if(bits > 0) out += B32_ALPH[(value << (5 - bits)) & 31];
+    while(out.length % 8 !== 0) out += '=';
+    return out;
+  }
+  function base32Decode(str){
+    const clean = (str||'').toUpperCase().replace(/[^A-Z2-7=]/g,'');
+    let bits = 0, value = 0;
+    const out = [];
+    for(const ch of clean){
+      if(ch === '=') break;
+      const idx = B32_ALPH.indexOf(ch);
+      if(idx < 0) continue;
+      value = (value << 5) | idx;
+      bits += 5;
+      if(bits >= 8){
+        out.push((value >>> (bits - 8)) & 255);
+        bits -= 8;
+      }
+    }
+    return new Uint8Array(out);
+  }
+  function safeB32FromUtf8(str){
+    const bytes = new TextEncoder().encode(str || '');
+    return base32Encode(bytes);
+  }
+  function utf8FromB32(b32){
+    const bytes = base32Decode(b32);
+    return new TextDecoder().decode(bytes);
+  }
+
+  // CRC32
+  const CRC_TABLE = (() => {
+    const table = new Uint32Array(256);
+    for(let i=0;i<256;i++){
+      let c = i;
+      for(let k=0;k<8;k++){
+        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      table[i] = c >>> 0;
+    }
+    return table;
+  })();
+  function crc32(bytes){
+    let c = 0xFFFFFFFF;
+    for(const b of bytes){
+      c = CRC_TABLE[(c ^ b) & 0xFF] ^ (c >>> 8);
+    }
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  function hex8(u32){ return (u32>>>0).toString(16).toUpperCase().padStart(8,'0'); }
+
+  // Timing (ITU)
+  function dotMsFromWpm(v){
+    const w = Math.max(5, Math.min(35, Number(v)||15));
+    return 1200 / w;
+  }
+  function buildTimelineFromMorse(morse, dotMs){
+    const ev = [];
+    const push = (on, dur)=>{ if(dur>0) ev.push({on, dur}); };
+    const tokens = morse.trim().split(/\s+/).filter(Boolean);
+    for(let ti=0; ti<tokens.length; ti++){
+      const tok = tokens[ti];
+      if(tok === '/'){ push(false, dotMs * 7); continue; }
+      for(let i=0; i<tok.length; i++){
+        const s = tok[i];
+        if(s === '.') push(true, dotMs * 1);
+        else if(s === '-') push(true, dotMs * 3);
+        if(i < tok.length - 1) push(false, dotMs * 1);
+      }
+      const next = tokens[ti+1];
+      if(next && next !== '/') push(false, dotMs * 3);
+    }
+    return ev;
+  }
+
+  // TX audio
+  let audioCtx = null;
+  let txAbort = {stop:false};
+  async function txAudio(timeline, hz){
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.0;
+    gain.connect(audioCtx.destination);
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = Math.max(200, Math.min(2000, Number(hz)||700));
+    osc.connect(gain);
+    osc.start();
+
+    const startAt = audioCtx.currentTime + 0.03;
+    let t = startAt;
+    for(const e of timeline){
+      gain.gain.setValueAtTime(e.on ? 0.9 : 0.0, t);
+      t += e.dur/1000;
+    }
+    gain.gain.setValueAtTime(0.0, t + 0.01);
+
+    const totalMs = timeline.reduce((a,b)=>a+b.dur,0) + 80;
+    const end = performance.now() + totalMs;
+    while(performance.now() < end){
+      if(txAbort.stop) break;
+      await new Promise(r=>setTimeout(r, 25));
+    }
+    try{ osc.stop(); }catch(e){}
+    try{ osc.disconnect(); gain.disconnect(); }catch(e){}
+  }
+
+  // Camera + torch
+  let camStream = null;
+  let camTrack = null;
+  async function ensureCamera(){
+    if(camStream && camTrack) return true;
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+    camTrack = camStream.getVideoTracks()[0];
+    video.srcObject = camStream;
+    await video.play().catch(()=>{});
+    return true;
+  }
+  function stopCamera(){
+    if(camStream) camStream.getTracks().forEach(t=>t.stop());
+    camStream = null; camTrack = null;
+    video.srcObject = null;
+  }
+  async function setTorch(on){
+    if(!camTrack) return false;
+    try{
+      await camTrack.applyConstraints({ advanced: [{ torch: !!on }] });
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+  async function txFlashTorch(timeline){
+    await ensureCamera();
+    const okOn = await setTorch(true);
+    await new Promise(r=>setTimeout(r, 40));
+    await setTorch(false);
+    if(!okOn) throw new Error("TORCH_NO_SUPPORT");
+    for(const e of timeline){
+      if(txAbort.stop) break;
+      await setTorch(e.on);
+      await new Promise(r=>setTimeout(r, e.dur));
+    }
+    await setTorch(false);
+  }
+  async function txFlashScreen(timeline){
+    flashStage.style.display = 'block';
+    flashStage.addEventListener('click', ()=>{ txAbort.stop = true; }, { once:true });
+    for(const e of timeline){
+      if(txAbort.stop) break;
+      flashStage.classList.toggle('on', !!e.on);
+      await new Promise(r=>setTimeout(r, e.dur));
+    }
+    flashStage.classList.remove('on');
+    flashStage.style.display = 'none';
+  }
+
+  // RX decode helper
+  function median(arr){
+    const a = arr.slice().sort((x,y)=>x-y);
+    const n = a.length;
+    if(!n) return 0;
+    const mid = Math.floor(n/2);
+    return n%2 ? a[mid] : (a[mid-1]+a[mid])/2;
+  }
+  function decodeSegmentsToMorse(segments){
+    const onSeg = segments.filter(s=>s.on && s.ms>=20);
+    if(onSeg.length < 3) return '';
+    const ons = onSeg.map(s=>s.ms).sort((a,b)=>a-b);
+    const k = Math.max(1, Math.floor(ons.length * 0.4));
+    const dot = median(ons.slice(0,k));
+    const unit = Math.max(40, Math.min(400, dot));
+    const dashCut = unit * 2.2;
+
+    let out = '';
+    for(const seg of segments){
+      if(seg.on){
+        out += (seg.ms >= dashCut) ? '-' : '.';
+      } else {
+        if(seg.ms >= unit * 6.0) out += ' / ';
+        else if(seg.ms >= unit * 2.0) out += ' ';
+      }
+    }
+    return out.replace(/\s+/g,' ').trim();
+  }
+
+  // RX mic
+  let rxAbort = {stop:false};
+  let micStream = null;
+  let micCtx = null;
+  let analyser = null;
+  let micSource = null;
+
+  async function startMicRx(){
+    rxAbort.stop = false;
+    rxState.textContent = 'RX: mic…';
+    btnStopRx.disabled = false;
+    setStatus('RX mic activado', 'ok');
+
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    micCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await micCtx.resume();
+
+    micSource = micCtx.createMediaStreamSource(micStream);
+    analyser = micCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    micSource.connect(analyser);
+
+    const buf = new Float32Array(analyser.fftSize);
+    const segs = [];
+    let lastState = null;
+    let lastTs = performance.now();
+    let baseline = 0.0;
+    const alpha = 0.02;
+
+    while(!rxAbort.stop){
+      analyser.getFloatTimeDomainData(buf);
+      let sum = 0;
+      for(let i=0;i<buf.length;i++){ const v=buf[i]; sum += v*v; }
+      const rms = Math.sqrt(sum / buf.length);
+      baseline = baseline*(1-alpha) + rms*alpha;
+
+      const thr = Math.max(0.01, Math.min(0.60, Number(audioThresh.value)||0.10));
+      const on = (rms - baseline) > thr;
+
+      const now = performance.now();
+      if(lastState === null){ lastState = on; lastTs = now; }
+      else if(on !== lastState){
+        segs.push({ on: lastState, ms: now - lastTs });
+        lastState = on; lastTs = now;
+
+        if(segs.length >= 10){
+          const mor = decodeSegmentsToMorse(segs);
+          rxMorse.textContent = mor || '(…)';
+          rxText.textContent = mor ? morseToText(mor) : '(…)';
+        }
+      }
+
+      if(segs.length > 0 && (now - lastTs) > 1500 && lastState === false){
+        segs.push({ on: false, ms: now - lastTs });
+        const mor = decodeSegmentsToMorse(segs);
+        if(mor) appendRx(mor);
+        segs.length = 0; lastState = null;
+      }
+
+      await new Promise(r=>setTimeout(r, 40));
+    }
+    stopMic();
+  }
+
+  function stopMic(){
+    if(micStream) micStream.getTracks().forEach(t=>t.stop());
+    micStream = null;
+    if(micCtx){ try{ micCtx.close(); }catch(e){} }
+    micCtx = null; analyser = null; micSource = null;
+  }
+
+  // RX cam
+  async function startCamRx(){
+    rxAbort.stop = false;
+    rxState.textContent = 'RX: cámara…';
+    btnStopRx.disabled = false;
+    setStatus('RX cámara activado', 'ok');
+
+    await ensureCamera();
+
+    const tmp = document.createElement('canvas');
+    const tctx = tmp.getContext('2d', { willReadFrequently: true });
+    const w = 320, h = 180;
+    tmp.width = w; tmp.height = h;
+
+    const hist = new Array(240).fill(0);
+    let histIdx = 0;
+
+    const segs = [];
+    let lastState = null;
+    let lastTs = performance.now();
+    let baseline = 0.0;
+    const alpha = 0.02;
+
+    while(!rxAbort.stop){
+      if(video.readyState >= 2){
+        tctx.drawImage(video, 0, 0, w, h);
+
+        const box = 40;
+        const sx = Math.floor(w/2 - box/2);
+        const sy = Math.floor(h/2 - box/2);
+        const img = tctx.getImageData(sx, sy, box, box).data;
+
+        let sum = 0;
+        for(let i=0;i<img.length;i+=4){
+          const r=img[i], g=img[i+1], b=img[i+2];
+          sum += (0.2126*r + 0.7152*g + 0.0722*b);
+        }
+        const lum = (sum / (img.length/4)) / 255;
+
+        baseline = baseline*(1-alpha) + lum*alpha;
+
+        const thr = Math.max(0.01, Math.min(0.60, Number(lightThresh.value)||0.10));
+        const on = (lum - baseline) > thr;
+
+        hist[histIdx] = lum;
+        histIdx = (histIdx + 1) % hist.length;
+        drawScope(hist, histIdx, baseline, thr);
+
+        const now = performance.now();
+        if(lastState === null){ lastState = on; lastTs = now; }
+        else if(on !== lastState){
+          segs.push({ on: lastState, ms: now - lastTs });
+          lastState = on; lastTs = now;
+
+          if(segs.length >= 10){
+            const mor = decodeSegmentsToMorse(segs);
+            rxMorse.textContent = mor || '(…)';
+            rxText.textContent = mor ? morseToText(mor) : '(…)';
+          }
+        }
+
+        if(segs.length > 0 && (now - lastTs) > 1500 && lastState === false){
+          segs.push({ on: false, ms: now - lastTs });
+          const mor = decodeSegmentsToMorse(segs);
+          if(mor) appendRx(mor);
+          segs.length = 0; lastState = null;
+        }
+      }
+      await new Promise(r=>setTimeout(r, 50));
+    }
+  }
+
+  function drawScope(hist, idx, baseline, thr){
+    const W = scope.width, H = scope.height;
+    sctx.clearRect(0,0,W,H);
+    sctx.fillStyle = 'rgba(0,0,0,.25)';
+    sctx.fillRect(0,0,W,H);
+
+    const yBase = H - baseline * H;
+    const yThr = H - Math.min(1, baseline + thr) * H;
+
+    sctx.strokeStyle = 'rgba(255,255,255,.12)';
+    sctx.beginPath();
+    for(let i=0;i<=6;i++){
+      const y = (H/6)*i;
+      sctx.moveTo(0,y); sctx.lineTo(W,y);
+    }
+    sctx.stroke();
+
+    sctx.strokeStyle = 'rgba(124,255,107,.35)';
+    sctx.beginPath(); sctx.moveTo(0,yBase); sctx.lineTo(W,yBase); sctx.stroke();
+
+    sctx.strokeStyle = 'rgba(53,208,255,.35)';
+    sctx.beginPath(); sctx.moveTo(0,yThr); sctx.lineTo(W,yThr); sctx.stroke();
+
+    sctx.strokeStyle = 'rgba(255,255,255,.75)';
+    sctx.beginPath();
+    for(let i=0;i<hist.length;i++){
+      const v = hist[(idx+i)%hist.length];
+      const x = (i/(hist.length-1))*W;
+      const y = H - v*H;
+      if(i===0) sctx.moveTo(x,y);
+      else sctx.lineTo(x,y);
+    }
+    sctx.stroke();
+  }
+
+  function appendRx(morse){
+    const prevM = (rxMorse.textContent && rxMorse.textContent !== '(vacío)') ? rxMorse.textContent : '';
+    rxMorse.textContent = prevM ? (prevM + ' | ' + morse) : morse;
+
+    const prevT = (rxText.textContent && rxText.textContent !== '(vacío)') ? rxText.textContent : '';
+    const txt = morseToText(morse);
+    rxText.textContent = prevT ? (prevT + ' ' + txt) : txt;
+  }
+
+  function stopRx(){
+    rxAbort.stop = true;
+    btnStopRx.disabled = true;
+    rxState.textContent = 'RX: idle';
+    setStatus('RX parado', 'warn');
+    stopMic();
+  }
+
+  // File message build
+  async function buildFileMessage(file, fileId, chunkSize){
+    const ab = await file.arrayBuffer();
+    const bytes = new Uint8Array(ab);
+    const crc = hex8(crc32(bytes));
+    const dataB32 = base32Encode(bytes);
+
+    const nameB32 = safeB32FromUtf8(file.name || 'file.bin');
+    const mimeB32 = safeB32FromUtf8(file.type || 'application/octet-stream');
+    const totalBytes = bytes.length;
+
+    const cs = Math.max(128, Math.min(4096, Number(chunkSize)||768));
+    const chunks = [];
+    for(let i=0;i<dataB32.length;i+=cs) chunks.push(dataB32.slice(i, i+cs));
+    const n = chunks.length;
+
+    const toks = [];
+    toks.push('BF', fileId, nameB32, mimeB32, String(totalBytes), crc);
+    for(let i=0;i<n;i++) toks.push('CF', fileId, String(i+1), String(n), chunks[i]);
+    toks.push('EF', fileId);
+    return toks.join(' ');
+  }
+
+  function withFramingText(morse){
+    if(framing.value === 'vv'){
+      const pre = textToMorse('VV');
+      const post = textToMorse('AR');
+      return (pre + ' / ' + morse + ' / ' + post).trim();
+    }
+    return morse;
+  }
+
+  let lastTimeline = null;
+  let lastMorse = '';
+
+  async function generateMorse(){
+    const dot = dotMsFromWpm(wpm.value);
+
+    if(txMode.value === 'text'){
+      const mor = textToMorse(txText.value);
+      if(!mor){
+        morseOut.textContent = '(vacío)';
+        btnPlayAudio.disabled = true;
+        btnFlash.disabled = true;
+        lastTimeline = null; lastMorse = '';
+        setStatus('Sin texto válido', 'warn');
+        return;
+      }
+      lastMorse = withFramingText(mor);
+    } else {
+      const f = fileInput.files && fileInput.files[0];
+      if(!f){ setStatus('Selecciona un fichero', 'warn'); return; }
+      const fileId = normalizeText(fileIdEl.value || 'A1').replace(/[^A-Z0-9]/g,'').slice(0,6) || 'A1';
+      const msg = await buildFileMessage(f, fileId, chunkSizeEl.value);
+      const mor = textToMorse(msg);
+      if(!mor){ setStatus('No se pudo generar Morse del fichero', 'bad'); return; }
+      lastMorse = withFramingText(mor);
+    }
+
+    lastTimeline = buildTimelineFromMorse(lastMorse, dot);
+    morseOut.textContent = lastMorse;
+    btnPlayAudio.disabled = false;
+    btnFlash.disabled = false;
+    setStatus('Morse generado', 'ok');
+  }
+
+  btnGen.addEventListener('click', ()=>{ generateMorse().catch(e=>{ console.error(e); setStatus('Error generando', 'bad'); }); });
+
+  fileInput.addEventListener('change', async ()=>{
+    const f = fileInput.files && fileInput.files[0];
+    if(!f){ fileInfo.textContent = '(ninguno)'; return; }
+    const ab = await f.arrayBuffer();
+    const bytes = new Uint8Array(ab);
+    const crc = hex8(crc32(bytes));
+    const b32len = base32Encode(bytes).length;
+    fileInfo.textContent =
+      `NAME: ${f.name}\n` +
+      `MIME: ${f.type || 'application/octet-stream'}\n` +
+      `BYTES: ${bytes.length}\n` +
+      `CRC32: ${crc}\n` +
+      `BASE32_CHARS: ${b32len}`;
+  });
+
+  async function runTx(kind){
+    if(!lastTimeline || !lastTimeline.length){
+      setStatus('Primero genera Morse', 'warn');
+      return;
+    }
+    txAbort.stop = false;
+    btnStopTx.disabled = false;
+    btnPlayAudio.disabled = true;
+    btnFlash.disabled = true;
+    btnGen.disabled = true;
+    txState.textContent = 'TX: running';
+
+    try{
+      if(kind === 'audio'){
+        setStatus('TX audio…', 'ok');
+        await txAudio(lastTimeline, toneHz.value);
+      } else {
+        setStatus('TX flash…', 'ok');
+        if(flashMode.value === 'torch'){
+          try{ await txFlashTorch(lastTimeline); }
+          catch(e){ setStatus('Torch no disponible, usando pantalla', 'warn'); await txFlashScreen(lastTimeline); }
+        } else {
+          await txFlashScreen(lastTimeline);
+        }
+      }
+      setStatus(txAbort.stop ? 'TX detenido' : 'TX finalizado', txAbort.stop ? 'warn' : 'ok');
+    } catch(e){
+      console.error(e);
+      setStatus('Error TX: ' + (e?.message || e), 'bad');
+    } finally {
+      btnStopTx.disabled = true;
+      btnPlayAudio.disabled = false;
+      btnFlash.disabled = false;
+      btnGen.disabled = false;
+      txState.textContent = 'TX: idle';
+      txAbort.stop = false;
+      try{ await setTorch(false); }catch(e){}
+      flashStage.classList.remove('on');
+      flashStage.style.display = 'none';
+    }
+  }
+
+  btnPlayAudio.addEventListener('click', ()=>runTx('audio'));
+  btnFlash.addEventListener('click', ()=>runTx('flash'));
+  btnStopTx.addEventListener('click', ()=>{ txAbort.stop = true; setStatus('Deteniendo TX…', 'warn'); });
+
+  // RX orchestration
+  btnRxMic.addEventListener('click', async ()=>{
+    try{
+      btnRxMic.disabled = true; btnRxCam.disabled = true; btnStopRx.disabled = false;
+      setTab('recv');
+      await startMicRx();
+    } catch(e){
+      console.error(e);
+      setStatus('Error RX mic: ' + (e?.message || e), 'bad');
+    } finally {
+      btnRxMic.disabled = false; btnRxCam.disabled = false;
+    }
+  });
+
+  btnRxCam.addEventListener('click', async ()=>{
+    try{
+      btnRxMic.disabled = true; btnRxCam.disabled = true; btnStopRx.disabled = false;
+      setTab('recv');
+      await startCamRx();
+    } catch(e){
+      console.error(e);
+      setStatus('Error RX cámara: ' + (e?.message || e), 'bad');
+    } finally {
+      btnRxMic.disabled = false; btnRxCam.disabled = false;
+    }
+  });
+
+  btnStopRx.addEventListener('click', stopRx);
+
+  btnClearRx.addEventListener('click', ()=>{
+    rxMorse.textContent = '(vacío)';
+    rxText.textContent = '(vacío)';
+    rxFiles.innerHTML = '';
+    fileParseState.textContent = 'Ficheros: 0';
+    setStatus('RX limpiado', 'ok');
+  });
+
+  // Parse files from received text
+  function parseReceivedFilesFromText(text){
+    const t = normalizeText(text);
+    const toks = t.split(/\s+/).filter(Boolean);
+
+    const files = new Map();
+    for(let i=0;i<toks.length;i++){
+      const tok = toks[i];
+      if(tok === 'BF'){
+        const id = toks[i+1], nameB32 = toks[i+2], mimeB32 = toks[i+3], bytesStr = toks[i+4], crc = toks[i+5];
+        if(!id || !nameB32 || !mimeB32 || !bytesStr || !crc) continue;
+        files.set(id, { id, nameB32, mimeB32, bytes: Number(bytesStr)||0, crc, chunks:new Map(), n: null, gotEF:false });
+        i += 5;
+      } else if(tok === 'CF'){
+        const id = toks[i+1], is = toks[i+2], ns = toks[i+3], data = toks[i+4];
+        const f = files.get(id);
+        if(!f || !is || !ns || !data) continue;
+        const idx = Number(is), n = Number(ns);
+        if(!Number.isFinite(idx) || !Number.isFinite(n)) continue;
+        f.n = n;
+        f.chunks.set(idx, data);
+        i += 4;
+      } else if(tok === 'EF'){
+        const id = toks[i+1];
+        const f = files.get(id);
+        if(f) f.gotEF = true;
+        i += 1;
+      }
+    }
+    return Array.from(files.values());
+  }
+
+  function tryBuildFileObject(f){
+    if(!f.n || !f.gotEF) return { ok:false, reason:'incompleto (sin EF o sin N)' };
+    if(f.chunks.size !== f.n) return { ok:false, reason:`faltan chunks (${f.chunks.size}/${f.n})` };
+
+    let dataB32 = '';
+    for(let i=1;i<=f.n;i++){
+      const part = f.chunks.get(i);
+      if(!part) return { ok:false, reason:`chunk ${i} ausente` };
+      dataB32 += part;
+    }
+    const bytes = base32Decode(dataB32);
+
+    if(f.bytes && bytes.length !== f.bytes) return { ok:false, reason:`tamaño no coincide (${bytes.length} vs ${f.bytes})` };
+    const gotCrc = hex8(crc32(bytes));
+    if(f.crc && gotCrc !== f.crc) return { ok:false, reason:`CRC inválido (got ${gotCrc}, exp ${f.crc})` };
+
+    let name = 'file.bin', mime = 'application/octet-stream';
+    try{ name = utf8FromB32(f.nameB32) || name; }catch(e){}
+    try{ mime = utf8FromB32(f.mimeB32) || mime; }catch(e){}
+
+    return { ok:true, name, mime, bytes, crc: gotCrc };
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  function escapeAttr(s){ return String(s).replace(/"/g,''); }
+
+  function addRxFileCard(meta){
+    const div = document.createElement('div');
+    div.className = 'item';
+    const blob = new Blob([meta.bytes], { type: meta.mime });
+    const url = URL.createObjectURL(blob);
+    div.innerHTML =
+      `<div class="mono"><strong>${escapeHtml(meta.name)}</strong></div>` +
+      `<div class="mono small">MIME: ${escapeHtml(meta.mime)} · BYTES: ${meta.bytes.length} · CRC32: ${meta.crc}</div>` +
+      `<div style="margin-top:8px;"><a href="${url}" download="${escapeAttr(meta.name)}">Descargar</a></div>`;
+    rxFiles.prepend(div);
+  }
+
+  btnParseFiles.addEventListener('click', ()=>{
+    const t = rxText.textContent || '';
+    const files = parseReceivedFilesFromText(t);
+
+    let okCount = 0;
+    rxFiles.innerHTML = '';
+
+    for(const f of files){
+      const built = tryBuildFileObject(f);
+      if(built.ok){
+        okCount++;
+        addRxFileCard(built);
+      } else {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML =
+          `<div class="mono"><strong>ID ${escapeHtml(f.id)}</strong> (no reconstruido)</div>` +
+          `<div class="mono small">Motivo: ${escapeHtml(built.reason)}</div>` +
+          `<div class="mono small">Chunks: ${f.chunks.size}/${f.n || '?'}, EF: ${f.gotEF ? 'SI':'NO'}</div>`;
+        rxFiles.appendChild(div);
+      }
+    }
+
+    fileParseState.textContent = `Ficheros: ${okCount}`;
+    setStatus(okCount ? `Fichero(s) reconstruidos: ${okCount}` : 'No hay ficheros completos', okCount ? 'ok' : 'warn');
+  });
+
+  window.addEventListener('beforeunload', ()=>{
+    try{ txAbort.stop = true; rxAbort.stop = true; }catch(e){}
+    stopMic();
+    stopCamera();
+  });
+
+  setStatus('Listo', 'ok');
+})();
+</script>
+</body>
+</html>
