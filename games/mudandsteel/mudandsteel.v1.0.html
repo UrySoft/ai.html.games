@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.46</title>
+    <title>Trench Warfare: Mud & Steel v1.49</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -108,7 +108,11 @@
             align-items: center; justify-content: center; z-index: 500; text-align: center;
         }
         #menu h1 { color: var(--accent); font-size: 3rem; margin-bottom: 5px; }
-        #menu p { color: #8bc34a; margin-bottom: 40px; font-size: 0.9rem; letter-spacing: 2px; }
+        #menu p.subtitle { color: #8bc34a; margin-bottom: 10px; font-size: 0.9rem; letter-spacing: 2px; }
+        
+        .author { color: #aaa; font-size: 0.85rem; margin-bottom: 30px; font-family: sans-serif; }
+        .author a { color: var(--accent); text-decoration: none; font-weight: bold; padding: 2px 5px; border-bottom: 1px solid transparent; transition: 0.2s; }
+        .author a:hover { border-bottom: 1px solid var(--accent); }
         
         .btn-start {
             background: transparent; color: var(--accent); border: 2px solid var(--accent);
@@ -116,7 +120,6 @@
         }
         .btn-start:active { background: var(--accent); color: #000; }
         
-        /* BOTONES DEL MENÚ MODAL CORREGIDOS */
         .btn-modal { 
             background: linear-gradient(to bottom, #5a6628, #3e471a); color: #fff; 
             border: 2px solid #222; border-radius: 4px; padding: 12px 20px; 
@@ -126,11 +129,9 @@
             text-align: center; text-shadow: 1px 1px 0 #000;
         }
         .btn-modal:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
-        .btn-manual-main {
-            background: #222; border-color: #555; color: #fff;
-        }
+        .btn-manual-main { background: #222; border-color: #555; color: #fff; }
         
-        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; }
+        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: center;}
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.9rem; padding-bottom: 10px; border-bottom: 1px solid #333; }
         
         .cfg-group { background: #222; padding: 10px; border-radius: 5px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
@@ -176,7 +177,7 @@
 
     <div id="controls">
         <div id="base-panel" class="panel">
-            <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:#5bc0de">1ª TRINCHERA</span></button>
+            <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent)">AL FRENTE</span></button>
             <button class="btn" onclick="spawnUnit('infantry')"><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent)">10 MP</span></button>
             <button class="btn" onclick="spawnUnit('grenadier')"><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent)">20 MP</span></button>
             <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZALLAMAS<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
@@ -208,7 +209,9 @@
 
     <div id="menu" class="screen">
         <h1>MUD & STEEL</h1>
-        <p>BOTONES CORREGIDOS V1.46</p>
+        <p class="subtitle">ESTRATEGIA DE TRINCHERAS V1.49</p>
+        <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
+        
         <button class="btn-start" onclick="startGame()">INICIAR OPERACIÓN</button>
         <button class="btn-modal btn-manual-main" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
     </div>
@@ -229,22 +232,22 @@
                     <li><strong>Lanzallamas (🔥):</strong> Tropas de choque de corto alcance. Su fuego atraviesa formaciones enteras e ignora completamente la bonificación defensiva de las trincheras.</li>
                 </ul>
 
-                <h2>🛡️ Frente Dinámico y Hacinamiento</h2>
-                <p>El juego detecta cuál es la trinchera más avanzada con tropas vivas y la designa como tu <strong>Línea del Frente</strong>. Las trincheras vacías se vuelven Neutrales automáticamente.</p>
-                <p><strong>¡Cuidado con el Hacinamiento!</strong> La trinchera tiene un espacio físico limitado. <em>Solo</em> los soldados que están geográficamente dentro de la trinchera reciben la bonificación de defensa (escudo 🛡️). Si envías demasiadas tropas, las que queden fuera en el lodo estarán expuestas a recibir todo el daño enemigo.</p>
+                <h2>🛡️ Defensa y Frente Dinámico</h2>
+                <p>Cuando un soldado está inactivo dentro de una trinchera, adquiere el estado <strong>Atrincherado</strong> (escudo 🛡️). Las trincheras vacías se vuelven Neutrales automáticamente. El juego detecta cuál es la trinchera más avanzada con tropas vivas y la designa como tu <strong>Línea del Frente</strong>.</p>
+                <p><strong>¡Cuidado con el Hacinamiento!</strong> La trinchera tiene un espacio físico limitado. <em>Solo</em> los soldados que están geográficamente dentro de la trinchera reciben la bonificación de defensa. Si envías demasiadas tropas, las que queden fuera en el lodo estarán expuestas a recibir todo el daño enemigo.</p>
                 <p><strong>REGLA TÁCTICA:</strong> El Alto Mando prohíbe la retirada completa desde la primera trinchera (T1). ¡Ni un paso atrás!</p>
 
                 <h2>💀 Moral y Pánico</h2>
-                <p>Los muertos emiten un aura de terror. Si la moral de un soldado llega a cero, sufrirá <strong>Pánico (🏳️)</strong> y huirá. Las tropas asustadas o en retirada <strong>NO DISPARAN</strong> sus armas. Solo recuperarán moral y valor descansando dentro de la Base o en trincheras de Retaguardia. ¡Si el frente colapsa y los enemigos llegan a la trinchera donde descansan, reanudarán su huida!</p>
+                <p>Los muertos emiten un aura de terror. Si la moral de un soldado llega a cero, sufrirá <strong>Pánico (🏳️)</strong> y huirá. Las tropas asustadas o en retirada <strong>NO DISPARAN</strong> sus armas. Solo recuperarán moral y valor descansando dentro de la Base o en trincheras de Retaguardia.</p>
             </div>
-            
             <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
         </div>
     </div>
 
     <div id="options-screen" class="screen hidden">
         <div class="modal">
-            <h2 style="color:var(--accent); text-align:center; border-bottom: 1px solid #444; padding-bottom:10px; margin-bottom: 20px;">PANEL DE MANDO</h2>
+            <h2 style="color:var(--accent); text-align:center; margin-bottom: 5px;">PANEL DE MANDO</h2>
+            <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
             
             <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL</button>
             
@@ -314,6 +317,7 @@
 
     const BASE_W = 180, SAFE_ZONE = 300, TRENCH_W = 80, HORIZON_Y = 120;
     
+    // VALORES INICIALES BASADOS EN LAS IMÁGENES PROPORCIONADAS
     let game = { 
         active: false, worldW: 3500, camX: 0, 
         mp: 100, eMp: 100, 
@@ -321,14 +325,15 @@
         pCas: 0, eCas: 0, 
         selected: -1, selectedPct: 1.0, 
         selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower']), 
-        baseRally: 'FIRST', showRanges: false,
+        baseRally: 'FRONT', 
+        showRanges: false,
         
         config: {
-            infantry: { cost: 10, hp: 100, speed: 1.5, dmg: 10, vision: 350, range: 300, fireRate: 1000, maxMoral: 50, terrorRange: 100, terrorDmg: 10 },
-            grenadier: { cost: 20, hp: 250, speed: 1.0, dmg: 100, vision: 300, range: 150, fireRate: 2000, maxMoral: 80, terrorRange: 100, terrorDmg: 10 },
-            flamethrower: { cost: 35, hp: 50, speed: 3.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 20, terrorRange: 100, terrorDmg: 10 }
+            infantry: { cost: 10, hp: 100, speed: 1.5, dmg: 25, vision: 350, range: 300, fireRate: 1000, maxMoral: 100, terrorRange: 50, terrorDmg: 10 },
+            grenadier: { cost: 20, hp: 250, speed: 1.0, dmg: 100, vision: 300, range: 150, fireRate: 2000, maxMoral: 80, terrorRange: 50, terrorDmg: 10 },
+            flamethrower: { cost: 35, hp: 50, speed: 3.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 }
         },
-        trenchDmg: { infantry: 2, grenadier: 10, flamethrower: 5 }
+        trenchDmg: { infantry: 5, grenadier: 10, flamethrower: 5 }
     };
     
     let unitIdCounter = 0;
@@ -482,6 +487,7 @@
     function executeOrder(type) {
         if (game.selected === -1) return;
         
+        // BLOQUEO DE RETIRADA EN LA PRIMERA TRINCHERA (T1)
         if (type === 'PREV' && game.selected === 0) {
             alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa (T1)!");
             return;
@@ -915,7 +921,7 @@
         mCtx.fillStyle = 'rgba(255, 255, 255, 0.15)'; mCtx.fillRect(game.camX * s, 0, canvas.width * s, mCanvas.height);
         
         mCtx.fillStyle = '#4caf50'; mCtx.fillRect(0, 0, BASE_W * s, mCanvas.height);
-        mCtx.fillStyle = '#f44336'; mCtx.fillRect((game.worldW - BASE_W) * s, 0, BASE_W * s, mCanvas.height);
+        mCtx.fillStyle = '#f44336'; mCtx.fillRect((game.worldW - BASE_W) * s, 0, BASE_W * s, mCanvas.height); // REPARADO
         
         trenches.forEach(t => { 
             mCtx.fillStyle = t.owner === 'player' ? 'rgba(76, 175, 80, 0.5)' : (t.owner === 'enemy' ? 'rgba(244, 67, 54, 0.5)' : 'rgba(136, 136, 136, 0.5)'); 
