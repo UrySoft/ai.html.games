@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.42</title>
+    <title>Trench Warfare: Mud & Steel v1.46</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -13,9 +13,17 @@
             --accent: #ffcc00;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { background: #000; color: #fff; font-family: 'Courier New', Courier, monospace; overflow: hidden; touch-action: none; }
         
-        #game-container { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { 
+            background: #000; color: #fff; 
+            font-family: 'Courier New', Courier, monospace; 
+            overflow: hidden; touch-action: none; 
+        }
+        
+        #game-container { 
+            position: relative; width: 100vw; height: 100vh; height: 100dvh; 
+            display: flex; flex-direction: column; overflow: hidden; 
+        }
         
         #hud {
             flex-shrink: 0;
@@ -49,7 +57,8 @@
 
         #controls {
             flex-shrink: 0;
-            min-height: 185px; height: auto;
+            height: 22vh; 
+            min-height: 160px; max-height: 220px;
             background: var(--ui-bg); border-top: 3px solid var(--militar-green);
             display: flex; padding: 6px; z-index: 100; width: 100%;
             padding-bottom: 10px;
@@ -65,6 +74,7 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
             text-align: center; line-height: 1.1; text-shadow: 1px 1px 0 #000; padding: 2px;
+            height: 100%; 
         }
         .btn:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
         .icon-large { font-size: 1.8rem; margin-bottom: 2px; display: block; }
@@ -73,11 +83,24 @@
         .btn-toggle-alt { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); }
         .btn-retreat { background: linear-gradient(to bottom, #8b3a3a, #5c2626); border-color: #ff6666; }
         .btn-evac { background: linear-gradient(to bottom, #2d5a2d, #1a331a); border-color: #4caf50; }
-        .btn-close { background: linear-gradient(to bottom, #aa3333, #661111); flex: 0.15; font-size: 1.5rem; }
         
-        .pct-btn, .type-btn { background: #333; border-color: #555; font-size: 0.8rem; color: #aaa; flex: 1; padding: 4px; border-radius: 4px; border: 2px solid #222; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .trench-col { display: flex; flex-direction: column; gap: 6px; width: 100%; height: 100%; }
+        .trench-row { display: flex; gap: 6px; flex: 1; align-items: stretch; width: 100%; }
+
+        .pct-btn, .type-btn { 
+            background: #333; border-color: #555; font-size: 0.8rem; color: #aaa; 
+            flex: 1; padding: 4px; border-radius: 4px; border: 2px solid #222; 
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; height: 100%;
+        }
         .active-pct { background: linear-gradient(to bottom, #2d4a22, #1a2e11); border-color: #0f0; color: #fff; box-shadow: 0 0 8px rgba(0,255,0,0.4); }
         .active-type { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); color: #fff; box-shadow: 0 0 8px rgba(255,204,0,0.4); }
+
+        .t-label-box {
+            background:#111; border:1px solid var(--accent); color:var(--accent); 
+            border-radius:4px; padding:0 10px; font-weight:bold; font-size:1.2rem; 
+            display:flex; align-items:center; justify-content:center; height: 100%;
+        }
 
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -92,8 +115,20 @@
             padding: 15px 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         .btn-start:active { background: var(--accent); color: #000; }
-        .btn-manual { background: #222; color: #fff; border: 2px solid #555; padding: 10px 30px; margin-top: 15px; font-size: 0.9rem; cursor: pointer; transition: 0.3s; border-radius: 4px;}
-        .btn-manual:active { background: #444; }
+        
+        /* BOTONES DEL MENÚ MODAL CORREGIDOS */
+        .btn-modal { 
+            background: linear-gradient(to bottom, #5a6628, #3e471a); color: #fff; 
+            border: 2px solid #222; border-radius: 4px; padding: 12px 20px; 
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; 
+            display: block; width: 80%; max-width: 250px; margin: 15px auto;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
+            text-align: center; text-shadow: 1px 1px 0 #000;
+        }
+        .btn-modal:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
+        .btn-manual-main {
+            background: #222; border-color: #555; color: #fff;
+        }
         
         .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.9rem; padding-bottom: 10px; border-bottom: 1px solid #333; }
@@ -148,35 +183,34 @@
         </div>
         
         <div id="trench-panel" class="panel hidden">
-            <div style="display:flex; flex-direction:column; gap:6px; flex: 3.5;">
-                <div style="display:flex; gap:6px; flex: 0.8; align-items:center;">
-                    <div style="background:#111; border:1px solid var(--accent); color:var(--accent); border-radius:4px; padding:2px 8px; font-weight:bold; font-size:1.1rem; margin-right: 4px;" id="t-label">T1</div>
+            <div class="trench-col">
+                <div class="trench-row">
+                    <div class="t-label-box" id="t-label">T1</div>
                     <button id="type-infantry" class="type-btn" onclick="toggleType('infantry')">🪖 INF</button>
                     <button id="type-grenadier" class="type-btn" onclick="toggleType('grenadier')">💣 GRA</button>
                     <button id="type-flamethrower" class="type-btn" onclick="toggleType('flamethrower')">🔥 LAN</button>
                 </div>
-                <div style="display:flex; gap:6px; flex: 0.8; align-items:center;">
+                <div class="trench-row">
                     <button id="pct-25" class="pct-btn" onclick="setPct(0.25)">25%</button>
                     <button id="pct-50" class="pct-btn" onclick="setPct(0.50)">50%</button>
                     <button id="pct-75" class="pct-btn" onclick="setPct(0.75)">75%</button>
                     <button id="pct-100" class="pct-btn active-pct" onclick="setPct(1.00)">100%</button>
                 </div>
-                <div style="display:flex; gap:6px; flex: 1.2;">
+                <div class="trench-row">
                     <button class="btn btn-retreat" style="font-size:0.65rem;" onclick="executeOrder('PREV')">◀ RETIRADA<br>COMPLETA</button>
                     <button class="btn btn-evac" style="font-size:0.65rem;" onclick="executeOrder('EVAC')">🏥 RETIRADA<br>HERIDOS</button>
                     <button class="btn" style="font-size:0.65rem;" onclick="executeOrder('NEXT')">▶ AVANCE<br>SIGUIENTE</button>
                     <button class="btn btn-toggle-alt" style="font-size:0.65rem;" onclick="executeOrder('FRONT')">⏩ AVANCE<br>FRENTE</button>
                 </div>
             </div>
-            <button class="btn btn-close" onclick="deselectTrench()">✖</button>
         </div>
     </div>
 
     <div id="menu" class="screen">
         <h1>MUD & STEEL</h1>
-        <p>HUIDA POR COLAPSO DE FRENTE V1.42</p>
+        <p>BOTONES CORREGIDOS V1.46</p>
         <button class="btn-start" onclick="startGame()">INICIAR OPERACIÓN</button>
-        <button class="btn-manual" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
+        <button class="btn-modal btn-manual-main" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
     </div>
 
     <div id="manual-screen" class="screen hidden" style="z-index: 600;">
@@ -195,21 +229,25 @@
                     <li><strong>Lanzallamas (🔥):</strong> Tropas de choque de corto alcance. Su fuego atraviesa formaciones enteras e ignora completamente la bonificación defensiva de las trincheras.</li>
                 </ul>
 
-                <h2>🛡️ Defensa y Frente Dinámico</h2>
-                <p>Cuando un soldado está inactivo dentro de una trinchera, adquiere el estado <strong>Atrincherado</strong> (escudo 🛡️). Las trincheras vacías se vuelven Neutrales automáticamente. El juego detecta cuál es la trinchera más avanzada con tropas vivas y la designa como tu <strong>Línea del Frente</strong>.</p>
+                <h2>🛡️ Frente Dinámico y Hacinamiento</h2>
+                <p>El juego detecta cuál es la trinchera más avanzada con tropas vivas y la designa como tu <strong>Línea del Frente</strong>. Las trincheras vacías se vuelven Neutrales automáticamente.</p>
+                <p><strong>¡Cuidado con el Hacinamiento!</strong> La trinchera tiene un espacio físico limitado. <em>Solo</em> los soldados que están geográficamente dentro de la trinchera reciben la bonificación de defensa (escudo 🛡️). Si envías demasiadas tropas, las que queden fuera en el lodo estarán expuestas a recibir todo el daño enemigo.</p>
                 <p><strong>REGLA TÁCTICA:</strong> El Alto Mando prohíbe la retirada completa desde la primera trinchera (T1). ¡Ni un paso atrás!</p>
 
                 <h2>💀 Moral y Pánico</h2>
                 <p>Los muertos emiten un aura de terror. Si la moral de un soldado llega a cero, sufrirá <strong>Pánico (🏳️)</strong> y huirá. Las tropas asustadas o en retirada <strong>NO DISPARAN</strong> sus armas. Solo recuperarán moral y valor descansando dentro de la Base o en trincheras de Retaguardia. ¡Si el frente colapsa y los enemigos llegan a la trinchera donde descansan, reanudarán su huida!</p>
             </div>
-            <button class="btn" style="width: 100%; padding: 15px; margin-top: 20px; font-size: 1rem;" onclick="closeManual()">CERRAR MANUAL</button>
+            
+            <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
         </div>
     </div>
 
     <div id="options-screen" class="screen hidden">
         <div class="modal">
             <h2 style="color:var(--accent); text-align:center; border-bottom: 1px solid #444; padding-bottom:10px; margin-bottom: 20px;">PANEL DE MANDO</h2>
-            <button class="btn" style="width: 100%; padding: 10px; margin-bottom: 15px; font-size: 0.9rem;" onclick="openManual()">📖 LEER MANUAL DEL JUEGO</button>
+            
+            <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL</button>
+            
             <div class="setting-row">
                 <span>Mostrar Alcances (Arma, Visión y Terror)</span>
                 <input type="checkbox" id="toggle-ranges" style="transform: scale(1.5);" onchange="game.showRanges = this.checked;">
@@ -263,7 +301,7 @@
                 </div>
             </div>
 
-            <button class="btn" style="width: 100%; padding: 15px; margin-top: 10px; font-size: 1rem;" onclick="closeOptions()">APLICAR Y CERRAR</button>
+            <button class="btn-modal" onclick="closeOptions()">APLICAR Y CERRAR</button>
         </div>
     </div>
 </div>
@@ -444,7 +482,6 @@
     function executeOrder(type) {
         if (game.selected === -1) return;
         
-        // REGLA: PROHIBIDA LA RETIRADA DE LA TRINCHERA 1
         if (type === 'PREV' && game.selected === 0) {
             alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa (T1)!");
             return;
@@ -528,13 +565,17 @@
                     if (b.type !== 'fire' && hitSomething) return;
                     let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 3;
                     if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
+                        
                         let actualDmg = b.dmg;
-                        if (u.inT !== -1 && u.state === 'IDLE') {
-                            let tCenter = trenches[u.inT].x + trenches[u.inT].w/2;
-                            if (Math.abs(u.x - tCenter) <= trenches[u.inT].w / 2 + 5) {
-                                if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
-                            }
+                        let inAnyTrench = false;
+                        trenches.forEach(t => {
+                            if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 5) inAnyTrench = true;
+                        });
+
+                        if (inAnyTrench) {
+                            if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
                         }
+                        
                         u.hp -= actualDmg; hitSomething = true;
                     }
                 }
@@ -589,7 +630,6 @@
 
             if (u.broken && u.morale >= u.maxMoral) { u.broken = false; }
 
-            // FRENTE DINÁMICO (AVANCE)
             if (u.inT !== -1 && u.state === 'IDLE' && u.targetMode === 'FRONT' && !u.broken) {
                 let isFront = (u.side === 'player' && u.inT >= playerFront) || (u.side === 'enemy' && u.inT <= enemyFront);
                 if (!isFront) {
@@ -598,7 +638,6 @@
                 }
             }
 
-            // FRENTE DINÁMICO (HUIDA): Si un soldado roto está descansando y el frente le alcanza, sigue huyendo
             if (u.inT !== -1 && u.state === 'IDLE' && u.broken) {
                 let isFront = (u.side === 'player' && u.inT >= playerFront) || (u.side === 'enemy' && u.inT <= enemyFront);
                 if (isFront) {
@@ -797,7 +836,13 @@
 
         units.forEach(u => {
             let isP = u.side === 'player';
-            let isProtected = (u.inT !== -1 && u.state === 'IDLE');
+            
+            let isProtected = false;
+            if (u.state !== 'HEAL') {
+                trenches.forEach(t => {
+                    if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 5) isProtected = true;
+                });
+            }
             
             if (game.showRanges && u.state !== 'HEAL') {
                 ctx.lineWidth = 1;
