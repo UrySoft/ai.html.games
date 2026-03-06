@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trench Warfare: Mud & Steel v1.38</title>
+    <style>
+        :root {
+            --militar-green: #4b5320;
+            --enemy-blue: #2c3e50;
+            --mud: #3e2723;
+            --ui-bg: rgba(10, 10, 10, 0.98);
+            --accent: #ffcc00;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { background: #000; color: #fff; font-family: 'Courier New', Courier, monospace; overflow: hidden; touch-action: none; }
+        #game-container { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { flex-grow: 1; image-rendering: pixelated; display: block; }
+        
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%; height: 60px;
+            background: linear-gradient(to bottom, rgba(20,20,20,1), rgba(20,20,20,0.8));
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 15px; border-bottom: 2px solid var(--accent); z-index: 100;
+        }
+        .faction-info { display: flex; flex-direction: column; width: 32%; max-width: 140px; }
+        .faction-info span { font-size: 0.65rem; font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; }
+        
+        .stats-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+        .casualties { color: #aaa; font-size: 0.6rem; font-family: monospace; }
+        .cas-num { color: #ff4444; font-weight: bold; font-size: 0.75rem; }
+
+        .hp-bar { width: 100%; height: 12px; background: #222; border: 1px solid #555; border-radius: 2px; }
+        .hp-fill { height: 100%; transition: width 0.3s ease-out; }
+        #res-disp { color: var(--accent); font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px rgba(255,204,0,0.5); }
+
+        .btn-icon { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #fff; text-shadow: 0 2px 4px #000; transition: 0.2s; }
+        .btn-icon:active { transform: scale(0.9); }
+
+        #minimap-box {
+            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+            width: 45%; max-width: 350px; min-width: 200px; height: 40px;
+            background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 4px; z-index: 100;
+        }
+        #m-canvas { width: 100%; height: 100%; display: block; }
+
+        #controls {
+            height: 185px; background: var(--ui-bg); border-top: 3px solid var(--militar-green);
+            display: flex; padding: 6px; z-index: 100; width: 100%;
+        }
+        
+        .panel { display: flex; gap: 6px; width: 100%; height: 100%; }
+        .hidden { display: none !important; }
+
+        .btn {
+            background: linear-gradient(to bottom, #5a6628, #3e471a); color: white; 
+            border: 2px solid #222; border-radius: 4px; cursor: pointer; 
+            font-size: 0.70rem; font-weight: bold; flex: 1; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
+            text-align: center; line-height: 1.2; text-shadow: 1px 1px 0 #000;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
+        .icon-large { font-size: 1.8rem; margin-bottom: 4px; display: block; }
+        
+        .btn-toggle { background: linear-gradient(to bottom, #2b4c7e, #182e52); border-color: #5bc0de; }
+        .btn-toggle-alt { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); }
+        .btn-retreat { background: linear-gradient(to bottom, #8b3a3a, #5c2626); border-color: #ff6666; }
+        .btn-evac { background: linear-gradient(to bottom, #2d5a2d, #1a331a); border-color: #4caf50; }
+        .btn-close { background: linear-gradient(to bottom, #aa3333, #661111); flex: 0.15; font-size: 1.5rem; }
+        
+        .pct-btn, .type-btn { background: #333; border-color: #555; font-size: 0.8rem; color: #aaa; flex: 1; padding: 4px; border-radius: 4px; border: 2px solid #222; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .active-pct { background: linear-gradient(to bottom, #2d4a22, #1a2e11); border-color: #0f0; color: #fff; box-shadow: 0 0 8px rgba(0,255,0,0.4); }
+        .active-type { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); color: #fff; box-shadow: 0 0 8px rgba(255,204,0,0.4); }
+
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 500; text-align: center;
+        }
+        #menu h1 { color: var(--accent); font-size: 3rem; margin-bottom: 5px; }
+        #menu p { color: #8bc34a; margin-bottom: 40px; font-size: 0.9rem; letter-spacing: 2px; }
+        
+        .btn-start {
+            background: transparent; color: var(--accent); border: 2px solid var(--accent);
+            padding: 15px 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-start:active { background: var(--accent); color: #000; }
+        .btn-manual { background: #222; color: #fff; border: 2px solid #555; padding: 10px 30px; margin-top: 15px; font-size: 0.9rem; cursor: pointer; transition: 0.3s; border-radius: 4px;}
+        .btn-manual:active { background: #444; }
+        
+        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.9rem; padding-bottom: 10px; border-bottom: 1px solid #333; }
+        
+        .cfg-group { background: #222; padding: 10px; border-radius: 5px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
+        .cfg-group h3 { margin-bottom: 10px; font-size: 1.1rem; color: #fff; text-align: left; border-bottom: 1px solid #444; padding-bottom: 5px;}
+        .cfg-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; margin-bottom: 6px; align-items: center; }
+        .cfg-input { width: 70px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: right; border-radius: 3px; }
+        .moral-zone { background: #311b3b; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #9c27b0; }
+
+        .manual-content { text-align: left; color: #ddd; font-size: 0.9rem; line-height: 1.5; }
+        .manual-content h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
+        .manual-content h3 { color: #5bc0de; font-size: 1rem; margin-top: 10px; }
+        .manual-content ul { padding-left: 20px; margin-bottom: 10px; }
+        .manual-content li { margin-bottom: 5px; }
+        .manual-content p { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="hud">
+        <div style="display: flex; align-items: center; gap: 10px; width: 35%;">
+            <button class="btn-icon" onclick="openOptions()">⚙️</button>
+            <div class="faction-info" style="width: 100%;">
+                <div class="stats-row">
+                    <span style="color: #4caf50;">ALIADOS</span>
+                    <span class="casualties">BAJAS: <span id="p-cas" class="cas-num">0</span></span>
+                </div>
+                <div class="hp-bar"><div id="p-hp" class="hp-fill" style="background: #4caf50; width: 100%;"></div></div>
+            </div>
+        </div>
+        <div id="res-disp">MP: 60</div>
+        <div class="faction-info" style="width: 35%;">
+            <div class="stats-row">
+                <span class="casualties">BAJAS: <span id="e-cas" class="cas-num">0</span></span>
+                <span style="color: #f44336;">ENEMIGOS</span>
+            </div>
+            <div class="hp-bar"><div id="e-hp" class="hp-fill" style="background: #f44336; width: 100%; float: right;"></div></div>
+        </div>
+    </div>
+
+    <div id="minimap-box"><canvas id="m-canvas"></canvas></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="controls">
+        <div id="base-panel" class="panel">
+            <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:#5bc0de">1ª TRINCHERA</span></button>
+            <button class="btn" onclick="spawnUnit('infantry')"><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent)">10 MP</span></button>
+            <button class="btn" onclick="spawnUnit('grenadier')"><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent)">20 MP</span></button>
+            <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZALLAMAS<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
+        </div>
+        
+        <div id="trench-panel" class="panel hidden">
+            <div style="display:flex; flex-direction:column; gap:6px; flex: 3.5;">
+                <div style="display:flex; gap:6px; flex: 0.8; align-items:center;">
+                    <div style="background:#111; border:1px solid var(--accent); color:var(--accent); border-radius:4px; padding:2px 8px; font-weight:bold; font-size:1.1rem; margin-right: 4px;" id="t-label">T1</div>
+                    <button id="type-infantry" class="type-btn" onclick="toggleType('infantry')">🪖 INF</button>
+                    <button id="type-grenadier" class="type-btn" onclick="toggleType('grenadier')">💣 GRA</button>
+                    <button id="type-flamethrower" class="type-btn" onclick="toggleType('flamethrower')">🔥 LAN</button>
+                </div>
+                <div style="display:flex; gap:6px; flex: 0.8; align-items:center;">
+                    <button id="pct-25" class="pct-btn" onclick="setPct(0.25)">25%</button>
+                    <button id="pct-50" class="pct-btn" onclick="setPct(0.50)">50%</button>
+                    <button id="pct-75" class="pct-btn" onclick="setPct(0.75)">75%</button>
+                    <button id="pct-100" class="pct-btn active-pct" onclick="setPct(1.00)">100%</button>
+                </div>
+                <div style="display:flex; gap:6px; flex: 1.2;">
+                    <button class="btn btn-retreat" style="font-size:0.65rem;" onclick="executeOrder('PREV')">◀ RETIRADA<br>COMPLETA</button>
+                    <button class="btn btn-evac" style="font-size:0.65rem;" onclick="executeOrder('EVAC')">🏥 RETIRADA<br>HERIDOS</button>
+                    <button class="btn" style="font-size:0.65rem;" onclick="executeOrder('NEXT')">▶ AVANCE<br>SIGUIENTE</button>
+                    <button class="btn btn-toggle-alt" style="font-size:0.65rem;" onclick="executeOrder('FRONT')">⏩ AVANCE<br>FRENTE</button>
+                </div>
+            </div>
+            <button class="btn btn-close" onclick="deselectTrench()">✖</button>
+        </div>
+    </div>
+
+    <div id="menu" class="screen">
+        <h1>MUD & STEEL</h1>
+        <p>LÍNEA DE FRENTE DINÁMICA V1.38</p>
+        <button class="btn-start" onclick="startGame()">INICIAR OPERACIÓN</button>
+        <button class="btn-manual" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
+    </div>
+
+    <div id="manual-screen" class="screen hidden" style="z-index: 600;">
+        <div class="modal">
+            <h1 style="color:var(--accent); text-align:center; margin-bottom: 10px;">MANUAL DE OPERACIONES</h1>
+            <div class="manual-content">
+                <p><strong>Mud & Steel</strong> simula la crudeza de la guerra de trincheras. En esta guerra de desgaste, la táctica, la logística y la psicología de tus tropas determinarán la victoria o la derrota.</p>
+                
+                <h2>🎯 Objetivo</h2>
+                <p>Avanza a lo largo de la Tierra de Nadie capturando las trincheras sucesivas hasta alcanzar la base enemiga. Reduce los Puntos de Salud (HP) de la base rival a cero para ganar.</p>
+                
+                <h2>🪖 Tipos de Tropa</h2>
+                <ul>
+                    <li><strong>Infantería (🪖):</strong> Económica y versátil. Tienen gran alcance de visión y disparo. Son la espina dorsal de tu ejército.</li>
+                    <li><strong>Granadero (💣):</strong> Infantería pesada. Sus explosivos reducen a la mitad la protección de las trincheras enemigas, haciéndolos perfectos para asaltos.</li>
+                    <li><strong>Lanzallamas (🔥):</strong> Tropas de choque de corto alcance. Su fuego atraviesa formaciones enteras e ignora completamente la bonificación defensiva de las trincheras.</li>
+                </ul>
+
+                <h2>🛡️ Defensa y Frente Dinámico</h2>
+                <p>Cuando un soldado está inactivo dentro de una trinchera, adquiere el estado <strong>Atrincherado</strong> (escudo 🛡️). Las trincheras vacías se vuelven Neutrales automáticamente. El juego detecta cuál es la trinchera más avanzada con tropas vivas y la designa como tu <strong>Línea del Frente</strong>.</p>
+
+                <h2>💀 Moral y Terror (Pánico)</h2>
+                <p>Los muertos emiten un aura de terror (radio configurable en opciones). Si la moral de un soldado llega a cero, sufrirá <strong>Pánico (🏳️)</strong> y se negará a atacar. Solo recuperará moral descansando en la Base o en trincheras de Retaguardia (nunca en el Frente).</p>
+            </div>
+            <button class="btn" style="width: 100%; padding: 15px; margin-top: 20px; font-size: 1rem;" onclick="closeManual()">CERRAR MANUAL</button>
+        </div>
+    </div>
+
+    <div id="options-screen" class="screen hidden">
+        <div class="modal">
+            <h2 style="color:var(--accent); text-align:center; border-bottom: 1px solid #444; padding-bottom:10px; margin-bottom: 20px;">PANEL DE MANDO</h2>
+            
+            <button class="btn" style="width: 100%; padding: 10px; margin-bottom: 15px; font-size: 0.9rem;" onclick="openManual()">📖 LEER MANUAL DEL JUEGO</button>
+
+            <div class="setting-row">
+                <span>Mostrar Alcances (Arma, Visión y Terror)</span>
+                <input type="checkbox" id="toggle-ranges" style="transform: scale(1.5);" onchange="game.showRanges = this.checked;">
+            </div>
+
+            <div class="cfg-group" style="border-color: #a0d468;">
+                <h3 style="color: #a0d468;">🪖 INFANTERÍA</h3>
+                <div class="cfg-label">Coste (MP) <input type="number" id="cfg-inf-cost" class="cfg-input"></div>
+                <div class="cfg-label">Salud Máxima (HP) <input type="number" id="cfg-inf-hp" class="cfg-input"></div>
+                <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-inf-speed" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-inf-range" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-inf-vision" class="cfg-input"></div>
+                <div class="cfg-label">Daño de Arma <input type="number" id="cfg-inf-dmg" class="cfg-input"></div>
+                <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-inf-trench" class="cfg-input"></div>
+                <div class="moral-zone">
+                    <div class="cfg-label">Moral Máxima (Pts) <input type="number" id="cfg-inf-moral" class="cfg-input"></div>
+                    <div class="cfg-label">Radio de Terror al morir (px) <input type="number" id="cfg-inf-trange" class="cfg-input"></div>
+                    <div class="cfg-label">Impacto Moral al morir (pts/s) <input type="number" step="0.1" id="cfg-inf-tdmg" class="cfg-input"></div>
+                </div>
+            </div>
+
+            <div class="cfg-group" style="border-color: #ff9800;">
+                <h3 style="color: #ff9800;">💣 GRANADERO</h3>
+                <div class="cfg-label">Coste (MP) <input type="number" id="cfg-gre-cost" class="cfg-input"></div>
+                <div class="cfg-label">Salud Máxima (HP) <input type="number" id="cfg-gre-hp" class="cfg-input"></div>
+                <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-gre-speed" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-gre-range" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-gre-vision" class="cfg-input"></div>
+                <div class="cfg-label">Daño de Arma <input type="number" id="cfg-gre-dmg" class="cfg-input"></div>
+                <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-gre-trench" class="cfg-input"></div>
+                <div class="moral-zone">
+                    <div class="cfg-label">Moral Máxima (Pts) <input type="number" id="cfg-gre-moral" class="cfg-input"></div>
+                    <div class="cfg-label">Radio de Terror al morir (px) <input type="number" id="cfg-gre-trange" class="cfg-input"></div>
+                    <div class="cfg-label">Impacto Moral al morir (pts/s) <input type="number" step="0.1" id="cfg-gre-tdmg" class="cfg-input"></div>
+                </div>
+            </div>
+
+            <div class="cfg-group" style="border-color: #f44336;">
+                <h3 style="color: #f44336;">🔥 LANZALLAMAS</h3>
+                <div class="cfg-label">Coste (MP) <input type="number" id="cfg-fla-cost" class="cfg-input"></div>
+                <div class="cfg-label">Salud Máxima (HP) <input type="number" id="cfg-fla-hp" class="cfg-input"></div>
+                <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-fla-speed" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-fla-range" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-fla-vision" class="cfg-input"></div>
+                <div class="cfg-label">Daño de Arma <input type="number" id="cfg-fla-dmg" class="cfg-input"></div>
+                <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-fla-trench" class="cfg-input"></div>
+                <div class="moral-zone">
+                    <div class="cfg-label">Moral Máxima (Pts) <input type="number" id="cfg-fla-moral" class="cfg-input"></div>
+                    <div class="cfg-label">Radio de Terror al morir (px) <input type="number" id="cfg-fla-trange" class="cfg-input"></div>
+                    <div class="cfg-label">Impacto Moral al morir (pts/s) <input type="number" step="0.1" id="cfg-fla-tdmg" class="cfg-input"></div>
+                </div>
+            </div>
+
+            <button class="btn" style="width: 100%; padding: 15px; margin-top: 10px; font-size: 1rem;" onclick="closeOptions()">APLICAR Y CERRAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const mCanvas = document.getElementById('m-canvas');
+    const mCtx = mCanvas.getContext('2d');
+
+    const BASE_W = 180, SAFE_ZONE = 300, TRENCH_W = 80, HORIZON_Y = 120;
+    
+    let game = { 
+        active: false, worldW: 3500, camX: 0, 
+        mp: 100, eMp: 100, 
+        pHp: 100, eHp: 100, 
+        pCas: 0, eCas: 0, 
+        selected: -1, selectedPct: 1.0, 
+        selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower']), 
+        baseRally: 'FIRST', showRanges: false,
+        
+        config: {
+            infantry: { cost: 10, hp: 100, speed: 1.5, dmg: 10, vision: 350, range: 300, fireRate: 1000, maxMoral: 50, terrorRange: 100, terrorDmg: 10 },
+            grenadier: { cost: 20, hp: 250, speed: 1.0, dmg: 100, vision: 300, range: 150, fireRate: 2000, maxMoral: 80, terrorRange: 100, terrorDmg: 10 },
+            flamethrower: { cost: 35, hp: 50, speed: 3.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 20, terrorRange: 100, terrorDmg: 10 }
+        },
+        trenchDmg: { infantry: 2, grenadier: 10, flamethrower: 5 }
+    };
+    
+    let unitIdCounter = 0;
+    const trenches = [], units = [], bullets = [], craters = [], corpses = [], explosions = [];
+    let drag = { is: false, x: 0, cam: 0, dist: 0 };
+
+    function startGame() {
+        document.getElementById('menu').classList.add('hidden');
+        resize(); generateMap();
+        game.active = true;
+        requestAnimationFrame(loop);
+        setInterval(() => { 
+            if(game.active && document.getElementById('options-screen').classList.contains('hidden') && document.getElementById('manual-screen').classList.contains('hidden')) { 
+                game.mp += 3; game.eMp += 3; 
+            } 
+        }, 1000);
+        setInterval(enemyAI, 2000);
+    }
+
+    function openManual() { document.getElementById('manual-screen').classList.remove('hidden'); }
+    function closeManual() { document.getElementById('manual-screen').classList.add('hidden'); }
+
+    function openOptions() {
+        ['inf', 'gre', 'fla'].forEach(prefix => {
+            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : 'flamethrower');
+            document.getElementById(`cfg-${prefix}-cost`).value = game.config[type].cost;
+            document.getElementById(`cfg-${prefix}-hp`).value = game.config[type].hp;
+            document.getElementById(`cfg-${prefix}-speed`).value = game.config[type].speed;
+            document.getElementById(`cfg-${prefix}-range`).value = game.config[type].range;
+            document.getElementById(`cfg-${prefix}-vision`).value = game.config[type].vision;
+            document.getElementById(`cfg-${prefix}-dmg`).value = game.config[type].dmg;
+            document.getElementById(`cfg-${prefix}-trench`).value = game.trenchDmg[type];
+            document.getElementById(`cfg-${prefix}-moral`).value = game.config[type].maxMoral;
+            document.getElementById(`cfg-${prefix}-trange`).value = game.config[type].terrorRange;
+            document.getElementById(`cfg-${prefix}-tdmg`).value = game.config[type].terrorDmg;
+        });
+        document.getElementById('options-screen').classList.remove('hidden');
+    }
+
+    function closeOptions() {
+        ['inf', 'gre', 'fla'].forEach(prefix => {
+            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : 'flamethrower');
+            game.config[type].cost = Number(document.getElementById(`cfg-${prefix}-cost`).value);
+            game.config[type].hp = Number(document.getElementById(`cfg-${prefix}-hp`).value);
+            game.config[type].speed = Number(document.getElementById(`cfg-${prefix}-speed`).value);
+            game.config[type].range = Number(document.getElementById(`cfg-${prefix}-range`).value);
+            game.config[type].vision = Number(document.getElementById(`cfg-${prefix}-vision`).value);
+            game.config[type].dmg = Number(document.getElementById(`cfg-${prefix}-dmg`).value);
+            game.trenchDmg[type] = Number(document.getElementById(`cfg-${prefix}-trench`).value);
+            game.config[type].maxMoral = Number(document.getElementById(`cfg-${prefix}-moral`).value);
+            game.config[type].terrorRange = Number(document.getElementById(`cfg-${prefix}-trange`).value);
+            game.config[type].terrorDmg = Number(document.getElementById(`cfg-${prefix}-tdmg`).value);
+        });
+
+        document.getElementById('lbl-mp-inf').innerText = game.config.infantry.cost + " MP";
+        document.getElementById('lbl-mp-gre').innerText = game.config.grenadier.cost + " MP";
+        document.getElementById('lbl-mp-fla').innerText = game.config.flamethrower.cost + " MP";
+
+        document.getElementById('options-screen').classList.add('hidden');
+    }
+
+    function generateMap() {
+        trenches.length = 0; craters.length = 0;
+        let pStart = BASE_W + SAFE_ZONE, pEnd = game.worldW - BASE_W - SAFE_ZONE;
+        let width = pEnd - pStart;
+        let numT = Math.max(3, Math.floor(width / 500));
+        let segW = width / numT;
+        for (let i = 0; i < numT; i++) {
+            trenches.push({ x: pStart + (i * segW) + (Math.random() * (segW - TRENCH_W)), w: TRENCH_W, owner: 'neutral', progress: 0 });
+        }
+        for(let i=0; i < 40; i++) {
+            craters.push({ x: Math.random() * game.worldW, y: HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 50), r: 15 + Math.random() * 30, color: `rgba(50, 40, 30, 0.6)` });
+        }
+    }
+
+    function resize() {
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        game.worldW = Math.max(3000, canvas.width * 3);
+        mCanvas.width = mCanvas.offsetWidth; mCanvas.height = mCanvas.offsetHeight;
+    }
+    window.addEventListener('resize', resize);
+
+    const getX = e => e.touches ? e.touches[0].clientX : e.clientX;
+    canvas.addEventListener('mousedown', e => { drag.is = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; });
+    canvas.addEventListener('touchstart', e => { drag.is = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; }, {passive: false});
+    function handleMove(e) { if(drag.is) { let d = drag.x - getX(e); drag.dist += Math.abs(d); game.camX = Math.max(0, Math.min(game.worldW - canvas.width, drag.cam + d)); } }
+    window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove, {passive: false});
+    function handleEnd(e, isTouch) {
+        if(drag.is && drag.dist < 10) { 
+            if (e.target.closest('#controls') || e.target.closest('#hud') || e.target.closest('.screen')) { drag.is = false; return; }
+            handleTap((isTouch ? e.changedTouches[0].clientX : e.clientX) + game.camX); 
+        }
+        drag.is = false;
+    }
+    window.addEventListener('mouseup', e => handleEnd(e, false)); window.addEventListener('touchend', e => handleEnd(e, true));
+
+    function handleTap(wx) {
+        let found = -1;
+        trenches.forEach((t, i) => { if (wx > t.x - 20 && wx < t.x + t.w + 20) found = i; });
+        if(found !== -1) {
+            game.selected = found;
+            document.getElementById('base-panel').classList.add('hidden');
+            document.getElementById('trench-panel').classList.remove('hidden');
+            document.getElementById('t-label').innerText = "T" + (found + 1);
+            
+            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower']);
+            ['infantry', 'grenadier', 'flamethrower'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
+            setPct(1.0);
+        } else { deselectTrench(); }
+    }
+
+    function deselectTrench() {
+        game.selected = -1;
+        document.getElementById('base-panel').classList.remove('hidden');
+        document.getElementById('trench-panel').classList.add('hidden');
+    }
+
+    function toggleRally() {
+        game.baseRally = game.baseRally === 'FIRST' ? 'FRONT' : 'FIRST';
+        let t = game.baseRally === 'FIRST' ? '<span style="color:#5bc0de">1ª TRINCHERA</span>' : '<span style="color:var(--accent)">AL FRENTE</span>';
+        document.getElementById('rally-btn').innerHTML = `📍 DESTINO:<br>${t}`;
+    }
+
+    function setPct(val) {
+        game.selectedPct = val;
+        document.querySelectorAll('.pct-btn').forEach(b => b.classList.remove('active-pct'));
+        document.getElementById('pct-' + (val * 100)).classList.add('active-pct');
+    }
+
+    function toggleType(type) {
+        let btn = document.getElementById('type-' + type);
+        if (game.selectedTypes.has(type)) { game.selectedTypes.delete(type); btn.classList.remove('active-type'); } 
+        else { game.selectedTypes.add(type); btn.classList.add('active-type'); }
+    }
+
+    function spawnUnit(type, isE = false) {
+        let conf = game.config[type];
+        if (!isE) { if (game.mp < conf.cost) return; game.mp -= conf.cost; } 
+        else { if (game.eMp < conf.cost) return; game.eMp -= conf.cost; }
+        
+        units.push({
+            id: unitIdCounter++, x: isE ? game.worldW - BASE_W - 20 : BASE_W + 20,
+            y: HORIZON_Y + 40 + Math.random() * (canvas.height - HORIZON_Y - 80),
+            side: isE ? 'enemy' : 'player', type: type, hp: conf.hp, maxHp: conf.hp, 
+            morale: conf.maxMoral, maxMoral: conf.maxMoral, broken: false,
+            radius: 14, baseSpeed: conf.speed, visionRange: conf.vision, weaponRange: conf.range,
+            dir: isE ? -1 : 1, state: 'MOVE', inT: -1, lastAtk: 0, targetMode: isE ? 'FRONT' : game.baseRally
+        });
+    }
+
+    function executeOrder(type) {
+        if (game.selected === -1) return;
+        
+        let pool = units.filter(u => u.side === 'player' && u.inT === game.selected && game.selectedTypes.has(u.type));
+        
+        if (type === 'NEXT' || type === 'FRONT') { pool = pool.filter(u => !u.broken); }
+        
+        if (type === 'EVAC') pool = pool.filter(u => u.hp < u.maxHp);
+        if (pool.length === 0) return; 
+
+        pool.sort((a, b) => (type === 'PREV' || type === 'EVAC') ? (a.hp/a.maxHp - b.hp/b.maxHp) : (b.hp/b.maxHp - a.hp/a.maxHp));
+        const count = Math.ceil(pool.length * game.selectedPct);
+        
+        let tCenter = trenches[game.selected].x + trenches[game.selected].w/2;
+
+        for(let i=0; i<count; i++) {
+            pool[i].state = 'MOVE'; pool[i].inT = -1; 
+            if (type === 'PREV' || type === 'EVAC') { 
+                pool[i].dir = -1; pool[i].x = tCenter - 50 - (Math.random() * 15); pool[i].targetMode = type === 'EVAC' ? 'BASE' : 'PREV'; 
+            } else { 
+                pool[i].dir = 1; pool[i].x = tCenter + 50 + (Math.random() * 15); pool[i].targetMode = type; 
+            }
+        }
+    }
+
+    function enemyAI() {
+        if (!game.active || !document.getElementById('options-screen').classList.contains('hidden') || !document.getElementById('manual-screen').classList.contains('hidden')) return;
+
+        let infCost = game.config.infantry.cost;
+        let greCost = game.config.grenadier.cost;
+        let flaCost = game.config.flamethrower.cost;
+
+        if (game.eMp >= flaCost && Math.random() > 0.8) spawnUnit('flamethrower', true);
+        else if (game.eMp >= greCost && Math.random() > 0.6) spawnUnit('grenadier', true);
+        else if (game.eMp >= infCost) spawnUnit('infantry', true);
+
+        trenches.forEach((t, i) => {
+            const eIn = units.filter(u => u.side === 'enemy' && u.inT === i && u.state === 'IDLE');
+            eIn.forEach(u => { if (u.hp < u.maxHp * 0.35 && Math.random() > 0.5) { u.state = 'MOVE'; u.inT = -1; u.x += 45; u.dir = 1; u.targetMode = 'BASE'; } });
+            const eHealthy = eIn.filter(u => u.hp >= u.maxHp * 0.4 && !u.broken);
+            if(eHealthy.length >= 4 && Math.random() > 0.6) { eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); }
+        });
+    }
+
+    function update() {
+        if(!document.getElementById('options-screen').classList.contains('hidden') || !document.getElementById('manual-screen').classList.contains('hidden')) return; 
+
+        // --- CÁLCULO DE LÍNEAS DE FRENTE DINÁMICAS Y NEUTRALIZACIÓN ---
+        let playerFront = -1;
+        let enemyFront = trenches.length;
+
+        trenches.forEach((t, i) => {
+            let pIn = units.filter(u => u.side === 'player' && u.inT === i);
+            let eIn = units.filter(u => u.side === 'enemy' && u.inT === i);
+            
+            if (pIn.length > 0) playerFront = Math.max(playerFront, i);
+            if (eIn.length > 0) enemyFront = Math.min(enemyFront, i);
+
+            // NEUTRALIZACIÓN SI ESTÁ VACÍA
+            if (pIn.length === 0 && eIn.length === 0) {
+                t.owner = 'neutral';
+                t.progress = 0;
+            } else if (pIn.length > 0 && eIn.length === 0) {
+                t.owner = 'player';
+                t.progress = 20;
+            } else if (eIn.length > 0 && pIn.length === 0) {
+                t.owner = 'enemy';
+                t.progress = -20;
+            } else {
+                t.progress += (pIn.length > eIn.length ? 0.05 : (eIn.length > pIn.length ? -0.05 : 0));
+                if (t.progress >= 20) { t.owner = 'player'; t.progress = 20; }
+                if (t.progress <= -20) { t.owner = 'enemy'; t.progress = -20; }
+            }
+        });
+
+        explosions.forEach((ex, i) => { ex.r += (ex.maxR - ex.r) * 0.15; ex.life--; if(ex.life <= 0) explosions.splice(i, 1); });
+        corpses.forEach((c, i) => { c.life--; if(c.life <= 0) corpses.splice(i, 1); });
+
+        bullets.forEach((b, i) => {
+            b.x += b.vx; b.y += b.vy; b.life--;
+            if (b.type === 'fire') b.r += 0.4;
+            let hitSomething = false;
+
+            units.forEach(u => {
+                if(u.side !== b.side && u.state !== 'HEAL') { 
+                    if (b.type !== 'fire' && hitSomething) return;
+                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 3;
+                    if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
+                        let actualDmg = b.dmg;
+                        if (u.inT !== -1 && u.state === 'IDLE') {
+                            let tCenter = trenches[u.inT].x + trenches[u.inT].w/2;
+                            if (Math.abs(u.x - tCenter) <= trenches[u.inT].w / 2 + 5) {
+                                if (game.trenchDmg[b.sourceType] !== undefined) {
+                                    actualDmg = game.trenchDmg[b.sourceType];
+                                }
+                            }
+                        }
+                        u.hp -= actualDmg; hitSomething = true;
+                    }
+                }
+            });
+            if(hitSomething || b.life <= 0) {
+                if (hitSomething && b.type === 'grenade') explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
+                if (b.type !== 'fire' || b.life <= 0) bullets.splice(i, 1);
+            }
+        });
+
+        for (let i = units.length - 1; i >= 0; i--) {
+            const u = units[i];
+            
+            if (u.state === 'HEAL') { 
+                u.hp += 0.25; 
+                u.morale += (3 / 60); 
+                u.morale = Math.min(u.maxMoral, u.morale);
+
+                if (u.hp >= u.maxHp) { 
+                    u.hp = u.maxHp; 
+                    u.morale = u.maxMoral; 
+                    u.broken = false; 
+                    u.state = 'MOVE'; 
+                    u.dir = u.side === 'player' ? 1 : -1; 
+                    u.targetMode = u.side === 'player' ? game.baseRally : 'FRONT'; 
+                } 
+                continue; 
+            }
+
+            u.maxMoral = game.config[u.type].maxMoral;
+            u.visionRange = game.config[u.type].vision;
+            u.weaponRange = game.config[u.type].range;
+            u.baseSpeed = game.config[u.type].speed;
+
+            let terrorApplied = 0;
+            corpses.forEach(c => { 
+                let tRange = game.config[c.type].terrorRange;
+                let tDmg = game.config[c.type].terrorDmg;
+                if (c.side === u.side && Math.hypot(c.x - u.x, c.y - u.y) < tRange) {
+                    terrorApplied += (tDmg / 60); 
+                } 
+            });
+            
+            if (terrorApplied > 0) {
+                u.morale -= terrorApplied; 
+            } else {
+                let canRecover = false;
+                if (u.inT !== -1 && u.state === 'IDLE') {
+                    let isFront = (u.side === 'player' && u.inT === playerFront) || (u.side === 'enemy' && u.inT === enemyFront);
+                    if (!isFront) canRecover = true;
+                }
+                if (canRecover) {
+                    u.morale += (3 / 60); 
+                }
+            }
+            
+            u.morale = Math.max(0, Math.min(u.maxMoral, u.morale));
+            
+            if (u.morale <= 0 && !u.broken) { 
+                u.state = 'MOVE'; u.dir = u.side === 'player' ? -1 : 1; u.targetMode = 'PREV'; u.inT = -1; 
+                u.morale = u.maxMoral * 0.6; 
+                u.broken = true;
+                u.x += (u.dir * 20); 
+            }
+
+            if (u.broken && u.morale >= u.maxMoral) {
+                u.broken = false;
+            }
+
+            // FRENTE DINÁMICO: Saltar trinchera si no es el frente
+            if (u.inT !== -1 && u.state === 'IDLE' && u.targetMode === 'FRONT' && !u.broken) {
+                let isFront = (u.side === 'player' && u.inT >= playerFront) || (u.side === 'enemy' && u.inT <= enemyFront);
+                if (!isFront) {
+                    u.state = 'MOVE';
+                    let tCenter = trenches[u.inT].x + trenches[u.inT].w/2;
+                    u.inT = -1;
+                    u.dir = u.side === 'player' ? 1 : -1;
+                    u.x = tCenter + (u.dir * 50); 
+                }
+            }
+
+            let target = null, minDist = Infinity;
+            units.forEach(c => { if(c.side !== u.side && c.state !== 'HEAL') { let d = Math.hypot(c.x - u.x, c.y - u.y); if(d < minDist) { minDist = d; target = c; } } });
+            
+            let canShoot = target && (minDist <= u.weaponRange);
+            let seesTarget = target && (minDist <= u.visionRange);
+            let targetInTrench = target && target.inT !== -1 && target.state === 'IDLE';
+            let stopToShoot = canShoot && !targetInTrench;
+
+            let dx = 0, dy = 0, isMoving = false;
+
+            if (u.inT === -1 && u.state === 'MOVE') {
+                if (u.targetMode === 'BASE') {
+                    if (!canShoot) { dx = u.baseSpeed * u.dir; isMoving = true; }
+                } else if (seesTarget && !stopToShoot && !targetInTrench) {
+                    let a = Math.atan2(target.y - u.y, target.x - u.x);
+                    dx = Math.cos(a) * u.baseSpeed; dy = Math.sin(a) * u.baseSpeed; isMoving = true;
+                } else if (!stopToShoot) {
+                    dx = u.baseSpeed * u.dir; isMoving = true;
+                }
+            }
+
+            if (isMoving) {
+                let nextX = u.x + dx; let blocked = false;
+                if (nextX <= BASE_W + 20 && u.side === 'player' && u.dir === -1) { if (u.targetMode === 'BASE' || u.targetMode === 'EVAC') { u.state = 'HEAL'; blocked = true; } else { u.state = 'IDLE'; u.dir = 1; blocked = true; } }
+                if (nextX >= game.worldW - BASE_W - 20 && u.side === 'enemy' && u.dir === 1) { if (u.targetMode === 'BASE' || u.targetMode === 'EVAC') { u.state = 'HEAL'; blocked = true; } else { u.state = 'IDLE'; u.dir = -1; blocked = true; } }
+
+                if(!blocked) {
+                    trenches.forEach((t, idx) => {
+                        if (Math.abs(nextX - (t.x + t.w/2)) < 15) {
+                            let eInT = units.filter(en => en.side !== u.side && en.inT === idx).length;
+                            if(eInT > 0) blocked = true;
+                            else {
+                                if (u.side === 'player' && u.dir === 1) { 
+                                    if (u.targetMode === 'NEXT' || (u.targetMode === 'FIRST' && t.owner !== 'enemy')) { u.state = 'IDLE'; u.inT = idx; blocked = true; } 
+                                    else if (u.targetMode === 'FRONT') {
+                                        if (idx >= playerFront) { u.state = 'IDLE'; u.inT = idx; blocked = true; }
+                                    }
+                                }
+                                else if (u.side === 'enemy' && u.dir === -1) {
+                                    if (u.targetMode === 'NEXT') { u.state = 'IDLE'; u.inT = idx; blocked = true; }
+                                    else if (u.targetMode === 'FRONT') {
+                                        if (idx <= enemyFront) { u.state = 'IDLE'; u.inT = idx; blocked = true; }
+                                    }
+                                }
+                                else if ((u.side === 'player' && u.dir === -1 && u.targetMode === 'PREV') || (u.side === 'enemy' && u.dir === 1 && u.targetMode === 'PREV')) {
+                                    u.state = 'IDLE'; u.inT = idx; u.dir *= -1; blocked = true;
+                                }
+                            }
+                        }
+                    });
+                }
+                if(!blocked) { u.x += dx; u.y += dy; u.y = Math.min(Math.max(u.y, HORIZON_Y + 20), canvas.height - 20); }
+            }
+
+            let uConf = game.config[u.type];
+            if(canShoot && Date.now() - u.lastAtk > uConf.fireRate) {
+                u.lastAtk = Date.now(); let a = Math.atan2(target.y - u.y, target.x - u.x);
+                if (u.type === 'flamethrower') {
+                    let spread = (Math.random() - 0.5) * 0.4; 
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a + spread)*7, vy: Math.sin(a + spread)*7, side: u.side, sourceType: u.type, dmg: uConf.dmg, life: 25, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
+                } else if (u.type === 'grenadier') {
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, side: u.side, sourceType: u.type, dmg: uConf.dmg, life: 50, type: 'grenade', color: '#222' });
+                } else {
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*18, vy: Math.sin(a)*18, side: u.side, sourceType: u.type, dmg: uConf.dmg, life: 40, type: 'bullet', color: '#ffffbb' });
+                }
+                u.dir = (target.x > u.x) ? 1 : -1;
+            }
+
+            if (u.x > game.worldW - BASE_W + 20) { game.eHp -= 10; u.hp = 0; }
+            if (u.x < BASE_W - 20 && u.side === 'enemy') { game.pHp -= 10; u.hp = 0; }
+            
+            if (u.hp <= 0) {
+                if (u.side === 'player') game.pCas++; else game.eCas++;
+                corpses.push({x: u.x, y: u.y, side: u.side, type: u.type, life: 1800}); 
+                units.splice(i, 1);
+            }
+        }
+
+        let trenchGroups = {}; trenches.forEach((t, i) => trenchGroups[i] = { player: [], enemy: [] });
+        units.forEach(u => { if (u.inT !== -1 && u.state === 'IDLE') trenchGroups[u.inT][u.side].push(u); });
+
+        for(let i=0; i<trenches.length; i++) {
+            ['player', 'enemy'].forEach(side => {
+                let grp = trenchGroups[i][side];
+                if (grp.length === 0) return;
+
+                let tCenter = trenches[i].x + trenches[i].w/2;
+                grp.sort((a,b) => Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter));
+
+                let padY = 30; 
+                let availableH = canvas.height - HORIZON_Y - (padY * 2);
+                let centerY = HORIZON_Y + padY + (availableH / 2);
+                
+                let minSafeSpacing = 30; 
+                let maxRows = Math.floor(availableH / minSafeSpacing);
+                if(maxRows < 1) maxRows = 1;
+
+                let chunkedCols = [];
+                for(let k=0; k<grp.length; k+=maxRows) {
+                    let chunk = grp.slice(k, k+maxRows);
+                    chunk.sort((a,b) => a.y - b.y); 
+                    chunkedCols.push(chunk);
+                }
+
+                chunkedCols.forEach((chunk, colIndex) => {
+                    let N = chunk.length;
+                    let dynamicSpacing = N > 1 ? (availableH / (N - 1)) : 0;
+                    if (dynamicSpacing > 120) dynamicSpacing = 120;
+
+                    let startY = centerY - ((N - 1) * dynamicSpacing) / 2;
+
+                    chunk.forEach((u, row) => {
+                        let offset = colIndex === 0 ? 0 : (40 + colIndex * 32);
+                        let targetX = tCenter + (offset * (side === 'player' ? -1 : 1));
+                        let targetY = startY + row * dynamicSpacing;
+
+                        u.x += (targetX - u.x) * 0.15; 
+                        u.y += (targetY - u.y) * 0.15;
+                    });
+                });
+            });
+        }
+
+        document.getElementById('res-disp').innerText = "MP: " + Math.floor(game.mp);
+        document.getElementById('p-hp').style.width = game.pHp + "%";
+        document.getElementById('e-hp').style.width = game.eHp + "%";
+        document.getElementById('p-cas').innerText = game.pCas;
+        document.getElementById('e-cas').innerText = game.eCas;
+
+        if(game.pHp <= 0 || game.eHp <= 0) { game.active = false; alert(game.pHp > 0 ? "¡VICTORIA!" : "DERROTA"); location.reload(); }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let grad = ctx.createLinearGradient(0,0,0, HORIZON_Y); grad.addColorStop(0, '#2b3036'); grad.addColorStop(1, '#5a6268');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, HORIZON_Y);
+
+        ctx.save(); ctx.translate(-game.camX, 0);
+
+        ctx.fillStyle = '#4e342e'; ctx.fillRect(0, HORIZON_Y, game.worldW, canvas.height - HORIZON_Y);
+        craters.forEach(c => { ctx.fillStyle = c.color; ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r, c.r*0.5, 0, 0, Math.PI*2); ctx.fill(); });
+
+        const drawBase = (x, isP) => {
+            ctx.fillStyle = '#555'; ctx.fillRect(x, HORIZON_Y - 30, BASE_W, canvas.height);
+            ctx.fillStyle = '#444'; ctx.fillRect(x + (isP ? BASE_W-20 : 0), HORIZON_Y - 30, 20, canvas.height);
+            ctx.fillStyle = '#aa3333';
+            if(isP) { ctx.fillRect(x + 20, HORIZON_Y + 10, 30, 10); ctx.fillRect(x + 30, HORIZON_Y, 10, 30); }
+            else { ctx.fillRect(x + BASE_W - 50, HORIZON_Y + 10, 30, 10); ctx.fillRect(x + BASE_W - 40, HORIZON_Y, 10, 30); }
+            ctx.fillStyle = '#777'; ctx.fillRect(x + (isP ? 40 : BASE_W-40), HORIZON_Y - 80, 4, 50);
+            ctx.fillStyle = isP ? '#4caf50' : '#f44336'; ctx.fillRect(x + (isP ? 44 : BASE_W-70), HORIZON_Y - 80, 30, 20);
+        };
+        drawBase(0, true); drawBase(game.worldW - BASE_W, false);
+
+        trenches.forEach((t, i) => {
+            ctx.fillStyle = '#1a110a'; ctx.fillRect(t.x, HORIZON_Y, t.w, canvas.height);
+            ctx.fillStyle = '#3e2723'; for(let y = HORIZON_Y + 10; y < canvas.height; y+=30) { ctx.fillRect(t.x + 5, y, t.w - 10, 8); }
+            
+            // NEUTRAL TIENE COLOR GRIS OSCURO. ALIADO VERDE, ENEMIGO ROJO
+            ctx.fillStyle = t.owner === 'player' ? '#556b2f' : (t.owner === 'enemy' ? '#8b0000' : '#333333');
+            ctx.fillRect(t.x - 10, HORIZON_Y, 15, canvas.height); ctx.fillRect(t.x + t.w - 5, HORIZON_Y, 15, canvas.height);
+            if(game.selected === i) { ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 3; ctx.strokeRect(t.x - 15, HORIZON_Y - 10, t.w + 30, canvas.height); }
+        });
+
+        corpses.forEach(c => {
+            let tRange = game.config[c.type].terrorRange;
+            if (game.showRanges) {
+                ctx.fillStyle = 'rgba(156, 39, 176, 0.15)'; ctx.strokeStyle = 'rgba(156, 39, 176, 0.6)'; 
+                ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(c.x, c.y, tRange, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            }
+            ctx.fillStyle = 'rgba(100, 0, 0, 0.6)'; ctx.beginPath(); ctx.ellipse(c.x, c.y + 6, 18, 9, 0, 0, Math.PI*2); ctx.fill();
+            ctx.font = "24px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = `rgba(255, 255, 255, ${c.life / 1800})`; ctx.fillText("💀", c.x, c.y - 4);
+        });
+
+        units.forEach(u => {
+            let isP = u.side === 'player';
+            let isProtected = (u.inT !== -1 && u.state === 'IDLE');
+            
+            if (game.showRanges && u.state !== 'HEAL') {
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.visionRange, 0, Math.PI*2); ctx.stroke();
+                ctx.strokeStyle = 'rgba(255, 50, 50, 0.25)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.weaponRange, 0, Math.PI*2); ctx.stroke();
+            }
+            if(u.state === 'HEAL') { ctx.fillStyle = 'rgba(0, 255, 0, 0.2)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.radius + 6, 0, Math.PI*2); ctx.fill(); }
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.beginPath(); ctx.ellipse(u.x, u.y + u.radius, u.radius + 4, u.radius / 2, 0, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = '#111'; 
+            let gunOffset = u.dir === 1 ? 0 : -15;
+            ctx.fillRect(u.x + gunOffset, u.y + 2, 15, u.type === 'flamethrower' ? 5 : 3); 
+            
+            ctx.fillStyle = '#e0ac69';
+            ctx.beginPath(); ctx.arc(u.x, u.y, u.radius, 0, Math.PI); ctx.fill();
+
+            ctx.fillStyle = isP ? '#4b5320' : '#2c3e50'; 
+            ctx.beginPath(); ctx.arc(u.x, u.y, u.radius + 1, Math.PI, Math.PI*2); ctx.fill(); 
+            ctx.strokeStyle = isP ? '#3d451a' : '#1a252f';
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(u.x - u.radius - 3, u.y); ctx.lineTo(u.x + u.radius + 3, u.y); ctx.stroke();
+
+            ctx.font = "18px Arial"; 
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            let icon = u.type === 'infantry' ? '🪖' : (u.type === 'grenadier' ? '💣' : '🔥');
+            
+            ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 4; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 2;
+            ctx.fillText(icon, u.x, u.y + 1); 
+            ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+
+            let barY = u.y - 20;
+            
+            ctx.font = "10px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 2; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+            if (u.broken) {
+                ctx.fillText("🏳️", u.x - 16, barY + 3);
+            } else if (isProtected) { 
+                ctx.fillText("🛡️", u.x - 16, barY + (u.morale < u.maxMoral ? 3 : 1.5));
+            }
+            ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+
+            if(u.hp < u.maxHp) { ctx.fillStyle='#000'; ctx.fillRect(u.x-10, barY, 20, 3); ctx.fillStyle='#0f0'; ctx.fillRect(u.x-10, barY, 20*(u.hp/u.maxHp), 3); }
+            if(u.morale < u.maxMoral) { ctx.fillStyle='#000'; ctx.fillRect(u.x-10, barY + 4, 20, 2); ctx.fillStyle='#9c27b0'; ctx.fillRect(u.x-10, barY + 4, 20*(u.morale/u.maxMoral), 2); }
+        });
+
+        bullets.forEach(b => { 
+            if (b.type === 'fire') {
+                ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+            } else if (b.type === 'grenade') {
+                ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
+            } else {
+                ctx.lineWidth = 3; ctx.strokeStyle = b.color;
+                ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x-b.vx*1.5, b.y-b.vy*1.5); ctx.stroke(); 
+            }
+        });
+
+        explosions.forEach(ex => {
+            let alpha = ex.life / 15;
+            ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`; ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = `rgba(255, 200, 0, ${alpha})`; ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r * 0.6, 0, Math.PI*2); ctx.fill();
+        });
+
+        ctx.restore(); drawMinimap();
+    }
+
+    function drawMinimap() {
+        mCtx.clearRect(0,0,mCanvas.width, mCanvas.height); let s = mCanvas.width / game.worldW;
+        mCtx.fillStyle = 'rgba(255, 255, 255, 0.15)'; mCtx.fillRect(game.camX * s, 0, canvas.width * s, mCanvas.height);
+        
+        mCtx.fillStyle = '#4caf50'; mCtx.fillRect(0, 0, BASE_W * s, mCanvas.height);
+        mCtx.fillStyle = '#f44336'; mCtx.fillRect((game.worldW - BASE_W) * s, 0, BASE_W * s, mCanvas.height);
+        
+        trenches.forEach(t => { 
+            mCtx.fillStyle = t.owner === 'player' ? 'rgba(76, 175, 80, 0.5)' : (t.owner === 'enemy' ? 'rgba(244, 67, 54, 0.5)' : 'rgba(136, 136, 136, 0.5)'); 
+            mCtx.fillRect(t.x * s, 5, Math.max(2, t.w * s), mCanvas.height - 10); 
+        });
+
+        units.forEach(u => {
+            mCtx.fillStyle = u.side === 'player' ? '#0f0' : '#f00';
+            if (u.state === 'HEAL') mCtx.fillStyle = '#ffffff';
+            let my = (u.y / canvas.height) * mCanvas.height;
+            mCtx.fillRect(u.x * s, my, 3, 3);
+        });
+    }
+
+    function loop() { if(game.active) { update(); draw(); requestAnimationFrame(loop); } }
+</script>
+</body>
+</html>
