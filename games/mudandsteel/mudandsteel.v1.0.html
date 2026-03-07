@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.49</title>
+    <title>Trench Warfare: Mud & Steel v1.60</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -30,9 +30,9 @@
             height: 60px; width: 100%;
             background: linear-gradient(to bottom, rgba(20,20,20,1), rgba(20,20,20,0.8));
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 15px; border-bottom: 2px solid var(--accent); z-index: 100;
+            padding: 0 10px; border-bottom: 2px solid var(--accent); z-index: 100;
         }
-        .faction-info { display: flex; flex-direction: column; width: 32%; max-width: 140px; }
+        .faction-info { display: flex; flex-direction: column; width: 30%; max-width: 140px; }
         .faction-info span { font-size: 0.65rem; font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; }
         
         .stats-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
@@ -41,9 +41,10 @@
 
         .hp-bar { width: 100%; height: 12px; background: #222; border: 1px solid #555; border-radius: 2px; }
         .hp-fill { height: 100%; transition: width 0.3s ease-out; }
-        #res-disp { color: var(--accent); font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px rgba(255,204,0,0.5); }
+        #res-disp { color: var(--accent); font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px rgba(255,204,0,0.5); text-align: center; width: 25%;}
 
-        .btn-icon { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #fff; text-shadow: 0 2px 4px #000; transition: 0.2s; }
+        .hud-tools { display: flex; align-items: center; gap: 4px; width: 35%; max-width: 120px; }
+        .btn-icon { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #fff; text-shadow: 0 2px 4px #000; transition: 0.2s; padding: 2px; }
         .btn-icon:active { transform: scale(0.9); }
 
         #minimap-box {
@@ -70,14 +71,14 @@
         .btn {
             background: linear-gradient(to bottom, #5a6628, #3e471a); color: white; 
             border: 2px solid #222; border-radius: 4px; cursor: pointer; 
-            font-size: 0.70rem; font-weight: bold; flex: 1; 
+            font-size: 0.65rem; font-weight: bold; flex: 1; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
             text-align: center; line-height: 1.1; text-shadow: 1px 1px 0 #000; padding: 2px;
             height: 100%; 
         }
         .btn:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
-        .icon-large { font-size: 1.8rem; margin-bottom: 2px; display: block; }
+        .icon-large { font-size: 1.6rem; margin-bottom: 2px; display: block; }
         
         .btn-toggle { background: linear-gradient(to bottom, #2b4c7e, #182e52); border-color: #5bc0de; }
         .btn-toggle-alt { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); }
@@ -85,10 +86,10 @@
         .btn-evac { background: linear-gradient(to bottom, #2d5a2d, #1a331a); border-color: #4caf50; }
         
         .trench-col { display: flex; flex-direction: column; gap: 6px; width: 100%; height: 100%; }
-        .trench-row { display: flex; gap: 6px; flex: 1; align-items: stretch; width: 100%; }
+        .trench-row { display: flex; gap: 4px; flex: 1; align-items: stretch; width: 100%; }
 
         .pct-btn, .type-btn { 
-            background: #333; border-color: #555; font-size: 0.8rem; color: #aaa; 
+            background: #333; border-color: #555; font-size: 0.75rem; color: #aaa; 
             flex: 1; padding: 4px; border-radius: 4px; border: 2px solid #222; 
             font-weight: bold; cursor: pointer; transition: 0.2s;
             display: flex; align-items: center; justify-content: center; height: 100%;
@@ -98,7 +99,7 @@
 
         .t-label-box {
             background:#111; border:1px solid var(--accent); color:var(--accent); 
-            border-radius:4px; padding:0 10px; font-weight:bold; font-size:1.2rem; 
+            border-radius:4px; padding:0 8px; font-weight:bold; font-size:1rem; 
             display:flex; align-items:center; justify-content:center; height: 100%;
         }
 
@@ -110,15 +111,21 @@
         #menu h1 { color: var(--accent); font-size: 3rem; margin-bottom: 5px; }
         #menu p.subtitle { color: #8bc34a; margin-bottom: 10px; font-size: 0.9rem; letter-spacing: 2px; }
         
-        .author { color: #aaa; font-size: 0.85rem; margin-bottom: 30px; font-family: sans-serif; }
+        .author { color: #aaa; font-size: 0.85rem; margin-bottom: 20px; font-family: sans-serif; }
         .author a { color: var(--accent); text-decoration: none; font-weight: bold; padding: 2px 5px; border-bottom: 1px solid transparent; transition: 0.2s; }
         .author a:hover { border-bottom: 1px solid var(--accent); }
         
+        .mode-container { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; width: 90%; max-width: 400px; margin-left: auto; margin-right: auto;}
+        .mode-btn { background: #222; border: 2px solid #555; color: #aaa; padding: 12px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; transition: 0.2s; line-height: 1.3;}
+        .mode-btn.active { background: linear-gradient(to bottom, #2b4c7e, #182e52); color: #fff; border-color: #5bc0de; box-shadow: 0 0 8px rgba(91,192,222,0.5); }
+        
         .btn-start {
             background: transparent; color: var(--accent); border: 2px solid var(--accent);
-            padding: 15px 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+            padding: 15px 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;
         }
         .btn-start:active { background: var(--accent); color: #000; }
+        .btn-resume { border-color: #5bc0de; color: #5bc0de; margin-bottom: 10px;}
+        .btn-resume:active { background: #5bc0de; color: #000; }
         
         .btn-modal { 
             background: linear-gradient(to bottom, #5a6628, #3e471a); color: #fff; 
@@ -130,6 +137,7 @@
         }
         .btn-modal:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
         .btn-manual-main { background: #222; border-color: #555; color: #fff; }
+        .btn-danger { background: linear-gradient(to bottom, #8b3a3a, #5c2626); border-color: #ff6666; }
         
         .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: center;}
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.9rem; padding-bottom: 10px; border-bottom: 1px solid #333; }
@@ -152,18 +160,20 @@
 
 <div id="game-container">
     <div id="hud">
-        <div style="display: flex; align-items: center; gap: 10px; width: 35%;">
-            <button class="btn-icon" onclick="openOptions()">⚙️</button>
-            <div class="faction-info" style="width: 100%;">
-                <div class="stats-row">
-                    <span style="color: #4caf50;">ALIADOS</span>
-                    <span class="casualties">BAJAS: <span id="p-cas" class="cas-num">0</span></span>
-                </div>
-                <div class="hp-bar"><div id="p-hp" class="hp-fill" style="background: #4caf50; width: 100%;"></div></div>
+        <div class="hud-tools">
+            <button class="btn-icon" onclick="openOptions()" title="Ajustes">⚙️</button>
+            <button class="btn-icon" onclick="toggleFullScreen()" title="Pantalla Completa">🔲</button>
+            <button class="btn-icon" onclick="returnToMenu()" title="Pausar y Volver al Menú">⏸️</button>
+        </div>
+        <div class="faction-info">
+            <div class="stats-row">
+                <span style="color: #4caf50;">ALIADOS</span>
+                <span class="casualties">BAJAS: <span id="p-cas" class="cas-num">0</span></span>
             </div>
+            <div class="hp-bar"><div id="p-hp" class="hp-fill" style="background: #4caf50; width: 100%;"></div></div>
         </div>
         <div id="res-disp">MP: 60</div>
-        <div class="faction-info" style="width: 35%;">
+        <div class="faction-info">
             <div class="stats-row">
                 <span class="casualties">BAJAS: <span id="e-cas" class="cas-num">0</span></span>
                 <span style="color: #f44336;">ENEMIGOS</span>
@@ -180,7 +190,8 @@
             <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent)">AL FRENTE</span></button>
             <button class="btn" onclick="spawnUnit('infantry')"><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent)">10 MP</span></button>
             <button class="btn" onclick="spawnUnit('grenadier')"><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent)">20 MP</span></button>
-            <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZALLAMAS<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
+            <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZA...<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
+            <button class="btn" onclick="spawnUnit('sniper')"><span class="icon-large">🎯</span> FRANCO...<br><span id="lbl-mp-sni" style="color:var(--accent)">30 MP</span></button>
         </div>
         
         <div id="trench-panel" class="panel hidden">
@@ -190,6 +201,7 @@
                     <button id="type-infantry" class="type-btn" onclick="toggleType('infantry')">🪖 INF</button>
                     <button id="type-grenadier" class="type-btn" onclick="toggleType('grenadier')">💣 GRA</button>
                     <button id="type-flamethrower" class="type-btn" onclick="toggleType('flamethrower')">🔥 LAN</button>
+                    <button id="type-sniper" class="type-btn" onclick="toggleType('sniper')">🎯 FRA</button>
                 </div>
                 <div class="trench-row">
                     <button id="pct-25" class="pct-btn" onclick="setPct(0.25)">25%</button>
@@ -209,10 +221,16 @@
 
     <div id="menu" class="screen">
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">ESTRATEGIA DE TRINCHERAS V1.49</p>
+        <p class="subtitle">AJUSTE DE CADENCIA DE TIRO V1.60</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
-        <button class="btn-start" onclick="startGame()">INICIAR OPERACIÓN</button>
+        <div class="mode-container" style="margin-top: 10px;">
+            <button id="btn-mode-inf" class="mode-btn active" onclick="setGameMode('infinite')">♻️ RECURSOS<br>CONTINUOS</button>
+            <button id="btn-mode-lim" class="mode-btn" onclick="setGameMode('limited')">📦 RECURSOS<br>LIMITADOS</button>
+        </div>
+
+        <button id="btn-resume" class="btn-start btn-resume hidden" onclick="resumeGame()">▶ REANUDAR OPERACIÓN</button>
+        <button id="btn-start-text" class="btn-start" onclick="startGame()">NUEVA OPERACIÓN</button>
         <button class="btn-modal btn-manual-main" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
     </div>
 
@@ -222,23 +240,27 @@
             <div class="manual-content">
                 <p><strong>Mud & Steel</strong> simula la crudeza de la guerra de trincheras. En esta guerra de desgaste, la táctica, la logística y la psicología de tus tropas determinarán la victoria o la derrota.</p>
                 
-                <h2>🎯 Objetivo</h2>
+                <h2>🎯 Objetivo y Modos de Juego</h2>
                 <p>Avanza a lo largo de la Tierra de Nadie capturando las trincheras sucesivas hasta alcanzar la base enemiga. Reduce los Puntos de Salud (HP) de la base rival a cero para ganar.</p>
-                
-                <h2>🪖 Tipos de Tropa</h2>
                 <ul>
-                    <li><strong>Infantería (🪖):</strong> Económica y versátil. Tienen gran alcance de visión y disparo. Son la espina dorsal de tu ejército.</li>
-                    <li><strong>Granadero (💣):</strong> Infantería pesada. Sus explosivos reducen a la mitad la protección de las trincheras enemigas, haciéndolos perfectos para asaltos.</li>
-                    <li><strong>Lanzallamas (🔥):</strong> Tropas de choque de corto alcance. Su fuego atraviesa formaciones enteras e ignora completamente la bonificación defensiva de las trincheras.</li>
+                    <li><strong>Recursos Continuos:</strong> Los Puntos de Mando (MP) se regeneran constantemente.</li>
+                    <li><strong>Recursos Limitados:</strong> Comienzas con un presupuesto cerrado. ¡Si se agotan, no podrás desplegar más tropas!</li>
                 </ul>
 
-                <h2>🛡️ Defensa y Frente Dinámico</h2>
-                <p>Cuando un soldado está inactivo dentro de una trinchera, adquiere el estado <strong>Atrincherado</strong> (escudo 🛡️). Las trincheras vacías se vuelven Neutrales automáticamente. El juego detecta cuál es la trinchera más avanzada con tropas vivas y la designa como tu <strong>Línea del Frente</strong>.</p>
-                <p><strong>¡Cuidado con el Hacinamiento!</strong> La trinchera tiene un espacio físico limitado. <em>Solo</em> los soldados que están geográficamente dentro de la trinchera reciben la bonificación de defensa. Si envías demasiadas tropas, las que queden fuera en el lodo estarán expuestas a recibir todo el daño enemigo.</p>
-                <p><strong>REGLA TÁCTICA:</strong> El Alto Mando prohíbe la retirada completa desde la primera trinchera (T1). ¡Ni un paso atrás!</p>
+                <h2>🪖 Tipos de Tropa</h2>
+                <ul>
+                    <li><strong>Infantería (🪖):</strong> Económica y versátil. Tienen gran alcance de visión y disparo.</li>
+                    <li><strong>Granadero (💣):</strong> Infantería pesada. Sus explosivos ignoran parte de la protección de las trincheras.</li>
+                    <li><strong>Lanzallamas (🔥):</strong> Tropas de choque. Su fuego atraviesa formaciones enteras.</li>
+                    <li><strong>Francotirador (🎯):</strong> Larga distancia. Disparan lento pero causan estragos a las tropas expuestas.</li>
+                </ul>
 
-                <h2>💀 Moral y Pánico</h2>
-                <p>Los muertos emiten un aura de terror. Si la moral de un soldado llega a cero, sufrirá <strong>Pánico (🏳️)</strong> y huirá. Las tropas asustadas o en retirada <strong>NO DISPARAN</strong> sus armas. Solo recuperarán moral y valor descansando dentro de la Base o en trincheras de Retaguardia.</p>
+                <h2>⭐ Rango y Resistencia Psicológica</h2>
+                <p>A medida que un soldado abate enemigos, asciende en el escalafón militar obteniendo más Salud, más Moral máxima y un símbolo en su casco. <br><span style="color:#5bc0de">A mayor rango, el soldado se vuelve insensible a la muerte: ¡Los Oficiales y Generales sufren hasta un 85% menos de daño moral al estar rodeados de cadáveres!</span></p>
+
+                <h2>🛡️ Defensa y Obstáculos</h2>
+                <p>La cobertura de la trinchera es estrictamente <strong>geográfica</strong> (escudo 🛡️). Cualquier soldado que esté situado físicamente entre los sacos de arena recibe daño reducido. ¡Evita el hacinamiento, los que queden fuera en el lodo no tendrán protección!</p>
+                <p>En la <strong>Tierra de Nadie</strong> encontrarás Alambradas y Erizos. Tus tropas intentarán rodearlos, ralentizando su avance.</p>
             </div>
             <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
         </div>
@@ -251,9 +273,11 @@
             
             <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL</button>
             
-            <div class="setting-row">
-                <span>Mostrar Alcances (Arma, Visión y Terror)</span>
-                <input type="checkbox" id="toggle-ranges" style="transform: scale(1.5);" onchange="game.showRanges = this.checked;">
+            <div class="cfg-group" style="border-color: #aaa;">
+                <h3 style="color: #aaa;">⚙️ AJUSTES GENERALES</h3>
+                <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
+                <div class="cfg-label">Tiempo del Cadáver (Segundos) <input type="number" id="cfg-corpse-time" class="cfg-input"></div>
+                <div class="cfg-label">Mostrar Alcances y Visión <input type="checkbox" id="toggle-ranges" style="transform: scale(1.3);" onchange="game.showRanges = this.checked;"></div>
             </div>
 
             <div class="cfg-group" style="border-color: #a0d468;">
@@ -263,6 +287,7 @@
                 <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-inf-speed" class="cfg-input"></div>
                 <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-inf-range" class="cfg-input"></div>
                 <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-inf-vision" class="cfg-input"></div>
+                <div class="cfg-label">Cadencia de Tiro (ms) <input type="number" id="cfg-inf-firerate" class="cfg-input"></div>
                 <div class="cfg-label">Daño de Arma <input type="number" id="cfg-inf-dmg" class="cfg-input"></div>
                 <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-inf-trench" class="cfg-input"></div>
                 <div class="moral-zone">
@@ -279,6 +304,7 @@
                 <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-gre-speed" class="cfg-input"></div>
                 <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-gre-range" class="cfg-input"></div>
                 <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-gre-vision" class="cfg-input"></div>
+                <div class="cfg-label">Cadencia de Tiro (ms) <input type="number" id="cfg-gre-firerate" class="cfg-input"></div>
                 <div class="cfg-label">Daño de Arma <input type="number" id="cfg-gre-dmg" class="cfg-input"></div>
                 <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-gre-trench" class="cfg-input"></div>
                 <div class="moral-zone">
@@ -295,6 +321,7 @@
                 <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-fla-speed" class="cfg-input"></div>
                 <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-fla-range" class="cfg-input"></div>
                 <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-fla-vision" class="cfg-input"></div>
+                <div class="cfg-label">Cadencia de Tiro (ms) <input type="number" id="cfg-fla-firerate" class="cfg-input"></div>
                 <div class="cfg-label">Daño de Arma <input type="number" id="cfg-fla-dmg" class="cfg-input"></div>
                 <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-fla-trench" class="cfg-input"></div>
                 <div class="moral-zone">
@@ -304,7 +331,25 @@
                 </div>
             </div>
 
-            <button class="btn-modal" onclick="closeOptions()">APLICAR Y CERRAR</button>
+            <div class="cfg-group" style="border-color: #5bc0de;">
+                <h3 style="color: #5bc0de;">🎯 FRANCOTIRADOR</h3>
+                <div class="cfg-label">Coste (MP) <input type="number" id="cfg-sni-cost" class="cfg-input"></div>
+                <div class="cfg-label">Salud Máxima (HP) <input type="number" id="cfg-sni-hp" class="cfg-input"></div>
+                <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-sni-speed" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-sni-range" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-sni-vision" class="cfg-input"></div>
+                <div class="cfg-label">Cadencia de Tiro (ms) <input type="number" id="cfg-sni-firerate" class="cfg-input"></div>
+                <div class="cfg-label">Daño de Arma <input type="number" id="cfg-sni-dmg" class="cfg-input"></div>
+                <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-sni-trench" class="cfg-input"></div>
+                <div class="moral-zone">
+                    <div class="cfg-label">Moral Máxima (Pts) <input type="number" id="cfg-sni-moral" class="cfg-input"></div>
+                    <div class="cfg-label">Radio de Terror al morir (px) <input type="number" id="cfg-sni-trange" class="cfg-input"></div>
+                    <div class="cfg-label">Impacto Moral al morir (pts/s) <input type="number" step="0.1" id="cfg-sni-tdmg" class="cfg-input"></div>
+                </div>
+            </div>
+
+            <button class="btn-modal btn-danger" style="margin-bottom: 10px;" onclick="resetConfig()">⚠️ RESTABLECER DE FÁBRICA</button>
+            <button class="btn-modal" onclick="saveAndCloseOptions()">APLICAR Y CERRAR</button>
         </div>
     </div>
 </div>
@@ -317,70 +362,187 @@
 
     const BASE_W = 180, SAFE_ZONE = 300, TRENCH_W = 80, HORIZON_Y = 120;
     
-    // VALORES INICIALES BASADOS EN LAS IMÁGENES PROPORCIONADAS
+    const RANKS = [
+        { name: 'PVT', kills: 0, hpBonus: 0, moralBonus: 0, color: 'transparent', type: 'none' }, 
+        { name: 'PFC', kills: 2, hpBonus: 20, moralBonus: 20, color: '#ffffff', type: 'enlisted', ch: 1, ro: 0 }, 
+        { name: 'CPL', kills: 5, hpBonus: 40, moralBonus: 40, color: '#a3f0a3', type: 'enlisted', ch: 2, ro: 0 }, 
+        { name: 'SGT', kills: 9, hpBonus: 70, moralBonus: 70, color: '#5bc0de', type: 'enlisted', ch: 3, ro: 0 }, 
+        { name: 'SSG', kills: 14, hpBonus: 110, moralBonus: 110, color: '#9c27b0', type: 'enlisted', ch: 3, ro: 1 }, 
+        { name: 'MSG', kills: 20, hpBonus: 160, moralBonus: 160, color: '#ffcc00', type: 'enlisted', ch: 3, ro: 2 }, 
+        { name: 'SGM', kills: 27, hpBonus: 220, moralBonus: 220, color: '#ff6600', type: 'enlisted', ch: 3, ro: 3 }, 
+        { name: '2LT', kills: 35, hpBonus: 300, moralBonus: 300, color: '#ffd700', type: 'bar', n: 1 }, 
+        { name: '1LT', kills: 44, hpBonus: 400, moralBonus: 400, color: '#c0c0c0', type: 'bar', n: 1 }, 
+        { name: 'CPT', kills: 54, hpBonus: 500, moralBonus: 500, color: '#c0c0c0', type: 'bar', n: 2 }, 
+        { name: 'MAJ', kills: 65, hpBonus: 650, moralBonus: 650, color: '#ffd700', type: 'oak' }, 
+        { name: 'LTC', kills: 77, hpBonus: 800, moralBonus: 800, color: '#c0c0c0', type: 'oak' }, 
+        { name: 'COL', kills: 90, hpBonus: 1000, moralBonus: 1000, color: '#c0c0c0', type: 'eagle' }, 
+        { name: 'BG',  kills: 105, hpBonus: 1200, moralBonus: 1200, color: '#ffffff', type: 'star', n: 1 }, 
+        { name: 'MG',  kills: 121, hpBonus: 1500, moralBonus: 1500, color: '#ffffff', type: 'star', n: 2 }, 
+        { name: 'LTG', kills: 138, hpBonus: 1800, moralBonus: 1800, color: '#ffffff', type: 'star', n: 3 }, 
+        { name: 'GEN', kills: 156, hpBonus: 2200, moralBonus: 2200, color: '#ffffff', type: 'star', n: 4 }, 
+        { name: 'GA',  kills: 180, hpBonus: 3000, moralBonus: 3000, color: '#ffcc00', type: 'star', n: 5 } 
+    ];
+
+    const DEFAULT_CONFIG = {
+        infantry: { cost: 10, hp: 100, speed: 1.5, dmg: 25, vision: 350, range: 300, fireRate: 1000, maxMoral: 100, terrorRange: 50, terrorDmg: 10 },
+        grenadier: { cost: 20, hp: 250, speed: 1.0, dmg: 100, vision: 300, range: 150, fireRate: 2000, maxMoral: 80, terrorRange: 50, terrorDmg: 10 },
+        flamethrower: { cost: 35, hp: 50, speed: 3.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        sniper: { cost: 30, hp: 80, speed: 1.2, dmg: 80, vision: 500, range: 450, fireRate: 3000, maxMoral: 70, terrorRange: 50, terrorDmg: 10 }
+    };
+    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 10, flamethrower: 5, sniper: 40 };
+
     let game = { 
-        active: false, worldW: 3500, camX: 0, 
-        mp: 100, eMp: 100, 
-        pHp: 100, eHp: 100, 
-        pCas: 0, eCas: 0, 
+        active: false, loopStarted: false, worldW: 3500, camX: 0, 
+        mp: 100, eMp: 100, pHp: 100, eHp: 100, pCas: 0, eCas: 0, 
         selected: -1, selectedPct: 1.0, 
-        selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower']), 
-        baseRally: 'FRONT', 
-        showRanges: false,
-        
-        config: {
-            infantry: { cost: 10, hp: 100, speed: 1.5, dmg: 25, vision: 350, range: 300, fireRate: 1000, maxMoral: 100, terrorRange: 50, terrorDmg: 10 },
-            grenadier: { cost: 20, hp: 250, speed: 1.0, dmg: 100, vision: 300, range: 150, fireRate: 2000, maxMoral: 80, terrorRange: 50, terrorDmg: 10 },
-            flamethrower: { cost: 35, hp: 50, speed: 3.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 }
-        },
-        trenchDmg: { infantry: 5, grenadier: 10, flamethrower: 5 }
+        selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper']), 
+        baseRally: 'FRONT', showRanges: false,
+        resourceMode: 'infinite', maxResources: 2000, corpseTime: 30,
+        config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
+        trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG))
     };
     
     let unitIdCounter = 0;
-    const trenches = [], units = [], bullets = [], craters = [], corpses = [], explosions = [];
+    const trenches = [], units = [], bullets = [], craters = [], corpses = [], explosions = [], obstacles = [];
     let drag = { is: false, x: 0, cam: 0, dist: 0 };
+
+    function loadConfig() {
+        try {
+            let saved = localStorage.getItem('mudAndSteelConfig');
+            if (saved) {
+                let parsed = JSON.parse(saved);
+                game.maxResources = parsed.maxResources || 2000;
+                game.corpseTime = parsed.corpseTime || 30;
+                game.resourceMode = parsed.resourceMode || 'infinite';
+                if(parsed.config) game.config = parsed.config;
+                if(parsed.trenchDmg) game.trenchDmg = parsed.trenchDmg;
+            }
+        } catch(e) { console.log("Error loading config", e); }
+        setGameMode(game.resourceMode);
+        updateCostLabels();
+    }
+
+    function saveConfig() {
+        let data = {
+            maxResources: game.maxResources,
+            corpseTime: game.corpseTime,
+            resourceMode: game.resourceMode,
+            config: game.config,
+            trenchDmg: game.trenchDmg
+        };
+        try { localStorage.setItem('mudAndSteelConfig', JSON.stringify(data)); } catch(e) {}
+    }
+
+    function resetConfig() {
+        if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
+            game.maxResources = 2000;
+            game.corpseTime = 30;
+            game.config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+            game.trenchDmg = JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG));
+            populateOptionsUI();
+            saveConfig();
+            updateCostLabels();
+            alert("Configuración restablecida.");
+        }
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => { alert("Error Fullscreen"); });
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    }
+
+    function returnToMenu() {
+        game.active = false;
+        document.getElementById('menu').classList.remove('hidden');
+        document.getElementById('btn-resume').classList.remove('hidden');
+        document.getElementById('btn-start-text').innerText = "REINICIAR OPERACIÓN";
+    }
+
+    function resumeGame() {
+        document.getElementById('menu').classList.add('hidden');
+        game.active = true;
+    }
+
+    function setGameMode(mode) {
+        game.resourceMode = mode;
+        document.getElementById('btn-mode-inf').classList.remove('active');
+        document.getElementById('btn-mode-lim').classList.remove('active');
+        if(mode === 'infinite') document.getElementById('btn-mode-inf').classList.add('active');
+        else document.getElementById('btn-mode-lim').classList.add('active');
+        saveConfig();
+    }
 
     function startGame() {
         document.getElementById('menu').classList.add('hidden');
+        
+        unitIdCounter = 0;
+        trenches.length = 0; units.length = 0; bullets.length = 0; craters.length = 0; corpses.length = 0; explosions.length = 0; obstacles.length = 0;
+        game.pCas = 0; game.eCas = 0; game.pHp = 100; game.eHp = 100;
+        deselectTrench();
+        
+        if (game.resourceMode === 'limited') {
+            game.mp = game.maxResources; game.eMp = game.maxResources;
+        } else {
+            game.mp = 100; game.eMp = 100;
+        }
+
         resize(); generateMap();
         game.active = true;
-        requestAnimationFrame(loop);
-        setInterval(() => { 
-            if(game.active && document.getElementById('options-screen').classList.contains('hidden') && document.getElementById('manual-screen').classList.contains('hidden')) { 
-                game.mp += 3; game.eMp += 3; 
-            } 
-        }, 1000);
-        setInterval(enemyAI, 2000);
+        
+        if(!game.loopStarted) {
+            game.loopStarted = true;
+            requestAnimationFrame(loop);
+        }
     }
 
     function openManual() { document.getElementById('manual-screen').classList.remove('hidden'); }
     function closeManual() { document.getElementById('manual-screen').classList.add('hidden'); }
 
-    function openOptions() {
-        ['inf', 'gre', 'fla'].forEach(prefix => {
-            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : 'flamethrower');
+    function populateOptionsUI() {
+        document.getElementById('cfg-max-mp').value = game.maxResources;
+        document.getElementById('cfg-corpse-time').value = game.corpseTime;
+        ['inf', 'gre', 'fla', 'sni'].forEach(prefix => {
+            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : 'sniper'));
             document.getElementById(`cfg-${prefix}-cost`).value = game.config[type].cost;
             document.getElementById(`cfg-${prefix}-hp`).value = game.config[type].hp;
             document.getElementById(`cfg-${prefix}-speed`).value = game.config[type].speed;
             document.getElementById(`cfg-${prefix}-range`).value = game.config[type].range;
             document.getElementById(`cfg-${prefix}-vision`).value = game.config[type].vision;
+            document.getElementById(`cfg-${prefix}-firerate`).value = game.config[type].fireRate;
             document.getElementById(`cfg-${prefix}-dmg`).value = game.config[type].dmg;
             document.getElementById(`cfg-${prefix}-trench`).value = game.trenchDmg[type];
             document.getElementById(`cfg-${prefix}-moral`).value = game.config[type].maxMoral;
             document.getElementById(`cfg-${prefix}-trange`).value = game.config[type].terrorRange;
             document.getElementById(`cfg-${prefix}-tdmg`).value = game.config[type].terrorDmg;
         });
+    }
+
+    function openOptions() {
+        populateOptionsUI();
         document.getElementById('options-screen').classList.remove('hidden');
     }
 
-    function closeOptions() {
-        ['inf', 'gre', 'fla'].forEach(prefix => {
-            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : 'flamethrower');
+    function updateCostLabels() {
+        document.getElementById('lbl-mp-inf').innerText = game.config.infantry.cost + " MP";
+        document.getElementById('lbl-mp-gre').innerText = game.config.grenadier.cost + " MP";
+        document.getElementById('lbl-mp-fla').innerText = game.config.flamethrower.cost + " MP";
+        document.getElementById('lbl-mp-sni').innerText = game.config.sniper.cost + " MP";
+    }
+
+    function saveAndCloseOptions() {
+        game.maxResources = Number(document.getElementById('cfg-max-mp').value);
+        game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
+        ['inf', 'gre', 'fla', 'sni'].forEach(prefix => {
+            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : 'sniper'));
             game.config[type].cost = Number(document.getElementById(`cfg-${prefix}-cost`).value);
             game.config[type].hp = Number(document.getElementById(`cfg-${prefix}-hp`).value);
             game.config[type].speed = Number(document.getElementById(`cfg-${prefix}-speed`).value);
             game.config[type].range = Number(document.getElementById(`cfg-${prefix}-range`).value);
             game.config[type].vision = Number(document.getElementById(`cfg-${prefix}-vision`).value);
+            game.config[type].fireRate = Number(document.getElementById(`cfg-${prefix}-firerate`).value);
             game.config[type].dmg = Number(document.getElementById(`cfg-${prefix}-dmg`).value);
             game.trenchDmg[type] = Number(document.getElementById(`cfg-${prefix}-trench`).value);
             game.config[type].maxMoral = Number(document.getElementById(`cfg-${prefix}-moral`).value);
@@ -388,24 +550,40 @@
             game.config[type].terrorDmg = Number(document.getElementById(`cfg-${prefix}-tdmg`).value);
         });
 
-        document.getElementById('lbl-mp-inf').innerText = game.config.infantry.cost + " MP";
-        document.getElementById('lbl-mp-gre').innerText = game.config.grenadier.cost + " MP";
-        document.getElementById('lbl-mp-fla').innerText = game.config.flamethrower.cost + " MP";
-
+        updateCostLabels();
+        saveConfig();
         document.getElementById('options-screen').classList.add('hidden');
     }
 
     function generateMap() {
-        trenches.length = 0; craters.length = 0;
         let pStart = BASE_W + SAFE_ZONE, pEnd = game.worldW - BASE_W - SAFE_ZONE;
         let width = pEnd - pStart;
         let numT = Math.max(3, Math.floor(width / 500));
         let segW = width / numT;
+        
         for (let i = 0; i < numT; i++) {
             trenches.push({ x: pStart + (i * segW) + (Math.random() * (segW - TRENCH_W)), w: TRENCH_W, owner: 'neutral', progress: 0 });
         }
         for(let i=0; i < 40; i++) {
             craters.push({ x: Math.random() * game.worldW, y: HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 50), r: 15 + Math.random() * 30, color: `rgba(50, 40, 30, 0.6)` });
+        }
+        
+        for (let i = 0; i < 35; i++) {
+            let valid = false, ox, oy;
+            let attempts = 0;
+            while(!valid && attempts < 50) {
+                ox = pStart + Math.random() * width;
+                oy = HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 90);
+                valid = true;
+                for(let t of trenches) {
+                    if (Math.abs(ox - (t.x + t.w/2)) < t.w/2 + 35) { valid = false; break; }
+                }
+                attempts++;
+            }
+            if (valid) {
+                let isWire = Math.random() > 0.5;
+                obstacles.push({x: ox, y: oy, type: isWire ? 'wire' : 'hedgehog', r: isWire ? 35 : 12});
+            }
         }
     }
 
@@ -439,8 +617,8 @@
             document.getElementById('trench-panel').classList.remove('hidden');
             document.getElementById('t-label').innerText = "T" + (found + 1);
             
-            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower']);
-            ['infantry', 'grenadier', 'flamethrower'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
+            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper']);
+            ['infantry', 'grenadier', 'flamethrower', 'sniper'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
             setPct(1.0);
         } else { deselectTrench(); }
     }
@@ -477,8 +655,11 @@
         units.push({
             id: unitIdCounter++, x: isE ? game.worldW - BASE_W - 20 : BASE_W + 20,
             y: HORIZON_Y + 40 + Math.random() * (canvas.height - HORIZON_Y - 80),
-            side: isE ? 'enemy' : 'player', type: type, hp: conf.hp, maxHp: conf.hp, 
-            morale: conf.maxMoral, maxMoral: conf.maxMoral, broken: false,
+            side: isE ? 'enemy' : 'player', type: type, 
+            hp: conf.hp, maxHp: conf.hp, 
+            morale: conf.maxMoral, maxMoral: conf.maxMoral, 
+            broken: false,
+            kills: 0, rankIdx: 0, 
             radius: 14, baseSpeed: conf.speed, visionRange: conf.vision, weaponRange: conf.range,
             dir: isE ? -1 : 1, state: 'MOVE', inT: -1, lastAtk: 0, targetMode: isE ? 'FRONT' : game.baseRally
         });
@@ -487,7 +668,6 @@
     function executeOrder(type) {
         if (game.selected === -1) return;
         
-        // BLOQUEO DE RETIRADA EN LA PRIMERA TRINCHERA (T1)
         if (type === 'PREV' && game.selected === 0) {
             alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa (T1)!");
             return;
@@ -515,16 +695,24 @@
         }
     }
 
-    function enemyAI() {
+    setInterval(() => { 
+        if(game.active && game.resourceMode === 'infinite' && document.getElementById('options-screen').classList.contains('hidden') && document.getElementById('manual-screen').classList.contains('hidden')) { 
+            game.mp += 3; game.eMp += 3; 
+        } 
+    }, 1000);
+
+    setInterval(() => {
         if (!game.active || !document.getElementById('options-screen').classList.contains('hidden') || !document.getElementById('manual-screen').classList.contains('hidden')) return;
 
         let infCost = game.config.infantry.cost;
         let greCost = game.config.grenadier.cost;
         let flaCost = game.config.flamethrower.cost;
+        let sniCost = game.config.sniper.cost;
 
-        if (game.eMp >= flaCost && Math.random() > 0.8) spawnUnit('flamethrower', true);
-        else if (game.eMp >= greCost && Math.random() > 0.6) spawnUnit('grenadier', true);
-        else if (game.eMp >= infCost) spawnUnit('infantry', true);
+        if (game.eMp >= flaCost && Math.random() > 0.85) spawnUnit('flamethrower', true);
+        else if (game.eMp >= sniCost && Math.random() > 0.8) spawnUnit('sniper', true);
+        else if (game.eMp >= greCost && Math.random() > 0.7) spawnUnit('grenadier', true);
+        else if (game.eMp >= infCost && Math.random() > 0.3) spawnUnit('infantry', true);
 
         trenches.forEach((t, i) => {
             const eIn = units.filter(u => u.side === 'enemy' && u.inT === i && u.state === 'IDLE');
@@ -533,7 +721,7 @@
             const eHealthy = eIn.filter(u => u.hp >= u.maxHp * 0.4 && !u.broken);
             if(eHealthy.length >= 4 && Math.random() > 0.6) { eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); }
         });
-    }
+    }, 2000);
 
     function update() {
         if(!document.getElementById('options-screen').classList.contains('hidden') || !document.getElementById('manual-screen').classList.contains('hidden')) return; 
@@ -567,22 +755,42 @@
             let hitSomething = false;
 
             units.forEach(u => {
-                if(u.side !== b.side && u.state !== 'HEAL') { 
+                if(u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) { 
                     if (b.type !== 'fire' && hitSomething) return;
                     let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 3;
                     if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
                         
                         let actualDmg = b.dmg;
                         let inAnyTrench = false;
-                        trenches.forEach(t => {
-                            if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 5) inAnyTrench = true;
-                        });
+                        
+                        if (u.state !== 'HEAL') {
+                            trenches.forEach(t => {
+                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) inAnyTrench = true;
+                            });
+                        }
 
                         if (inAnyTrench) {
                             if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
                         }
                         
-                        u.hp -= actualDmg; hitSomething = true;
+                        u.hp -= actualDmg; 
+                        
+                        if (u.hp <= 0 && b.sourceId !== undefined) {
+                            let shooter = units.find(s => s.id === b.sourceId);
+                            if (shooter) {
+                                shooter.kills++;
+                                let nextRank = shooter.rankIdx + 1;
+                                if (nextRank < RANKS.length && shooter.kills >= RANKS[nextRank].kills) {
+                                    let hpDiff = RANKS[nextRank].hpBonus - RANKS[shooter.rankIdx].hpBonus;
+                                    let moralDiff = RANKS[nextRank].moralBonus - RANKS[shooter.rankIdx].moralBonus;
+                                    shooter.rankIdx = nextRank;
+                                    shooter.hp += hpDiff;
+                                    shooter.morale += moralDiff;
+                                }
+                            }
+                        }
+                        
+                        hitSomething = true;
                     }
                 }
             });
@@ -595,6 +803,13 @@
         for (let i = units.length - 1; i >= 0; i--) {
             const u = units[i];
             
+            let rConf = RANKS[u.rankIdx];
+            u.maxMoral = game.config[u.type].maxMoral + rConf.moralBonus;
+            u.maxHp = game.config[u.type].hp + rConf.hpBonus;
+            u.visionRange = game.config[u.type].vision;
+            u.weaponRange = game.config[u.type].range;
+            u.baseSpeed = game.config[u.type].speed;
+            
             if (u.state === 'HEAL') { 
                 u.hp += 0.25; u.morale += (3 / 60); u.morale = Math.min(u.maxMoral, u.morale);
                 if (u.hp >= u.maxHp && u.morale >= u.maxMoral) { 
@@ -604,20 +819,18 @@
                 continue; 
             }
 
-            u.maxMoral = game.config[u.type].maxMoral;
-            u.visionRange = game.config[u.type].vision;
-            u.weaponRange = game.config[u.type].range;
-            u.baseSpeed = game.config[u.type].speed;
-
             let terrorApplied = 0;
             corpses.forEach(c => { 
                 let tRange = game.config[c.type].terrorRange;
                 let tDmg = game.config[c.type].terrorDmg;
-                if (c.side === u.side && Math.hypot(c.x - u.x, c.y - u.y) < tRange) terrorApplied += (tDmg / 60); 
+                if (c.side === u.side && Math.hypot(c.x - u.x, c.y - u.y) < tRange) {
+                    terrorApplied += (tDmg / 60);
+                }
             });
             
             if (terrorApplied > 0) {
-                u.morale -= terrorApplied; 
+                let terrorResistance = Math.max(0.1, 1.0 - (u.rankIdx * 0.05));
+                u.morale -= (terrorApplied * terrorResistance); 
             } else {
                 let canRecover = false;
                 if (u.inT !== -1 && u.state === 'IDLE') {
@@ -653,7 +866,7 @@
             }
 
             let target = null, minDist = Infinity;
-            units.forEach(c => { if(c.side !== u.side && c.state !== 'HEAL') { let d = Math.hypot(c.x - u.x, c.y - u.y); if(d < minDist) { minDist = d; target = c; } } });
+            units.forEach(c => { if(c.side !== u.side && c.state !== 'HEAL' && c.hp > 0) { let d = Math.hypot(c.x - u.x, c.y - u.y); if(d < minDist) { minDist = d; target = c; } } });
             
             let isRetreating = (u.side === 'player' && u.dir === -1) || (u.side === 'enemy' && u.dir === 1);
             let canShoot = target && (minDist <= u.weaponRange) && !u.broken && !isRetreating;
@@ -676,6 +889,25 @@
             }
 
             if (isMoving) {
+                
+                obstacles.forEach(ob => {
+                    let dxOb = ob.x - u.x;
+                    let dyOb = ob.y - u.y;
+                    let dist = Math.hypot(dxOb, dyOb);
+                    if (dist < ob.r + u.radius + 5) {
+                        if ((u.dir === 1 && dxOb > 0) || (u.dir === -1 && dxOb < 0)) {
+                            dy += (dyOb > 0 ? -1 : 1) * u.baseSpeed * 2.0; 
+                            dx *= 0.3; 
+                        }
+                    }
+                });
+
+                let moveMag = Math.hypot(dx, dy);
+                if (moveMag > u.baseSpeed * 1.5) {
+                    dx = (dx / moveMag) * u.baseSpeed;
+                    dy = (dy / moveMag) * u.baseSpeed;
+                }
+
                 let nextX = u.x + dx; let blocked = false;
                 if (nextX <= BASE_W + 20 && u.side === 'player' && u.dir === -1) { if (u.targetMode === 'BASE' || u.targetMode === 'EVAC' || u.targetMode === 'PREV') { u.state = 'HEAL'; blocked = true; } else { u.state = 'IDLE'; u.dir = 1; blocked = true; } }
                 if (nextX >= game.worldW - BASE_W - 20 && u.side === 'enemy' && u.dir === 1) { if (u.targetMode === 'BASE' || u.targetMode === 'EVAC' || u.targetMode === 'PREV') { u.state = 'HEAL'; blocked = true; } else { u.state = 'IDLE'; u.dir = -1; blocked = true; } }
@@ -727,11 +959,13 @@
                 u.lastAtk = Date.now(); let a = Math.atan2(target.y - u.y, target.x - u.x);
                 if (u.type === 'flamethrower') {
                     let spread = (Math.random() - 0.5) * 0.4; 
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a + spread)*7, vy: Math.sin(a + spread)*7, side: u.side, sourceType: u.type, dmg: uConf.dmg, life: 25, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a + spread)*7, vy: Math.sin(a + spread)*7, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 25, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
                 } else if (u.type === 'grenadier') {
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, side: u.side, sourceType: u.type, dmg: uConf.dmg, life: 50, type: 'grenade', color: '#222' });
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'grenade', color: '#222' });
+                } else if (u.type === 'sniper') {
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*25, vy: Math.sin(a)*25, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
                 } else {
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*18, vy: Math.sin(a)*18, side: u.side, sourceType: u.type, dmg: uConf.dmg, life: 40, type: 'bullet', color: '#ffffbb' });
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*18, vy: Math.sin(a)*18, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 40, type: 'bullet', color: '#ffffbb' });
                 }
                 u.dir = (target.x > u.x) ? 1 : -1;
             }
@@ -741,7 +975,8 @@
             
             if (u.hp <= 0) {
                 if (u.side === 'player') game.pCas++; else game.eCas++;
-                corpses.push({x: u.x, y: u.y, side: u.side, type: u.type, life: 1800}); 
+                let cLife = game.corpseTime * 60; 
+                corpses.push({x: u.x, y: u.y, side: u.side, type: u.type, life: cLife, maxLife: cLife}); 
                 units.splice(i, 1);
             }
         }
@@ -808,7 +1043,49 @@
         ctx.save(); ctx.translate(-game.camX, 0);
 
         ctx.fillStyle = '#4e342e'; ctx.fillRect(0, HORIZON_Y, game.worldW, canvas.height - HORIZON_Y);
+        
         craters.forEach(c => { ctx.fillStyle = c.color; ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r, c.r*0.5, 0, 0, Math.PI*2); ctx.fill(); });
+
+        obstacles.forEach(ob => {
+            ctx.save();
+            ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+            ctx.shadowBlur = 4; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 4;
+            
+            if (ob.type === 'hedgehog') {
+                ctx.strokeStyle = '#8a939e'; ctx.lineWidth = 4; ctx.lineCap = 'square';
+                ctx.beginPath();
+                ctx.moveTo(ob.x - 12, ob.y - 12); ctx.lineTo(ob.x + 12, ob.y + 12);
+                ctx.moveTo(ob.x + 12, ob.y - 12); ctx.lineTo(ob.x - 12, ob.y + 12);
+                ctx.moveTo(ob.x, ob.y - 16); ctx.lineTo(ob.x, ob.y + 16);
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#4a4a4a'; ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(ob.x - 12, ob.y - 12); ctx.lineTo(ob.x + 12, ob.y + 12);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = '#4e3b2b'; 
+                ctx.fillRect(ob.x - 3, ob.y - ob.r - 4, 6, 8); 
+                ctx.fillRect(ob.x - 3, ob.y + ob.r - 4, 6, 8); 
+                
+                ctx.strokeStyle = '#6e757c'; ctx.lineWidth = 1.5; ctx.beginPath();
+                ctx.moveTo(ob.x, ob.y - ob.r);
+                for (let wy = -ob.r; wy <= ob.r; wy += 4) {
+                    let wx = ob.x + (Math.sin(wy * 1.5) * 8) + (Math.random() * 4 - 2);
+                    ctx.lineTo(wx, ob.y + wy);
+                }
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(ob.x, ob.y - ob.r);
+                for (let wy = -ob.r; wy <= ob.r; wy += 5) {
+                    let wx = ob.x - (Math.sin(wy * 1.2) * 8) + (Math.random() * 4 - 2);
+                    ctx.lineTo(wx, ob.y + wy);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        });
 
         const drawBase = (x, isP) => {
             ctx.fillStyle = '#555'; ctx.fillRect(x, HORIZON_Y - 30, BASE_W, canvas.height);
@@ -837,7 +1114,7 @@
             }
             ctx.fillStyle = 'rgba(100, 0, 0, 0.6)'; ctx.beginPath(); ctx.ellipse(c.x, c.y + 6, 18, 9, 0, 0, Math.PI*2); ctx.fill();
             ctx.font = "24px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillStyle = `rgba(255, 255, 255, ${c.life / 1800})`; ctx.fillText("💀", c.x, c.y - 4);
+            ctx.fillStyle = `rgba(255, 255, 255, ${c.life / c.maxLife})`; ctx.fillText("💀", c.x, c.y - 4);
         });
 
         units.forEach(u => {
@@ -846,7 +1123,7 @@
             let isProtected = false;
             if (u.state !== 'HEAL') {
                 trenches.forEach(t => {
-                    if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 5) isProtected = true;
+                    if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) isProtected = true;
                 });
             }
             
@@ -875,16 +1152,89 @@
 
             ctx.font = "18px Arial"; 
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            let icon = u.type === 'infantry' ? '🪖' : (u.type === 'grenadier' ? '💣' : '🔥');
+            let icon = u.type === 'infantry' ? '🪖' : (u.type === 'grenadier' ? '💣' : (u.type === 'flamethrower' ? '🔥' : '🎯'));
             
             ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 4; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 2;
+            ctx.fillStyle = '#ffffff'; 
             ctx.fillText(icon, u.x, u.y + 1); 
             ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
 
             let barY = u.y - 20;
             
+            let rConf = RANKS[u.rankIdx];
+            let baseY = u.y - 8; 
+            let hw = 6; 
+            
+            ctx.beginPath();
+            ctx.strokeStyle = rConf.color;
+            ctx.fillStyle = rConf.color;
+            ctx.lineWidth = 1.5;
+            ctx.lineJoin = 'miter';
+            ctx.lineCap = 'round';
+
+            if (rConf.type !== 'none') {
+                if (rConf.type === 'enlisted') {
+                    for(let c = 0; c < rConf.ch; c++) {
+                        let cy = baseY - (c * 3.5);
+                        ctx.moveTo(u.x - hw, cy + 3.5);
+                        ctx.lineTo(u.x, cy);
+                        ctx.lineTo(u.x + hw, cy + 3.5);
+                    }
+                    for(let r = 0; r < rConf.ro; r++) {
+                        let ry = baseY + 5 + (r * 2.5);
+                        ctx.moveTo(u.x - hw, ry - 3.5);
+                        ctx.quadraticCurveTo(u.x, ry + 2.5, u.x + hw, ry - 3.5);
+                    }
+                    ctx.stroke();
+                } else if (rConf.type === 'bar') {
+                    let spacing = 5;
+                    let startX = u.x - ((rConf.n - 1) * spacing) / 2;
+                    for(let i=0; i<rConf.n; i++) {
+                        ctx.fillRect(startX + (i*spacing) - 1.5, baseY - 4, 3, 10);
+                    }
+                } else if (rConf.type === 'oak') {
+                    ctx.beginPath();
+                    ctx.moveTo(u.x, baseY - 5);
+                    ctx.lineTo(u.x + 4, baseY);
+                    ctx.lineTo(u.x, baseY + 5);
+                    ctx.lineTo(u.x - 4, baseY);
+                    ctx.fill();
+                } else if (rConf.type === 'eagle') {
+                    ctx.beginPath();
+                    ctx.moveTo(u.x - 5, baseY - 4);
+                    ctx.lineTo(u.x, baseY + 3);
+                    ctx.lineTo(u.x + 5, baseY - 4);
+                    ctx.lineTo(u.x + 3, baseY - 4);
+                    ctx.lineTo(u.x, baseY + 1);
+                    ctx.lineTo(u.x - 3, baseY - 4);
+                    ctx.fill();
+                    ctx.fillRect(u.x - 1.5, baseY - 6, 3, 3);
+                } else if (rConf.type === 'star') {
+                    let spacing = 7;
+                    let startX = u.x - ((rConf.n - 1) * spacing) / 2;
+                    for(let i=0; i<rConf.n; i++) {
+                        let cx = startX + (i*spacing);
+                        let cy = baseY;
+                        let spikes = 5, outerR = 3.5, innerR = 1.5;
+                        let rot = Math.PI / 2 * 3;
+                        let x = cx, y = cy;
+                        let step = Math.PI / spikes;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - outerR);
+                        for (let j = 0; j < spikes; j++) {
+                            x = cx + Math.cos(rot) * outerR; y = cy + Math.sin(rot) * outerR; ctx.lineTo(x, y); rot += step;
+                            x = cx + Math.cos(rot) * innerR; y = cy + Math.sin(rot) * innerR; ctx.lineTo(x, y); rot += step;
+                        }
+                        ctx.lineTo(cx, cy - outerR);
+                        ctx.fill();
+                    }
+                }
+            }
+            
             ctx.font = "10px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 2; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+            ctx.fillStyle = '#ffffff'; 
+            
             if (u.broken) {
                 ctx.fillText("🏳️", u.x - 16, barY + 3);
             } else if (isProtected) { 
@@ -921,7 +1271,7 @@
         mCtx.fillStyle = 'rgba(255, 255, 255, 0.15)'; mCtx.fillRect(game.camX * s, 0, canvas.width * s, mCanvas.height);
         
         mCtx.fillStyle = '#4caf50'; mCtx.fillRect(0, 0, BASE_W * s, mCanvas.height);
-        mCtx.fillStyle = '#f44336'; mCtx.fillRect((game.worldW - BASE_W) * s, 0, BASE_W * s, mCanvas.height); // REPARADO
+        mCtx.fillStyle = '#f44336'; mCtx.fillRect((game.worldW - BASE_W) * s, 0, BASE_W * s, mCanvas.height);
         
         trenches.forEach(t => { 
             mCtx.fillStyle = t.owner === 'player' ? 'rgba(76, 175, 80, 0.5)' : (t.owner === 'enemy' ? 'rgba(244, 67, 54, 0.5)' : 'rgba(136, 136, 136, 0.5)'); 
@@ -936,7 +1286,9 @@
         });
     }
 
-    function loop() { if(game.active) { update(); draw(); requestAnimationFrame(loop); } }
+    loadConfig();
+    function loop() { if(game.active) { update(); draw(); } requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
 </script>
 </body>
 </html>
