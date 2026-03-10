@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.67</title>
+    <title>Trench Warfare: Mud & Steel v1.68</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -119,11 +119,11 @@
         }
         .menu-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); z-index: 0; /* SUAVIZADO PARA VER EL VÍDEO */
+            background: rgba(0, 0, 0, 0.4); z-index: 0;
         }
         .bg-media {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1; opacity: 1; /* OPACIDAD AL 100% PARA NITIDEZ TOTAL */
+            object-fit: cover; z-index: -1; opacity: 1; 
         }
         .screen > *:not(.bg-media):not(.menu-overlay) {
             z-index: 1; position: relative;
@@ -168,8 +168,11 @@
         .cfg-group h3 { margin-bottom: 10px; font-size: 1.1rem; color: #fff; text-align: left; border-bottom: 1px solid #444; padding-bottom: 5px;}
         .cfg-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; margin-bottom: 6px; align-items: center; text-align: left;}
         .cfg-input { width: 60px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: right; border-radius: 3px; }
+        .cfg-input-text { width: 140px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: left; border-radius: 3px; font-size: 0.7rem;}
+        
         .moral-zone { background: #311b3b; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #9c27b0; }
         .aura-zone { background: #1a332a; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #4caf50; }
+        .ai-zone { background: #102a3a; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #5bc0de; }
 
         .manual-content { text-align: left; color: #ddd; font-size: 0.9rem; line-height: 1.5; }
         .manual-content h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
@@ -255,7 +258,7 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V1.67</p>
+        <p class="subtitle">TRENCH WARFARE V1.68</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -275,6 +278,9 @@
             <div class="manual-content">
                 <p><strong>Mud & Steel</strong> simula la crudeza de la guerra de trincheras. En esta guerra de desgaste, la táctica, la logística y la psicología de tus tropas determinarán la victoria o la derrota.</p>
                 
+                <h2>🤖 IA Enemiga (Comandante Gemini)</h2>
+                <p>Opcionalmente, puedes activar que la IA enemiga sea controlada por un sistema dinámico táctico que analizará el mapa para responder a tus movimientos. ¡Incluso podrás leer sus pensamientos en una pantalla en su base!</p>
+
                 <h2>🎯 Modos de Juego</h2>
                 <ul>
                     <li><strong>Recursos Continuos:</strong> Los Puntos de Mando (MP) se regeneran constantemente.</li>
@@ -297,9 +303,6 @@
                     <li><strong>Tropas y Médicos:</strong> Solo pueden ascender hasta Sargento Mayor (SGM - 3 Galones, 3 Arcos).</li>
                     <li><strong>Oficiales (🎖️):</strong> Nacen como Tenientes y son los únicos que pueden ascender hasta General de 5 Estrellas (GA).</li>
                 </ul>
-
-                <h2>🛡️ Defensa y Obstáculos</h2>
-                <p>La cobertura de la trinchera es estrictamente <strong>geográfica</strong> (escudo 🛡️). Los que queden fuera en el lodo por hacinamiento no tendrán protección. Cuidado con las alambradas y erizos checos al asaltar.</p>
             </div>
             <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
         </div>
@@ -313,6 +316,14 @@
             
             <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL</button>
             
+            <div class="ai-zone">
+                <h3 style="color: #5bc0de; margin-bottom: 8px;">🤖 COMANDANTE ENEMIGO (IA)</h3>
+                <div class="cfg-label">Activar Consola de IA Avanzada <input type="checkbox" id="cfg-use-ai" style="transform: scale(1.3);"></div>
+                <div class="cfg-label">API Key de Gemini (Opcional) <input type="password" id="cfg-gemini-key" class="cfg-input-text" placeholder="AIzaSy..."></div>
+                <p style="font-size:0.65rem; color:#aaa; margin-bottom:8px; text-align:left;">Si dejas la clave en blanco, se ejecutará una simulación táctica local en la consola para no consumir tu cuota.</p>
+                <div class="cfg-label">Intervalo de Decisión (seg) <input type="number" id="cfg-ai-interval" class="cfg-input"></div>
+            </div>
+
             <div class="cfg-group" style="border-color: #aaa;">
                 <h3 style="color: #aaa;">⚙️ AJUSTES GENERALES</h3>
                 <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
@@ -464,7 +475,6 @@
             img.src = "https://urysoft.github.io/ai.html.games/games/mudandsteel/mudandsteel_loop_" + suffix + ".png";
             img.style.display = 'block';
         };
-        
         img.onerror = function() { img.style.display = 'none'; };
         updateMenuMedia();
     });
@@ -486,8 +496,8 @@
         { name: 'SGT', kills: 9, hpBonus: 70, moralBonus: 70, color: '#5bc0de', type: 'enlisted', ch: 3, ro: 0 }, // 3
         { name: 'SSG', kills: 14, hpBonus: 110, moralBonus: 110, color: '#9c27b0', type: 'enlisted', ch: 3, ro: 1 }, // 4
         { name: 'MSG', kills: 20, hpBonus: 160, moralBonus: 160, color: '#ffcc00', type: 'enlisted', ch: 3, ro: 2 }, // 5
-        { name: 'SGM', kills: 27, hpBonus: 220, moralBonus: 220, color: '#ff6600', type: 'enlisted', ch: 3, ro: 3 }, // 6 (LIMITE TROPAS)
-        { name: '2LT', kills: 35, hpBonus: 300, moralBonus: 300, color: '#ffd700', type: 'bar', n: 1 }, // 7 (INICIO OFICIAL)
+        { name: 'SGM', kills: 27, hpBonus: 220, moralBonus: 220, color: '#ff6600', type: 'enlisted', ch: 3, ro: 3 }, // 6 
+        { name: '2LT', kills: 35, hpBonus: 300, moralBonus: 300, color: '#ffd700', type: 'bar', n: 1 }, // 7 
         { name: '1LT', kills: 44, hpBonus: 400, moralBonus: 400, color: '#c0c0c0', type: 'bar', n: 1 }, // 8
         { name: 'CPT', kills: 54, hpBonus: 500, moralBonus: 500, color: '#c0c0c0', type: 'bar', n: 2 }, // 9
         { name: 'MAJ', kills: 65, hpBonus: 650, moralBonus: 650, color: '#ffd700', type: 'oak' }, // 10
@@ -517,6 +527,11 @@
         selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']), 
         baseRally: 'FRONT', showRanges: false,
         resourceMode: 'infinite', maxResources: 2000, corpseTime: 120,
+        
+        // VARIABLES IA AVANZADA
+        useGenAI: false, geminiKey: "", aiInterval: 5, lastAiTime: 0, isAiThinking: false,
+        aiThoughts: ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."],
+        
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
         trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG))
     };
@@ -527,12 +542,16 @@
 
     function loadConfig() {
         try {
-            let saved = localStorage.getItem('mudAndSteelConfig_v167');
+            let saved = localStorage.getItem('mudAndSteelConfig_v168');
             if (saved) {
                 let parsed = JSON.parse(saved);
                 game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
                 game.corpseTime = parsed.corpseTime !== undefined ? parsed.corpseTime : 120;
                 game.resourceMode = parsed.resourceMode || 'infinite';
+                game.useGenAI = parsed.useGenAI || false;
+                game.geminiKey = parsed.geminiKey || "";
+                game.aiInterval = parsed.aiInterval || 5;
+                
                 if(parsed.config) game.config = { ...DEFAULT_CONFIG, ...parsed.config };
                 if(parsed.trenchDmg) game.trenchDmg = { ...DEFAULT_TRENCH_DMG, ...parsed.trenchDmg };
             }
@@ -546,16 +565,22 @@
             maxResources: game.maxResources,
             corpseTime: game.corpseTime,
             resourceMode: game.resourceMode,
+            useGenAI: game.useGenAI,
+            geminiKey: game.geminiKey,
+            aiInterval: game.aiInterval,
             config: game.config,
             trenchDmg: game.trenchDmg
         };
-        try { localStorage.setItem('mudAndSteelConfig_v167', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('mudAndSteelConfig_v168', JSON.stringify(data)); } catch(e) {}
     }
 
     function resetConfig() {
         if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
             game.maxResources = 2000;
             game.corpseTime = 120;
+            game.useGenAI = false;
+            game.geminiKey = "";
+            game.aiInterval = 5;
             game.config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
             game.trenchDmg = JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG));
             populateOptionsUI();
@@ -600,6 +625,8 @@
         unitIdCounter = 0;
         trenches.length = 0; units.length = 0; bullets.length = 0; craters.length = 0; corpses.length = 0; explosions.length = 0; obstacles.length = 0;
         game.pCas = 0; game.eCas = 0; game.pHp = 100; game.eHp = 100;
+        game.aiThoughts = ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."];
+        game.lastAiTime = Date.now();
         deselectTrench();
         
         if (game.resourceMode === 'limited') {
@@ -623,6 +650,10 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
+        document.getElementById('cfg-use-ai').checked = game.useGenAI;
+        document.getElementById('cfg-gemini-key').value = game.geminiKey;
+        document.getElementById('cfg-ai-interval').value = game.aiInterval;
+
         ['inf', 'gre', 'fla', 'sni', 'med', 'off'].forEach(prefix => {
             let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : (prefix === 'sni' ? 'sniper' : (prefix === 'med' ? 'medic' : 'officer'))));
             document.getElementById(`cfg-${prefix}-cost`).value = game.config[type].cost;
@@ -660,6 +691,12 @@
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
+        
+        game.useGenAI = document.getElementById('cfg-use-ai').checked;
+        game.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
+        game.aiInterval = Number(document.getElementById('cfg-ai-interval').value);
+        if (game.aiInterval < 1) game.aiInterval = 1;
+
         ['inf', 'gre', 'fla', 'sni', 'med', 'off'].forEach(prefix => {
             let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : (prefix === 'sni' ? 'sniper' : (prefix === 'med' ? 'medic' : 'officer'))));
             game.config[type].cost = Number(document.getElementById(`cfg-${prefix}-cost`).value);
@@ -803,36 +840,163 @@
         });
     }
 
-    function executeOrder(type) {
-        if (game.selected === -1) return;
+    function executeOrder(type, forcedTrench = -1, forcedSide = 'player') {
+        let targetTrench = forcedTrench !== -1 ? forcedTrench : game.selected;
+        if (targetTrench === -1) return;
         
-        if (type === 'PREV' && game.selected === 0) {
+        if (type === 'PREV' && targetTrench === 0 && forcedSide === 'player') {
             alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa (T1)!");
             return;
         }
 
-        let pool = units.filter(u => u.side === 'player' && u.inT === game.selected && game.selectedTypes.has(u.type));
+        let pool = units.filter(u => u.side === forcedSide && u.inT === targetTrench && (forcedSide === 'enemy' || game.selectedTypes.has(u.type)));
         
         if (type === 'NEXT' || type === 'FRONT') { pool = pool.filter(u => !u.broken); }
-        
         if (type === 'EVAC') pool = pool.filter(u => u.hp < u.maxHp);
+        
         if (pool.length === 0) return; 
 
         pool.sort((a, b) => (type === 'PREV' || type === 'EVAC') ? (a.hp/a.maxHp - b.hp/b.maxHp) : (b.hp/b.maxHp - a.hp/a.maxHp));
-        const count = Math.ceil(pool.length * game.selectedPct);
+        const count = forcedSide === 'enemy' ? pool.length : Math.ceil(pool.length * game.selectedPct);
         
-        let tCenter = trenches[game.selected].x + trenches[game.selected].w/2;
+        let tCenter = trenches[targetTrench].x + trenches[targetTrench].w/2;
 
         for(let i=0; i<count; i++) {
             pool[i].state = 'MOVE'; pool[i].inT = -1; 
             if (type === 'PREV' || type === 'EVAC') { 
-                pool[i].dir = -1; pool[i].x = tCenter - 50 - (Math.random() * 15); pool[i].targetMode = type === 'EVAC' ? 'BASE' : 'PREV'; 
+                pool[i].dir = forcedSide === 'player' ? -1 : 1; 
+                pool[i].x = tCenter + (pool[i].dir * 50) - (Math.random() * 15); 
+                pool[i].targetMode = type === 'EVAC' ? 'BASE' : 'PREV'; 
             } else { 
-                pool[i].dir = 1; pool[i].x = tCenter + 50 + (Math.random() * 15); pool[i].targetMode = type; 
+                pool[i].dir = forcedSide === 'player' ? 1 : -1; 
+                pool[i].x = tCenter + (pool[i].dir * 50) + (Math.random() * 15); 
+                pool[i].targetMode = type; 
             }
         }
     }
 
+    // --- IA ENEMIGA (MOCK / GEMINI) ---
+    function addAiConsoleLine(text) {
+        let words = text.split(' ');
+        let line = '';
+        for(let i=0; i<words.length; i++) {
+            if ((line + words[i]).length > 26) {
+                game.aiThoughts.push(line);
+                line = '';
+            }
+            line += words[i] + ' ';
+        }
+        if (line.trim() !== '') game.aiThoughts.push(line);
+        if (game.aiThoughts.length > 8) game.aiThoughts = game.aiThoughts.slice(game.aiThoughts.length - 8);
+    }
+
+    function buildGameStateString() {
+        let eTroops = units.filter(u => u.side === 'enemy').length;
+        let pTroops = units.filter(u => u.side === 'player').length;
+        let s = `MP:${Math.floor(game.eMp)}. Ally Alive:${eTroops}. Enemy Alive:${pTroops}. `;
+        trenches.forEach((t, i) => {
+            let inside = units.filter(u => u.inT === i && u.side === 'enemy').length;
+            s += `T${i}(${t.owner.charAt(0).toUpperCase()}):${inside} troops. `;
+        });
+        return s;
+    }
+
+    function simulateSmartAI(stateStr) {
+        let pFront = -1;
+        trenches.forEach((t, i) => { if (t.owner === 'player' || units.some(u=>u.inT===i && u.side==='player')) pFront = Math.max(pFront, i); });
+        
+        let decision = { thought: "", spawn: null, order: null };
+        let rn = Math.random();
+        
+        if (game.eMp < 15) {
+            decision.thought = "Ahorrando recursos para asalto pesado.";
+        } else if (game.eMp >= game.config.officer.cost && rn < 0.1) {
+            decision.thought = "La moral decae. Desplegando Oficial al frente.";
+            decision.spawn = "officer";
+        } else if (game.eMp >= game.config.medic.cost && rn < 0.2) {
+            decision.thought = "Bajas insostenibles. Solicito Sanitario.";
+            decision.spawn = "medic";
+        } else if (game.eMp >= game.config.sniper.cost && rn < 0.4) {
+            decision.thought = "El enemigo se expone en el barro. Francotirador listo.";
+            decision.spawn = "sniper";
+        } else if (game.eMp >= game.config.grenadier.cost && rn < 0.6) {
+            decision.thought = "Trincheras fuertemente defendidas. ¡Granaderos al asalto!";
+            decision.spawn = "grenadier";
+        } else {
+            decision.thought = "Línea debilitada. Enviando infantería básica.";
+            decision.spawn = "infantry";
+        }
+
+        // Ordenar trincheras
+        if (rn > 0.5) {
+            for(let i = trenches.length-1; i>=0; i--) {
+                let enInT = units.filter(u => u.side === 'enemy' && u.inT === i);
+                if (enInT.length > 3) {
+                    if (rn > 0.8) {
+                        decision.thought += ` ¡T${i} Avanzad a la siguiente línea!`;
+                        decision.order = { trench: i, action: "NEXT" };
+                    } else if (enInT.some(u => u.hp < u.maxHp * 0.4)) {
+                        decision.thought += ` Demasiados heridos en T${i}. Evacuar a la base.`;
+                        decision.order = { trench: i, action: "EVAC" };
+                    }
+                    break;
+                }
+            }
+        }
+        return decision;
+    }
+
+    async function evaluateEnemyAIGemini() {
+        if (!game.active || game.isAiThinking || !game.useGenAI) return;
+
+        let now = Date.now();
+        if (now - game.lastAiTime < game.aiInterval * 1000) return;
+
+        game.lastAiTime = now;
+        game.isAiThinking = true;
+        addAiConsoleLine("[SISTEMA] Analizando telemetría del campo...");
+
+        let stateStr = buildGameStateString();
+
+        if (game.geminiKey && game.geminiKey.trim() !== "") {
+            // IA REAL VIA API
+            try {
+                let prompt = `You are a ruthless WW1 enemy commander. Respond ONLY in strict JSON. State: ${stateStr}. Choose 1 unit to spawn (infantry, grenadier, flamethrower, sniper, medic, officer) if you have enough MP. Choose 1 order (NEXT, PREV, EVAC) for 1 trench if you have troops there. Format: {"thought": "Short military reasoning in Spanish", "spawn": "unit_name_or_null", "order": {"trench": index, "action": "ACTION"} or null}`;
+                
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${game.geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+                let data = await response.json();
+                let text = data.candidates[0].content.parts[0].text;
+                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                let decision = JSON.parse(text);
+                
+                if (decision.thought) addAiConsoleLine("> " + decision.thought);
+                if (decision.spawn) spawnUnit(decision.spawn, true);
+                if (decision.order) executeOrder(decision.order.action, decision.order.trench, 'enemy');
+
+            } catch(e) {
+                addAiConsoleLine("[ERROR] Transmisión con Alto Mando fallida. Reintentando...");
+            }
+        } else {
+            // IA SIMULADA (MOCK) LOCAL
+            setTimeout(() => {
+                let decision = simulateSmartAI(stateStr);
+                if (decision.thought) addAiConsoleLine("> " + decision.thought);
+                if (decision.spawn) spawnUnit(decision.spawn, true);
+                if (decision.order) executeOrder(decision.order.action, decision.order.trench, 'enemy');
+                game.isAiThinking = false;
+            }, 800);
+            return; // Exit early to respect timeout flag
+        }
+        game.isAiThinking = false;
+    }
+
+    // BUCLE DE RECURSOS Y DECISIONES IA
     setInterval(() => { 
         if(game.active && game.resourceMode === 'infinite' && document.getElementById('options-screen').classList.contains('hidden') && document.getElementById('manual-screen').classList.contains('hidden')) { 
             game.mp += 3; game.eMp += 3; 
@@ -840,30 +1004,35 @@
     }, 1000);
 
     setInterval(() => {
-        if (!game.active || !document.getElementById('options-screen').classList.contains('hidden') || !document.getElementById('manual-screen').classList.contains('hidden')) return;
+        if (!game.active || document.getElementById('options-screen').classList.contains('hidden') === false) return;
 
-        let infCost = game.config.infantry.cost;
-        let greCost = game.config.grenadier.cost;
-        let flaCost = game.config.flamethrower.cost;
-        let sniCost = game.config.sniper.cost;
-        let medCost = game.config.medic.cost;
-        let offCost = game.config.officer.cost;
+        if (game.useGenAI) {
+            evaluateEnemyAIGemini();
+        } else {
+            // IA CLÁSICA (HARDCODED)
+            let infCost = game.config.infantry.cost;
+            let greCost = game.config.grenadier.cost;
+            let flaCost = game.config.flamethrower.cost;
+            let sniCost = game.config.sniper.cost;
+            let medCost = game.config.medic.cost;
+            let offCost = game.config.officer.cost;
 
-        let rn = Math.random();
-        if (game.eMp >= flaCost && rn > 0.85) spawnUnit('flamethrower', true);
-        else if (game.eMp >= offCost && rn > 0.80) spawnUnit('officer', true);
-        else if (game.eMp >= medCost && rn > 0.75) spawnUnit('medic', true);
-        else if (game.eMp >= sniCost && rn > 0.70) spawnUnit('sniper', true);
-        else if (game.eMp >= greCost && rn > 0.60) spawnUnit('grenadier', true);
-        else if (game.eMp >= infCost && rn > 0.2) spawnUnit('infantry', true);
+            let rn = Math.random();
+            if (game.eMp >= flaCost && rn > 0.85) spawnUnit('flamethrower', true);
+            else if (game.eMp >= offCost && rn > 0.80) spawnUnit('officer', true);
+            else if (game.eMp >= medCost && rn > 0.75) spawnUnit('medic', true);
+            else if (game.eMp >= sniCost && rn > 0.70) spawnUnit('sniper', true);
+            else if (game.eMp >= greCost && rn > 0.60) spawnUnit('grenadier', true);
+            else if (game.eMp >= infCost && rn > 0.2) spawnUnit('infantry', true);
 
-        trenches.forEach((t, i) => {
-            const eIn = units.filter(u => u.side === 'enemy' && u.inT === i && u.state === 'IDLE');
-            eIn.forEach(u => { if (u.hp < u.maxHp * 0.35 && Math.random() > 0.5) { u.state = 'MOVE'; u.inT = -1; u.x += 45; u.dir = 1; u.targetMode = 'BASE'; } });
-            
-            const eHealthy = eIn.filter(u => u.hp >= u.maxHp * 0.4 && !u.broken);
-            if(eHealthy.length >= 4 && Math.random() > 0.6) { eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); }
-        });
+            trenches.forEach((t, i) => {
+                const eIn = units.filter(u => u.side === 'enemy' && u.inT === i && u.state === 'IDLE');
+                eIn.forEach(u => { if (u.hp < u.maxHp * 0.35 && Math.random() > 0.5) { u.state = 'MOVE'; u.inT = -1; u.x += 45; u.dir = 1; u.targetMode = 'BASE'; } });
+                
+                const eHealthy = eIn.filter(u => u.hp >= u.maxHp * 0.4 && !u.broken);
+                if(eHealthy.length >= 4 && Math.random() > 0.6) { eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); }
+            });
+        }
     }, 2000);
 
     function update() {
@@ -1514,6 +1683,28 @@
             ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`; ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = `rgba(255, 200, 0, ${alpha})`; ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r * 0.6, 0, Math.PI*2); ctx.fill();
         });
+
+        // CONSOLA IA ENEMIGA
+        if (game.useGenAI) {
+            let cx = game.worldW - BASE_W + 5;
+            let cy = HORIZON_Y - 50;
+            ctx.fillStyle = 'rgba(0, 20, 0, 0.85)';
+            ctx.fillRect(cx, cy, BASE_W - 10, 150);
+            ctx.strokeStyle = '#0f0';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx, cy, BASE_W - 10, 150);
+
+            ctx.font = "10px Courier New";
+            ctx.fillStyle = '#0f0';
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillText(">> GEMINI AI C&C", cx + 5, cy + 5);
+            ctx.fillText("--------------------", cx + 5, cy + 15);
+
+            for(let k=0; k<game.aiThoughts.length; k++) {
+                ctx.fillText("> " + game.aiThoughts[k], cx + 5, cy + 30 + (k*14));
+            }
+        }
 
         ctx.restore(); drawMinimap();
     }
