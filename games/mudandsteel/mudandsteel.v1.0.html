@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.63</title>
+    <title>Trench Warfare: Mud & Steel v1.65</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -58,8 +58,8 @@
 
         #controls {
             flex-shrink: 0;
-            height: 22vh; 
-            min-height: 160px; max-height: 220px;
+            height: 24vh; 
+            min-height: 170px; max-height: 240px;
             background: var(--ui-bg); border-top: 3px solid var(--militar-green);
             display: flex; padding: 6px; z-index: 100; width: 100%;
             padding-bottom: 10px;
@@ -68,14 +68,23 @@
         .panel { display: flex; gap: 6px; width: 100%; height: 100%; }
         .hidden { display: none !important; }
 
+        /* GRID 2x3 PARA BOTONES DE TROPAS */
+        #unit-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 6px;
+            flex: 0.75;
+        }
+
         .btn {
             background: linear-gradient(to bottom, #5a6628, #3e471a); color: white; 
             border: 2px solid #222; border-radius: 4px; cursor: pointer; 
-            font-size: 0.60rem; font-weight: bold; flex: 1; 
+            font-size: 0.65rem; font-weight: bold; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
-            text-align: center; line-height: 1.1; text-shadow: 1px 1px 0 #000; padding: 1px;
-            height: 100%; 
+            text-align: center; line-height: 1.1; text-shadow: 1px 1px 0 #000; padding: 2px;
+            width: 100%; height: 100%;
         }
         .btn:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
         .icon-large { font-size: 1.4rem; margin-bottom: 2px; display: block; }
@@ -89,7 +98,7 @@
         .trench-row { display: flex; gap: 4px; flex: 1; align-items: stretch; width: 100%; }
 
         .pct-btn, .type-btn { 
-            background: #333; border-color: #555; font-size: 0.70rem; color: #aaa; 
+            background: #333; border-color: #555; font-size: 0.65rem; color: #aaa; 
             flex: 1; padding: 2px; border-radius: 4px; border: 2px solid #222; 
             font-weight: bold; cursor: pointer; transition: 0.2s;
             display: flex; align-items: center; justify-content: center; height: 100%;
@@ -144,9 +153,10 @@
         
         .cfg-group { background: #222; padding: 10px; border-radius: 5px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
         .cfg-group h3 { margin-bottom: 10px; font-size: 1.1rem; color: #fff; text-align: left; border-bottom: 1px solid #444; padding-bottom: 5px;}
-        .cfg-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; margin-bottom: 6px; align-items: center; }
-        .cfg-input { width: 70px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: right; border-radius: 3px; }
+        .cfg-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; margin-bottom: 6px; align-items: center; text-align: left;}
+        .cfg-input { width: 60px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: right; border-radius: 3px; }
         .moral-zone { background: #311b3b; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #9c27b0; }
+        .aura-zone { background: #1a332a; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #4caf50; }
 
         .manual-content { text-align: left; color: #ddd; font-size: 0.9rem; line-height: 1.5; }
         .manual-content h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
@@ -187,12 +197,16 @@
 
     <div id="controls">
         <div id="base-panel" class="panel">
-            <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent)">AL FRENTE</span></button>
-            <button class="btn" onclick="spawnUnit('infantry')"><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent)">10 MP</span></button>
-            <button class="btn" onclick="spawnUnit('grenadier')"><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent)">20 MP</span></button>
-            <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZA...<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
-            <button class="btn" onclick="spawnUnit('sniper')"><span class="icon-large">🎯</span> FRANCO...<br><span id="lbl-mp-sni" style="color:var(--accent)">40 MP</span></button>
-            <button class="btn" onclick="spawnUnit('officer')"><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent)">80 MP</span></button>
+            <button id="rally-btn" class="btn btn-toggle" style="flex: 0.25;" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block;">AL FRENTE</span></button>
+            
+            <div id="unit-grid">
+                <button class="btn" onclick="spawnUnit('infantry')"><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent)">10 MP</span></button>
+                <button class="btn" onclick="spawnUnit('grenadier')"><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent)">20 MP</span></button>
+                <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZAS<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
+                <button class="btn" onclick="spawnUnit('sniper')"><span class="icon-large">🎯</span> FRANCO<br><span id="lbl-mp-sni" style="color:var(--accent)">40 MP</span></button>
+                <button class="btn" onclick="spawnUnit('medic')"><span class="icon-large">⛑️</span> MÉDICO<br><span id="lbl-mp-med" style="color:var(--accent)">70 MP</span></button>
+                <button class="btn" onclick="spawnUnit('officer')"><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent)">80 MP</span></button>
+            </div>
         </div>
         
         <div id="trench-panel" class="panel hidden">
@@ -203,6 +217,7 @@
                     <button id="type-grenadier" class="type-btn" onclick="toggleType('grenadier')">💣 GRA</button>
                     <button id="type-flamethrower" class="type-btn" onclick="toggleType('flamethrower')">🔥 LAN</button>
                     <button id="type-sniper" class="type-btn" onclick="toggleType('sniper')">🎯 FRA</button>
+                    <button id="type-medic" class="type-btn" onclick="toggleType('medic')">⛑️ MED</button>
                     <button id="type-officer" class="type-btn" onclick="toggleType('officer')">🎖️ OFI</button>
                 </div>
                 <div class="trench-row">
@@ -223,7 +238,7 @@
 
     <div id="menu" class="screen">
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">CORRECCIÓN MOTOR MINIMAPA V1.63</p>
+        <p class="subtitle">VALORES DE FÁBRICA V1.65</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -254,13 +269,14 @@
                     <li><strong>Granadero (💣):</strong> Infantería pesada. Ignoran gran parte de la protección de las trincheras.</li>
                     <li><strong>Lanzallamas (🔥):</strong> Daño en área que ignora trincheras.</li>
                     <li><strong>Francotirador (🎯):</strong> Larga distancia y visión superior.</li>
-                    <li><strong>Oficial (🎖️):</strong> Llevan solo una pistola (poco alcance), pero <strong>proyectan un aura de mando</strong> (círculo visible). Las tropas dentro de su aura son casi inmunes al terror de los cadáveres.</li>
+                    <li><strong>Médico / Sanitario (⛑️):</strong> Escanea el campo de batalla en busca de tropas heridas y sale de la trinchera para correr hacia ellas y curarlas con su aura verde.</li>
+                    <li><strong>Oficial (🎖️):</strong> Llevan solo una pistola, pero <strong>proyectan un aura de mando dorada</strong>. Buscan a tropas asustadas para restaurarles la moral activamente y hacerlos casi inmunes al terror.</li>
                 </ul>
 
                 <h2>⭐ Rango y Veteranía</h2>
                 <p>A medida que un soldado abate enemigos, asciende en el escalafón obteniendo más Salud, Moral y resistencia pasiva al pánico.</p>
                 <ul>
-                    <li><strong>Tropas (🪖💣🔥🎯):</strong> Solo pueden ascender hasta Sargento Mayor (SGM - 3 Galones, 3 Arcos).</li>
+                    <li><strong>Tropas y Médicos:</strong> Solo pueden ascender hasta Sargento Mayor (SGM - 3 Galones, 3 Arcos).</li>
                     <li><strong>Oficiales (🎖️):</strong> Nacen como Tenientes y son los únicos que pueden ascender hasta General de 5 Estrellas (GA).</li>
                 </ul>
 
@@ -353,6 +369,27 @@
                 </div>
             </div>
 
+            <div class="cfg-group" style="border-color: #4caf50;">
+                <h3 style="color: #4caf50;">⛑️ MÉDICO / SANITARIO</h3>
+                <div class="cfg-label">Coste (MP) <input type="number" id="cfg-med-cost" class="cfg-input"></div>
+                <div class="cfg-label">Salud Máxima (HP) <input type="number" id="cfg-med-hp" class="cfg-input"></div>
+                <div class="cfg-label">Velocidad (px/frame) <input type="number" step="0.1" id="cfg-med-speed" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Arma (px) <input type="number" id="cfg-med-range" class="cfg-input"></div>
+                <div class="cfg-label">Alcance de Visión (px) <input type="number" id="cfg-med-vision" class="cfg-input"></div>
+                <div class="cfg-label">Cadencia de Tiro (ms) <input type="number" id="cfg-med-firerate" class="cfg-input"></div>
+                <div class="cfg-label">Daño de Arma <input type="number" id="cfg-med-dmg" class="cfg-input"></div>
+                <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-med-trench" class="cfg-input"></div>
+                <div class="aura-zone">
+                    <div class="cfg-label">Radio de Aura Sanadora (px) <input type="number" id="cfg-med-aurarange" class="cfg-input"></div>
+                    <div class="cfg-label">Curación (HP/s) <input type="number" step="0.1" id="cfg-med-aurarate" class="cfg-input"></div>
+                </div>
+                <div class="moral-zone">
+                    <div class="cfg-label">Moral Máxima (Pts) <input type="number" id="cfg-med-moral" class="cfg-input"></div>
+                    <div class="cfg-label">Radio de Terror al morir (px) <input type="number" id="cfg-med-trange" class="cfg-input"></div>
+                    <div class="cfg-label">Impacto Moral al morir (pts/s) <input type="number" step="0.1" id="cfg-med-tdmg" class="cfg-input"></div>
+                </div>
+            </div>
+
             <div class="cfg-group" style="border-color: #ffd700;">
                 <h3 style="color: #ffd700;">🎖️ OFICIAL</h3>
                 <div class="cfg-label">Coste (MP) <input type="number" id="cfg-off-cost" class="cfg-input"></div>
@@ -363,6 +400,10 @@
                 <div class="cfg-label">Cadencia de Tiro (ms) <input type="number" id="cfg-off-firerate" class="cfg-input"></div>
                 <div class="cfg-label">Daño de Arma <input type="number" id="cfg-off-dmg" class="cfg-input"></div>
                 <div class="cfg-label">Daño contra Atrincherados <input type="number" id="cfg-off-trench" class="cfg-input"></div>
+                <div class="aura-zone" style="border-color: #ffd700; background: #332a00;">
+                    <div class="cfg-label">Radio de Aura de Mando (px) <input type="number" id="cfg-off-aurarange" class="cfg-input"></div>
+                    <div class="cfg-label">Restauración Moral (Pts/s) <input type="number" step="0.1" id="cfg-off-aurarate" class="cfg-input"></div>
+                </div>
                 <div class="moral-zone">
                     <div class="cfg-label">Moral Máxima (Pts) <input type="number" id="cfg-off-moral" class="cfg-input"></div>
                     <div class="cfg-label">Radio de Terror al morir (px) <input type="number" id="cfg-off-trange" class="cfg-input"></div>
@@ -410,22 +451,24 @@
         { name: 'GA',  kills: 180, hpBonus: 3000, moralBonus: 3000, color: '#ffcc00', type: 'star', n: 5 } // 17 
     ];
 
+    // VALORES EXACTOS DE LAS IMAGENES
     const DEFAULT_CONFIG = {
-        infantry: { cost: 10, hp: 100, speed: 1.0, dmg: 50, vision: 350, range: 250, fireRate: 3000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        grenadier: { cost: 20, hp: 250, speed: 0.5, dmg: 100, vision: 350, range: 150, fireRate: 4000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        flamethrower: { cost: 35, hp: 50, speed: 2.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        sniper: { cost: 40, hp: 80, speed: 1.5, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        officer: { cost: 80, hp: 100, speed: 1.2, dmg: 25, vision: 350, range: 120, fireRate: 1500, maxMoral: 150, terrorRange: 80, terrorDmg: 20 }
+        infantry: { cost: 10, hp: 100, speed: 1.2, dmg: 50, vision: 300, range: 250, fireRate: 3000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        grenadier: { cost: 20, hp: 250, speed: 0.5, dmg: 100, vision: 300, range: 150, fireRate: 4000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        flamethrower: { cost: 35, hp: 50, speed: 2, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        sniper: { cost: 40, hp: 80, speed: 1, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        medic: { cost: 70, hp: 50, speed: 0.75, dmg: 25, vision: 300, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 10, auraRange: 50, auraRate: 5 },
+        officer: { cost: 80, hp: 100, speed: 1, dmg: 25, vision: 400, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 20, auraRange: 100, auraRate: 10 }
     };
-    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, officer: 5 };
+    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, medic: 5, officer: 5 };
 
     let game = { 
         active: false, loopStarted: false, worldW: 3500, camX: 0, 
         mp: 100, eMp: 100, pHp: 100, eHp: 100, pCas: 0, eCas: 0, 
         selected: -1, selectedPct: 1.0, 
-        selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'officer']), 
+        selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']), 
         baseRally: 'FRONT', showRanges: false,
-        resourceMode: 'infinite', maxResources: 1000, corpseTime: 120,
+        resourceMode: 'infinite', maxResources: 2000, corpseTime: 120,
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
         trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG))
     };
@@ -436,18 +479,14 @@
 
     function loadConfig() {
         try {
-            let saved = localStorage.getItem('mudAndSteelConfig');
+            // Renombrado el canal de guardado para forzar la actualización a la v1.65
+            let saved = localStorage.getItem('mudAndSteelConfig_v165');
             if (saved) {
                 let parsed = JSON.parse(saved);
-                game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 1000;
+                game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
                 game.corpseTime = parsed.corpseTime !== undefined ? parsed.corpseTime : 120;
                 game.resourceMode = parsed.resourceMode || 'infinite';
-                if(parsed.config) {
-                    game.config = { ...DEFAULT_CONFIG, ...parsed.config };
-                    if (game.config.officer && game.config.officer.cost === 50) {
-                        game.config.officer = { ...DEFAULT_CONFIG.officer };
-                    }
-                }
+                if(parsed.config) game.config = { ...DEFAULT_CONFIG, ...parsed.config };
                 if(parsed.trenchDmg) game.trenchDmg = { ...DEFAULT_TRENCH_DMG, ...parsed.trenchDmg };
             }
         } catch(e) { console.log("Error loading config", e); }
@@ -463,12 +502,12 @@
             config: game.config,
             trenchDmg: game.trenchDmg
         };
-        try { localStorage.setItem('mudAndSteelConfig', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('mudAndSteelConfig_v165', JSON.stringify(data)); } catch(e) {}
     }
 
     function resetConfig() {
         if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
-            game.maxResources = 1000;
+            game.maxResources = 2000;
             game.corpseTime = 120;
             game.config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
             game.trenchDmg = JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG));
@@ -537,8 +576,8 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
-        ['inf', 'gre', 'fla', 'sni', 'off'].forEach(prefix => {
-            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : (prefix === 'sni' ? 'sniper' : 'officer')));
+        ['inf', 'gre', 'fla', 'sni', 'med', 'off'].forEach(prefix => {
+            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : (prefix === 'sni' ? 'sniper' : (prefix === 'med' ? 'medic' : 'officer'))));
             document.getElementById(`cfg-${prefix}-cost`).value = game.config[type].cost;
             document.getElementById(`cfg-${prefix}-hp`).value = game.config[type].hp;
             document.getElementById(`cfg-${prefix}-speed`).value = game.config[type].speed;
@@ -550,6 +589,10 @@
             document.getElementById(`cfg-${prefix}-moral`).value = game.config[type].maxMoral;
             document.getElementById(`cfg-${prefix}-trange`).value = game.config[type].terrorRange;
             document.getElementById(`cfg-${prefix}-tdmg`).value = game.config[type].terrorDmg;
+            if (type === 'medic' || type === 'officer') {
+                document.getElementById(`cfg-${prefix}-aurarange`).value = game.config[type].auraRange;
+                document.getElementById(`cfg-${prefix}-aurarate`).value = game.config[type].auraRate;
+            }
         });
     }
 
@@ -563,14 +606,15 @@
         document.getElementById('lbl-mp-gre').innerText = game.config.grenadier.cost + " MP";
         document.getElementById('lbl-mp-fla').innerText = game.config.flamethrower.cost + " MP";
         document.getElementById('lbl-mp-sni').innerText = game.config.sniper.cost + " MP";
+        document.getElementById('lbl-mp-med').innerText = game.config.medic.cost + " MP";
         document.getElementById('lbl-mp-off').innerText = game.config.officer.cost + " MP";
     }
 
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
-        ['inf', 'gre', 'fla', 'sni', 'off'].forEach(prefix => {
-            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : (prefix === 'sni' ? 'sniper' : 'officer')));
+        ['inf', 'gre', 'fla', 'sni', 'med', 'off'].forEach(prefix => {
+            let type = prefix === 'inf' ? 'infantry' : (prefix === 'gre' ? 'grenadier' : (prefix === 'fla' ? 'flamethrower' : (prefix === 'sni' ? 'sniper' : (prefix === 'med' ? 'medic' : 'officer'))));
             game.config[type].cost = Number(document.getElementById(`cfg-${prefix}-cost`).value);
             game.config[type].hp = Number(document.getElementById(`cfg-${prefix}-hp`).value);
             game.config[type].speed = Number(document.getElementById(`cfg-${prefix}-speed`).value);
@@ -582,6 +626,10 @@
             game.config[type].maxMoral = Number(document.getElementById(`cfg-${prefix}-moral`).value);
             game.config[type].terrorRange = Number(document.getElementById(`cfg-${prefix}-trange`).value);
             game.config[type].terrorDmg = Number(document.getElementById(`cfg-${prefix}-tdmg`).value);
+            if (type === 'medic' || type === 'officer') {
+                game.config[type].auraRange = Number(document.getElementById(`cfg-${prefix}-aurarange`).value);
+                game.config[type].auraRate = Number(document.getElementById(`cfg-${prefix}-aurarate`).value);
+            }
         });
 
         updateCostLabels();
@@ -651,8 +699,8 @@
             document.getElementById('trench-panel').classList.remove('hidden');
             document.getElementById('t-label').innerText = "T" + (found + 1);
             
-            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'officer']);
-            ['infantry', 'grenadier', 'flamethrower', 'sniper', 'officer'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
+            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']);
+            ['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
             setPct(1.0);
         } else { deselectTrench(); }
     }
@@ -666,7 +714,7 @@
     function toggleRally() {
         game.baseRally = game.baseRally === 'FIRST' ? 'FRONT' : 'FIRST';
         let t = game.baseRally === 'FIRST' ? '<span style="color:#5bc0de">1ª TRINCHERA</span>' : '<span style="color:var(--accent)">AL FRENTE</span>';
-        document.getElementById('rally-btn').innerHTML = `📍 DESTINO:<br>${t}`;
+        document.getElementById('rally-btn').innerHTML = `📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block;">${t}</span>`;
     }
 
     function setPct(val) {
@@ -748,13 +796,15 @@
         let greCost = game.config.grenadier.cost;
         let flaCost = game.config.flamethrower.cost;
         let sniCost = game.config.sniper.cost;
+        let medCost = game.config.medic.cost;
         let offCost = game.config.officer.cost;
 
         let rn = Math.random();
         if (game.eMp >= flaCost && rn > 0.85) spawnUnit('flamethrower', true);
         else if (game.eMp >= offCost && rn > 0.80) spawnUnit('officer', true);
-        else if (game.eMp >= sniCost && rn > 0.75) spawnUnit('sniper', true);
-        else if (game.eMp >= greCost && rn > 0.65) spawnUnit('grenadier', true);
+        else if (game.eMp >= medCost && rn > 0.75) spawnUnit('medic', true);
+        else if (game.eMp >= sniCost && rn > 0.70) spawnUnit('sniper', true);
+        else if (game.eMp >= greCost && rn > 0.60) spawnUnit('grenadier', true);
         else if (game.eMp >= infCost && rn > 0.2) spawnUnit('infantry', true);
 
         trenches.forEach((t, i) => {
@@ -864,17 +914,25 @@
                 continue; 
             }
 
+            let auraHeal = 0;
+            let auraMoral = 0;
             let officerNearby = false;
-            if (u.type !== 'officer') {
-                for (let j = 0; j < units.length; j++) {
-                    let off = units[j];
-                    if (off.side === u.side && off.type === 'officer' && off.state !== 'HEAL' && off.hp > 0) {
-                        if (Math.hypot(off.x - u.x, off.y - u.y) < 200) { 
-                            officerNearby = true;
-                            break;
-                        }
+
+            units.forEach(other => {
+                if (other.side === u.side && other.hp > 0 && other.state !== 'HEAL' && !other.broken && other.id !== u.id) {
+                    let dist = Math.hypot(other.x - u.x, other.y - u.y);
+                    if (other.type === 'medic' && dist <= game.config.medic.auraRange) {
+                        auraHeal += game.config.medic.auraRate / 60;
+                    }
+                    if (other.type === 'officer' && dist <= game.config.officer.auraRange) {
+                        auraMoral += game.config.officer.auraRate / 60;
+                        officerNearby = true;
                     }
                 }
+            });
+
+            if (auraHeal > 0 && u.hp < u.maxHp) {
+                u.hp = Math.min(u.maxHp, u.hp + auraHeal);
             }
 
             let terrorApplied = 0;
@@ -890,13 +948,17 @@
                 let terrorResistance = Math.max(0.1, 1.0 - (u.rankIdx * 0.05));
                 if (officerNearby) terrorResistance *= 0.2; 
                 u.morale -= (terrorApplied * terrorResistance); 
-            } else {
-                let canRecover = false;
-                if (u.inT !== -1 && u.state === 'IDLE') {
-                    let isFront = (u.side === 'player' && u.inT === playerFront) || (u.side === 'enemy' && u.inT === enemyFront);
-                    if (!isFront) canRecover = true;
-                }
-                if (canRecover) u.morale += (3 / 60); 
+            }
+            
+            let canRecover = false;
+            if (u.inT !== -1 && u.state === 'IDLE') {
+                let isFront = (u.side === 'player' && u.inT === playerFront) || (u.side === 'enemy' && u.inT === enemyFront);
+                if (!isFront) canRecover = true;
+            }
+            
+            if (canRecover || auraMoral > 0) {
+                let recovery = (canRecover ? (3/60) : 0) + auraMoral;
+                u.morale = Math.min(u.maxMoral, u.morale + recovery);
             }
             
             u.morale = Math.max(0, Math.min(u.maxMoral, u.morale));
@@ -925,7 +987,24 @@
             }
 
             let target = null, minDist = Infinity;
-            units.forEach(c => { if(c.side !== u.side && c.state !== 'HEAL' && c.hp > 0) { let d = Math.hypot(c.x - u.x, c.y - u.y); if(d < minDist) { minDist = d; target = c; } } });
+            let healTarget = null, minHealDist = Infinity;
+            let moralTarget = null, minMoralDist = Infinity;
+
+            units.forEach(c => { 
+                if(c.side !== u.side && c.state !== 'HEAL' && c.hp > 0) { 
+                    let d = Math.hypot(c.x - u.x, c.y - u.y); 
+                    if(d < minDist) { minDist = d; target = c; } 
+                } 
+                if(c.side === u.side && c.state !== 'HEAL' && c.hp > 0 && c.id !== u.id) {
+                    let d = Math.hypot(c.x - u.x, c.y - u.y);
+                    if (u.type === 'medic' && c.hp < c.maxHp && d <= u.visionRange) {
+                        if (d < minHealDist) { minHealDist = d; healTarget = c; }
+                    }
+                    if (u.type === 'officer' && c.morale < c.maxMoral && d <= u.visionRange) {
+                        if (d < minMoralDist) { minMoralDist = d; moralTarget = c; }
+                    }
+                }
+            });
             
             let isRetreating = (u.side === 'player' && u.dir === -1) || (u.side === 'enemy' && u.dir === 1);
             let canShoot = target && (minDist <= u.weaponRange) && !u.broken && !isRetreating;
@@ -935,15 +1014,49 @@
             let stopToShoot = canShoot && !targetInTrench;
 
             let dx = 0, dy = 0, isMoving = false;
+            let isSupportMove = false;
+            let supportTarget = null;
+            
+            if (u.type === 'medic') supportTarget = healTarget;
+            if (u.type === 'officer') supportTarget = moralTarget;
 
-            if (u.inT === -1 && u.state === 'MOVE') {
-                if (u.targetMode === 'BASE') {
-                    if (!canShoot) { dx = u.baseSpeed * u.dir; isMoving = true; }
-                } else if (seesTarget && !stopToShoot && !targetInTrench) {
-                    let a = Math.atan2(target.y - u.y, target.x - u.x);
-                    dx = Math.cos(a) * u.baseSpeed; dy = Math.sin(a) * u.baseSpeed; isMoving = true;
-                } else if (!stopToShoot) {
-                    dx = u.baseSpeed * u.dir; isMoving = true;
+            if (!u.broken && u.targetMode !== 'BASE' && u.targetMode !== 'PREV' && u.state !== 'HEAL' && supportTarget) {
+                let distToSupp = Math.hypot(supportTarget.x - u.x, supportTarget.y - u.y);
+                let auraR = game.config[u.type].auraRange;
+                
+                if (distToSupp > auraR * 0.6) { 
+                    if (u.inT !== -1 && u.state === 'IDLE') {
+                        let sameTrench = (supportTarget.inT === u.inT && supportTarget.state === 'IDLE');
+                        u.state = 'MOVE'; 
+                        let tCenter = trenches[u.inT].x + trenches[u.inT].w/2;
+                        u.inT = -1; 
+                        
+                        if (!sameTrench) {
+                            let rearDir = u.side === 'player' ? -1 : 1;
+                            u.x = tCenter + (rearDir * 35); 
+                        }
+                    }
+                    let a = Math.atan2(supportTarget.y - u.y, supportTarget.x - u.x);
+                    dx = Math.cos(a) * u.baseSpeed; 
+                    dy = Math.sin(a) * u.baseSpeed; 
+                    isMoving = true;
+                    isSupportMove = true;
+                } else {
+                    isMoving = false;
+                    isSupportMove = true;
+                }
+            }
+
+            if (!isSupportMove) {
+                if (u.inT === -1 && u.state === 'MOVE') {
+                    if (u.targetMode === 'BASE') {
+                        if (!canShoot) { dx = u.baseSpeed * u.dir; isMoving = true; }
+                    } else if (seesTarget && !stopToShoot && !targetInTrench) {
+                        let a = Math.atan2(target.y - u.y, target.x - u.x);
+                        dx = Math.cos(a) * u.baseSpeed; dy = Math.sin(a) * u.baseSpeed; isMoving = true;
+                    } else if (!stopToShoot) {
+                        dx = u.baseSpeed * u.dir; isMoving = true;
+                    }
                 }
             }
 
@@ -975,8 +1088,9 @@
                     trenches.forEach((t, idx) => {
                         if (Math.abs(nextX - (t.x + t.w/2)) < 15) {
                             let eInT = units.filter(en => en.side !== u.side && en.inT === idx).length;
-                            if(eInT > 0) blocked = true;
-                            else {
+                            if(eInT > 0) { 
+                                blocked = true; 
+                            } else if (!isSupportMove) { 
                                 if (u.side === 'player' && u.dir === 1) { 
                                     if (u.targetMode === 'NEXT' || (u.targetMode === 'FIRST' && t.owner !== 'enemy')) { u.state = 'IDLE'; u.inT = idx; blocked = true; } 
                                     else if (u.targetMode === 'FRONT') {
@@ -1179,13 +1293,20 @@
         units.forEach(u => {
             let isP = u.side === 'player';
             
-            if (u.type === 'officer' && u.state !== 'HEAL' && u.hp > 0) {
-                ctx.fillStyle = 'rgba(255, 215, 0, 0.05)';
-                ctx.beginPath(); ctx.arc(u.x, u.y, 200, 0, Math.PI*2); ctx.fill();
-                if (game.showRanges) {
-                    ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+            if (u.state !== 'HEAL' && u.hp > 0) {
+                if (u.type === 'officer') {
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.05)';
+                    ctx.beginPath(); ctx.arc(u.x, u.y, game.config.officer.auraRange, 0, Math.PI*2); ctx.fill();
+                    if (game.showRanges) {
+                        ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                    }
+                }
+                if (u.type === 'medic') {
+                    ctx.fillStyle = 'rgba(76, 175, 80, 0.05)';
+                    ctx.beginPath(); ctx.arc(u.x, u.y, game.config.medic.auraRange, 0, Math.PI*2); ctx.fill();
+                    if (game.showRanges) {
+                        ctx.strokeStyle = 'rgba(76, 175, 80, 0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                    }
                 }
             }
 
@@ -1213,15 +1334,27 @@
             ctx.fillStyle = '#e0ac69';
             ctx.beginPath(); ctx.arc(u.x, u.y, u.radius, 0, Math.PI); ctx.fill();
 
-            ctx.fillStyle = isP ? '#4b5320' : '#2c3e50'; 
+            if (isP) {
+                if (u.type === 'medic') ctx.fillStyle = '#ffffff'; 
+                else ctx.fillStyle = '#4b5320';
+            } else {
+                if (u.type === 'medic') ctx.fillStyle = '#eeeeee'; 
+                else ctx.fillStyle = '#2c3e50';
+            }
+
             ctx.beginPath(); ctx.arc(u.x, u.y, u.radius + 1, Math.PI, Math.PI*2); ctx.fill(); 
-            ctx.strokeStyle = isP ? '#3d451a' : '#1a252f';
+            ctx.strokeStyle = isP ? (u.type === 'medic' ? '#cccccc' : '#3d451a') : '#1a252f';
             ctx.lineWidth = 3;
             ctx.beginPath(); ctx.moveTo(u.x - u.radius - 3, u.y); ctx.lineTo(u.x + u.radius + 3, u.y); ctx.stroke();
 
             ctx.font = "18px Arial"; 
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            let icon = u.type === 'infantry' ? '🪖' : (u.type === 'grenadier' ? '💣' : (u.type === 'flamethrower' ? '🔥' : (u.type === 'sniper' ? '🎯' : '🎖️')));
+            let icon = '🪖';
+            if (u.type === 'grenadier') icon = '💣';
+            if (u.type === 'flamethrower') icon = '🔥';
+            if (u.type === 'sniper') icon = '🎯';
+            if (u.type === 'officer') icon = '🎖️';
+            if (u.type === 'medic') icon = '⛑️';
             
             ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 4; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 2;
             ctx.fillStyle = '#ffffff'; 
