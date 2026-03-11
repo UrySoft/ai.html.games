@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.68</title>
+    <title>Trench Warfare: Mud & Steel v1.72</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -258,7 +258,7 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V1.68</p>
+        <p class="subtitle">TRENCH WARFARE V1.72</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -296,13 +296,6 @@
                     <li><strong>Médico / Sanitario (⛑️):</strong> Escanea el campo de batalla en busca de tropas heridas y sale de la trinchera para correr hacia ellas y curarlas con su aura verde.</li>
                     <li><strong>Oficial (🎖️):</strong> Llevan solo una pistola, pero <strong>proyectan un aura de mando dorada</strong>. Buscan a tropas asustadas para restaurarles la moral activamente y hacerlos casi inmunes al terror.</li>
                 </ul>
-
-                <h2>⭐ Rango y Veteranía</h2>
-                <p>A medida que un soldado abate enemigos, asciende en el escalafón obteniendo más Salud, Moral y resistencia pasiva al pánico.</p>
-                <ul>
-                    <li><strong>Tropas y Médicos:</strong> Solo pueden ascender hasta Sargento Mayor (SGM - 3 Galones, 3 Arcos).</li>
-                    <li><strong>Oficiales (🎖️):</strong> Nacen como Tenientes y son los únicos que pueden ascender hasta General de 5 Estrellas (GA).</li>
-                </ul>
             </div>
             <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
         </div>
@@ -326,6 +319,7 @@
 
             <div class="cfg-group" style="border-color: #aaa;">
                 <h3 style="color: #aaa;">⚙️ AJUSTES GENERALES</h3>
+                <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-sound" style="transform: scale(1.3);" onchange="game.soundEnabled = this.checked;"></div>
                 <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
                 <div class="cfg-label">Tiempo del Cadáver (Segundos) <input type="number" id="cfg-corpse-time" class="cfg-input"></div>
                 <div class="cfg-label">Mostrar Alcances y Visión <input type="checkbox" id="toggle-ranges" style="transform: scale(1.3);" onchange="game.showRanges = this.checked;"></div>
@@ -448,6 +442,13 @@
 </div>
 
 <script>
+    function playSound(file, vol = 0.5) {
+        if (!game.soundEnabled) return;
+        let a = new Audio(file);
+        a.volume = vol;
+        a.play().catch(e => {});
+    }
+
     function updateMenuMedia() {
         let isVert = window.innerHeight > window.innerWidth;
         let suffix = isVert ? "vertical" : "horizontal";
@@ -490,33 +491,33 @@
     const MAX_OFFICER_RANK = 17; 
 
     const RANKS = [
-        { name: 'PVT', kills: 0, hpBonus: 0, moralBonus: 0, color: 'transparent', type: 'none' }, // 0
-        { name: 'PFC', kills: 2, hpBonus: 20, moralBonus: 20, color: '#ffffff', type: 'enlisted', ch: 1, ro: 0 }, // 1
-        { name: 'CPL', kills: 5, hpBonus: 40, moralBonus: 40, color: '#a3f0a3', type: 'enlisted', ch: 2, ro: 0 }, // 2
-        { name: 'SGT', kills: 9, hpBonus: 70, moralBonus: 70, color: '#5bc0de', type: 'enlisted', ch: 3, ro: 0 }, // 3
-        { name: 'SSG', kills: 14, hpBonus: 110, moralBonus: 110, color: '#9c27b0', type: 'enlisted', ch: 3, ro: 1 }, // 4
-        { name: 'MSG', kills: 20, hpBonus: 160, moralBonus: 160, color: '#ffcc00', type: 'enlisted', ch: 3, ro: 2 }, // 5
-        { name: 'SGM', kills: 27, hpBonus: 220, moralBonus: 220, color: '#ff6600', type: 'enlisted', ch: 3, ro: 3 }, // 6 
-        { name: '2LT', kills: 35, hpBonus: 300, moralBonus: 300, color: '#ffd700', type: 'bar', n: 1 }, // 7 
-        { name: '1LT', kills: 44, hpBonus: 400, moralBonus: 400, color: '#c0c0c0', type: 'bar', n: 1 }, // 8
-        { name: 'CPT', kills: 54, hpBonus: 500, moralBonus: 500, color: '#c0c0c0', type: 'bar', n: 2 }, // 9
-        { name: 'MAJ', kills: 65, hpBonus: 650, moralBonus: 650, color: '#ffd700', type: 'oak' }, // 10
-        { name: 'LTC', kills: 77, hpBonus: 800, moralBonus: 800, color: '#c0c0c0', type: 'oak' }, // 11
-        { name: 'COL', kills: 90, hpBonus: 1000, moralBonus: 1000, color: '#c0c0c0', type: 'eagle' }, // 12
-        { name: 'BG',  kills: 105, hpBonus: 1200, moralBonus: 1200, color: '#ffffff', type: 'star', n: 1 }, // 13
-        { name: 'MG',  kills: 121, hpBonus: 1500, moralBonus: 1500, color: '#ffffff', type: 'star', n: 2 }, // 14
-        { name: 'LTG', kills: 138, hpBonus: 1800, moralBonus: 1800, color: '#ffffff', type: 'star', n: 3 }, // 15
-        { name: 'GEN', kills: 156, hpBonus: 2200, moralBonus: 2200, color: '#ffffff', type: 'star', n: 4 }, // 16
-        { name: 'GA',  kills: 180, hpBonus: 3000, moralBonus: 3000, color: '#ffcc00', type: 'star', n: 5 } // 17 
+        { name: 'PVT', kills: 0, hpBonus: 0, moralBonus: 0, color: 'transparent', type: 'none' }, 
+        { name: 'PFC', kills: 2, hpBonus: 20, moralBonus: 20, color: '#ffffff', type: 'enlisted', ch: 1, ro: 0 }, 
+        { name: 'CPL', kills: 5, hpBonus: 40, moralBonus: 40, color: '#a3f0a3', type: 'enlisted', ch: 2, ro: 0 }, 
+        { name: 'SGT', kills: 9, hpBonus: 70, moralBonus: 70, color: '#5bc0de', type: 'enlisted', ch: 3, ro: 0 }, 
+        { name: 'SSG', kills: 14, hpBonus: 110, moralBonus: 110, color: '#9c27b0', type: 'enlisted', ch: 3, ro: 1 }, 
+        { name: 'MSG', kills: 20, hpBonus: 160, moralBonus: 160, color: '#ffcc00', type: 'enlisted', ch: 3, ro: 2 }, 
+        { name: 'SGM', kills: 27, hpBonus: 220, moralBonus: 220, color: '#ff6600', type: 'enlisted', ch: 3, ro: 3 }, 
+        { name: '2LT', kills: 35, hpBonus: 300, moralBonus: 300, color: '#ffd700', type: 'bar', n: 1 }, 
+        { name: '1LT', kills: 44, hpBonus: 400, moralBonus: 400, color: '#c0c0c0', type: 'bar', n: 1 }, 
+        { name: 'CPT', kills: 54, hpBonus: 500, moralBonus: 500, color: '#c0c0c0', type: 'bar', n: 2 }, 
+        { name: 'MAJ', kills: 65, hpBonus: 650, moralBonus: 650, color: '#ffd700', type: 'oak' }, 
+        { name: 'LTC', kills: 77, hpBonus: 800, moralBonus: 800, color: '#c0c0c0', type: 'oak' }, 
+        { name: 'COL', kills: 90, hpBonus: 1000, moralBonus: 1000, color: '#c0c0c0', type: 'eagle' }, 
+        { name: 'BG',  kills: 105, hpBonus: 1200, moralBonus: 1200, color: '#ffffff', type: 'star', n: 1 }, 
+        { name: 'MG',  kills: 121, hpBonus: 1500, moralBonus: 1500, color: '#ffffff', type: 'star', n: 2 }, 
+        { name: 'LTG', kills: 138, hpBonus: 1800, moralBonus: 1800, color: '#ffffff', type: 'star', n: 3 }, 
+        { name: 'GEN', kills: 156, hpBonus: 2200, moralBonus: 2200, color: '#ffffff', type: 'star', n: 4 }, 
+        { name: 'GA',  kills: 180, hpBonus: 3000, moralBonus: 3000, color: '#ffcc00', type: 'star', n: 5 } 
     ];
 
     const DEFAULT_CONFIG = {
         infantry: { cost: 10, hp: 100, speed: 1.2, dmg: 50, vision: 300, range: 250, fireRate: 3000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
         grenadier: { cost: 20, hp: 250, speed: 0.5, dmg: 100, vision: 300, range: 150, fireRate: 4000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        flamethrower: { cost: 35, hp: 50, speed: 2, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        sniper: { cost: 40, hp: 80, speed: 1, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        flamethrower: { cost: 35, hp: 50, speed: 2.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        sniper: { cost: 40, hp: 80, speed: 1.0, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
         medic: { cost: 70, hp: 50, speed: 0.75, dmg: 25, vision: 300, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 10, auraRange: 50, auraRate: 5 },
-        officer: { cost: 80, hp: 100, speed: 1, dmg: 25, vision: 400, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 20, auraRange: 100, auraRate: 10 }
+        officer: { cost: 80, hp: 100, speed: 1.0, dmg: 25, vision: 400, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 20, auraRange: 100, auraRate: 10 }
     };
     const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, medic: 5, officer: 5 };
 
@@ -527,11 +528,9 @@
         selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']), 
         baseRally: 'FRONT', showRanges: false,
         resourceMode: 'infinite', maxResources: 2000, corpseTime: 120,
-        
-        // VARIABLES IA AVANZADA
+        soundEnabled: true,
         useGenAI: false, geminiKey: "", aiInterval: 5, lastAiTime: 0, isAiThinking: false,
         aiThoughts: ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."],
-        
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
         trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG))
     };
@@ -542,17 +541,21 @@
 
     function loadConfig() {
         try {
-            let saved = localStorage.getItem('mudAndSteelConfig_v168');
+            let saved = localStorage.getItem('mudAndSteelConfig_v172');
             if (saved) {
                 let parsed = JSON.parse(saved);
                 game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
                 game.corpseTime = parsed.corpseTime !== undefined ? parsed.corpseTime : 120;
                 game.resourceMode = parsed.resourceMode || 'infinite';
+                game.soundEnabled = parsed.soundEnabled !== undefined ? parsed.soundEnabled : true;
                 game.useGenAI = parsed.useGenAI || false;
                 game.geminiKey = parsed.geminiKey || "";
                 game.aiInterval = parsed.aiInterval || 5;
-                
-                if(parsed.config) game.config = { ...DEFAULT_CONFIG, ...parsed.config };
+                if(parsed.config) {
+                    for (let k in DEFAULT_CONFIG) {
+                        game.config[k] = { ...DEFAULT_CONFIG[k], ...(parsed.config[k] || {}) };
+                    }
+                }
                 if(parsed.trenchDmg) game.trenchDmg = { ...DEFAULT_TRENCH_DMG, ...parsed.trenchDmg };
             }
         } catch(e) { console.log("Error loading config", e); }
@@ -565,19 +568,21 @@
             maxResources: game.maxResources,
             corpseTime: game.corpseTime,
             resourceMode: game.resourceMode,
+            soundEnabled: game.soundEnabled,
             useGenAI: game.useGenAI,
             geminiKey: game.geminiKey,
             aiInterval: game.aiInterval,
             config: game.config,
             trenchDmg: game.trenchDmg
         };
-        try { localStorage.setItem('mudAndSteelConfig_v168', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('mudAndSteelConfig_v172', JSON.stringify(data)); } catch(e) {}
     }
 
     function resetConfig() {
         if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
             game.maxResources = 2000;
             game.corpseTime = 120;
+            game.soundEnabled = true;
             game.useGenAI = false;
             game.geminiKey = "";
             game.aiInterval = 5;
@@ -650,6 +655,7 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
+        document.getElementById('cfg-sound').checked = game.soundEnabled;
         document.getElementById('cfg-use-ai').checked = game.useGenAI;
         document.getElementById('cfg-gemini-key').value = game.geminiKey;
         document.getElementById('cfg-ai-interval').value = game.aiInterval;
@@ -691,6 +697,7 @@
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
+        game.soundEnabled = document.getElementById('cfg-sound').checked;
         
         game.useGenAI = document.getElementById('cfg-use-ai').checked;
         game.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
@@ -833,10 +840,13 @@
             side: isE ? 'enemy' : 'player', type: type, 
             hp: startHp, maxHp: startHp, 
             morale: startMoral, maxMoral: startMoral, 
-            broken: false,
+            broken: false, isRescuing: false,
             kills: rankBonus.kills, rankIdx: initialRank, 
             radius: 14, baseSpeed: conf.speed, visionRange: conf.vision, weaponRange: conf.range,
-            dir: isE ? -1 : 1, state: 'MOVE', inT: -1, lastAtk: 0, targetMode: isE ? 'FRONT' : game.baseRally
+            dir: isE ? -1 : 1, state: 'MOVE', inT: -1, 
+            lastAtk: Date.now() - conf.fireRate, // Permite disparar pronto la primera vez
+            fireOffset: Math.random() * Math.min(2000, conf.fireRate), // Desfase aleatorio asignado al nacer
+            targetMode: isE ? 'FRONT' : game.baseRally
         });
     }
 
@@ -861,6 +871,10 @@
         
         let tCenter = trenches[targetTrench].x + trenches[targetTrench].w/2;
 
+        if (type === 'NEXT' || type === 'FRONT') {
+            playSound('silbato1.mp3', 0.6);
+        }
+
         for(let i=0; i<count; i++) {
             pool[i].state = 'MOVE'; pool[i].inT = -1; 
             if (type === 'PREV' || type === 'EVAC') { 
@@ -875,7 +889,6 @@
         }
     }
 
-    // --- IA ENEMIGA (MOCK / GEMINI) ---
     function addAiConsoleLine(text) {
         let words = text.split(' ');
         let line = '';
@@ -927,7 +940,6 @@
             decision.spawn = "infantry";
         }
 
-        // Ordenar trincheras
         if (rn > 0.5) {
             for(let i = trenches.length-1; i>=0; i--) {
                 let enInT = units.filter(u => u.side === 'enemy' && u.inT === i);
@@ -959,7 +971,6 @@
         let stateStr = buildGameStateString();
 
         if (game.geminiKey && game.geminiKey.trim() !== "") {
-            // IA REAL VIA API
             try {
                 let prompt = `You are a ruthless WW1 enemy commander. Respond ONLY in strict JSON. State: ${stateStr}. Choose 1 unit to spawn (infantry, grenadier, flamethrower, sniper, medic, officer) if you have enough MP. Choose 1 order (NEXT, PREV, EVAC) for 1 trench if you have troops there. Format: {"thought": "Short military reasoning in Spanish", "spawn": "unit_name_or_null", "order": {"trench": index, "action": "ACTION"} or null}`;
                 
@@ -983,7 +994,6 @@
                 addAiConsoleLine("[ERROR] Transmisión con Alto Mando fallida. Reintentando...");
             }
         } else {
-            // IA SIMULADA (MOCK) LOCAL
             setTimeout(() => {
                 let decision = simulateSmartAI(stateStr);
                 if (decision.thought) addAiConsoleLine("> " + decision.thought);
@@ -991,12 +1001,11 @@
                 if (decision.order) executeOrder(decision.order.action, decision.order.trench, 'enemy');
                 game.isAiThinking = false;
             }, 800);
-            return; // Exit early to respect timeout flag
+            return; 
         }
         game.isAiThinking = false;
     }
 
-    // BUCLE DE RECURSOS Y DECISIONES IA
     setInterval(() => { 
         if(game.active && game.resourceMode === 'infinite' && document.getElementById('options-screen').classList.contains('hidden') && document.getElementById('manual-screen').classList.contains('hidden')) { 
             game.mp += 3; game.eMp += 3; 
@@ -1009,7 +1018,6 @@
         if (game.useGenAI) {
             evaluateEnemyAIGemini();
         } else {
-            // IA CLÁSICA (HARDCODED)
             let infCost = game.config.infantry.cost;
             let greCost = game.config.grenadier.cost;
             let flaCost = game.config.flamethrower.cost;
@@ -1030,7 +1038,10 @@
                 eIn.forEach(u => { if (u.hp < u.maxHp * 0.35 && Math.random() > 0.5) { u.state = 'MOVE'; u.inT = -1; u.x += 45; u.dir = 1; u.targetMode = 'BASE'; } });
                 
                 const eHealthy = eIn.filter(u => u.hp >= u.maxHp * 0.4 && !u.broken);
-                if(eHealthy.length >= 4 && Math.random() > 0.6) { eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); }
+                if(eHealthy.length >= 4 && Math.random() > 0.6) { 
+                    playSound('silbato1.mp3', 0.6); 
+                    eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); 
+                }
             });
         }
     }, 2000);
@@ -1061,24 +1072,34 @@
         explosions.forEach((ex, i) => { ex.r += (ex.maxR - ex.r) * 0.15; ex.life--; if(ex.life <= 0) explosions.splice(i, 1); });
         corpses.forEach((c, i) => { c.life--; if(c.life <= 0) corpses.splice(i, 1); });
 
-        bullets.forEach((b, i) => {
-            b.x += b.vx; b.y += b.vy; b.life--;
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx; 
+            b.y += b.vy; 
+            b.life--;
+            
             if (b.type === 'fire') b.r += 0.4;
             let hitSomething = false;
 
-            units.forEach(u => {
-                if(u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) { 
-                    if (b.type !== 'fire' && hitSomething) return;
-                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 3;
+            for (let j = 0; j < units.length; j++) {
+                let u = units[j];
+                if (u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) {
+                    if (b.type !== 'fire' && hitSomething) continue; 
+                    
+                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 4;
                     if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
                         
                         let actualDmg = b.dmg;
                         let inAnyTrench = false;
                         
                         if (u.state !== 'HEAL') {
-                            trenches.forEach(t => {
-                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) inAnyTrench = true;
-                            });
+                            for (let k = 0; k < trenches.length; k++) {
+                                let t = trenches[k];
+                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) {
+                                    inAnyTrench = true;
+                                    break;
+                                }
+                            }
                         }
 
                         if (inAnyTrench) {
@@ -1105,14 +1126,21 @@
                         }
                         
                         hitSomething = true;
+                        if (b.type !== 'fire') break; 
                     }
                 }
-            });
-            if(hitSomething || b.life <= 0) {
-                if (hitSomething && b.type === 'grenade') explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
-                if (b.type !== 'fire' || b.life <= 0) bullets.splice(i, 1);
             }
-        });
+
+            if(hitSomething || b.life <= 0) {
+                if (hitSomething && b.type === 'grenade') {
+                    explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
+                    playSound('granada1.mp3', 0.6); 
+                }
+                if (b.type !== 'fire' || b.life <= 0) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
 
         for (let i = units.length - 1; i >= 0; i--) {
             const u = units[i];
@@ -1163,16 +1191,17 @@
                 }
             });
             
+            let canRecover = false; 
+            
             if (terrorApplied > 0) {
                 let terrorResistance = Math.max(0.1, 1.0 - (u.rankIdx * 0.05));
                 if (officerNearby) terrorResistance *= 0.2; 
                 u.morale -= (terrorApplied * terrorResistance); 
-            }
-            
-            let canRecover = false;
-            if (u.inT !== -1 && u.state === 'IDLE') {
-                let isFront = (u.side === 'player' && u.inT === playerFront) || (u.side === 'enemy' && u.inT === enemyFront);
-                if (!isFront) canRecover = true;
+            } else {
+                if (u.inT !== -1 && u.state === 'IDLE') {
+                    let isFront = (u.side === 'player' && u.inT === playerFront) || (u.side === 'enemy' && u.inT === enemyFront);
+                    if (!isFront) canRecover = true;
+                }
             }
             
             if (canRecover || auraMoral > 0) {
@@ -1232,12 +1261,29 @@
             let targetInTrench = target && target.inT !== -1 && target.state === 'IDLE';
             let stopToShoot = canShoot && !targetInTrench;
 
+            // EVITAR DISPAROS SINCRONIZADOS AL VER UN ENEMIGO POR PRIMERA VEZ
+            let uConf = game.config[u.type];
+            if (!canShoot) {
+                if (Date.now() - u.lastAtk > uConf.fireRate) {
+                    u.lastAtk = Date.now() - uConf.fireRate;
+                }
+            }
+
             let dx = 0, dy = 0, isMoving = false;
             let isSupportMove = false;
             let supportTarget = null;
             
             if (u.type === 'medic') supportTarget = healTarget;
             if (u.type === 'officer') supportTarget = moralTarget;
+
+            if (u.type === 'medic') {
+                if (supportTarget && !u.isRescuing) {
+                    playSound('medico1.mp3', 0.6);
+                    u.isRescuing = true;
+                } else if (!supportTarget) {
+                    u.isRescuing = false;
+                }
+            }
 
             if (!u.broken && u.targetMode !== 'BASE' && u.targetMode !== 'PREV' && u.state !== 'HEAL' && supportTarget) {
                 let distToSupp = Math.hypot(supportTarget.x - u.x, supportTarget.y - u.y);
@@ -1280,7 +1326,6 @@
             }
 
             if (isMoving) {
-                
                 obstacles.forEach(ob => {
                     let dxOb = ob.x - u.x;
                     let dyOb = ob.y - u.y;
@@ -1346,18 +1391,32 @@
                 }
             }
 
-            let uConf = game.config[u.type];
-            if(canShoot && Date.now() - u.lastAtk > uConf.fireRate) {
-                u.lastAtk = Date.now(); let a = Math.atan2(target.y - u.y, target.x - u.x);
+            if(canShoot && Date.now() - u.lastAtk > (uConf.fireRate + (u.fireOffset || 0))) {
+                u.lastAtk = Date.now(); 
+                u.fireOffset = Math.random() * Math.min(2000, uConf.fireRate); // Recalcular desfase para el siguiente disparo
+                
+                let a = Math.atan2(target.y - u.y, target.x - u.x);
+                let gunTipX = u.x + Math.cos(a) * 15;
+                let gunTipY = u.y + Math.sin(a) * 15;
+                
                 if (u.type === 'flamethrower') {
+                    playSound('lanzallamas1.mp3', 0.3);
                     let spread = (Math.random() - 0.5) * 0.4; 
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a + spread)*7, vy: Math.sin(a + spread)*7, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 25, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a + spread)*6, vy: Math.sin(a + spread)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
                 } else if (u.type === 'grenadier') {
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'grenade', color: '#222' });
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*6, vy: Math.sin(a)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'grenade', color: '#222' });
                 } else if (u.type === 'sniper') {
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*25, vy: Math.sin(a)*25, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
+                    playSound('francotirador1.mp3', 0.6);
+                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 8, life: 5}); 
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
+                } else if (u.type === 'officer' || u.type === 'medic') {
+                    playSound('pistola1.mp3', 0.4);
+                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 5, life: 3}); 
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*14, vy: Math.sin(a)*14, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'bullet', color: '#ffffbb' }); 
                 } else {
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*18, vy: Math.sin(a)*18, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 40, type: 'bullet', color: '#ffffbb' });
+                    playSound('rifle1.mp3', 0.25);
+                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 6, life: 4}); 
+                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*15, vy: Math.sin(a)*15, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'bullet', color: '#ffffbb' });
                 }
                 u.dir = (target.x > u.x) ? 1 : -1;
             }
@@ -1369,6 +1428,7 @@
                 if (u.side === 'player') game.pCas++; else game.eCas++;
                 let cLife = game.corpseTime * 60; 
                 corpses.push({x: u.x, y: u.y, side: u.side, type: u.type, life: cLife, maxLife: cLife}); 
+                playSound('muerte1.mp3', 0.4); 
                 units.splice(i, 1);
             }
         }
@@ -1673,8 +1733,11 @@
             } else if (b.type === 'grenade') {
                 ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
             } else {
-                ctx.lineWidth = 3; ctx.strokeStyle = b.color;
-                ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x-b.vx*1.5, b.y-b.vy*1.5); ctx.stroke(); 
+                ctx.lineWidth = b.color === '#ffffff' ? 4 : 3; 
+                ctx.shadowColor = b.color; ctx.shadowBlur = 4;
+                ctx.strokeStyle = b.color;
+                ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * 2, b.y - b.vy * 2); ctx.stroke(); 
+                ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
             }
         });
 
@@ -1684,7 +1747,6 @@
             ctx.fillStyle = `rgba(255, 200, 0, ${alpha})`; ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r * 0.6, 0, Math.PI*2); ctx.fill();
         });
 
-        // CONSOLA IA ENEMIGA
         if (game.useGenAI) {
             let cx = game.worldW - BASE_W + 5;
             let cy = HORIZON_Y - 50;
