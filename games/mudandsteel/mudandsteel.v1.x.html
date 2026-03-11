@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.78</title>
+    <title>Trench Warfare: Mud & Steel v1.85</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -185,7 +185,7 @@
         .btn-manual-main { background: rgba(34,34,34,0.8); border-color: #555; color: #fff; }
         .btn-danger { background: linear-gradient(to bottom, #8b3a3a, #5c2626); border-color: #ff6666; }
         
-        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: center;}
+        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9);}
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.9rem; padding-bottom: 10px; border-bottom: 1px solid #333; }
         
         .cfg-group { background: #222; padding: 10px; border-radius: 5px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
@@ -198,12 +198,12 @@
         .aura-zone { background: #1a332a; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #4caf50; }
         .ai-zone { background: #102a3a; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #5bc0de; }
 
-        .manual-content { text-align: left; color: #ddd; font-size: 0.9rem; line-height: 1.5; font-family:sans-serif;}
+        .manual-content { text-align: left; color: #ddd; font-size: 0.85rem; line-height: 1.4; font-family:sans-serif;}
         .manual-content h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-family:'Impact', sans-serif; letter-spacing:1px;}
         .manual-content h3 { color: #5bc0de; font-size: 1rem; margin-top: 10px; font-family:'Impact', sans-serif;}
         .manual-content ul { padding-left: 20px; margin-bottom: 10px; }
         .manual-content li { margin-bottom: 5px; }
-        .manual-content p { margin-bottom: 10px; }
+        .manual-content p { margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -243,9 +243,9 @@
                 <button class="btn" onclick="spawnUnit('infantry')"><div class="led" id="led-infantry"></div><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent); font-family:sans-serif;">10 MP</span></button>
                 <button class="btn" onclick="spawnUnit('grenadier')"><div class="led" id="led-grenadier"></div><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent); font-family:sans-serif;">20 MP</span></button>
                 <button class="btn" onclick="spawnUnit('flamethrower')"><div class="led" id="led-flamethrower"></div><span class="icon-large">🔥</span> LANZALLAMAS<br><span id="lbl-mp-fla" style="color:var(--accent); font-family:sans-serif;">35 MP</span></button>
-                <button class="btn" onclick="spawnUnit('sniper')"><div class="led" id="led-sniper"></div><span class="icon-large">🎯</span> FRANCO<br><span id="lbl-mp-sni" style="color:var(--accent); font-family:sans-serif;">40 MP</span></button>
-                <button class="btn" onclick="spawnUnit('medic')"><div class="led" id="led-medic"></div><span class="icon-large">⛑️</span> MÉDICO<br><span id="lbl-mp-med" style="color:var(--accent); font-family:sans-serif;">70 MP</span></button>
-                <button class="btn" onclick="spawnUnit('officer')"><div class="led" id="led-officer"></div><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent); font-family:sans-serif;">80 MP</span></button>
+                <button class="btn" onclick="spawnUnit('sniper')"><div class="led" id="led-sniper"></div><span class="icon-large">🎯</span> FRANCO<br><span id="lbl-mp-sni" style="color:var(--accent); font-family:sans-serif;">50 MP</span></button>
+                <button class="btn" onclick="spawnUnit('medic')"><div class="led" id="led-medic"></div><span class="icon-large">⛑️</span> MÉDICO<br><span id="lbl-mp-med" style="color:var(--accent); font-family:sans-serif;">75 MP</span></button>
+                <button class="btn" onclick="spawnUnit('officer')"><div class="led" id="led-officer"></div><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent); font-family:sans-serif;">100 MP</span></button>
             </div>
         </div>
         
@@ -282,7 +282,7 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V1.78</p>
+        <p class="subtitle">TRENCH WARFARE V1.85</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -295,33 +295,48 @@
         <button class="btn-modal btn-manual-main" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
     </div>
 
+    <div id="end-screen" class="screen hidden" style="z-index: 700;">
+        <div class="menu-overlay" style="background: rgba(0,0,0,0.9);"></div>
+        <div class="modal" style="border-width: 4px;">
+            <h1 id="end-title" style="font-size: 3.5rem; margin-bottom: 5px; font-family:'Impact',sans-serif; text-shadow: 0px 4px 0px #000;"></h1>
+            <p id="end-desc" style="color: #aaa; margin-bottom: 25px; font-family:sans-serif;"></p>
+            
+            <div style="display:flex; justify-content:space-around; margin-bottom: 30px; background:#111; padding:20px; border-radius:8px; border:1px solid #333;">
+                <div>
+                    <h3 style="color:#4caf50; font-family:'Impact'; font-size:1.2rem; margin-bottom:10px;">BAJAS ENEMIGAS</h3>
+                    <p id="end-e-cas" style="font-size:2.5rem; font-weight:bold; color:#fff; text-shadow: 0 0 10px #4caf50;"></p>
+                </div>
+                <div>
+                    <h3 style="color:#f44336; font-family:'Impact'; font-size:1.2rem; margin-bottom:10px;">TUS BAJAS</h3>
+                    <p id="end-p-cas" style="font-size:2.5rem; font-weight:bold; color:#fff; text-shadow: 0 0 10px #f44336;"></p>
+                </div>
+            </div>
+            
+            <button class="btn-start" onclick="location.reload()" style="background:#222; width:100%;">VOLVER AL CUARTEL GENERAL</button>
+        </div>
+    </div>
+
     <div id="manual-screen" class="screen hidden" style="z-index: 600;">
         <div class="menu-overlay" style="background: rgba(0,0,0,0.95);"></div>
         <div class="modal">
-            <h1 style="color:var(--accent); text-align:center; margin-bottom: 10px; font-family:'Impact',sans-serif;">MANUAL DE OPERACIONES</h1>
+            <h1 style="color:var(--accent); text-align:center; margin-bottom: 10px; font-family:'Impact',sans-serif;">MANUAL TÁCTICO DE CAMPO</h1>
             <div class="manual-content">
-                <p><strong>Mud & Steel</strong> simula la crudeza de la guerra de trincheras. En esta guerra de desgaste, la táctica, la logística y la psicología de tus tropas determinarán la victoria o la derrota.</p>
+                <p>Bienvenido al frente, Comandante. <strong>Mud & Steel</strong> es un simulador crudo de guerra de trincheras. En esta guerra de desgaste, no basta con avanzar; deberás gestionar la logística, el miedo y la brutalidad del fuego cruzado.</p>
                 
-                <h2>🤖 IA Enemiga (Comandante Gemini)</h2>
-                <p>Opcionalmente, puedes activar que la IA enemiga sea controlada por un sistema dinámico táctico que analizará el mapa para responder a tus movimientos. ¡Incluso podrás leer sus pensamientos en una pantalla en su base!</p>
+                <h2>🎯 Objetivo Principal: El Asedio</h2>
+                <p>Tu misión es empujar la línea del frente capturando trincheras sucesivas hasta alcanzar el Búnker del Cuartel General enemigo. Las tropas no ganan con solo llegar al final: <strong>deben detenerse frente a la base enemiga y abrir fuego contra sus gruesos muros de hormigón</strong>. Solo cuando los Puntos de Salud (HP) de la base lleguen a cero, conseguirás la victoria.</p>
 
-                <h2>🎯 Modos de Juego</h2>
+                <h2>🪖 Clases de Tropas y Tácticas</h2>
                 <ul>
-                    <li><strong>Recursos Continuos:</strong> Los Puntos de Mando (MP) se regeneran constantemente.</li>
-                    <li><strong>Recursos Limitados:</strong> Comienzas con un presupuesto cerrado. ¡Si se agotan, no podrás desplegar más tropas!</li>
-                </ul>
-
-                <h2>🪖 Tipos de Tropa</h2>
-                <ul>
-                    <li><strong>Infantería (🪖):</strong> Versátil. Buen alcance y daño decente.</li>
-                    <li><strong>Granadero (💣):</strong> Infantería pesada. Ignoran gran parte de la protección de las trincheras.</li>
-                    <li><strong>Lanzallamas (🔥):</strong> Daño en área que ignora trincheras.</li>
-                    <li><strong>Francotirador (🎯):</strong> Larga distancia y visión superior.</li>
+                    <li><strong>Infantería (🪖):</strong> Económica y versátil. Su fusil con bayoneta tiene buen alcance. Ideal para sostener líneas.</li>
+                    <li><strong>Granadero (💣):</strong> Lenta y pesada, pero sus explosivos ignoran gran parte de los sacos de arena enemigos.</li>
+                    <li><strong>Lanzallamas (🔥):</strong> Su chorro de fuego ignora coberturas y prende a los enemigos. <strong>Un soldado en llamas perderá vida y moral rápidamente; el pánico lo obligará a huir despavorido hacia su retaguardia.</strong></li>
+                    <li><strong>Francotirador (🎯):</strong> Ojos de águila. Dispara muy lento, pero un solo impacto puede ser letal a larga distancia.</li>
                     <li><strong>Médico / Sanitario (⛑️):</strong> Escanea el campo de batalla en busca de tropas heridas y sale de la trinchera para correr hacia ellas y curarlas con su aura verde.</li>
                     <li><strong>Oficial (🎖️):</strong> Llevan solo una pistola, pero <strong>proyectan un aura de mando dorada</strong>. Buscan a tropas asustadas para restaurarles la moral activamente y hacerlos casi inmunes al terror.</li>
                 </ul>
             </div>
-            <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
+            <button class="btn-modal" onclick="closeManual()">ENTENDIDO</button>
         </div>
     </div>
 
@@ -331,7 +346,7 @@
             <h2 style="color:var(--accent); text-align:center; margin-bottom: 5px; font-family:'Impact',sans-serif;">PANEL DE MANDO</h2>
             <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
             
-            <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL</button>
+            <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL DE CAMPO</button>
             
             <div class="ai-zone">
                 <h3 style="color: #5bc0de; margin-bottom: 8px;">🤖 COMANDANTE ENEMIGO (IA)</h3>
@@ -466,8 +481,13 @@
 </div>
 
 <script>
+    let flamerAudio = new Audio('lanzallamas1.mp3');
+    flamerAudio.loop = true;
+    flamerAudio.volume = 0.3;
+
     function playSound(file, vol = 0.5) {
         if (!game.soundEnabled) return;
+        if (file === 'lanzallamas1.mp3') return; 
         let a = new Audio(file);
         a.volume = vol;
         a.play().catch(e => {});
@@ -539,11 +559,11 @@
         infantry: { cost: 10, hp: 100, speed: 1.2, dmg: 50, vision: 300, range: 250, fireRate: 3000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
         grenadier: { cost: 20, hp: 250, speed: 0.5, dmg: 100, vision: 300, range: 150, fireRate: 4000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
         flamethrower: { cost: 35, hp: 50, speed: 2.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        sniper: { cost: 40, hp: 80, speed: 1.0, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        medic: { cost: 70, hp: 50, speed: 0.75, dmg: 25, vision: 300, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 10, auraRange: 50, auraRate: 5 },
-        officer: { cost: 80, hp: 100, speed: 1.0, dmg: 25, vision: 400, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 20, auraRange: 100, auraRate: 10 }
+        sniper: { cost: 50, hp: 80, speed: 1.0, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        medic: { cost: 75, hp: 50, speed: 0.75, dmg: 25, vision: 300, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 10, auraRange: 50, auraRate: 5 },
+        officer: { cost: 100, hp: 100, speed: 1.0, dmg: 50, vision: 400, range: 120, fireRate: 600, maxMoral: 250, terrorRange: 100, terrorDmg: 30, auraRange: 100, auraRate: 10 }
     };
-    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, medic: 5, officer: 5 };
+    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, medic: 5, officer: 25 };
 
     let game = { 
         active: false, loopStarted: false, worldW: 3500, camX: 0, 
@@ -557,7 +577,6 @@
         aiThoughts: ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."],
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
         trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG)),
-        
         pxMountains: [], pxMid: [], mudPatches: []
     };
     
@@ -569,7 +588,7 @@
 
     function loadConfig() {
         try {
-            let saved = localStorage.getItem('mudAndSteelConfig_v178');
+            let saved = localStorage.getItem('mudAndSteelConfig_v185');
             if (saved) {
                 let parsed = JSON.parse(saved);
                 game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
@@ -603,7 +622,7 @@
             config: game.config,
             trenchDmg: game.trenchDmg
         };
-        try { localStorage.setItem('mudAndSteelConfig_v178', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('mudAndSteelConfig_v185', JSON.stringify(data)); } catch(e) {}
     }
 
     function resetConfig() {
@@ -643,6 +662,27 @@
         game.active = true;
     }
 
+    function showEndScreen(isPlayerWin) {
+        game.active = false;
+        document.getElementById('end-screen').classList.remove('hidden');
+        
+        let title = document.getElementById('end-title');
+        let desc = document.getElementById('end-desc');
+        
+        if (isPlayerWin) {
+            title.innerText = "¡VICTORIA!";
+            title.style.color = "#4caf50";
+            desc.innerText = "El Cuartel General enemigo ha sido neutralizado. La línea del frente es nuestra.";
+        } else {
+            title.innerText = "DERROTA";
+            title.style.color = "#f44336";
+            desc.innerText = "Nuestras defensas han caído. El enemigo ha aplastado nuestra posición.";
+        }
+        
+        document.getElementById('end-p-cas').innerText = game.pCas;
+        document.getElementById('end-e-cas').innerText = game.eCas;
+    }
+
     function setGameMode(mode) {
         game.resourceMode = mode;
         document.getElementById('btn-mode-inf').classList.remove('active');
@@ -654,6 +694,7 @@
 
     function startGame() {
         document.getElementById('menu').classList.add('hidden');
+        document.getElementById('end-screen').classList.add('hidden');
         
         unitIdCounter = 0;
         trenches.length = 0; units.length = 0; bullets.length = 0; craters.length = 0; corpses.length = 0; explosions.length = 0; obstacles.length = 0;
@@ -774,10 +815,10 @@
         for(let i=0; i<70; i++) game.pxMid.push({x: Math.random()*game.worldW, type: Math.random()>0.5?'tree':'ruin', h: 10+Math.random()*40});
         
         game.mudPatches = [];
-        for(let i=0; i<200; i++) game.mudPatches.push({x: Math.random()*game.worldW, y: HORIZON_Y + Math.random()*(canvas.height-HORIZON_Y), r: 15+Math.random()*40, c: Math.random()>0.7?'#3a221d':'#472f25'});
+        for(let i=0; i<200; i++) game.mudPatches.push({x: Math.random()*game.worldW, y: HORIZON_Y + 20 + Math.random()*(canvas.height - HORIZON_Y - 20), r: 15+Math.random()*40, c: Math.random()>0.7?'#3a221d':'#472f25'});
 
         for(let i=0; i < 40; i++) {
-            craters.push({ x: Math.random() * game.worldW, y: HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 50), r: 15 + Math.random() * 30 });
+            craters.push({ x: Math.random() * game.worldW, y: HORIZON_Y + 30 + Math.random() * (canvas.height - HORIZON_Y - 50), r: 15 + Math.random() * 30 });
         }
         
         for (let i = 0; i < 35; i++) {
@@ -785,7 +826,7 @@
             let attempts = 0;
             while(!valid && attempts < 50) {
                 ox = pStart + Math.random() * width;
-                oy = HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 90);
+                oy = HORIZON_Y + 40 + Math.random() * (canvas.height - HORIZON_Y - 60);
                 valid = true;
                 for(let t of trenches) {
                     if (Math.abs(ox - (t.x + t.w/2)) < t.w/2 + 35) { valid = false; break; }
@@ -877,8 +918,10 @@
         let numDoors = 5;
         let spacing = h / numDoors;
         let doorIdx = Math.floor(Math.random() * numDoors);
-        // Desplazamiento desde el centro de la puerta elegida
         let spawnY = HORIZON_Y + doorIdx * spacing + spacing / 2;
+        
+        let fRate = Number(conf.fireRate);
+        if (isNaN(fRate) || fRate <= 0) fRate = DEFAULT_CONFIG[type].fireRate;
 
         units.push({
             id: unitIdCounter++, 
@@ -888,11 +931,12 @@
             hp: startHp, maxHp: startHp, 
             morale: startMoral, maxMoral: startMoral, 
             broken: false, isRescuing: false,
+            burnTimer: 0, forceFireTimer: 0,
             kills: rankBonus.kills, rankIdx: initialRank, 
             radius: 14, baseSpeed: conf.speed, visionRange: conf.vision, weaponRange: conf.range,
             dir: isE ? -1 : 1, state: 'MOVE', inT: -1, 
-            lastAtk: Date.now() - conf.fireRate, 
-            fireOffset: Math.random() * Math.min(2000, conf.fireRate),
+            lastAtk: Date.now() - fRate, 
+            fireOffset: Math.random() * Math.min(2000, fRate),
             walkPhase: Math.random() * Math.PI * 2,
             aimAngle: isE ? Math.PI : 0,
             targetMode: isE ? 'FRONT' : game.baseRally
@@ -1129,11 +1173,22 @@
         explosions.forEach((ex, i) => { ex.r += (ex.maxR - ex.r) * 0.15; ex.life--; if(ex.life <= 0) explosions.splice(i, 1); });
         corpses.forEach((c, i) => { c.life--; if(c.life <= 0) corpses.splice(i, 1); });
         
+        // 1. FÍSICAS DE CASQUILLOS LARGAS
         for(let i = shells.length - 1; i >= 0; i--) {
             let s = shells[i];
-            s.x += s.vx; s.vy += 0.5; s.y += s.vy;
-            if (s.y > HORIZON_Y + 30) { s.y = HORIZON_Y + 30; s.vy = -s.vy * 0.4; s.vx *= 0.5; }
-            s.life--; if (s.life <= 0) shells.splice(i, 1);
+            s.x += s.vx; 
+            s.vy += 0.5; // gravedad
+            s.y += s.vy; 
+            s.rot += s.vrot; // rotacion
+            
+            if (s.y > s.groundY) { 
+                s.y = s.groundY; 
+                s.vy = -s.vy * 0.4; // rebote
+                s.vx *= 0.5; // fricción
+                s.vrot *= 0.5;
+            }
+            s.life--; 
+            if (s.life <= 0) shells.splice(i, 1);
         }
 
         for(let i=dyingUnits.length-1; i>=0; i--) {
@@ -1146,95 +1201,36 @@
             }
         }
 
-        for (let i = bullets.length - 1; i >= 0; i--) {
-            let b = bullets[i];
-            b.x += b.vx; 
-            b.y += b.vy; 
-            b.life--;
-            
-            if (b.type === 'fire') b.r += 0.4;
-            let hitSomething = false;
-
-            if (b.side === 'player' && b.x >= game.worldW - BASE_W) {
-                game.eHp -= b.dmg / 40; 
-                hitSomething = true;
-            } else if (b.side === 'enemy' && b.x <= BASE_W) {
-                game.pHp -= b.dmg / 40;
-                hitSomething = true;
-            }
-
-            for (let j = 0; j < units.length; j++) {
-                let u = units[j];
-                if (u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) {
-                    if (b.type !== 'fire' && hitSomething) continue; 
-                    
-                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 4;
-                    if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
-                        
-                        let actualDmg = b.dmg;
-                        let inAnyTrench = false;
-                        
-                        if (u.state !== 'HEAL') {
-                            for (let k = 0; k < trenches.length; k++) {
-                                let t = trenches[k];
-                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) {
-                                    inAnyTrench = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (inAnyTrench) {
-                            if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
-                        }
-                        
-                        u.hp -= actualDmg; 
-                        
-                        if (u.hp <= 0 && b.sourceId !== undefined) {
-                            let shooter = units.find(s => s.id === b.sourceId);
-                            if (shooter) {
-                                shooter.kills++;
-                                let nextRank = shooter.rankIdx + 1;
-                                let maxRankAllowed = (shooter.type === 'officer') ? MAX_OFFICER_RANK : MAX_ENLISTED_RANK;
-
-                                if (nextRank <= maxRankAllowed && nextRank < RANKS.length && shooter.kills >= RANKS[nextRank].kills) {
-                                    let hpDiff = RANKS[nextRank].hpBonus - RANKS[shooter.rankIdx].hpBonus;
-                                    let moralDiff = RANKS[nextRank].moralBonus - RANKS[shooter.rankIdx].moralBonus;
-                                    shooter.rankIdx = nextRank;
-                                    shooter.hp += hpDiff;
-                                    shooter.morale += moralDiff;
-                                }
-                            }
-                        }
-                        
-                        hitSomething = true;
-                        if (b.type !== 'fire') break; 
-                    }
-                }
-            }
-
-            if(hitSomething || b.life <= 0) {
-                if (hitSomething && b.type === 'grenade') {
-                    explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
-                    playSound('granada1.mp3', 0.6); 
-                } else if (hitSomething && b.type !== 'fire') {
-                    explosions.push({x: b.x, y: b.y, r: 1, maxR: 8, life: 5}); 
-                }
-                if (b.type !== 'fire' || b.life <= 0) {
-                    bullets.splice(i, 1);
-                }
-            }
-        }
+        let anyFlamethrowerShooting = false; 
 
         for (let i = units.length - 1; i >= 0; i--) {
-            const u = units[i];
+            let u = units[i];
             
+            if (u.hp <= 0) {
+                if (u.side === 'player') game.pCas++; else game.eCas++;
+                playSound('muerte1.mp3', 0.4); 
+                dyingUnits.push({ ...u, deathTimer: 30 });
+                units.splice(i, 1);
+                continue; 
+            }
+
             let rConf = RANKS[u.rankIdx];
             u.maxMoral = game.config[u.type].maxMoral + rConf.moralBonus;
             u.maxHp = game.config[u.type].hp + rConf.hpBonus;
             u.visionRange = game.config[u.type].vision;
             u.weaponRange = game.config[u.type].range;
             u.baseSpeed = game.config[u.type].speed;
+
+            // 3. DAÑO Y PÁNICO EXTREMO DE FUEGO
+            if (u.burnTimer > 0) {
+                u.burnTimer--;
+                u.hp -= 0.15; // Un poco menos de daño para que tenga tiempo de correr
+                u.morale -= 2.0; // Moral cae a 0 instantáneamente
+                
+                if (Math.random() > 0.5) {
+                    explosions.push({x: u.x + (Math.random()*10-5), y: u.y + (Math.random()*10-5), r: 2, maxR: 6, life: 10});
+                }
+            }
             
             if (u.state === 'HEAL') { 
                 u.hp += 0.25; u.morale += (3 / 60); u.morale = Math.min(u.maxMoral, u.morale);
@@ -1352,15 +1348,13 @@
             let targetInTrench = target && target.inT !== undefined && target.inT !== -1 && target.state === 'IDLE';
             let stopToShoot = canShoot && !targetInTrench;
 
-            if (target) {
+            // 4. DIRECCIÓN DE APUNTADO AL HUIR
+            if (u.broken) {
+                u.aimAngle = u.dir === 1 ? 0 : Math.PI;
+            } else if (target) {
                 u.aimAngle = Math.atan2(target.y - u.y, target.x - u.x);
             } else {
                 u.aimAngle = u.dir === 1 ? 0 : Math.PI;
-            }
-
-            let uConf = game.config[u.type];
-            if (!canShoot) {
-                if (Date.now() - u.lastAtk > uConf.fireRate) { u.lastAtk = Date.now() - uConf.fireRate; }
             }
 
             let dx = 0, dy = 0, isMoving = false;
@@ -1459,66 +1453,165 @@
                 if(!blocked) { u.x += dx; u.y += dy; u.y = Math.min(Math.max(u.y, HORIZON_Y + 20), canvas.height - 20); }
             }
 
-            if (u.inT !== -1) { 
-                let t = trenches[u.inT]; 
-                let enemiesAlive = units.filter(en => en.side !== u.side && en.inT === u.inT).length;
-                if (enemiesAlive === 0) { t.owner = u.side; t.progress = u.side === 'player' ? 20 : -20; } 
-                else {
-                    t.progress += (u.side === 'player' ? 0.05 : -0.05); 
-                    if (t.progress >= 20) { t.owner = 'player'; t.progress = 20; }
-                    if (t.progress <= -20) { t.owner = 'enemy'; t.progress = -20; }
-                }
+            let uConf = game.config[u.type];
+            let fRate = Number(uConf.fireRate);
+            if (isNaN(fRate) || fRate <= 0) fRate = DEFAULT_CONFIG[u.type].fireRate;
+            
+            let actuallyShooting = false;
+
+            if (u.type === 'flamethrower' && canShoot) {
+                u.forceFireTimer = 60; 
             }
 
-            if(canShoot && Date.now() - u.lastAtk > (uConf.fireRate + (u.fireOffset || 0))) {
+            if (u.type === 'flamethrower' && u.forceFireTimer > 0) {
+                u.forceFireTimer--;
+                actuallyShooting = true;
+            } else if (canShoot) {
+                actuallyShooting = true;
+            }
+
+            if (!actuallyShooting) {
+                if (Date.now() - u.lastAtk > fRate) { u.lastAtk = Date.now() - fRate; }
+            }
+
+            let uOffset = u.fireOffset || 0;
+            if (isNaN(uOffset)) uOffset = 0;
+
+            if(actuallyShooting && Date.now() - u.lastAtk > (fRate + uOffset)) {
                 u.lastAtk = Date.now(); 
-                u.fireOffset = Math.random() * Math.min(2000, uConf.fireRate); 
+                u.fireOffset = Math.random() * Math.min(2000, fRate); 
                 
                 let a = u.aimAngle;
+                let wLen = u.type === 'sniper' ? 40 : (u.type === 'flamethrower' ? 24 : 16);
                 
-                let wLen = 16;
-                if (u.type === 'sniper') wLen = 40;
-                if (u.type === 'flamethrower') wLen = 24;
-                if (u.type === 'officer' || u.type === 'medic') wLen = 12;
+                // 1. CASQUILLOS LARGOS Y FÍSICOS
+                if (u.type !== 'flamethrower') {
+                    let shellA = a + (Math.PI/2) * (u.dir === 1 ? -1 : 1) + (Math.random()*0.5 - 0.25);
+                    shells.push({ 
+                        x: u.x, y: u.y, 
+                        vx: Math.cos(shellA) * (2 + Math.random()*2), 
+                        vy: -2 - Math.random()*2, 
+                        life: 300, 
+                        groundY: u.y + 10 + Math.random()*10,
+                        rot: Math.random()*Math.PI*2,
+                        vrot: (Math.random()-0.5)*0.5
+                    });
+                }
 
                 let gunTipX = u.x + Math.cos(a) * wLen;
                 let gunTipY = u.y + Math.sin(a) * wLen;
-                
-                if (u.type !== 'flamethrower') {
-                    let shellA = a + (Math.PI/2) * (u.dir === 1 ? -1 : 1) + (Math.random()*0.5 - 0.25);
-                    shells.push({ x: u.x, y: u.y, vx: Math.cos(shellA) * (2 + Math.random()*2), vy: -2 - Math.random()*2, life: 60 });
-                }
 
                 if (u.type === 'flamethrower') {
-                    playSound('lanzallamas1.mp3', 0.3);
+                    anyFlamethrowerShooting = true;
                     let spread = (Math.random() - 0.5) * 0.4; 
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a + spread)*6, vy: Math.sin(a + spread)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
                 } else if (u.type === 'grenadier') {
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*6, vy: Math.sin(a)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'grenade', color: '#222' });
                 } else if (u.type === 'sniper') {
                     playSound('francotirador1.mp3', 0.6);
-                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 8, life: 5}); 
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*22, vy: Math.sin(a)*22, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
                 } else if (u.type === 'officer' || u.type === 'medic') {
                     playSound('pistola1.mp3', 0.4);
-                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 5, life: 3}); 
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*14, vy: Math.sin(a)*14, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'bullet', color: '#ffffbb' }); 
                 } else {
                     playSound('rifle1.mp3', 0.25);
-                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 6, life: 4}); 
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*15, vy: Math.sin(a)*15, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'bullet', color: '#ffffbb' });
                 }
-                u.dir = (target.x > u.x) ? 1 : -1;
+                
+                u.dir = (Math.abs(a) < Math.PI/2) ? 1 : -1;
+            }
+        }
+
+        if (anyFlamethrowerShooting && game.soundEnabled) {
+            if (flamerAudio.paused) flamerAudio.play().catch(()=>{});
+        } else {
+            if (!flamerAudio.paused) {
+                flamerAudio.pause();
+                flamerAudio.currentTime = 0;
+            }
+        }
+
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx; 
+            b.y += b.vy; 
+            b.life--;
+            
+            if (b.type === 'fire') b.r += 0.4;
+            let hitSomething = false;
+
+            if (b.side === 'player' && b.x >= game.worldW - BASE_W) {
+                game.eHp -= b.dmg / 40; 
+                hitSomething = true;
+            } else if (b.side === 'enemy' && b.x <= BASE_W) {
+                game.pHp -= b.dmg / 40;
+                hitSomething = true;
             }
 
-            // Los soldados ya no mueren al llegar al borde, por lo que estas líneas se han borrado para permitir el asedio
-            // if (u.x > game.worldW - BASE_W + 20) { game.eHp -= 10; u.hp = 0; } ...
-            
-            if (u.hp <= 0) {
-                if (u.side === 'player') game.pCas++; else game.eCas++;
-                playSound('muerte1.mp3', 0.4); 
-                dyingUnits.push({ ...u, deathTimer: 30 });
-                units.splice(i, 1);
+            for (let j = 0; j < units.length; j++) {
+                let u = units[j];
+                if (u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) {
+                    if (b.type !== 'fire' && hitSomething) continue; 
+                    
+                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 4;
+                    if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
+                        
+                        let actualDmg = b.dmg;
+                        let inAnyTrench = false;
+                        
+                        if (u.state !== 'HEAL') {
+                            for (let k = 0; k < trenches.length; k++) {
+                                let t = trenches[k];
+                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) {
+                                    inAnyTrench = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (inAnyTrench) {
+                            if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
+                        }
+                        
+                        u.hp -= actualDmg; 
+                        
+                        if (b.type === 'fire') {
+                            u.burnTimer = 180; 
+                        }
+                        
+                        if (u.hp <= 0 && b.sourceId !== undefined) {
+                            let shooter = units.find(s => s.id === b.sourceId);
+                            if (shooter) {
+                                shooter.kills++;
+                                let nextRank = shooter.rankIdx + 1;
+                                let maxRankAllowed = (shooter.type === 'officer') ? MAX_OFFICER_RANK : MAX_ENLISTED_RANK;
+
+                                if (nextRank <= maxRankAllowed && nextRank < RANKS.length && shooter.kills >= RANKS[nextRank].kills) {
+                                    let hpDiff = RANKS[nextRank].hpBonus - RANKS[shooter.rankIdx].hpBonus;
+                                    let moralDiff = RANKS[nextRank].moralBonus - RANKS[shooter.rankIdx].moralBonus;
+                                    shooter.rankIdx = nextRank;
+                                    shooter.hp += hpDiff;
+                                    shooter.morale += moralDiff;
+                                }
+                            }
+                        }
+                        
+                        hitSomething = true;
+                        if (b.type !== 'fire') break; 
+                    }
+                }
+            }
+
+            if(hitSomething || b.life <= 0) {
+                if (hitSomething && b.type === 'grenade') {
+                    explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
+                    playSound('granada1.mp3', 0.6); 
+                } else if (hitSomething && b.type !== 'fire') {
+                    explosions.push({x: b.x, y: b.y, r: 1, maxR: 8, life: 5}); 
+                }
+                if (b.type !== 'fire' || b.life <= 0) {
+                    bullets.splice(i, 1);
+                }
             }
         }
 
@@ -1531,7 +1624,12 @@
                 if (grp.length === 0) return;
 
                 let tCenter = trenches[i].x + trenches[i].w/2;
-                grp.sort((a,b) => Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter));
+
+                grp.sort((a,b) => {
+                    let dy = a.y - b.y;
+                    if (Math.abs(dy) > 2) return dy;
+                    return Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter);
+                });
 
                 let padY = 30; 
                 let availableH = canvas.height - HORIZON_Y - (padY * 2);
@@ -1541,29 +1639,38 @@
                 let maxRows = Math.floor(availableH / minSafeSpacing);
                 if(maxRows < 1) maxRows = 1;
 
-                let chunkedCols = [];
-                for(let k=0; k<grp.length; k+=maxRows) {
-                    let chunk = grp.slice(k, k+maxRows);
-                    chunk.sort((a,b) => a.y - b.y); 
-                    chunkedCols.push(chunk);
+                let numCols = Math.ceil(grp.length / maxRows);
+                let slots = [];
+
+                for (let c = 0; c < numCols; c++) {
+                    let isLastCol = (c === numCols - 1);
+                    let itemsInCol = isLastCol ? (grp.length - c * maxRows) : maxRows;
+                    if (itemsInCol <= 0) continue; 
+                    
+                    let dynamicSpacing = itemsInCol > 1 ? (availableH / (itemsInCol - 1)) : 0;
+                    if (dynamicSpacing > 120) dynamicSpacing = 120;
+                    let startY = centerY - ((itemsInCol - 1) * dynamicSpacing) / 2;
+
+                    let offset = c === 0 ? 0 : (40 + c * 32);
+                    let targetX = tCenter + (offset * (side === 'player' ? -1 : 1));
+
+                    for (let r = 0; r < itemsInCol; r++) {
+                        slots.push({ x: targetX, y: startY + r * dynamicSpacing });
+                    }
                 }
 
-                chunkedCols.forEach((chunk, colIndex) => {
-                    let N = chunk.length;
-                    let dynamicSpacing = N > 1 ? (availableH / (N - 1)) : 0;
-                    if (dynamicSpacing > 120) dynamicSpacing = 120;
-
-                    let startY = centerY - ((N - 1) * dynamicSpacing) / 2;
-
-                    chunk.forEach((u, row) => {
-                        let offset = colIndex === 0 ? 0 : (40 + colIndex * 32);
-                        let targetX = tCenter + (offset * (side === 'player' ? -1 : 1));
-                        let targetY = startY + row * dynamicSpacing;
-
-                        u.x += (targetX - u.x) * 0.15; 
-                        u.y += (targetY - u.y) * 0.15;
-                    });
+                slots.sort((a,b) => {
+                    let dy = a.y - b.y;
+                    if (Math.abs(dy) > 2) return dy;
+                    return Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter);
                 });
+
+                for (let k = 0; k < grp.length; k++) {
+                    let u = grp[k];
+                    let s = slots[k];
+                    u.x += (s.x - u.x) * 0.15; 
+                    u.y += (s.y - u.y) * 0.15;
+                }
             });
         }
 
@@ -1573,7 +1680,9 @@
         document.getElementById('p-cas').innerText = game.pCas;
         document.getElementById('e-cas').innerText = game.eCas;
 
-        if(game.pHp <= 0 || game.eHp <= 0) { game.active = false; alert(game.pHp > 0 ? "¡VICTORIA!" : "DERROTA"); location.reload(); }
+        if(game.pHp <= 0 || game.eHp <= 0) { 
+            showEndScreen(game.pHp > 0); 
+        }
     }
 
     function draw() {
@@ -1653,7 +1762,6 @@
             }
         });
 
-        // 6. BASES MEJORADAS 1.78
         const drawBase = (x, isP) => {
             let h = canvas.height - HORIZON_Y;
             
@@ -1727,6 +1835,16 @@
         };
         drawBase(0, true); drawBase(game.worldW - BASE_W, false);
 
+        // 1. DIBUJADO CASQUILLOS
+        shells.forEach(s => { 
+            ctx.save();
+            ctx.translate(s.x, s.y);
+            ctx.rotate(s.rot);
+            ctx.fillStyle = `rgba(255, 204, 0, ${Math.min(1, s.life / 60)})`;
+            ctx.fillRect(-2, -1, 4, 2); 
+            ctx.restore();
+        });
+
         corpses.forEach(c => {
             let tRange = game.config[c.type].terrorRange;
             if (game.showRanges) {
@@ -1738,7 +1856,6 @@
             ctx.fillStyle = `rgba(255, 255, 255, ${c.life / c.maxLife})`; ctx.fillText("💀", c.x, c.y - 4);
         });
 
-        // 10. ANIMACIÓN DE MUERTE CORREGIDA (BUGFIX)
         dyingUnits.forEach(du => {
             let p = 1 - (du.deathTimer / 30); 
             ctx.save(); 
@@ -1821,6 +1938,9 @@
             ctx.save();
             let angle = u.aimAngle !== undefined ? u.aimAngle : (u.dir === 1 ? 0 : Math.PI);
             ctx.rotate(angle);
+            let uConf = game.config[u.type];
+            let fRate = Number(uConf.fireRate);
+            if (isNaN(fRate) || fRate <= 0) fRate = DEFAULT_CONFIG[u.type].fireRate;
             let isFiring = (Date.now() - u.lastAtk < 100);
             let recoil = isFiring ? -3 : 0;
             ctx.translate(recoil, 0);
@@ -1844,6 +1964,23 @@
                 ctx.fillStyle = '#222'; ctx.fillRect(16, 2.5, 12, 3); ctx.strokeRect(16, 2.5, 12, 3);
                 if (u.type === 'infantry') { ctx.fillStyle = '#ddd'; ctx.fillRect(25, 5, 8, 2); }
             }
+
+            // 2. FOGONAZO DIBUJADO
+            if (isFiring && u.type !== 'flamethrower' && u.type !== 'grenadier') {
+                let tx = (u.type === 'sniper') ? 40 : (u.type === 'officer' || u.type === 'medic' ? 12 : 28);
+                let ty = 4;
+                ctx.fillStyle = '#ffcc00';
+                ctx.beginPath();
+                ctx.moveTo(tx, ty-1);
+                ctx.lineTo(tx+6, ty-4);
+                ctx.lineTo(tx+5, ty-1);
+                ctx.lineTo(tx+12, ty);
+                ctx.lineTo(tx+5, ty+1);
+                ctx.lineTo(tx+6, ty+4);
+                ctx.lineTo(tx, ty+1);
+                ctx.fill();
+            }
+
             ctx.restore();
 
             ctx.fillStyle = isP ? (u.type==='medic'?'#ffffff':'#4b5320') : (u.type==='medic'?'#eeeeee':'#2c3e50');
@@ -1853,7 +1990,8 @@
             ctx.beginPath(); ctx.moveTo(-u.radius-3, 0); ctx.lineTo(u.radius+3, 0); ctx.stroke();
 
             ctx.font = "16px Arial"; 
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.textAlign = "center"; 
+            ctx.textBaseline = "middle";
             let icon = '🪖';
             if (u.type === 'grenadier') icon = '💣';
             if (u.type === 'flamethrower') icon = '🔥';
@@ -1905,9 +2043,6 @@
             if(u.morale < u.maxMoral) { ctx.fillStyle='#000'; ctx.fillRect(u.x-10, barY + 4, 20, 2); ctx.fillStyle='#9c27b0'; ctx.fillRect(u.x-10, barY + 4, 20*(u.morale/u.maxMoral), 2); }
         });
 
-        ctx.fillStyle = '#ffcc00';
-        shells.forEach(s => { ctx.fillRect(s.x, s.y, 3, 2); });
-
         bullets.forEach(b => { 
             if (b.type === 'fire') {
                 ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
@@ -1933,7 +2068,6 @@
             ctx.fillText(">> GEMINI AI C&C", cx + 5, cy + 5); ctx.fillText("--------------------", cx + 5, cy + 15);
             for(let k=0; k<game.aiThoughts.length; k++) { ctx.fillText("> " + game.aiThoughts[k], cx + 5, cy + 30 + (k*14)); }
         }
-
         ctx.restore(); drawMinimap();
     }
 
