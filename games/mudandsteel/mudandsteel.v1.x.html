@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.85</title>
+    <title>Trench Warfare: Mud & Steel v1.98</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -27,7 +27,7 @@
         
         #hud {
             flex-shrink: 0;
-            height: 60px; width: 100%;
+            height:80px; width: 100%;
             background: repeating-linear-gradient(45deg, #1a1e18, #1a1e18 10px, #121511 10px, #121511 20px);
             display: flex; justify-content: space-between; align-items: center; 
             padding: 0 15px; border-bottom: 5px solid #0a0c09; z-index: 100;
@@ -40,8 +40,8 @@
         .casualties { color: #aaa; font-size: 0.6rem; font-family: monospace; }
         .cas-num { color: #ff4444; font-weight: bold; font-size: 0.75rem; }
 
-        .hp-bar { 
-            width: 100%; height: 14px; background: #111; 
+        .hp-bar {
+            width: 100%; height: 18px; background: #111; 
             border: 2px solid #555; border-radius: 3px; 
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.2); 
             overflow: hidden;
@@ -58,8 +58,8 @@
         .btn-icon:active { transform: scale(0.9); }
 
         #minimap-box {
-            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
-            width: 60%; max-width: 450px; min-width: 250px; height: 55px;
+            position: absolute; top: 86px; left: 50%; transform: translateX(-50%);
+            width: min(66vw, 450px); min-width: 250px; height: 64px;
             background: rgba(10,12,10,0.85); border: 3px solid #333; border-radius: 4px; z-index: 100;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.6);
         }
@@ -70,21 +70,43 @@
         #controls {
             flex-shrink: 0;
             height: 24vh; 
-            min-height: 170px; max-height: 240px;
+            min-height:80px; max-height:80px;
             background: var(--ui-bg); border-top: 5px solid #0a0c09;
             display: flex; padding: 8px; z-index: 100; width: 100%;
             padding-bottom: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
         }
-        
+
         .panel { display: flex; gap: 8px; width: 100%; height: 100%; }
         .hidden { display: none !important; }
+        #base-side-controls{
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        }
+        #base-side-controls .btn{
+            flex:1;
+            min-height:0;
+        }
+        #base-main-panel{
+            flex:1;
+            min-width:0;
+            display:flex;
+        }
+        #base-army-view,#base-radio-view{
+            width:100%;
+            height:100%;
+        }
 
         #unit-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 8px;
-            flex: 0.75;
+            width:100%;
+            height:100%;
         }
 
         .btn {
@@ -104,8 +126,8 @@
         }
         .icon-large { font-size: 1.4rem; margin-bottom: 2px; display: block; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8)); }
         
-        .led { 
-            position: absolute; top: 4px; right: 4px; 
+        .led {
+            position: absolute; top: 4px; right: 4px;
             width: 8px; height: 8px; border-radius: 50%; border: 1px solid #000; 
             background: #f00; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.8); transition: 0.2s;
         }
@@ -204,7 +226,75 @@
         .manual-content ul { padding-left: 20px; margin-bottom: 10px; }
         .manual-content li { margin-bottom: 5px; }
         .manual-content p { margin-bottom: 8px; }
-    </style>
+
+        #base-spotify-widget{
+            width:100%;
+            height:100%;
+            padding:8px 10px;
+            border:2px solid rgba(255,204,0,.45);
+            border-radius:12px;
+            background:linear-gradient(180deg,rgba(29,36,24,.94),rgba(15,17,13,.96));
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+            pointer-events:auto;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            overflow:hidden;
+        }
+        #base-spotify-widget .base-spotify-title{
+            font-family:'Impact',sans-serif; letter-spacing:1px; color:var(--accent); font-size:.9rem; margin-bottom:6px;
+        }
+        .spotify-meta-text{min-width:0;}
+        #spotify-track-title{
+            font-family:sans-serif; font-size:1rem; font-weight:700; color:#fff;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #spotify-track-artist{
+            font-family:sans-serif; font-size:.84rem; color:#bdbdbd; margin-top:3px;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .base-spotify-actions{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:8px; }
+        .base-spotify-actions .btn{ min-width:0; padding:6px 6px; min-height:52px; height:52px; font-size:.72rem; }
+        #spotify-status-text{
+            margin-top:6px; font-family:'Impact',sans-serif; font-size:.72rem; letter-spacing:1px; color:#d7d7d7;
+        }
+
+        .spotify-meta-row{ display:grid; grid-template-columns:64px minmax(0,1fr); gap:10px; align-items:center; }
+        #spotify-cover{ width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,.18); background:#111; }
+        #spotify-track-album{
+            font-family:sans-serif; font-size:.72rem; color:#c6b98a; margin-top:1px;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #spotify-embed-wrap{ height:0; min-height:0; max-height:0; overflow:hidden; opacity:0; pointer-events:none; }
+        #spotify-player-host, #spotify-player-host iframe{ width:100%; height:0; min-height:0; max-height:0; }
+        @media (max-width: 640px){
+            #hud{height:72px; padding:6px 8px;}
+            .hud-tools{gap:6px;}
+            .btn-icon{width:40px; height:40px; font-size:1.1rem;}
+            #allies-bar,#enemies-bar{height:22px;}
+            #controls{ min-height:118px; height:20vh; max-height:170px; padding:6px; }
+            .panel{ gap:6px; }
+            #base-side-controls{ width:96px; min-width:96px; max-width:96px; gap:6px; }
+            #base-side-controls .btn{ font-size:.52rem; letter-spacing:.3px; padding:3px; }
+            #base-side-controls .btn span{ font-size:.44rem !important; }
+            #unit-grid{ gap:6px; }
+            .btn{ font-size:.58rem; }
+            .icon-large{ font-size:1.15rem; margin-bottom:1px; }
+            .led{ width:7px; height:7px; top:3px; right:3px; }
+            #base-spotify-widget{ padding:6px 7px; border-radius:10px; }
+            .base-spotify-title{ display:none !important; }
+            .spotify-meta-row{ display:grid; grid-template-columns:56px minmax(0,1fr); gap:8px; align-items:center; }
+            #spotify-cover{ width:56px !important; height:56px !important; border-radius:6px; }
+            #spotify-track-title{ font-size:.72rem; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+            #spotify-track-artist,#spotify-track-album{ font-size:.58rem; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+            #spotify-status-text{ display:none; }
+            #spotify-embed-wrap{ height:0 !important; min-height:0 !important; max-height:0 !important; margin:0 !important; opacity:0; pointer-events:none; }
+            #spotify-player-host, #spotify-player-host iframe{ height:0 !important; max-height:0 !important; min-height:0 !important; }
+            .base-spotify-actions{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; margin-top:6px; }
+            .base-spotify-actions .btn{ min-height:30px; height:30px; font-size:.5rem; padding:2px 3px; letter-spacing:.3px; }
+        }
+
+</style>
 </head>
 <body>
 
@@ -234,21 +324,45 @@
 
     <div id="minimap-box"><canvas id="m-canvas"></canvas></div>
     <canvas id="gameCanvas"></canvas>
-
     <div id="controls">
         <div id="base-panel" class="panel">
-            <button id="rally-btn" class="btn btn-toggle" style="flex: 0.25;" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block; font-family:sans-serif; font-weight:bold;">AL FRENTE</span></button>
-            
-            <div id="unit-grid">
-                <button class="btn" onclick="spawnUnit('infantry')"><div class="led" id="led-infantry"></div><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent); font-family:sans-serif;">10 MP</span></button>
-                <button class="btn" onclick="spawnUnit('grenadier')"><div class="led" id="led-grenadier"></div><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent); font-family:sans-serif;">20 MP</span></button>
-                <button class="btn" onclick="spawnUnit('flamethrower')"><div class="led" id="led-flamethrower"></div><span class="icon-large">🔥</span> LANZALLAMAS<br><span id="lbl-mp-fla" style="color:var(--accent); font-family:sans-serif;">35 MP</span></button>
-                <button class="btn" onclick="spawnUnit('sniper')"><div class="led" id="led-sniper"></div><span class="icon-large">🎯</span> FRANCO<br><span id="lbl-mp-sni" style="color:var(--accent); font-family:sans-serif;">50 MP</span></button>
-                <button class="btn" onclick="spawnUnit('medic')"><div class="led" id="led-medic"></div><span class="icon-large">⛑️</span> MÉDICO<br><span id="lbl-mp-med" style="color:var(--accent); font-family:sans-serif;">75 MP</span></button>
-                <button class="btn" onclick="spawnUnit('officer')"><div class="led" id="led-officer"></div><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent); font-family:sans-serif;">100 MP</span></button>
+            <div id="base-side-controls">
+                <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block; font-family:sans-serif; font-weight:bold;">AL FRENTE</span></button>
+                <button id="radio-toggle-btn" class="btn btn-toggle-alt" onclick="toggleBaseRadioPanel()">📻 RADIO</button>
+            </div>
+            <div id="base-main-panel">
+                <div id="base-army-view">
+                    <div id="unit-grid">
+                        <button class="btn" onclick="spawnUnit('infantry')"><div class="led" id="led-infantry"></div><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent); font-family:sans-serif;">10 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('grenadier')"><div class="led" id="led-grenadier"></div><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent); font-family:sans-serif;">20 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('flamethrower')"><div class="led" id="led-flamethrower"></div><span class="icon-large">🔥</span> LANZALLAMAS<br><span id="lbl-mp-fla" style="color:var(--accent); font-family:sans-serif;">35 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('sniper')"><div class="led" id="led-sniper"></div><span class="icon-large">🎯</span> FRANCO<br><span id="lbl-mp-sni" style="color:var(--accent); font-family:sans-serif;">50 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('medic')"><div class="led" id="led-medic"></div><span class="icon-large">⛑️</span> MÉDICO<br><span id="lbl-mp-med" style="color:var(--accent); font-family:sans-serif;">75 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('officer')"><div class="led" id="led-officer"></div><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent); font-family:sans-serif;">100 MP</span></button>
+                    </div>
+                </div>
+                <div id="base-radio-view" class="hidden">
+                    <div id="base-spotify-widget">
+                        <div class="base-spotify-title">🎵 RADIO DE LA BASE</div>
+                        <div class="spotify-meta-row">
+                            <img id="spotify-cover" alt="Carátula de Spotify">
+                            <div class="spotify-meta-text">
+                                <div id="spotify-track-title">Mud &amp; Steel : Trench Warfare</div>
+                                <div id="spotify-track-artist">uryheavy</div>
+                                <div id="spotify-track-album">Lista: Mud &amp; Steel : Trench Warfare</div>
+                            </div>
+                        </div>
+                        <div id="spotify-embed-wrap"><div id="spotify-player-host"></div></div>
+                        <div class="base-spotify-actions">
+                            <button class="btn btn-toggle" onclick="playSpotifyPlaylist()">▶ PLAY</button>
+                            <button class="btn btn-retreat" onclick="pauseSpotifyPlaylist(true)">■ STOP</button>
+                                                    </div>
+<div id="spotify-status-text">RADIO LISTA</div>
+                    </div>
+                </div>
             </div>
         </div>
-        
+
         <div id="trench-panel" class="panel hidden">
             <div class="trench-col">
                 <div class="trench-row">
@@ -282,12 +396,17 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V1.85</p>
+        <p class="subtitle">TRENCH WARFARE V1.98</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
             <button id="btn-mode-inf" class="mode-btn active" onclick="setGameMode('infinite')">♻️ RECURSOS<br>CONTINUOS</button>
             <button id="btn-mode-lim" class="mode-btn" onclick="setGameMode('limited')">📦 RECURSOS<br>LIMITADOS</button>
+        </div>
+
+        <div style="display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; margin: 12px 0 8px; padding: 10px 16px; background: rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.12); border-radius:12px;">
+            <label style="display:flex; align-items:center; gap:8px; font-family:sans-serif; font-size:0.95rem; color:#fff;">🎵 Música Spotify <input type="checkbox" id="menu-music" style="transform: scale(1.2);" onchange="toggleMusicFromMenu(this.checked)"></label>
+            <label style="display:flex; align-items:center; gap:8px; font-family:sans-serif; font-size:0.95rem; color:#fff;">🔊 Efectos <input type="checkbox" id="menu-effects" style="transform: scale(1.2);" onchange="toggleEffectsFromMenu(this.checked)"></label>
         </div>
 
         <button id="btn-resume" class="btn-start btn-resume hidden" onclick="resumeGame()">▶ REANUDAR OPERACIÓN</button>
@@ -358,7 +477,8 @@
 
             <div class="cfg-group" style="border-color: #aaa;">
                 <h3 style="color: #aaa;">⚙️ AJUSTES GENERALES</h3>
-                <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-sound" style="transform: scale(1.3);" onchange="game.soundEnabled = this.checked;"></div>
+                <div class="cfg-label">Música Spotify <input type="checkbox" id="cfg-music" style="transform: scale(1.3);" onchange="game.musicEnabled = this.checked;"></div>
+                <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-effects" style="transform: scale(1.3);" onchange="game.effectsEnabled = this.checked;"></div>
                 <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
                 <div class="cfg-label">Tiempo del Cadáver (Segundos) <input type="number" id="cfg-corpse-time" class="cfg-input"></div>
                 <div class="cfg-label">Mostrar Alcances y Visión <input type="checkbox" id="toggle-ranges" style="transform: scale(1.3);" onchange="game.showRanges = this.checked;"></div>
@@ -480,18 +600,294 @@
     </div>
 </div>
 
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 <script>
+    const SPOTIFY_PLAYLIST = {
+        uri: 'spotify:playlist:07OQAKCANdnVxfz1XnRgLM',
+        name: 'Mud & Steel : Trench Warfare',
+        owner: 'uryheavy',
+        cover: 'https://i.scdn.co/image/ab67616d0000b2737d050274b5d9a30c8ffd09e7'
+    };
+    let spotifyState = {
+        controller: null,
+        ready: false,
+        isPlaying: false,
+        pendingPlay: false,
+        currentURI: SPOTIFY_PLAYLIST.uri,
+        currentIndex: 0,
+        metaCache: {},
+        hasLoaded: false,
+        userStopped: false,
+    };
+
     let flamerAudio = new Audio('lanzallamas1.mp3');
     flamerAudio.loop = true;
     flamerAudio.volume = 0.3;
 
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+        const host = document.getElementById('spotify-player-host');
+        if (!host) return;
+        IFrameAPI.createController(host, {
+            uri: SPOTIFY_PLAYLIST.uri,
+            width: '100%',
+            height: 80
+        }, (controller) => {
+            spotifyState.controller = controller;
+            spotifyState.ready = true;
+            controller.addListener('playback_started', e => {
+                if (e && e.data && e.data.playingURI) setSpotifyTrackByURI(e.data.playingURI);
+                spotifyState.hasLoaded = true;
+                spotifyState.isPlaying = true;
+                updateSpotifyStatusUI();
+            });
+            controller.addListener('playback_update', e => {
+                const data = (e && e.data) || {};
+                if (data.playingURI) setSpotifyTrackByURI(data.playingURI);
+                spotifyState.hasLoaded = true;
+                spotifyState.isPlaying = !data.isPaused && !data.isBuffering;
+                updateSpotifyStatusUI();
+            });
+            setSpotifyTrackByURI(SPOTIFY_PLAYLIST.uri);
+            updateSpotifyTrackUI();
+            updateSpotifyStatusUI();
+            if (!game.musicEnabled) {
+                spotifyState.isPlaying = false;
+                updateSpotifyStatusUI();
+            } else if (spotifyState.pendingPlay) {
+                spotifyState.pendingPlay = false;
+                playSpotifyPlaylist();
+            }
+        });
+    };
+
+    function spotifyUriToOpenUrl(uri) {
+        if (!uri || !uri.startsWith('spotify:')) return '';
+        const parts = uri.split(':');
+        return parts.length >= 3 ? `https://open.spotify.com/${parts[1]}/${parts[2]}` : '';
+    }
+
+    function parseSpotifyKind(uri) {
+        const parts = (uri || '').split(':');
+        return parts[1] || 'playlist';
+    }
+
+    function getCurrentSpotifyDisplay() {
+        const fallback = spotifyState.currentURI && spotifyState.currentURI !== SPOTIFY_PLAYLIST.uri
+            ? { title: 'Reproduciendo en Spotify', artist: 'Spotify', album: 'Colección en reproducción', cover: SPOTIFY_PLAYLIST.cover }
+            : { title: SPOTIFY_PLAYLIST.name, artist: SPOTIFY_PLAYLIST.owner, album: 'Lista: ' + SPOTIFY_PLAYLIST.name, cover: SPOTIFY_PLAYLIST.cover };
+        return spotifyState.metaCache[spotifyState.currentURI] || fallback;
+    }
+
+    async function fetchSpotifyMetadata(uri) {
+        if (!uri || spotifyState.metaCache[uri]) return;
+        const openUrl = spotifyUriToOpenUrl(uri);
+        if (!openUrl) return;
+        try {
+            const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(openUrl)}`);
+            if (!res.ok) throw new Error('oEmbed');
+            const data = await res.json();
+            const kind = parseSpotifyKind(uri);
+            spotifyState.metaCache[uri] = {
+                title: data.title || 'Spotify',
+                artist: data.author_name || data.provider_name || 'Spotify',
+                album: kind === 'playlist' ? ('Lista: ' + (data.title || SPOTIFY_PLAYLIST.name)) : (kind === 'album' ? 'Álbum en Spotify' : 'Tema en Spotify'),
+                cover: data.thumbnail_url || SPOTIFY_PLAYLIST.cover
+            };
+            updateSpotifyTrackUI();
+        } catch (err) {
+            if (!spotifyState.metaCache[uri]) {
+                spotifyState.metaCache[uri] = uri === SPOTIFY_PLAYLIST.uri
+                    ? { title: SPOTIFY_PLAYLIST.name, artist: SPOTIFY_PLAYLIST.owner, album: 'Lista: ' + SPOTIFY_PLAYLIST.name, cover: SPOTIFY_PLAYLIST.cover }
+                    : { title: 'Reproduciendo en Spotify', artist: 'Spotify', album: 'Colección en reproducción', cover: SPOTIFY_PLAYLIST.cover };
+                updateSpotifyTrackUI();
+            }
+        }
+    }
+
+    function setSpotifyTrackByURI(uri) {
+        spotifyState.currentURI = uri || SPOTIFY_PLAYLIST.uri;
+        updateSpotifyTrackUI();
+        fetchSpotifyMetadata(spotifyState.currentURI);
+    }
+
+    function updateSpotifyTrackUI() {
+        const title = document.getElementById('spotify-track-title');
+        const artist = document.getElementById('spotify-track-artist');
+        const album = document.getElementById('spotify-track-album');
+        const cover = document.getElementById('spotify-cover');
+        if (!title || !artist || !album || !cover) return;
+        const track = getCurrentSpotifyDisplay();
+        title.textContent = track.title || SPOTIFY_PLAYLIST.name;
+        artist.textContent = track.artist || SPOTIFY_PLAYLIST.owner;
+        album.textContent = track.album || ('Lista: ' + SPOTIFY_PLAYLIST.name);
+        cover.src = track.cover || SPOTIFY_PLAYLIST.cover;
+    }
+
+    function updateSpotifyWidgetVisibility() {
+        const radioView = document.getElementById('base-radio-view');
+        const armyView = document.getElementById('base-army-view');
+        const radioBtn = document.getElementById('radio-toggle-btn');
+        if (!radioView || !armyView || !radioBtn) return;
+        const showRadio = game.active && game.basePanelMode === 'radio';
+        radioView.classList.toggle('hidden', !showRadio);
+        armyView.classList.toggle('hidden', showRadio);
+        radioBtn.innerHTML = showRadio ? '⬅ VOLVER' : '📻 RADIO';
+        radioBtn.classList.toggle('btn-toggle-alt', !showRadio);
+        radioBtn.classList.toggle('btn-retreat', showRadio);
+    }
+
+    function setBasePanelMode(mode = 'army') {
+        game.basePanelMode = mode === 'radio' ? 'radio' : 'army';
+        updateSpotifyWidgetVisibility();
+    }
+
+    function toggleBaseRadioPanel() {
+        setBasePanelMode(game.basePanelMode === 'radio' ? 'army' : 'radio');
+    }
+
+    function syncAudioTogglesUI() {
+        const menuMusic = document.getElementById('menu-music');
+        const menuEffects = document.getElementById('menu-effects');
+        const cfgMusic = document.getElementById('cfg-music');
+        const cfgEffects = document.getElementById('cfg-effects');
+        if (menuMusic) menuMusic.checked = !!game.musicEnabled;
+        if (menuEffects) menuEffects.checked = !!game.effectsEnabled;
+        if (cfgMusic) cfgMusic.checked = !!game.musicEnabled;
+        if (cfgEffects) cfgEffects.checked = !!game.effectsEnabled;
+        updateSpotifyTrackUI();
+        updateSpotifyStatusUI();
+    }
+
+    function updateSpotifyStatusUI() {
+        const el = document.getElementById('spotify-status-text');
+        if (!el) return;
+        if (!game.musicEnabled) {
+            el.textContent = 'DESACTIVADO';
+            el.style.color = '#f44336';
+            return;
+        }
+        if (spotifyState.isPlaying) {
+            el.textContent = 'REPRODUCIENDO';
+            el.style.color = '#4caf50';
+            return;
+        }
+        el.textContent = spotifyState.ready ? 'DETENIDO' : 'CARGANDO';
+        el.style.color = spotifyState.ready ? '#ffcc00' : '#5bc0de';
+    }
+
+    function toggleMusicFromMenu(checked) {
+        game.musicEnabled = !!checked;
+        syncAudioTogglesUI();
+        saveConfig();
+        if (!game.musicEnabled) pauseSpotifyPlaylist();
+        else updateSpotifyStatusUI();
+    }
+
+    function toggleEffectsFromMenu(checked) {
+        game.effectsEnabled = !!checked;
+        syncAudioTogglesUI();
+        saveConfig();
+        if (!game.effectsEnabled && !flamerAudio.paused) {
+            flamerAudio.pause();
+            flamerAudio.currentTime = 0;
+        }
+    }
+
+    function loadSpotifyTrack(uri = SPOTIFY_PLAYLIST.uri, autoplay = false) {
+        spotifyState.currentURI = uri || SPOTIFY_PLAYLIST.uri;
+        updateSpotifyTrackUI();
+        fetchSpotifyMetadata(spotifyState.currentURI);
+        if (!spotifyState.ready || !spotifyState.controller) {
+            spotifyState.pendingPlay = autoplay;
+            return;
+        }
+        spotifyState.controller.loadUri(spotifyState.currentURI);
+        if (autoplay && game.musicEnabled) {
+            if (spotifyState.controller.resume) spotifyState.controller.resume();
+            else spotifyState.controller.play();
+            spotifyState.isPlaying = true;
+        } else {
+            spotifyState.controller.pause();
+            spotifyState.isPlaying = false;
+        }
+        updateSpotifyStatusUI();
+    }
+
+    function playSpotifyPlaylist() {
+        if (!game.musicEnabled) return;
+        spotifyState.userStopped = false;
+        if (!spotifyState.ready || !spotifyState.controller) {
+            spotifyState.pendingPlay = true;
+            return;
+        }
+        spotifyState.pendingPlay = false;
+        try {
+            if (!spotifyState.hasLoaded) {
+                spotifyState.controller.loadUri(SPOTIFY_PLAYLIST.uri);
+                spotifyState.hasLoaded = true;
+            }
+            if (spotifyState.controller.resume) spotifyState.controller.resume();
+            else if (spotifyState.controller.play) spotifyState.controller.play();
+        } catch (e) {
+            try {
+                spotifyState.controller.loadUri(SPOTIFY_PLAYLIST.uri);
+                spotifyState.hasLoaded = true;
+                if (spotifyState.controller.resume) spotifyState.controller.resume();
+                else if (spotifyState.controller.play) spotifyState.controller.play();
+            } catch (_) {}
+        }
+        spotifyState.currentURI = spotifyState.currentURI || SPOTIFY_PLAYLIST.uri;
+        fetchSpotifyMetadata(spotifyState.currentURI);
+        spotifyState.isPlaying = true;
+        updateSpotifyTrackUI();
+        updateSpotifyStatusUI();
+    }
+
+    function pauseSpotifyPlaylist(forceStop = false) {
+        spotifyState.pendingPlay = false;
+        spotifyState.userStopped = !!forceStop;
+        if (spotifyState.ready && spotifyState.controller) {
+            try { spotifyState.controller.pause(); } catch(e) {}
+            if (forceStop && spotifyState.controller.restart) {
+                try { spotifyState.controller.restart(); } catch(e) {}
+            }
+        }
+        spotifyState.isPlaying = false;
+        updateSpotifyStatusUI();
+    }
+
+    function nextSpotifyTrack() {
+        return;
+    }
+
+    function toggleSpotifyAtFriendlyBase() {
+        return;
+    }
+
     function playSound(file, vol = 0.5) {
-        if (!game.soundEnabled) return;
+        if (!game.effectsEnabled) return;
         if (file === 'lanzallamas1.mp3') return; 
         let a = new Audio(file);
         a.volume = vol;
         a.play().catch(e => {});
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updateSpotifyTrackUI();
+        updateSpotifyStatusUI();
+        updateSpotifyWidgetVisibility();
+    });
+
+    function bindSpotifyUIProtection() {
+        ['base-panel','base-radio-view','radio-toggle-btn','rally-btn','spotify-player-host','spotify-embed-wrap'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            ['touchstart','touchend','mousedown','mouseup','click'].forEach(evt => {
+                el.addEventListener(evt, e => e.stopPropagation(), {passive:false});
+            });
+        });
+    }
+
 
     function updateMenuMedia() {
         let isVert = window.innerHeight > window.innerWidth;
@@ -522,6 +918,9 @@
         };
         img.onerror = function() { img.style.display = 'none'; };
         updateMenuMedia();
+        setSpotifyTrackByURI(SPOTIFY_PLAYLIST.uri);
+        updateSpotifyWidgetVisibility();
+        bindSpotifyUIProtection();
     });
 
     const canvas = document.getElementById('gameCanvas');
@@ -572,7 +971,9 @@
         selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']), 
         baseRally: 'FRONT', showRanges: false,
         resourceMode: 'infinite', maxResources: 2000, corpseTime: 120,
-        soundEnabled: true,
+        musicEnabled: true,
+        effectsEnabled: true,
+        basePanelMode: 'army',
         useGenAI: false, geminiKey: "", aiInterval: 5, lastAiTime: 0, isAiThinking: false,
         aiThoughts: ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."],
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
@@ -594,7 +995,8 @@
                 game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
                 game.corpseTime = parsed.corpseTime !== undefined ? parsed.corpseTime : 120;
                 game.resourceMode = parsed.resourceMode || 'infinite';
-                game.soundEnabled = parsed.soundEnabled !== undefined ? parsed.soundEnabled : true;
+                game.musicEnabled = parsed.musicEnabled !== undefined ? parsed.musicEnabled : true;
+                game.effectsEnabled = parsed.effectsEnabled !== undefined ? parsed.effectsEnabled : true;
                 game.useGenAI = parsed.useGenAI || false;
                 game.geminiKey = parsed.geminiKey || "";
                 game.aiInterval = parsed.aiInterval || 5;
@@ -608,6 +1010,7 @@
         } catch(e) { console.log("Error loading config", e); }
         setGameMode(game.resourceMode);
         updateCostLabels();
+        syncAudioTogglesUI();
     }
 
     function saveConfig() {
@@ -615,7 +1018,8 @@
             maxResources: game.maxResources,
             corpseTime: game.corpseTime,
             resourceMode: game.resourceMode,
-            soundEnabled: game.soundEnabled,
+            musicEnabled: game.musicEnabled,
+            effectsEnabled: game.effectsEnabled,
             useGenAI: game.useGenAI,
             geminiKey: game.geminiKey,
             aiInterval: game.aiInterval,
@@ -629,7 +1033,8 @@
         if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
             game.maxResources = 2000;
             game.corpseTime = 120;
-            game.soundEnabled = true;
+            game.musicEnabled = true;
+            game.effectsEnabled = true;
             game.useGenAI = false;
             game.geminiKey = "";
             game.aiInterval = 5;
@@ -638,6 +1043,7 @@
             populateOptionsUI();
             saveConfig();
             updateCostLabels();
+            syncAudioTogglesUI();
             alert("Configuración restablecida.");
         }
     }
@@ -655,16 +1061,20 @@
         document.getElementById('menu').classList.remove('hidden');
         document.getElementById('btn-resume').classList.remove('hidden');
         document.getElementById('btn-start-text').innerText = "REINICIAR OPERACIÓN";
+        setBasePanelMode('army');
     }
 
     function resumeGame() {
         document.getElementById('menu').classList.add('hidden');
         game.active = true;
+        updateSpotifyWidgetVisibility();
+        if (game.musicEnabled && spotifyState.ready && spotifyState.controller && spotifyState.controller.resume) spotifyState.controller.resume();
     }
 
     function showEndScreen(isPlayerWin) {
         game.active = false;
         document.getElementById('end-screen').classList.remove('hidden');
+        setBasePanelMode('army');
         
         let title = document.getElementById('end-title');
         let desc = document.getElementById('end-desc');
@@ -712,6 +1122,9 @@
 
         resize(); generateMap();
         game.active = true;
+        setBasePanelMode('army');
+        syncAudioTogglesUI();
+        if (game.musicEnabled) playSpotifyPlaylist();
         
         if(!game.loopStarted) {
             game.loopStarted = true;
@@ -725,7 +1138,9 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
-        document.getElementById('cfg-sound').checked = game.soundEnabled;
+        document.getElementById('cfg-music').checked = game.musicEnabled;
+        document.getElementById('cfg-effects').checked = game.effectsEnabled;
+        syncAudioTogglesUI();
         document.getElementById('cfg-use-ai').checked = game.useGenAI;
         document.getElementById('cfg-gemini-key').value = game.geminiKey;
         document.getElementById('cfg-ai-interval').value = game.aiInterval;
@@ -767,7 +1182,10 @@
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
-        game.soundEnabled = document.getElementById('cfg-sound').checked;
+        game.musicEnabled = document.getElementById('cfg-music').checked;
+        game.effectsEnabled = document.getElementById('cfg-effects').checked;
+        syncAudioTogglesUI();
+        if (!game.musicEnabled) pauseSpotifyPlaylist();
         
         game.useGenAI = document.getElementById('cfg-use-ai').checked;
         game.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
@@ -865,6 +1283,10 @@
     window.addEventListener('mouseup', e => handleEnd(e, false)); window.addEventListener('touchend', e => handleEnd(e, true));
 
     function handleTap(wx) {
+        if (wx >= 0 && wx <= BASE_W) {
+            deselectTrench();
+            return;
+        }
         let found = -1;
         trenches.forEach((t, i) => { if (wx > t.x - 20 && wx < t.x + t.w + 20) found = i; });
         if(found !== -1) {
@@ -1522,7 +1944,7 @@
             }
         }
 
-        if (anyFlamethrowerShooting && game.soundEnabled) {
+        if (anyFlamethrowerShooting && game.effectsEnabled) {
             if (flamerAudio.paused) flamerAudio.play().catch(()=>{});
         } else {
             if (!flamerAudio.paused) {
@@ -2093,6 +2515,7 @@
     }
 
     loadConfig();
+    syncAudioTogglesUI();
     function loop() { if(game.active) { update(); draw(); } requestAnimationFrame(loop); }
     requestAnimationFrame(loop);
 </script>
