@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v2.20</title>
+    <title>Trench Warfare: Mud & Steel v2.25</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -471,7 +471,7 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V2.20</p>
+        <p class="subtitle">TRENCH WARFARE V2.25</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -555,6 +555,7 @@
                 <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-effects" style="transform: scale(1.3);" onchange="game.effectsEnabled = this.checked;"></div>
                 <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
                 <div class="cfg-label">Tiempo del Cadáver (Segundos) <input type="number" id="cfg-corpse-time" class="cfg-input"></div>
+                <div class="cfg-label">Máx. tropas vivas por ejército (0 = ilimitado) <input type="number" min="0" id="cfg-max-alive-troops" class="cfg-input"></div>
                 <div class="cfg-label">Mostrar Alcances y Visión <input type="checkbox" id="toggle-ranges" style="transform: scale(1.3);" onchange="game.showRanges = this.checked;"></div>
             </div>
 
@@ -689,9 +690,103 @@
         currentURI: SPOTIFY_PLAYLIST.uri
     };
 
-    let flamerAudio = new Audio('lanzallamas1.mp3');
-    flamerAudio.loop = true;
-    flamerAudio.volume = 0.3;
+    const SOUND_BASE_URL = new URL('./', window.location.href).href;
+    const SOUND_FILES = Object.freeze({
+        flamethrower: new URL('lanzallamas1.mp3', SOUND_BASE_URL).href,
+        grenade: new URL('granada1.mp3', SOUND_BASE_URL).href,
+        medic: new URL('medico1.mp3', SOUND_BASE_URL).href,
+        death1: new URL('muerte1.mp3', SOUND_BASE_URL).href,
+        death2: new URL('muerte2.mp3', SOUND_BASE_URL).href,
+        death3: new URL('muerte3.mp3', SOUND_BASE_URL).href,
+        death4: new URL('muerte4.mp3', SOUND_BASE_URL).href,
+        death5: new URL('muerte5.mp3', SOUND_BASE_URL).href,
+        pistol: new URL('pistola1.mp3', SOUND_BASE_URL).href,
+        rifle: new URL('rifle1.mp3', SOUND_BASE_URL).href,
+        sniper: new URL('francotirador1.mp3', SOUND_BASE_URL).href,
+        whistle: new URL('silbato1.mp3', SOUND_BASE_URL).href
+    });
+
+    const SOUND_POOL_SIZE = Object.freeze({
+        [SOUND_FILES.flamethrower]: 2,
+        [SOUND_FILES.grenade]: 4,
+        [SOUND_FILES.medic]: 3,
+        [SOUND_FILES.death1]: 2,
+        [SOUND_FILES.death2]: 2,
+        [SOUND_FILES.death3]: 2,
+        [SOUND_FILES.death4]: 2,
+        [SOUND_FILES.death5]: 2,
+        [SOUND_FILES.pistol]: 6,
+        [SOUND_FILES.rifle]: 8,
+        [SOUND_FILES.sniper]: 4,
+        [SOUND_FILES.whistle]: 2
+    });
+
+    function buildAudioCandidates(file) {
+        const out = [];
+        if (file) out.push(file);
+        if (typeof file === 'string') {
+            const shortName = file.split('/').pop().split('?')[0].split('#')[0];
+            if (shortName && !out.includes(shortName)) out.push(shortName);
+        }
+        return out;
+    }
+
+    function createAudioElement(src, volume = 1, loop = false) {
+        const a = new Audio();
+        a.preload = 'auto';
+        a.loop = !!loop;
+        a.volume = volume;
+        a.src = src;
+        try { a.load(); } catch (e) {}
+        return a;
+    }
+
+    function createSoundPool(file, count = 4) {
+        const candidates = buildAudioCandidates(file);
+        return {
+            file,
+            candidates,
+            candidateIndex: 0,
+            nextIndex: 0,
+            audios: Array.from({ length: Math.max(1, count) }, () => createAudioElement(candidates[0] || file || '', 1, false))
+        };
+    }
+
+    const SOUND_POOLS = new Map();
+    Object.values(SOUND_FILES).forEach(file => {
+        SOUND_POOLS.set(file, createSoundPool(file, SOUND_POOL_SIZE[file] || 4));
+    });
+
+    let flamerAudio = createAudioElement(SOUND_FILES.flamethrower, 0.3, true);
+    let audioUnlocked = false;
+
+    function unlockAudioSystem() {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        SOUND_POOLS.forEach(pool => {
+            pool.audios.forEach(a => {
+                a.muted = true;
+                const p = a.play();
+                if (p && p.catch) p.catch(() => {});
+                a.pause();
+                a.currentTime = 0;
+                a.muted = false;
+            });
+        });
+        flamerAudio.muted = true;
+        const fp = flamerAudio.play();
+        if (fp && fp.catch) fp.catch(() => {});
+        flamerAudio.pause();
+        flamerAudio.currentTime = 0;
+        flamerAudio.muted = false;
+    }
+
+    ['pointerdown','touchstart','keydown','mousedown'].forEach(evt => {
+        window.addEventListener(evt, unlockAudioSystem, { once: true, passive: true });
+    });
+
+    const DEATH_SOUNDS = [SOUND_FILES.death1, SOUND_FILES.death2, SOUND_FILES.death3, SOUND_FILES.death4, SOUND_FILES.death5];
+    let lastDeathSoundIndex = -1;
 
     function spotifyUriToOpenUrl(uri) {
         if (!uri || !uri.startsWith('spotify:')) return '';
@@ -868,11 +963,44 @@
     }
 
     function playSound(file, vol = 0.5) {
-        if (!game.effectsEnabled) return;
-        if (file === 'lanzallamas1.mp3') return; 
-        let a = new Audio(file);
-        a.volume = vol;
-        a.play().catch(e => {});
+        if (!game.effectsEnabled || !file) return;
+        if (!audioUnlocked) unlockAudioSystem();
+        let pool = SOUND_POOLS.get(file);
+        if (!pool) {
+            pool = createSoundPool(file, 3);
+            SOUND_POOLS.set(file, pool);
+        }
+        const audio = pool.audios.find(a => a.paused || a.ended) || pool.audios[pool.nextIndex++ % pool.audios.length];
+        const tryPlay = (candidatePos = pool.candidateIndex || 0) => {
+            if (!pool.candidates.length) return;
+            const src = pool.candidates[candidatePos];
+            if (audio.src !== src) {
+                audio.pause();
+                audio.currentTime = 0;
+                audio.src = src;
+                try { audio.load(); } catch (e) {}
+            }
+            audio.volume = vol;
+            audio.currentTime = 0;
+            const p = audio.play();
+            if (p && p.catch) {
+                p.catch(() => {
+                    if (candidatePos + 1 < pool.candidates.length) {
+                        pool.candidateIndex = candidatePos + 1;
+                        tryPlay(candidatePos + 1);
+                    }
+                });
+            }
+        };
+        tryPlay(pool.candidateIndex || 0);
+    }
+
+    function playRandomDeathSound() {
+        if (!game.effectsEnabled || !DEATH_SOUNDS.length) return;
+        let idx = Math.floor(Math.random() * DEATH_SOUNDS.length);
+        if (DEATH_SOUNDS.length > 1 && idx === lastDeathSoundIndex) idx = (idx + 1 + Math.floor(Math.random() * (DEATH_SOUNDS.length - 1))) % DEATH_SOUNDS.length;
+        lastDeathSoundIndex = idx;
+        playSound(DEATH_SOUNDS[idx], 0.4);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -970,15 +1098,16 @@
     let game = { 
         active: false, loopStarted: false, worldW: 3500, camX: 0, 
         mp: 100, eMp: 100, pHp: 100, eHp: 100, pCas: 0, eCas: 0, 
-        selected: -1, selectedPct: 1.0, 
+        selected: -1, selectedArea: null, selectedPct: 1.0, 
         selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']), 
         baseRally: 'FRONT', showRanges: false,
-        resourceMode: 'infinite', maxResources: 2000, corpseTime: 120,
+        resourceMode: 'infinite', maxResources: 2000, corpseTime: 120, maxAliveTroopsPerArmy: 50,
         musicEnabled: true,
         effectsEnabled: true,
         basePanelMode: 'army',
         useGenAI: false, geminiKey: "", aiInterval: 5, lastAiTime: 0, isAiThinking: false,
         aiThoughts: ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."],
+        aiFrontTrench: null,
         aiMemory: {},
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
         trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG)),
@@ -998,6 +1127,7 @@
                 let parsed = JSON.parse(saved);
                 game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
                 game.corpseTime = parsed.corpseTime !== undefined ? parsed.corpseTime : 120;
+                game.maxAliveTroopsPerArmy = parsed.maxAliveTroopsPerArmy !== undefined ? Math.max(0, Number(parsed.maxAliveTroopsPerArmy) || 0) : 50;
                 game.resourceMode = parsed.resourceMode || 'infinite';
                 game.musicEnabled = parsed.musicEnabled !== undefined ? parsed.musicEnabled : true;
                 game.effectsEnabled = parsed.effectsEnabled !== undefined ? parsed.effectsEnabled : true;
@@ -1012,6 +1142,7 @@
                 if(parsed.trenchDmg) game.trenchDmg = { ...DEFAULT_TRENCH_DMG, ...parsed.trenchDmg };
             }
         } catch(e) { console.log("Error loading config", e); }
+        game.maxAliveTroopsPerArmy = Math.max(0, Number(game.maxAliveTroopsPerArmy) || 0);
         setGameMode(game.resourceMode);
         updateCostLabels();
         syncAudioTogglesUI();
@@ -1021,6 +1152,7 @@
         let data = {
             maxResources: game.maxResources,
             corpseTime: game.corpseTime,
+            maxAliveTroopsPerArmy: game.maxAliveTroopsPerArmy,
             resourceMode: game.resourceMode,
             musicEnabled: game.musicEnabled,
             effectsEnabled: game.effectsEnabled,
@@ -1037,6 +1169,7 @@
         if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
             game.maxResources = 2000;
             game.corpseTime = 120;
+            game.maxAliveTroopsPerArmy = 50;
             game.musicEnabled = true;
             game.effectsEnabled = true;
             game.useGenAI = false;
@@ -1154,6 +1287,7 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
+        document.getElementById('cfg-max-alive-troops').value = game.maxAliveTroopsPerArmy;
         document.getElementById('cfg-effects').checked = game.effectsEnabled;
         syncAudioTogglesUI();
         document.getElementById('cfg-use-ai').checked = game.useGenAI;
@@ -1194,9 +1328,20 @@
         document.getElementById('lbl-mp-off').innerText = game.config.officer.cost + " MP";
     }
 
+    function getAliveTroopCount(side) {
+        return units.reduce((count, u) => count + ((u.side === side && u.hp > 0) ? 1 : 0), 0);
+    }
+
+    function hasReachedAliveTroopCap(side) {
+        const cap = Math.max(0, Number(game.maxAliveTroopsPerArmy) || 0);
+        if (cap === 0) return false;
+        return getAliveTroopCount(side) >= cap;
+    }
+
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
+        game.maxAliveTroopsPerArmy = Math.max(0, Number(document.getElementById('cfg-max-alive-troops').value) || 0);
         game.musicEnabled = true;
         game.effectsEnabled = document.getElementById('cfg-effects').checked;
         syncAudioTogglesUI();
@@ -1296,26 +1441,68 @@
     }
     window.addEventListener('mouseup', e => handleEnd(e, false)); window.addEventListener('touchend', e => handleEnd(e, true));
 
+    function getNoMansLandZones() {
+        const zones = [];
+        let left = BASE_W;
+        trenches.forEach(t => {
+            if ((t.x - left) > 40) zones.push({ kind: 'nml', index: zones.length, x1: left, x2: t.x });
+            left = t.x + t.w;
+        });
+        const right = game.worldW - BASE_W;
+        if ((right - left) > 40) zones.push({ kind: 'nml', index: zones.length, x1: left, x2: right });
+        return zones;
+    }
+
+    function resetAreaSelectionDefaults() {
+        game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']);
+        ['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
+        setPct(1.0);
+    }
+
+    function selectArea(area) {
+        if (!area) { deselectTrench(); return; }
+        game.selected = area.kind === 'trench' ? area.index : -1;
+        game.selectedArea = { kind: area.kind, index: area.index };
+        document.getElementById('base-panel').classList.add('hidden');
+        document.getElementById('trench-panel').classList.remove('hidden');
+        resetAreaSelectionDefaults();
+    }
+
+    function isSameSelectedArea(area) {
+        return !!area && !!game.selectedArea && game.selectedArea.kind === area.kind && game.selectedArea.index === area.index;
+    }
+
+    function getAreaFromTap(wx) {
+        let trenchIdx = -1;
+        trenches.forEach((t, i) => { if (wx > t.x - 20 && wx < t.x + t.w + 20) trenchIdx = i; });
+        if (trenchIdx !== -1) return { kind: 'trench', index: trenchIdx };
+        const zones = getNoMansLandZones();
+        for (const zone of zones) {
+            if (wx >= zone.x1 + 8 && wx <= zone.x2 - 8) return zone;
+        }
+        return null;
+    }
+
     function handleTap(wx) {
         if (wx >= 0 && wx <= BASE_W) {
             deselectTrench();
             return;
         }
-        let found = -1;
-        trenches.forEach((t, i) => { if (wx > t.x - 20 && wx < t.x + t.w + 20) found = i; });
-        if(found !== -1) {
-            game.selected = found;
-            document.getElementById('base-panel').classList.add('hidden');
-            document.getElementById('trench-panel').classList.remove('hidden');
-            
-            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']);
-            ['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
-            setPct(1.0);
-        } else { deselectTrench(); }
+        const area = getAreaFromTap(wx);
+        if (!area) {
+            deselectTrench();
+            return;
+        }
+        if (isSameSelectedArea(area)) {
+            deselectTrench();
+            return;
+        }
+        selectArea(area);
     }
 
     function deselectTrench() {
         game.selected = -1;
+        game.selectedArea = null;
         document.getElementById('base-panel').classList.remove('hidden');
         document.getElementById('trench-panel').classList.add('hidden');
     }
@@ -1340,8 +1527,10 @@
 
     function spawnUnit(type, isE = false, enemyTargetTrench = null) {
         let conf = game.config[type];
-        if (!isE) { if (game.mp < conf.cost) return; game.mp -= conf.cost; } 
-        else { if (game.eMp < conf.cost) return; game.eMp -= conf.cost; }
+        const side = isE ? 'enemy' : 'player';
+        if (hasReachedAliveTroopCap(side)) return false;
+        if (!isE) { if (game.mp < conf.cost) return false; game.mp -= conf.cost; } 
+        else { if (game.eMp < conf.cost) return false; game.eMp -= conf.cost; }
         
         let initialRank = (type === 'officer') ? 7 : 0; 
         let rankBonus = RANKS[initialRank];
@@ -1376,48 +1565,60 @@
             aimAngle: isE ? Math.PI : 0,
             targetMode: isE ? 'FRONT' : game.baseRally
         });
+        return true;
     }
 
     function executeOrder(type, forcedTrench = -1, forcedSide = 'player') {
-        let targetTrench = forcedTrench !== -1 ? forcedTrench : game.selected;
-        if (targetTrench === -1) return;
-        
-        if (type === 'PREV' && targetTrench === 0 && forcedSide === 'player') {
-            alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa (T1)!");
+        const selectedArea = forcedTrench !== -1
+            ? { kind: 'trench', index: forcedTrench }
+            : (game.selectedArea || (game.selected !== -1 ? { kind: 'trench', index: game.selected } : null));
+        if (!selectedArea) return;
+
+        const isTrenchArea = selectedArea.kind === 'trench';
+        const targetTrench = isTrenchArea ? selectedArea.index : -1;
+        const zone = isTrenchArea ? null : getNoMansLandZones().find(z => z.index === selectedArea.index);
+        if (!isTrenchArea && !zone) return;
+
+        if (isTrenchArea && type === 'PREV' && targetTrench === 0 && forcedSide === 'player') {
+            alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa!");
             return;
         }
 
-        let pool = units.filter(u => u.side === forcedSide && u.inT === targetTrench && (forcedSide === 'enemy' || game.selectedTypes.has(u.type)));
-        
-        if (type === 'NEXT' || type === 'FRONT') { pool = pool.filter(u => !u.broken); }
+        let pool = units.filter(u => {
+            if (u.side !== forcedSide) return false;
+            if (forcedSide !== 'enemy' && !game.selectedTypes.has(u.type)) return false;
+            if (isTrenchArea) return u.inT === targetTrench;
+            return u.inT === -1 && u.x >= zone.x1 && u.x <= zone.x2;
+        });
+
+        if (type === 'NEXT' || type === 'FRONT') pool = pool.filter(u => !u.broken);
         if (type === 'EVAC') pool = pool.filter(u => u.hp < u.maxHp);
-        
-        if (pool.length === 0) return; 
+        if (pool.length === 0) return;
 
-        pool.sort((a, b) => (type === 'PREV' || type === 'EVAC') ? (a.hp/a.maxHp - b.hp/b.maxHp) : (b.hp/b.maxHp - a.hp/a.maxHp));
+        pool.sort((a, b) => (type === 'PREV' || type === 'EVAC') ? (a.hp / a.maxHp - b.hp / b.maxHp) : (b.hp / b.maxHp - a.hp / a.maxHp));
         const count = forcedSide === 'enemy' ? pool.length : Math.ceil(pool.length * game.selectedPct);
-        
-        let tCenter = trenches[targetTrench].x + trenches[targetTrench].w/2;
+        const centerX = isTrenchArea ? (trenches[targetTrench].x + trenches[targetTrench].w / 2) : ((zone.x1 + zone.x2) / 2);
 
-        if (type === 'NEXT' || type === 'FRONT') {
-            playSound('silbato1.mp3', 0.6);
-        }
+        if (type === 'NEXT' || type === 'FRONT') playSound(SOUND_FILES.whistle, 0.6);
 
-        for(let i=0; i<count; i++) {
-            pool[i].state = 'MOVE'; pool[i].inT = -1; pool[i].targetTrench = null; 
-            if (type === 'PREV' || type === 'EVAC') { 
-                pool[i].dir = forcedSide === 'player' ? -1 : 1; 
-                pool[i].x = tCenter + (pool[i].dir * 50) - (Math.random() * 15); 
-                pool[i].targetMode = type === 'EVAC' ? 'BASE' : 'PREV'; 
-            } else { 
-                pool[i].dir = forcedSide === 'player' ? 1 : -1; 
-                pool[i].x = tCenter + (pool[i].dir * 50) + (Math.random() * 15); 
-                pool[i].targetMode = type; 
+        for (let i = 0; i < count; i++) {
+            const u = pool[i];
+            u.state = 'MOVE';
+            u.inT = -1;
+            u.targetTrench = null;
+            if (type === 'PREV' || type === 'EVAC') {
+                u.dir = forcedSide === 'player' ? -1 : 1;
+                u.x = centerX + (u.dir * 50) - (Math.random() * 15);
+                u.targetMode = type === 'EVAC' ? 'BASE' : 'PREV';
+            } else {
+                u.dir = forcedSide === 'player' ? 1 : -1;
+                u.x = centerX + (u.dir * 50) + (Math.random() * 15);
+                u.targetMode = type;
             }
         }
     }
 
-    function addAiConsoleLine(text) {
+        function addAiConsoleLine(text) {
         let words = text.split(' ');
         let line = '';
         for(let i=0; i<words.length; i++) {
@@ -1518,10 +1719,15 @@ function getEnemyAiMemory(i) {
     function buildGameStateString() {
         let eTroops = units.filter(u => u.side === 'enemy').length;
         let pTroops = units.filter(u => u.side === 'player').length;
-        let s = `MP enemigo:${Math.floor(game.eMp)}. Tropas enemigas vivas:${eTroops}. Tropas jugadoras vivas:${pTroops}. `;
+        const assessments = trenches.map((_, i) => getEnemyTrenchAssessment(i));
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        const staging = chooseEnemyStagingAssessment(assessments);
+        let s = `MP enemigo:${Math.floor(game.eMp)}. Tropas enemigas vivas:${eTroops}. Tropas jugadoras vivas:${pTroops}. frenteReal:T${frontline}. lineaPreparacion:${staging ? 'T' + staging.index : 'ninguna'}. `;
         trenches.forEach((t, i) => {
-            const a = getEnemyTrenchAssessment(i);
+            const a = assessments[i];
+            const wave = getEnemyWavePlanForAssessment(a);
             s += `T${i} dueño:${t.owner}. guarnicion:${a.insideEnemy.length}. sanos:${a.healthyCount}. heridos:${a.woundedCount}. rotos:${a.brokenCount}. presion:${a.playerPower.toFixed(1)}. objetivo:T${a.targetIndex}. defensoresObjetivo:${a.targetDefenders}. bajoAtaque:${a.underAttack ? 'si':'no'}. perdidasRecientes:${a.recentLosses.toFixed(1)}. `;
+            if (wave) s += `oleada:${wave.mode}. preparacion:${wave.readiness.toFixed(2)}. faltanInf:${wave.missing.infantry}. faltanGre:${wave.missing.grenadier}. faltanFla:${wave.missing.flamethrower}. faltanSni:${wave.missing.sniper}. faltanMed:${wave.missing.medic}. faltanOff:${wave.missing.officer}. `;
         });
         return s;
     }
@@ -1531,37 +1737,172 @@ function getEnemyAiMemory(i) {
         return occupied.length ? Math.min(...occupied) : trenches.length - 1;
     }
 
-    function chooseEnemySpawnTargetTrench(assessments) {
+    function chooseEnemyStagingAssessment(assessments) {
+        if (!assessments || !assessments.length) return null;
         const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
-        const forward = assessments.find(a => a.index === frontline);
-        if (!forward) return Math.max(0, trenches.length - 2);
-        if (frontline > 0 && !forward.underAttack && forward.healthyCount < 5) return Math.max(0, frontline - 1);
-        if (forward.underAttack && frontline < trenches.length - 1 && forward.healthyCount < 4) return Math.min(trenches.length - 1, frontline + 1);
-        return frontline;
+        const front = assessments.find(a => a.index === frontline) || assessments[0];
+        const rearIdx = Math.min(trenches.length - 1, frontline + 1);
+        const rear = assessments.find(a => a.index === rearIdx) || null;
+        const prev = Number.isInteger(game.aiFrontTrench) ? assessments.find(a => a.index === game.aiFrontTrench) : null;
+        let desiredIdx = frontline;
+
+        if (front && (front.underAttack || front.healthyCount < 3 || front.recentLosses > 1.4) && rear) desiredIdx = rear.index;
+        if (prev && prev.insideEnemy.length >= 2 && !prev.shouldRetreat) {
+            if (prev.index === desiredIdx) desiredIdx = prev.index;
+            else if (prev.index === rearIdx && rear && rear.healthyCount >= 2 && (front.underAttack || front.healthyCount < 4)) desiredIdx = rearIdx;
+            else if (prev.index === frontline && front && !front.shouldRetreat && (!rear || rear.healthyCount < 2)) desiredIdx = frontline;
+        }
+
+        let chosen = assessments.find(a => a.index === desiredIdx) || front || assessments[0];
+        if (chosen && chosen.shouldRetreat && rear && rear.index !== chosen.index && !rear.shouldRetreat) chosen = rear;
+        game.aiFrontTrench = chosen ? chosen.index : frontline;
+        return chosen;
+    }
+
+    function chooseEnemySpawnTargetTrench(assessments) {
+        const staging = chooseEnemyStagingAssessment(assessments);
+        return staging ? staging.index : Math.max(0, trenches.length - 2);
+    }
+
+    function countUnitsByType(unitList) {
+        const out = { infantry: 0, grenadier: 0, flamethrower: 0, sniper: 0, medic: 0, officer: 0 };
+        unitList.forEach(u => { if (out[u.type] !== undefined) out[u.type]++; });
+        return out;
+    }
+
+    function getEnemyWavePlanForAssessment(a) {
+        if (!a) return null;
+        const stagingCenter = getTrenchCenter(a.index);
+        const targetCenter = getTrenchCenter(a.targetIndex);
+        const stagingUnits = units.filter(u => u.side === 'enemy' && ((u.inT === a.index) || (u.inT === -1 && Math.abs(u.x - stagingCenter) < 240)));
+        const targetUnits = units.filter(u => u.side === 'player' && ((u.inT === a.targetIndex) || (u.inT === -1 && Math.abs(u.x - targetCenter) < 240)));
+        const present = countUnitsByType(stagingUnits);
+        const targetCounts = countUnitsByType(targetUnits);
+        const targetInsideCount = targetUnits.filter(u => u.inT === a.targetIndex).length;
+        const targetHealthyUnits = targetUnits.filter(u => !u.broken && u.hp >= u.maxHp * 0.45);
+        const targetDense = a.targetDefenders >= 5 || targetHealthyUnits.length >= 4 || targetCounts.infantry + targetCounts.grenadier + targetCounts.officer >= 5;
+        const trenchPacked = targetInsideCount >= 3 || a.targetAssaultCount >= 3 || a.targetIndex <= 1;
+        const hostileSupports = targetCounts.medic + targetCounts.officer;
+        const hostileMarksmen = targetCounts.sniper;
+        const frontlineThreat = a.underAttack || a.playerPower > a.enemyPower + 0.55 || a.targetPressure > 1.0;
+        const recentFailure = a.recentLosses >= 1.25 || a.brokenCount >= 2 || a.shouldRetreat;
+        const desired = { infantry: 3, grenadier: 1, flamethrower: 0, sniper: 0, medic: 0, officer: 0 };
+
+        if (targetDense) {
+            desired.grenadier = 2;
+            desired.infantry = 3;
+        }
+        if (a.targetDefenders >= 7 || targetCounts.grenadier >= 2 || targetCounts.officer >= 1) {
+            desired.grenadier = Math.max(desired.grenadier, 3);
+            desired.officer = 1;
+        }
+        if (trenchPacked || targetCounts.flamethrower >= 1 || hostileSupports >= 2) {
+            desired.flamethrower = Math.max(desired.flamethrower, 1);
+        }
+        if ((trenchPacked && targetDense) || a.targetDefenders >= 8) {
+            desired.flamethrower = Math.max(desired.flamethrower, 2);
+        }
+        if (!targetDense && a.targetDefenders <= 2) {
+            desired.infantry = 4;
+            desired.grenadier = Math.max(desired.grenadier, 1);
+        }
+        if (frontlineThreat) {
+            desired.sniper = 1;
+            desired.infantry = Math.max(desired.infantry, 3);
+        }
+        if (frontlineThreat && (a.playerPower > a.enemyPower + 1.2 || hostileMarksmen >= 1)) {
+            desired.sniper = 2;
+        }
+        if (recentFailure || a.woundedNeedEvac || a.woundedCount >= 2 || stagingUnits.some(u => u.hp < u.maxHp * 0.45)) {
+            desired.medic = 1;
+        }
+        if (desired.grenadier >= 2 || desired.flamethrower >= 1 || stagingUnits.length >= 6 || a.recentLosses >= 1.0) {
+            desired.officer = 1;
+        }
+
+        desired.infantry = Math.max(3, Math.min(desired.infantry, 4));
+        desired.grenadier = Math.max(1, Math.min(desired.grenadier, 3));
+        desired.flamethrower = Math.min(desired.flamethrower, 2);
+        desired.sniper = Math.min(desired.sniper, 2);
+        desired.medic = Math.min(desired.medic, 1);
+        desired.officer = Math.min(desired.officer, 1);
+
+        const missing = {};
+        Object.keys(desired).forEach(k => missing[k] = Math.max(0, desired[k] - (present[k] || 0)));
+        const totalDesired = Object.values(desired).reduce((sum, v) => sum + v, 0);
+        const totalReady = Object.keys(desired).reduce((sum, k) => sum + Math.min(desired[k], present[k] || 0), 0);
+        const readiness = totalReady / Math.max(1, totalDesired);
+
+        let mode = 'hold';
+        let priority = ['sniper','grenadier','infantry','officer','flamethrower','medic'];
+        if (recentFailure) {
+            mode = 'recover';
+            priority = ['medic','sniper','officer','grenadier','infantry','flamethrower'];
+        } else if (frontlineThreat && readiness < 0.82) {
+            mode = 'hold';
+            priority = ['sniper','grenadier','infantry','officer','flamethrower','medic'];
+        } else if (targetDense || trenchPacked) {
+            mode = 'breach';
+            priority = ['grenadier','grenadier','flamethrower','infantry','officer','sniper','medic'];
+        } else {
+            mode = 'push';
+            priority = ['grenadier','infantry','flamethrower','officer','sniper','medic'];
+        }
+
+        const canLaunch = readiness >= 0.74 && present.grenadier >= Math.min(2, desired.grenadier) && present.flamethrower >= Math.min(1, desired.flamethrower) && present.infantry >= 3;
+        return {
+            mode,
+            desired,
+            present,
+            missing,
+            readiness,
+            spawnTargetTrench: a.index,
+            priority,
+            canLaunch,
+            targetCounts,
+            frontlineThreat,
+            recentFailure
+        };
     }
 
     function chooseEnemySpawnFromAssessments(assessments) {
         const mp = game.eMp;
         const cfg = game.config;
         const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
-        const bestPush = [...assessments]
+        const staging = chooseEnemyStagingAssessment(assessments);
+        const bestPush = staging || [...assessments]
             .filter(a => a.index <= frontline + 1)
-            .sort((a, b) => (b.pushPriority + b.assaultScore * 0.55 + (a.index === frontline ? 0.45 : 0)) - (a.pushPriority + a.assaultScore * 0.55 + (b.index === frontline ? 0.45 : 0)))[0] || assessments[0] || null;
+            .sort((a, b) => (b.pushPriority + b.assaultScore * 0.55 + (b.index === frontline ? 0.45 : 0)) - (a.pushPriority + a.assaultScore * 0.55 + (a.index === frontline ? 0.45 : 0)))[0] || assessments[0] || null;
         const defenseHotspot = [...assessments].filter(a => a.underAttack).sort((a,b) => (b.playerPower - b.enemyPower) - (a.playerPower - a.enemyPower))[0];
         const brokenHotspot = [...assessments].filter(a => a.brokenCount >= 2 || a.recentLosses > 1.8).sort((a,b) => (b.brokenCount + b.recentLosses) - (a.brokenCount + a.recentLosses))[0];
         const medicalHotspot = [...assessments].filter(a => a.woundedCount >= 2).sort((a,b) => b.woundedCount - a.woundedCount)[0];
 
-        if (bestPush && bestPush.canAssault && !bestPush.shouldRetreat) {
-            const trenchFight = bestPush.targetHealthyCount >= 4 || bestPush.targetAssaultCount >= 3;
-            const closeQuarters = bestPush.targetHealthyCount >= 3 && bestPush.targetIndex <= 1;
-            if ((trenchFight || closeQuarters) && mp >= cfg.flamethrower.cost && bestPush.assaultCount < 2) return 'flamethrower';
-            if (bestPush.targetDefenders >= 4 && mp >= cfg.grenadier.cost && bestPush.assaultCount < 3) return 'grenadier';
-            if (mp >= cfg.infantry.cost && (bestPush.healthyCount < 6 || bestPush.targetDefenders >= bestPush.healthyCount || bestPush.index > frontline)) return 'infantry';
+        if (bestPush && !bestPush.shouldRetreat) {
+            const wave = getEnemyWavePlanForAssessment(bestPush);
+            if (wave) {
+                for (const type of wave.priority) {
+                    if (wave.missing[type] > 0 && mp >= cfg[type].cost) {
+                        return { type, targetTrench: wave.spawnTargetTrench, mode: wave.mode, readiness: wave.readiness };
+                    }
+                }
+                if (wave.readiness < 0.78 && wave.present.infantry < wave.desired.infantry && mp >= cfg.infantry.cost) {
+                    return { type: 'infantry', targetTrench: wave.spawnTargetTrench, mode: wave.mode, readiness: wave.readiness };
+                }
+                if (wave.frontlineThreat && wave.present.sniper < Math.min(1, wave.desired.sniper) && mp >= cfg.sniper.cost) {
+                    return { type: 'sniper', targetTrench: wave.spawnTargetTrench, mode: 'hold', readiness: wave.readiness };
+                }
+            }
         }
-        if (defenseHotspot && mp >= cfg.sniper.cost && defenseHotspot.playerPower > defenseHotspot.enemyPower + 0.8 && Math.random() > 0.45) return 'sniper';
-        if (medicalHotspot && mp >= cfg.medic.cost && medicalHotspot.supportCount < 1) return 'medic';
-        if (brokenHotspot && mp >= cfg.officer.cost && brokenHotspot.supportCount < 2) return 'officer';
-        if (mp >= cfg.infantry.cost) return 'infantry';
+
+        if (defenseHotspot) {
+            if (mp >= cfg.sniper.cost && defenseHotspot.playerPower > defenseHotspot.enemyPower + 0.6) return { type: 'sniper', targetTrench: defenseHotspot.index, mode: 'hold', readiness: 0 };
+            if (mp >= cfg.grenadier.cost && defenseHotspot.healthyCount < 3) return { type: 'grenadier', targetTrench: defenseHotspot.index, mode: 'hold', readiness: 0 };
+            if (mp >= cfg.infantry.cost && defenseHotspot.healthyCount < 4) return { type: 'infantry', targetTrench: defenseHotspot.index, mode: 'hold', readiness: 0 };
+        }
+        if (medicalHotspot && mp >= cfg.medic.cost && medicalHotspot.supportCount < 1) return { type: 'medic', targetTrench: medicalHotspot.index, mode: 'recover', readiness: 0 };
+        if (brokenHotspot && mp >= cfg.officer.cost && brokenHotspot.supportCount < 2) return { type: 'officer', targetTrench: brokenHotspot.index, mode: 'recover', readiness: 0 };
+        if (mp >= cfg.grenadier.cost && bestPush) return { type: 'grenadier', targetTrench: bestPush.index, mode: 'push', readiness: 0 };
+        if (mp >= cfg.infantry.cost) return { type: 'infantry', targetTrench: chooseEnemySpawnTargetTrench(assessments), mode: 'push', readiness: 0 };
         return null;
     }
 
@@ -1619,6 +1960,8 @@ function simulateSmartAI(stateStr) {
         const assessments = trenches.map((_, i) => getEnemyTrenchAssessment(i));
         const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
         const front = assessments[frontline] || assessments[0];
+        const staging = chooseEnemyStagingAssessment(assessments) || front;
+        const stagingWave = staging ? getEnemyWavePlanForAssessment(staging) : null;
         let decision = { thought: "", spawn: null, spawnTargetTrench: chooseEnemySpawnTargetTrench(assessments), order: null };
 
         const crisisRetreat = assessments
@@ -1633,17 +1976,20 @@ function simulateSmartAI(stateStr) {
             decision.order = { trench: crisisRetreat.index, action: crisisRetreat.woundedNeedEvac ? 'EVAC' : 'PREV' };
         } else {
             const reserveTransfer = assessments
-                .filter(a => a.index > frontline && !a.underAttack && !a.shouldRetreat && (a.insideEnemy.length >= 3 || a.healthyCount >= 2))
+                .filter(a => staging && a.index > staging.index && !a.underAttack && !a.shouldRetreat && (a.insideEnemy.length >= 3 || a.healthyCount >= 2))
                 .sort((a,b) => (b.index + b.healthyCount * 0.35 + b.insideEnemy.length * 0.18) - (a.index + a.healthyCount * 0.35 + a.insideEnemy.length * 0.18))[0];
 
             if (reserveTransfer) {
-                decision.thought = `T${reserveTransfer.index} deja de apilarse en retaguardia y empuja reservas al frente.`;
+                decision.thought = `T${reserveTransfer.index} empuja reservas hacia T${staging.index} para fijar una línea del frente útil.`;
                 decision.order = { trench: reserveTransfer.index, action: 'NEXT' };
-            } else if (front && !front.underAttack && !front.shouldRetreat && front.healthyCount >= 4) {
-                const action = (front.targetIndex === 0 || front.healthyCount >= 6 || front.assaultScore > 0.4) ? 'FRONT' : 'NEXT';
-                decision.thought = `T${front.index} debe avanzar para conquistar la base rival.`;
-                decision.order = { trench: front.index, action };
-                const m = getEnemyAiMemory(front.index);
+            } else if (staging && stagingWave && !staging.underAttack && !staging.shouldRetreat && staging.index > frontline && stagingWave.canLaunch && staging.healthyCount >= 5) {
+                decision.thought = `T${staging.index} ya ha formado un grupo de asalto y acerca la línea de preparación al frente.`;
+                decision.order = { trench: staging.index, action: 'NEXT' };
+            } else if (staging && stagingWave && !staging.underAttack && !staging.shouldRetreat && stagingWave.canLaunch && staging.healthyCount >= 5) {
+                const action = (staging.targetIndex === 0 || staging.healthyCount >= 7 || staging.assaultScore > 0.15) ? 'FRONT' : 'NEXT';
+                decision.thought = `T${staging.index} lanza un asalto estructurado: granaderos delante, lanzallamas detrás y apoyo para consolidar.`;
+                decision.order = { trench: staging.index, action };
+                const m = getEnemyAiMemory(staging.index);
                 m.failedUntil = now + 2600;
             } else {
                 const evacCandidate = assessments
@@ -1652,17 +1998,28 @@ function simulateSmartAI(stateStr) {
                 if (evacCandidate && Math.random() > 0.4) {
                     decision.thought = `T${evacCandidate.index} evacúa heridos y se recompone para seguir avanzando.`;
                     decision.order = { trench: evacCandidate.index, action: 'EVAC' };
+                } else if (staging && stagingWave && stagingWave.frontlineThreat && stagingWave.present.sniper < Math.min(1, stagingWave.desired.sniper)) {
+                    decision.thought = `T${staging.index} se hace fuerte en el frente y pide francotiradores para repeler ataques mientras prepara el asalto.`;
+                } else if (staging && stagingWave && stagingWave.readiness < 0.74) {
+                    decision.thought = `T${staging.index} aguanta en la línea del frente y sigue montando una fuerza con granaderos, lanzallamas y apoyo antes de atacar.`;
                 } else if (front && front.underAttack) {
-                    decision.thought = `T${front.index} resiste el contacto, pero seguirá empujando cuando se abra una brecha.`;
+                    decision.thought = `T${front.index} resiste el contacto mientras la oleada enemiga se termina de formar en T${staging ? staging.index : front.index}.`;
                 } else {
-                    decision.thought = "El objetivo principal sigue siendo romper el frente y acercarse a la base rival.";
+                    decision.thought = `El enemigo concentra tropas en T${staging ? staging.index : frontline} hasta reunir un ataque en condiciones contra la siguiente trinchera rival.`;
                 }
             }
         }
 
-        decision.spawn = chooseEnemySpawnFromAssessments(assessments);
-        if (front && decision.spawn && !decision.spawnTargetTrench && frontline > 0) decision.spawnTargetTrench = Math.max(0, frontline - 1);
-        if (decision.spawn && !decision.thought) decision.thought = `Solicitando ${decision.spawn} para sostener el avance enemigo.`;
+        const spawnPlan = chooseEnemySpawnFromAssessments(assessments);
+        if (spawnPlan) {
+            decision.spawn = spawnPlan.type;
+            decision.spawnTargetTrench = Number.isInteger(spawnPlan.targetTrench) ? spawnPlan.targetTrench : decision.spawnTargetTrench;
+            if (!decision.thought) {
+                const stageText = spawnPlan.mode === 'recover' ? 'recomponer la línea' : 'preparar la siguiente oleada de asalto';
+                decision.thought = `Solicitando ${spawnPlan.type} para ${stageText}.`;
+            }
+        }
+        if (staging && decision.spawn && !Number.isInteger(decision.spawnTargetTrench)) decision.spawnTargetTrench = staging.index;
         return sanitizeEnemyDecision(decision);
     }
 
@@ -1680,7 +2037,7 @@ async function evaluateEnemyAIGemini() {
 
         if (game.geminiKey && game.geminiKey.trim() !== "") {
             try {
-                let prompt = `Eres el comandante enemigo de una guerra de trincheras. Responde SOLO en JSON estricto. OBJETIVO ESTRATEGICO PRINCIPAL: conquistar la base amiga y empujar el frente hacia ella siempre que no sea suicida. Debes equilibrar ofensiva y supervivencia, pero no puedes quedarte pasivo. REGLAS: 1) Prioriza NEXT o FRONT cuando exista una ventana ofensiva razonable, aunque no sea perfecta. 2) Defiende una trinchera propia solo si está realmente bajo presión o el intercambio sería claramente malo. 3) Usa PREV o EVAC solo para preservar una fuerza que luego deba volver a atacar. 4) Elige el spawn según la lucha esperada: infantry para masa y ocupación, grenadier para romper trincheras densas, flamethrower para limpiar posiciones cercanas o interiores, sniper para frenar presión enemiga fuerte, medic para sostener heridos, officer para recuperar moral y cohesión. 5) No ordenes NEXT o FRONT desde una trinchera colapsada, pero sí desde una que tenga al menos 3 soldados sanos o una buena oportunidad local. 6) Tu decisión debe ayudar a conquistar la siguiente trinchera amiga y acercarte a su base. 7) No acumules tropas indefinidamente en la primera trinchera enemiga; empuja reservas hacia la trinchera avanzada útil y haz rotación automática de retaguardia al frente. 8) Si una trinchera enemiga trasera tiene excedente, ordénale NEXT aunque el frente no esté en crisis. 9) Usa spawnTargetTrench para reforzar la trinchera enemiga más adelantada o una línea intermedia que acerque el asalto a la base rival. 10) Spawn permitido: infantry, grenadier, flamethrower, sniper, medic, officer. 11) Orden permitida: NEXT, PREV, EVAC, FRONT para una sola trinchera. Incluye también spawnTargetTrench. ESTADO TACTICO: ${stateStr}. FORMATO EXACTO: {"thought":"razonamiento militar breve en español","spawn":"unit_or_null","spawnTargetTrench":indice_o_null,"order":{"trench":indice,"action":"ACTION"}|null}`;
+                let prompt = `Eres el comandante enemigo de una guerra de trincheras. Responde SOLO en JSON estricto. OBJETIVO ESTRATEGICO PRINCIPAL: conquistar la base amiga y empujar el frente hacia ella siempre que no sea suicida. Debes equilibrar ofensiva y supervivencia, pero no puedes quedarte pasivo. REGLAS: 1) Prioriza NEXT o FRONT cuando exista una ventana ofensiva razonable, aunque no sea perfecta. 2) Defiende una trinchera propia solo si está realmente bajo presión o el intercambio sería claramente malo. 3) Usa PREV o EVAC solo para preservar una fuerza que luego deba volver a atacar. 4) Antes de pedir spawn, analiza la siguiente trinchera amiga a asaltar y prepara una oleada útil; no pidas solo infantry por defecto. 5) DOCTRINA DE SPAWN: si la trinchera objetivo está llena de soldados, prioriza grenadier para abrir camino y aguantar, luego flamethrower detrás de los granaderos para limpiar la trinchera, luego officer para sostener el asalto; infantry da masa y ocupación, sniper sirve para repeler ataques mientras se forma el escuadrón en la trinchera del frente, y medic sirve para curar retiradas o recomponer un ataque fallido. 6) Si la oleada todavía no es viable, hazte fuerte en la trinchera del frente y espera allí mientras sigues generando tropas adecuadas. 7) No ordenes NEXT o FRONT desde una trinchera colapsada, pero sí desde una que tenga al menos 3 soldados sanos o una buena oportunidad local. 8) Tu decisión debe ayudar a conquistar la siguiente trinchera amiga y acercarte a su base. 9) Mantén una linea de preparacion enemiga estable: una trinchera de frente activa donde acumular tropas, repeler ataques y esperar a completar la oleada antes de asaltar. 10) No acumules tropas indefinidamente en la primera trinchera enemiga; empuja reservas hacia esa linea de preparacion y haz rotación automática de retaguardia al frente. 11) Si una trinchera enemiga trasera tiene excedente, ordénale NEXT aunque el frente no esté en crisis. 12) Usa spawnTargetTrench para reforzar la trinchera de preparación activa o la trinchera más adelantada si la oleada ya está lista. 13) Spawn permitido: infantry, grenadier, flamethrower, sniper, medic, officer. 14) Orden permitida: NEXT, PREV, EVAC, FRONT para una sola trinchera. Incluye también spawnTargetTrench. ESTADO TACTICO: ${stateStr}. FORMATO EXACTO: {"thought":"razonamiento militar breve en español","spawn":"unit_or_null","spawnTargetTrench":indice_o_null,"order":{"trench":indice,"action":"ACTION"}|null}`;
 
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${game.geminiKey}`, {
                     method: 'POST',
@@ -1806,7 +2163,7 @@ async function evaluateEnemyAIGemini() {
             
             if (u.hp <= 0) {
                 if (u.side === 'player') game.pCas++; else game.eCas++;
-                playSound('muerte1.mp3', 0.4); 
+                playRandomDeathSound(); 
                 dyingUnits.push({ ...u, deathTimer: 30 });
                 units.splice(i, 1);
                 continue; 
@@ -1979,7 +2336,7 @@ async function evaluateEnemyAIGemini() {
 
             if (u.type === 'medic') {
                 if (supportTarget && !u.isRescuing) {
-                    playSound('medico1.mp3', 0.6);
+                    playSound(SOUND_FILES.medic, 0.6);
                     u.isRescuing = true;
                 } else if (!supportTarget) { u.isRescuing = false; }
             }
@@ -2139,13 +2496,13 @@ async function evaluateEnemyAIGemini() {
                 } else if (u.type === 'grenadier') {
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*6, vy: Math.sin(a)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'grenade', color: '#222' });
                 } else if (u.type === 'sniper') {
-                    playSound('francotirador1.mp3', 0.6);
+                    playSound(SOUND_FILES.sniper, 0.6);
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*22, vy: Math.sin(a)*22, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
                 } else if (u.type === 'officer' || u.type === 'medic') {
-                    playSound('pistola1.mp3', 0.4);
+                    playSound(SOUND_FILES.pistol, 0.4);
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*14, vy: Math.sin(a)*14, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'bullet', color: '#ffffbb' }); 
                 } else {
-                    playSound('rifle1.mp3', 0.25);
+                    playSound(SOUND_FILES.rifle, 0.25);
                     bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*15, vy: Math.sin(a)*15, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'bullet', color: '#ffffbb' });
                 }
                 
@@ -2154,7 +2511,16 @@ async function evaluateEnemyAIGemini() {
         }
 
         if (anyFlamethrowerShooting && game.effectsEnabled) {
-            if (flamerAudio.paused) flamerAudio.play().catch(()=>{});
+            if (flamerAudio.paused) {
+                flamerAudio.play().catch(()=>{
+                    const fallback = buildAudioCandidates(SOUND_FILES.flamethrower)[1];
+                    if (fallback && flamerAudio.src !== fallback) {
+                        flamerAudio.src = fallback;
+                        try { flamerAudio.load(); } catch (e) {}
+                        flamerAudio.play().catch(()=>{});
+                    }
+                });
+            }
         } else {
             if (!flamerAudio.paused) {
                 flamerAudio.pause();
@@ -2236,7 +2602,7 @@ async function evaluateEnemyAIGemini() {
             if(hitSomething || b.life <= 0) {
                 if (hitSomething && b.type === 'grenade') {
                     explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
-                    playSound('granada1.mp3', 0.6); 
+                    playSound(SOUND_FILES.grenade, 0.6); 
                 } else if (hitSomething && b.type !== 'fire') {
                     explosions.push({x: b.x, y: b.y, r: 1, maxR: 8, life: 5}); 
                 }
@@ -2351,6 +2717,17 @@ async function evaluateEnemyAIGemini() {
             ctx.fillStyle = '#271915'; ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r, c.r*0.5, 0, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = '#1a100d'; ctx.beginPath(); ctx.ellipse(c.x, c.y+c.r*0.2, c.r*0.8, c.r*0.4, 0, 0, Math.PI*2); ctx.fill();
         });
+
+        if (game.selectedArea && game.selectedArea.kind === 'nml') {
+            const zone = getNoMansLandZones().find(z => z.index === game.selectedArea.index);
+            if (zone) {
+                ctx.fillStyle = 'rgba(255,204,0,0.08)';
+                ctx.fillRect(zone.x1, HORIZON_Y - 4, zone.x2 - zone.x1, canvas.height - HORIZON_Y + 4);
+                ctx.strokeStyle = 'rgba(255,204,0,0.6)';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(zone.x1 + 6, HORIZON_Y - 10, Math.max(0, zone.x2 - zone.x1 - 12), canvas.height);
+            }
+        }
 
         trenches.forEach((t, i) => {
             ctx.fillStyle = '#221511'; ctx.fillRect(t.x, HORIZON_Y, t.w, canvas.height);
