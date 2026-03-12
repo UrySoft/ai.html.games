@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.98</title>
+    <title>Trench Warfare: Mud & Steel v2.06</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -69,8 +69,8 @@
 
         #controls {
             flex-shrink: 0;
-            height: 24vh; 
-            min-height:80px; max-height:80px;
+            height: 26vh; 
+            min-height:96px; max-height:96px;
             background: var(--ui-bg); border-top: 5px solid #0a0c09;
             display: flex; padding: 8px; z-index: 100; width: 100%;
             padding-bottom: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
@@ -230,7 +230,7 @@
         #base-spotify-widget{
             width:100%;
             height:100%;
-            padding:8px 10px;
+            padding:10px 12px;
             border:2px solid rgba(255,204,0,.45);
             border-radius:12px;
             background:linear-gradient(180deg,rgba(29,36,24,.94),rgba(15,17,13,.96));
@@ -244,7 +244,6 @@
         #base-spotify-widget .base-spotify-title{
             font-family:'Impact',sans-serif; letter-spacing:1px; color:var(--accent); font-size:.9rem; margin-bottom:6px;
         }
-        .spotify-meta-text{min-width:0;}
         #spotify-track-title{
             font-family:sans-serif; font-size:1rem; font-weight:700; color:#fff;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -253,18 +252,20 @@
             font-family:sans-serif; font-size:.84rem; color:#bdbdbd; margin-top:3px;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
-        .base-spotify-actions{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:8px; }
-        .base-spotify-actions .btn{ min-width:0; padding:6px 6px; min-height:52px; height:52px; font-size:.72rem; }
+        .base-spotify-actions{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+        .base-spotify-actions .btn{ min-width:0; padding:10px 12px; min-height:88px; }
         #spotify-status-text{
-            margin-top:6px; font-family:'Impact',sans-serif; font-size:.72rem; letter-spacing:1px; color:#d7d7d7;
+            margin-top:8px; font-family:'Impact',sans-serif; font-size:.88rem; letter-spacing:1px; color:#d7d7d7;
         }
 
-        .spotify-meta-row{ display:grid; grid-template-columns:64px minmax(0,1fr); gap:10px; align-items:center; }
-        #spotify-cover{ width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,.18); background:#111; }
+        .spotify-meta-row{ display:grid; grid-template-columns:72px minmax(0,1fr); gap:10px; align-items:center; }
+        #spotify-cover{ width:72px; height:92px; object-fit:cover; object-position:center top; border-radius:8px; border:1px solid rgba(255,255,255,.18); background:#111; }
         #spotify-track-album{
-            font-family:sans-serif; font-size:.72rem; color:#c6b98a; margin-top:1px;
+            font-family:sans-serif; font-size:.76rem; color:#c6b98a; margin-top:2px;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
+        .spotify-volume-row{ margin-top:8px; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:8px; font-size:.72rem; color:#ddd; }
+        #spotify-volume-note{ grid-column:1 / -1; font-size:.66rem; color:#a8a8a8; }
         #spotify-embed-wrap{ height:0; min-height:0; max-height:0; overflow:hidden; opacity:0; pointer-events:none; }
         #spotify-player-host, #spotify-player-host iframe{ width:100%; height:0; min-height:0; max-height:0; }
         @media (max-width: 640px){
@@ -272,7 +273,7 @@
             .hud-tools{gap:6px;}
             .btn-icon{width:40px; height:40px; font-size:1.1rem;}
             #allies-bar,#enemies-bar{height:22px;}
-            #controls{ min-height:118px; height:20vh; max-height:170px; padding:6px; }
+            #controls{ min-height:132px; height:22vh; max-height:188px; padding:6px; }
             .panel{ gap:6px; }
             #base-side-controls{ width:96px; min-width:96px; max-width:96px; gap:6px; }
             #base-side-controls .btn{ font-size:.52rem; letter-spacing:.3px; padding:3px; }
@@ -281,17 +282,18 @@
             .btn{ font-size:.58rem; }
             .icon-large{ font-size:1.15rem; margin-bottom:1px; }
             .led{ width:7px; height:7px; top:3px; right:3px; }
-            #base-spotify-widget{ padding:6px 7px; border-radius:10px; }
-            .base-spotify-title{ display:none !important; }
+            #base-spotify-widget{ padding:8px 9px; border-radius:10px; }
+            .base-spotify-title{ font-size:.75rem !important; margin-bottom:4px !important; }
             .spotify-meta-row{ display:grid; grid-template-columns:56px minmax(0,1fr); gap:8px; align-items:center; }
-            #spotify-cover{ width:56px !important; height:56px !important; border-radius:6px; }
-            #spotify-track-title{ font-size:.72rem; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-            #spotify-track-artist,#spotify-track-album{ font-size:.58rem; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-            #spotify-status-text{ display:none; }
+            #spotify-cover{ width:56px !important; height:56px !important; border-radius:8px; }
+            #spotify-track-title{ font-size:.78rem; line-height:1.05; }
+            #spotify-track-artist,#spotify-track-album,#spotify-status-text{ font-size:.62rem; line-height:1.05; }
             #spotify-embed-wrap{ height:0 !important; min-height:0 !important; max-height:0 !important; margin:0 !important; opacity:0; pointer-events:none; }
             #spotify-player-host, #spotify-player-host iframe{ height:0 !important; max-height:0 !important; min-height:0 !important; }
             .base-spotify-actions{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; margin-top:6px; }
-            .base-spotify-actions .btn{ min-height:30px; height:30px; font-size:.5rem; padding:2px 3px; letter-spacing:.3px; }
+            .base-spotify-actions .btn{ min-height:34px; height:34px; font-size:.56rem; padding:3px 4px; }
+            .spotify-volume-row{ margin-top:4px; gap:4px; font-size:.6rem; }
+            #spotify-volume{ width:100%; }
         }
 
 </style>
@@ -341,23 +343,22 @@
                         <button class="btn" onclick="spawnUnit('officer')"><div class="led" id="led-officer"></div><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent); font-family:sans-serif;">100 MP</span></button>
                     </div>
                 </div>
+                
                 <div id="base-radio-view" class="hidden">
                     <div id="base-spotify-widget">
                         <div class="base-spotify-title">🎵 RADIO DE LA BASE</div>
                         <div class="spotify-meta-row">
-                            <img id="spotify-cover" alt="Carátula de Spotify">
+                            <img id="spotify-cover" alt="Carátula de la playlist" src="https://urysoft.github.io/ai.html.games/games/mudandsteel/mudandsteel_loop_vertical.png">
                             <div class="spotify-meta-text">
                                 <div id="spotify-track-title">Mud &amp; Steel : Trench Warfare</div>
-                                <div id="spotify-track-artist">uryheavy</div>
-                                <div id="spotify-track-album">Lista: Mud &amp; Steel : Trench Warfare</div>
+                                <div id="spotify-track-artist">Playlist de Spotify</div>
+                                <div id="spotify-track-album">La radio intenta abrir la app de Spotify</div>
                             </div>
                         </div>
-                        <div id="spotify-embed-wrap"><div id="spotify-player-host"></div></div>
-                        <div class="base-spotify-actions">
-                            <button class="btn btn-toggle" onclick="playSpotifyPlaylist()">▶ PLAY</button>
-                            <button class="btn btn-retreat" onclick="pauseSpotifyPlaylist(true)">■ STOP</button>
-                                                    </div>
-<div id="spotify-status-text">RADIO LISTA</div>
+                        <div class="base-spotify-actions" style="grid-template-columns:1fr;">
+                            <button class="btn btn-toggle" onclick="openSpotifyPlaylist(event)">🎧 ABRIR SPOTIFY</button>
+                        </div>
+                        <div id="spotify-status-text">LISTA EXTERNA</div>
                     </div>
                 </div>
             </div>
@@ -396,7 +397,7 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V1.98</p>
+        <p class="subtitle">TRENCH WARFARE V1.86</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -600,65 +601,24 @@
     </div>
 </div>
 
-<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 <script>
+    
     const SPOTIFY_PLAYLIST = {
         uri: 'spotify:playlist:07OQAKCANdnVxfz1XnRgLM',
+        appUrl: 'spotify:playlist:07OQAKCANdnVxfz1XnRgLM',
+        webUrl: 'https://open.spotify.com/playlist/07OQAKCANdnVxfz1XnRgLM',
         name: 'Mud & Steel : Trench Warfare',
         owner: 'uryheavy',
-        cover: 'https://i.scdn.co/image/ab67616d0000b2737d050274b5d9a30c8ffd09e7'
+        cover: 'https://urysoft.github.io/ai.html.games/games/mudandsteel/mudandsteel_loop_vertical.png'
     };
     let spotifyState = {
-        controller: null,
-        ready: false,
         isPlaying: false,
-        pendingPlay: false,
-        currentURI: SPOTIFY_PLAYLIST.uri,
-        currentIndex: 0,
-        metaCache: {},
-        hasLoaded: false,
-        userStopped: false,
+        currentURI: SPOTIFY_PLAYLIST.uri
     };
 
     let flamerAudio = new Audio('lanzallamas1.mp3');
     flamerAudio.loop = true;
     flamerAudio.volume = 0.3;
-
-    window.onSpotifyIframeApiReady = (IFrameAPI) => {
-        const host = document.getElementById('spotify-player-host');
-        if (!host) return;
-        IFrameAPI.createController(host, {
-            uri: SPOTIFY_PLAYLIST.uri,
-            width: '100%',
-            height: 80
-        }, (controller) => {
-            spotifyState.controller = controller;
-            spotifyState.ready = true;
-            controller.addListener('playback_started', e => {
-                if (e && e.data && e.data.playingURI) setSpotifyTrackByURI(e.data.playingURI);
-                spotifyState.hasLoaded = true;
-                spotifyState.isPlaying = true;
-                updateSpotifyStatusUI();
-            });
-            controller.addListener('playback_update', e => {
-                const data = (e && e.data) || {};
-                if (data.playingURI) setSpotifyTrackByURI(data.playingURI);
-                spotifyState.hasLoaded = true;
-                spotifyState.isPlaying = !data.isPaused && !data.isBuffering;
-                updateSpotifyStatusUI();
-            });
-            setSpotifyTrackByURI(SPOTIFY_PLAYLIST.uri);
-            updateSpotifyTrackUI();
-            updateSpotifyStatusUI();
-            if (!game.musicEnabled) {
-                spotifyState.isPlaying = false;
-                updateSpotifyStatusUI();
-            } else if (spotifyState.pendingPlay) {
-                spotifyState.pendingPlay = false;
-                playSpotifyPlaylist();
-            }
-        });
-    };
 
     function spotifyUriToOpenUrl(uri) {
         if (!uri || !uri.startsWith('spotify:')) return '';
@@ -710,17 +670,16 @@
         fetchSpotifyMetadata(spotifyState.currentURI);
     }
 
+    
     function updateSpotifyTrackUI() {
         const title = document.getElementById('spotify-track-title');
         const artist = document.getElementById('spotify-track-artist');
         const album = document.getElementById('spotify-track-album');
         const cover = document.getElementById('spotify-cover');
-        if (!title || !artist || !album || !cover) return;
-        const track = getCurrentSpotifyDisplay();
-        title.textContent = track.title || SPOTIFY_PLAYLIST.name;
-        artist.textContent = track.artist || SPOTIFY_PLAYLIST.owner;
-        album.textContent = track.album || ('Lista: ' + SPOTIFY_PLAYLIST.name);
-        cover.src = track.cover || SPOTIFY_PLAYLIST.cover;
+        if (title) title.textContent = SPOTIFY_PLAYLIST.name;
+        if (artist) artist.textContent = 'Playlist de Spotify';
+        if (album) album.textContent = 'La radio intenta abrir la app de Spotify';
+        if (cover) cover.src = SPOTIFY_PLAYLIST.cover;
     }
 
     function updateSpotifyWidgetVisibility() {
@@ -762,25 +721,21 @@
         const el = document.getElementById('spotify-status-text');
         if (!el) return;
         if (!game.musicEnabled) {
-            el.textContent = 'DESACTIVADO';
+            el.textContent = 'RADIO DESACTIVADA EN OPCIONES';
             el.style.color = '#f44336';
             return;
         }
-        if (spotifyState.isPlaying) {
-            el.textContent = 'REPRODUCIENDO';
-            el.style.color = '#4caf50';
-            return;
-        }
-        el.textContent = spotifyState.ready ? 'DETENIDO' : 'CARGANDO';
-        el.style.color = spotifyState.ready ? '#ffcc00' : '#5bc0de';
+        el.textContent = spotifyState.isPlaying ? 'INTENTANDO ABRIR SPOTIFY' : 'RADIO EXTERNA';
+        el.style.color = spotifyState.isPlaying ? '#4caf50' : '#ffcc00';
     }
+
+    function updateSpotifyVolumeNotice() {}
 
     function toggleMusicFromMenu(checked) {
         game.musicEnabled = !!checked;
         syncAudioTogglesUI();
         saveConfig();
         if (!game.musicEnabled) pauseSpotifyPlaylist();
-        else updateSpotifyStatusUI();
     }
 
     function toggleEffectsFromMenu(checked) {
@@ -793,72 +748,70 @@
         }
     }
 
-    function loadSpotifyTrack(uri = SPOTIFY_PLAYLIST.uri, autoplay = false) {
-        spotifyState.currentURI = uri || SPOTIFY_PLAYLIST.uri;
+    function loadSpotifyTrack() {
         updateSpotifyTrackUI();
-        fetchSpotifyMetadata(spotifyState.currentURI);
-        if (!spotifyState.ready || !spotifyState.controller) {
-            spotifyState.pendingPlay = autoplay;
-            return;
-        }
-        spotifyState.controller.loadUri(spotifyState.currentURI);
-        if (autoplay && game.musicEnabled) {
-            if (spotifyState.controller.resume) spotifyState.controller.resume();
-            else spotifyState.controller.play();
-            spotifyState.isPlaying = true;
-        } else {
-            spotifyState.controller.pause();
-            spotifyState.isPlaying = false;
-        }
         updateSpotifyStatusUI();
     }
 
-    function playSpotifyPlaylist() {
-        if (!game.musicEnabled) return;
-        spotifyState.userStopped = false;
-        if (!spotifyState.ready || !spotifyState.controller) {
-            spotifyState.pendingPlay = true;
+    function openSpotifyPlaylist(ev) {
+        if (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+        if (!game.musicEnabled) {
+            updateSpotifyStatusUI();
             return;
         }
-        spotifyState.pendingPlay = false;
-        try {
-            if (!spotifyState.hasLoaded) {
-                spotifyState.controller.loadUri(SPOTIFY_PLAYLIST.uri);
-                spotifyState.hasLoaded = true;
-            }
-            if (spotifyState.controller.resume) spotifyState.controller.resume();
-            else if (spotifyState.controller.play) spotifyState.controller.play();
-        } catch (e) {
-            try {
-                spotifyState.controller.loadUri(SPOTIFY_PLAYLIST.uri);
-                spotifyState.hasLoaded = true;
-                if (spotifyState.controller.resume) spotifyState.controller.resume();
-                else if (spotifyState.controller.play) spotifyState.controller.play();
-            } catch (_) {}
-        }
-        spotifyState.currentURI = spotifyState.currentURI || SPOTIFY_PLAYLIST.uri;
-        fetchSpotifyMetadata(spotifyState.currentURI);
         spotifyState.isPlaying = true;
-        updateSpotifyTrackUI();
         updateSpotifyStatusUI();
+
+        const launcher = document.createElement('iframe');
+        launcher.style.position = 'fixed';
+        launcher.style.left = '-9999px';
+        launcher.style.top = '-9999px';
+        launcher.style.width = '1px';
+        launcher.style.height = '1px';
+        launcher.style.opacity = '0';
+        launcher.style.pointerEvents = 'none';
+        launcher.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(launcher);
+
+        try {
+            launcher.src = SPOTIFY_PLAYLIST.appUrl;
+        } catch (err) {
+            const anchor = document.createElement('a');
+            anchor.href = SPOTIFY_PLAYLIST.appUrl;
+            anchor.style.position = 'fixed';
+            anchor.style.left = '-9999px';
+            anchor.style.top = '-9999px';
+            anchor.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(anchor);
+            anchor.click();
+            setTimeout(() => anchor.remove(), 1200);
+        }
+
+        setTimeout(() => launcher.remove(), 1500);
     }
 
-    function pauseSpotifyPlaylist(forceStop = false) {
-        spotifyState.pendingPlay = false;
-        spotifyState.userStopped = !!forceStop;
-        if (spotifyState.ready && spotifyState.controller) {
-            try { spotifyState.controller.pause(); } catch(e) {}
-            if (forceStop && spotifyState.controller.restart) {
-                try { spotifyState.controller.restart(); } catch(e) {}
-            }
-        }
+    function playSpotifyPlaylist(ev) {
+        openSpotifyPlaylist(ev);
+    }
+
+    function pauseSpotifyPlaylist() {
         spotifyState.isPlaying = false;
         updateSpotifyStatusUI();
     }
 
     function nextSpotifyTrack() {
-        return;
+        openSpotifyPlaylist();
     }
+
+    function setSpotifyTrackByURI() {
+        spotifyState.currentURI = SPOTIFY_PLAYLIST.uri;
+        updateSpotifyTrackUI();
+    }
+
+    function fetchSpotifyMetadata() {}
 
     function toggleSpotifyAtFriendlyBase() {
         return;
@@ -879,7 +832,7 @@
     });
 
     function bindSpotifyUIProtection() {
-        ['base-panel','base-radio-view','radio-toggle-btn','rally-btn','spotify-player-host','spotify-embed-wrap'].forEach(id => {
+        ['base-panel','base-radio-view','radio-toggle-btn','rally-btn','base-spotify-widget'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             ['touchstart','touchend','mousedown','mouseup','click'].forEach(evt => {
@@ -1061,6 +1014,7 @@
         document.getElementById('menu').classList.remove('hidden');
         document.getElementById('btn-resume').classList.remove('hidden');
         document.getElementById('btn-start-text').innerText = "REINICIAR OPERACIÓN";
+        pauseSpotifyPlaylist();
         setBasePanelMode('army');
     }
 
@@ -1074,6 +1028,7 @@
     function showEndScreen(isPlayerWin) {
         game.active = false;
         document.getElementById('end-screen').classList.remove('hidden');
+        pauseSpotifyPlaylist();
         setBasePanelMode('army');
         
         let title = document.getElementById('end-title');
