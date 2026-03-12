@@ -1118,7 +1118,7 @@
     const trenches = [], units = [], bullets = [], craters = [], corpses = [], explosions = [], obstacles = [];
     let shells = [], dyingUnits = [];
     
-    let drag = { is: false, x: 0, cam: 0, dist: 0 };
+    let drag = { is: false, x: 0, cam: 0, dist: 0, startedOnCanvas: false, pointerId: null };
 
     function loadConfig() {
         try {
@@ -1427,19 +1427,91 @@
     }
     window.addEventListener('resize', resize);
 
-    const getX = e => e.touches ? e.touches[0].clientX : e.clientX;
-    canvas.addEventListener('mousedown', e => { drag.is = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; });
-    canvas.addEventListener('touchstart', e => { drag.is = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; }, {passive: false});
-    function handleMove(e) { if(drag.is) { let d = drag.x - getX(e); drag.dist += Math.abs(d); game.camX = Math.max(0, Math.min(game.worldW - canvas.width, drag.cam + d)); } }
-    window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove, {passive: false});
-    function handleEnd(e, isTouch) {
-        if(drag.is && drag.dist < 10) { 
-            if (e.target.closest('#controls') || e.target.closest('#hud') || e.target.closest('.screen')) { drag.is = false; return; }
-            handleTap((isTouch ? e.changedTouches[0].clientX : e.clientX) + game.camX); 
+    canvas.style.touchAction = 'none';
+
+    function getClientPointFromEvent(e, useChanged = false) {
+        if (e.changedTouches && e.changedTouches.length && useChanged) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+        if (e.touches && e.touches.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        return { x: e.clientX, y: e.clientY };
+    }
+
+    function getCanvasWorldPoint(e, useChanged = false) {
+        const pt = getClientPointFromEvent(e, useChanged);
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = rect.width ? canvas.width / rect.width : 1;
+        const scaleY = rect.height ? canvas.height / rect.height : 1;
+        const localX = (pt.x - rect.left) * scaleX;
+        const localY = (pt.y - rect.top) * scaleY;
+        return {
+            clientX: pt.x,
+            clientY: pt.y,
+            localX,
+            localY,
+            worldX: localX + game.camX,
+            inside: localX >= 0 && localX <= canvas.width && localY >= 0 && localY <= canvas.height
+        };
+    }
+
+    function beginCanvasDrag(e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        const p = getCanvasWorldPoint(e);
+        if (!p.inside) return;
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        drag.is = true;
+        drag.startedOnCanvas = true;
+        drag.x = p.localX;
+        drag.cam = game.camX;
+        drag.dist = 0;
+        drag.pointerId = e.pointerId ?? null;
+    }
+
+    function moveCanvasDrag(e) {
+        if (!drag.is) return;
+        if (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId) return;
+        const p = getCanvasWorldPoint(e);
+        const d = drag.x - p.localX;
+        drag.dist += Math.abs(d);
+        game.camX = Math.max(0, Math.min(game.worldW - canvas.width, drag.cam + d));
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+
+    function endCanvasDrag(e) {
+        if (!drag.is) return;
+        if (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId) return;
+        const p = getCanvasWorldPoint(e, true);
+        if (drag.startedOnCanvas && drag.dist < 10 && p.inside) {
+            handleTap(p.worldX);
         }
         drag.is = false;
+        drag.startedOnCanvas = false;
+        drag.pointerId = null;
+        if (typeof e.preventDefault === 'function') e.preventDefault();
     }
-    window.addEventListener('mouseup', e => handleEnd(e, false)); window.addEventListener('touchend', e => handleEnd(e, true));
+
+    if (window.PointerEvent) {
+        canvas.addEventListener('pointerdown', beginCanvasDrag, { passive: false });
+        window.addEventListener('pointermove', moveCanvasDrag, { passive: false });
+        window.addEventListener('pointerup', endCanvasDrag, { passive: false });
+        window.addEventListener('pointercancel', endCanvasDrag, { passive: false });
+    } else {
+        const getX = e => e.touches ? e.touches[0].clientX : e.clientX;
+        canvas.addEventListener('mousedown', e => { drag.is = true; drag.startedOnCanvas = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; });
+        canvas.addEventListener('touchstart', e => { const p = getCanvasWorldPoint(e); if (!p.inside) return; e.preventDefault(); drag.is = true; drag.startedOnCanvas = true; drag.x = p.localX; drag.cam = game.camX; drag.dist = 0; }, {passive: false});
+        function handleMove(e) { if(drag.is) { const p = getCanvasWorldPoint(e); let d = drag.x - p.localX; drag.dist += Math.abs(d); game.camX = Math.max(0, Math.min(game.worldW - canvas.width, drag.cam + d)); if (typeof e.preventDefault === 'function') e.preventDefault(); } }
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, {passive: false});
+        function handleEnd(e, isTouch) {
+            if (drag.is) {
+                const p = getCanvasWorldPoint(e, !!isTouch);
+                if (drag.startedOnCanvas && drag.dist < 10 && p.inside) handleTap(p.worldX);
+            }
+            drag.is = false;
+            drag.startedOnCanvas = false;
+        }
+        window.addEventListener('mouseup', e => handleEnd(e, false));
+        window.addEventListener('touchend', e => handleEnd(e, true), {passive: false});
+        window.addEventListener('touchcancel', e => handleEnd(e, true), {passive: false});
+    }
 
     function getNoMansLandZones() {
         const zones = [];
