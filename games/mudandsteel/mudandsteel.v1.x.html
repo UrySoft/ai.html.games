@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v2.06</title>
+    <title>Trench Warfare: Mud & Steel v2.09</title>
     <style>
         :root {
             --militar-green: #4b5320;
@@ -69,8 +69,8 @@
 
         #controls {
             flex-shrink: 0;
-            height: 26vh; 
-            min-height:96px; max-height:96px;
+            height: 18svh;
+            min-height: 138px; max-height: 162px;
             background: var(--ui-bg); border-top: 5px solid #0a0c09;
             display: flex; padding: 8px; z-index: 100; width: 100%;
             padding-bottom: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
@@ -79,9 +79,9 @@
         .panel { display: flex; gap: 8px; width: 100%; height: 100%; }
         .hidden { display: none !important; }
         #base-side-controls{
-            width: 140px;
-            min-width: 140px;
-            max-width: 140px;
+            width: 152px;
+            min-width: 152px;
+            max-width: 152px;
             display:flex;
             flex-direction:column;
             gap:8px;
@@ -113,10 +113,10 @@
             background: linear-gradient(to bottom, #6b7a38, #404a20); color: #fff; 
             border: 2px solid #1a1e18; border-bottom: 4px solid #111; border-radius: 6px; 
             cursor: pointer; position: relative;
-            font-family: 'Impact', 'Arial Black', sans-serif; font-size: 0.65rem; font-weight: normal; letter-spacing: 1px;
+            font-family: 'Impact', 'Arial Black', sans-serif; font-size: 0.7rem; font-weight: normal; letter-spacing: .8px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: inset 0 2px 2px rgba(255,255,255,0.2), 0 4px 5px rgba(0,0,0,0.6);
-            text-align: center; line-height: 1.1; text-shadow: 1px 2px 2px #000; padding: 2px;
+            text-align: center; line-height: 1.12; text-shadow: 1px 2px 2px #000; padding: 4px;
             width: 100%; height: 100%; transition: transform 0.1s, border-bottom 0.1s, box-shadow 0.1s;
         }
         .btn:active { 
@@ -230,7 +230,7 @@
         #base-spotify-widget{
             width:100%;
             height:100%;
-            padding:10px 12px;
+            padding:8px 10px;
             border:2px solid rgba(255,204,0,.45);
             border-radius:12px;
             background:linear-gradient(180deg,rgba(29,36,24,.94),rgba(15,17,13,.96));
@@ -238,48 +238,117 @@
             pointer-events:auto;
             display:flex;
             flex-direction:column;
-            justify-content:center;
+            justify-content:flex-start;
+            gap:6px;
             overflow:hidden;
         }
+        .base-spotify-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            min-width:0;
+        }
         #base-spotify-widget .base-spotify-title{
-            font-family:'Impact',sans-serif; letter-spacing:1px; color:var(--accent); font-size:.9rem; margin-bottom:6px;
+            font-family:'Impact',sans-serif;
+            letter-spacing:1px;
+            color:var(--accent);
+            font-size:.82rem;
+            line-height:1;
+            min-width:0;
+            flex:1;
+        }
+        .spotify-open-btn{
+            flex:0 0 clamp(180px,26vw,260px);
+            min-width:180px;
+            min-height:34px;
+            height:34px;
+            padding:4px 10px;
+            font-size:.64rem;
+            white-space:nowrap;
+        }
+        .spotify-main-row{
+            display:grid;
+            grid-template-columns:52px minmax(0,1fr);
+            gap:10px;
+            align-items:center;
+            min-height:0;
         }
         #spotify-track-title{
-            font-family:sans-serif; font-size:1rem; font-weight:700; color:#fff;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            font-family:sans-serif;
+            font-size:.9rem;
+            font-weight:700;
+            color:#fff;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
         }
         #spotify-track-artist{
-            font-family:sans-serif; font-size:.84rem; color:#bdbdbd; margin-top:3px;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            font-family:sans-serif;
+            font-size:.74rem;
+            color:#bdbdbd;
+            margin-top:2px;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
         }
-        .base-spotify-actions{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
-        .base-spotify-actions .btn{ min-width:0; padding:10px 12px; min-height:88px; }
+        #spotify-cover{
+            width:52px;
+            height:52px;
+            object-fit:cover;
+            object-position:center top;
+            border-radius:8px;
+            border:1px solid rgba(255,255,255,.18);
+            background:#111;
+        }
+        #spotify-track-album{
+            font-family:sans-serif;
+            font-size:.68rem;
+            color:#c6b98a;
+            margin-top:2px;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
         #spotify-status-text{
-            margin-top:8px; font-family:'Impact',sans-serif; font-size:.88rem; letter-spacing:1px; color:#d7d7d7;
+            margin-top:auto;
+            font-family:'Impact',sans-serif;
+            font-size:.72rem;
+            letter-spacing:1px;
+            color:#d7d7d7;
+            line-height:1;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .spotify-meta-row,.base-spotify-actions,.spotify-volume-row,#spotify-volume-note,#spotify-embed-wrap,#spotify-player-host,#spotify-player-host iframe{ display:none !important; height:0 !important; min-height:0 !important; max-height:0 !important; overflow:hidden !important; opacity:0 !important; pointer-events:none !important; }
+        @media (min-width: 1100px) and (max-height: 820px){
+            #controls{ min-height:166px; height:22vh; max-height:184px; }
+            #base-side-controls{ width:112px; min-width:112px; max-width:112px; }
+            #base-side-controls .btn{ font-size:.56rem; padding:4px 3px; }
+            #base-side-controls .btn span{ font-size:.48rem !important; }
+            #base-spotify-widget{ padding:7px 9px; gap:5px; }
+            .base-spotify-header{ gap:8px; }
+            .spotify-open-btn{ flex-basis:168px; min-width:168px; min-height:32px; height:32px; padding:4px 8px; font-size:.58rem; }
+            .spotify-main-row{ grid-template-columns:46px minmax(0,1fr); gap:8px; }
+            #spotify-cover{ width:46px; height:46px; }
+            #spotify-track-title{ font-size:.8rem; }
+            #spotify-track-artist{ font-size:.66rem; }
+            #spotify-track-album,#spotify-status-text{ font-size:.6rem; }
         }
 
-        .spotify-meta-row{ display:grid; grid-template-columns:72px minmax(0,1fr); gap:10px; align-items:center; }
-        #spotify-cover{ width:72px; height:92px; object-fit:cover; object-position:center top; border-radius:8px; border:1px solid rgba(255,255,255,.18); background:#111; }
-        #spotify-track-album{
-            font-family:sans-serif; font-size:.76rem; color:#c6b98a; margin-top:2px;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-        }
-        .spotify-volume-row{ margin-top:8px; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:8px; font-size:.72rem; color:#ddd; }
-        #spotify-volume-note{ grid-column:1 / -1; font-size:.66rem; color:#a8a8a8; }
-        #spotify-embed-wrap{ height:0; min-height:0; max-height:0; overflow:hidden; opacity:0; pointer-events:none; }
-        #spotify-player-host, #spotify-player-host iframe{ width:100%; height:0; min-height:0; max-height:0; }
         @media (max-width: 640px){
             #hud{height:72px; padding:6px 8px;}
             .hud-tools{gap:6px;}
             .btn-icon{width:40px; height:40px; font-size:1.1rem;}
             #allies-bar,#enemies-bar{height:22px;}
-            #controls{ min-height:132px; height:22vh; max-height:188px; padding:6px; }
+            #controls{ min-height:152px; height:24vh; max-height:210px; padding:6px; }
             .panel{ gap:6px; }
-            #base-side-controls{ width:96px; min-width:96px; max-width:96px; gap:6px; }
-            #base-side-controls .btn{ font-size:.52rem; letter-spacing:.3px; padding:3px; }
-            #base-side-controls .btn span{ font-size:.44rem !important; }
+            #base-side-controls{ width:102px; min-width:102px; max-width:102px; gap:6px; }
+            #base-side-controls .btn{ font-size:.54rem; letter-spacing:.3px; padding:4px 3px; }
+            #base-side-controls .btn span{ font-size:.46rem !important; }
             #unit-grid{ gap:6px; }
-            .btn{ font-size:.58rem; }
+            .btn{ font-size:.6rem; }
             .icon-large{ font-size:1.15rem; margin-bottom:1px; }
             .led{ width:7px; height:7px; top:3px; right:3px; }
             #base-spotify-widget{ padding:8px 9px; border-radius:10px; }
@@ -346,19 +415,19 @@
                 
                 <div id="base-radio-view" class="hidden">
                     <div id="base-spotify-widget">
-                        <div class="base-spotify-title">🎵 RADIO DE LA BASE</div>
-                        <div class="spotify-meta-row">
+                        <div class="base-spotify-header">
+                            <div class="base-spotify-title">🎵 RADIO DE LA BASE</div>
+                            <button class="btn btn-toggle spotify-open-btn" onclick="openSpotifyPlaylist(event)">🎧 ABRIR SPOTIFY</button>
+                        </div>
+                        <div class="spotify-main-row">
                             <img id="spotify-cover" alt="Carátula de la playlist" src="https://urysoft.github.io/ai.html.games/games/mudandsteel/mudandsteel_loop_vertical.png">
                             <div class="spotify-meta-text">
                                 <div id="spotify-track-title">Mud &amp; Steel : Trench Warfare</div>
-                                <div id="spotify-track-artist">Playlist de Spotify</div>
-                                <div id="spotify-track-album">La radio intenta abrir la app de Spotify</div>
+                                <div id="spotify-track-artist">Lista oficial de Spotify</div>
+                                <div id="spotify-track-album">Mud &amp; Steel · lista de combate</div>
                             </div>
                         </div>
-                        <div class="base-spotify-actions" style="grid-template-columns:1fr;">
-                            <button class="btn btn-toggle" onclick="openSpotifyPlaylist(event)">🎧 ABRIR SPOTIFY</button>
-                        </div>
-                        <div id="spotify-status-text">LISTA EXTERNA</div>
+                        <div id="spotify-status-text">PULSA EL BOTÓN PARA ABRIR LA PLAYLIST</div>
                     </div>
                 </div>
             </div>
@@ -406,8 +475,8 @@
         </div>
 
         <div style="display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; margin: 12px 0 8px; padding: 10px 16px; background: rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.12); border-radius:12px;">
-            <label style="display:flex; align-items:center; gap:8px; font-family:sans-serif; font-size:0.95rem; color:#fff;">🎵 Música Spotify <input type="checkbox" id="menu-music" style="transform: scale(1.2);" onchange="toggleMusicFromMenu(this.checked)"></label>
             <label style="display:flex; align-items:center; gap:8px; font-family:sans-serif; font-size:0.95rem; color:#fff;">🔊 Efectos <input type="checkbox" id="menu-effects" style="transform: scale(1.2);" onchange="toggleEffectsFromMenu(this.checked)"></label>
+            <div style="font-family:sans-serif; font-size:0.82rem; color:#c8c8c8;">🎧 Spotify se abre manualmente desde la radio de la base.</div>
         </div>
 
         <button id="btn-resume" class="btn-start btn-resume hidden" onclick="resumeGame()">▶ REANUDAR OPERACIÓN</button>
@@ -478,7 +547,6 @@
 
             <div class="cfg-group" style="border-color: #aaa;">
                 <h3 style="color: #aaa;">⚙️ AJUSTES GENERALES</h3>
-                <div class="cfg-label">Música Spotify <input type="checkbox" id="cfg-music" style="transform: scale(1.3);" onchange="game.musicEnabled = this.checked;"></div>
                 <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-effects" style="transform: scale(1.3);" onchange="game.effectsEnabled = this.checked;"></div>
                 <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
                 <div class="cfg-label">Tiempo del Cadáver (Segundos) <input type="number" id="cfg-corpse-time" class="cfg-input"></div>
@@ -677,8 +745,8 @@
         const album = document.getElementById('spotify-track-album');
         const cover = document.getElementById('spotify-cover');
         if (title) title.textContent = SPOTIFY_PLAYLIST.name;
-        if (artist) artist.textContent = 'Playlist de Spotify';
-        if (album) album.textContent = 'La radio intenta abrir la app de Spotify';
+        if (artist) artist.textContent = 'Lista oficial de Spotify';
+        if (album) album.textContent = 'Mud & Steel · lista de combate';
         if (cover) cover.src = SPOTIFY_PLAYLIST.cover;
     }
 
@@ -705,13 +773,9 @@
     }
 
     function syncAudioTogglesUI() {
-        const menuMusic = document.getElementById('menu-music');
         const menuEffects = document.getElementById('menu-effects');
-        const cfgMusic = document.getElementById('cfg-music');
         const cfgEffects = document.getElementById('cfg-effects');
-        if (menuMusic) menuMusic.checked = !!game.musicEnabled;
         if (menuEffects) menuEffects.checked = !!game.effectsEnabled;
-        if (cfgMusic) cfgMusic.checked = !!game.musicEnabled;
         if (cfgEffects) cfgEffects.checked = !!game.effectsEnabled;
         updateSpotifyTrackUI();
         updateSpotifyStatusUI();
@@ -720,22 +784,14 @@
     function updateSpotifyStatusUI() {
         const el = document.getElementById('spotify-status-text');
         if (!el) return;
-        if (!game.musicEnabled) {
-            el.textContent = 'RADIO DESACTIVADA EN OPCIONES';
-            el.style.color = '#f44336';
-            return;
-        }
-        el.textContent = spotifyState.isPlaying ? 'INTENTANDO ABRIR SPOTIFY' : 'RADIO EXTERNA';
+        el.textContent = spotifyState.isPlaying ? 'SPOTIFY ABIERTO EN OTRA PESTAÑA' : 'PULSA EL BOTÓN PARA ABRIR LA PLAYLIST';
         el.style.color = spotifyState.isPlaying ? '#4caf50' : '#ffcc00';
     }
 
     function updateSpotifyVolumeNotice() {}
 
-    function toggleMusicFromMenu(checked) {
-        game.musicEnabled = !!checked;
-        syncAudioTogglesUI();
-        saveConfig();
-        if (!game.musicEnabled) pauseSpotifyPlaylist();
+    function toggleMusicFromMenu() {
+        return;
     }
 
     function toggleEffectsFromMenu(checked) {
@@ -758,39 +814,28 @@
             ev.preventDefault();
             ev.stopPropagation();
         }
-        if (!game.musicEnabled) {
-            updateSpotifyStatusUI();
-            return;
-        }
         spotifyState.isPlaying = true;
         updateSpotifyStatusUI();
 
-        const launcher = document.createElement('iframe');
-        launcher.style.position = 'fixed';
-        launcher.style.left = '-9999px';
-        launcher.style.top = '-9999px';
-        launcher.style.width = '1px';
-        launcher.style.height = '1px';
-        launcher.style.opacity = '0';
-        launcher.style.pointerEvents = 'none';
-        launcher.setAttribute('aria-hidden', 'true');
-        document.body.appendChild(launcher);
-
         try {
-            launcher.src = SPOTIFY_PLAYLIST.appUrl;
-        } catch (err) {
-            const anchor = document.createElement('a');
-            anchor.href = SPOTIFY_PLAYLIST.appUrl;
-            anchor.style.position = 'fixed';
-            anchor.style.left = '-9999px';
-            anchor.style.top = '-9999px';
-            anchor.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(anchor);
-            anchor.click();
-            setTimeout(() => anchor.remove(), 1200);
-        }
+            const spotifyWin = window.open(SPOTIFY_PLAYLIST.webUrl, '_blank', 'noopener,noreferrer');
+            if (spotifyWin) {
+                spotifyWin.opener = null;
+                return;
+            }
+        } catch (err) {}
 
-        setTimeout(() => launcher.remove(), 1500);
+        const anchor = document.createElement('a');
+        anchor.href = SPOTIFY_PLAYLIST.webUrl;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.position = 'fixed';
+        anchor.style.left = '-9999px';
+        anchor.style.top = '-9999px';
+        anchor.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(anchor);
+        anchor.click();
+        setTimeout(() => anchor.remove(), 1200);
     }
 
     function playSpotifyPlaylist(ev) {
@@ -1022,7 +1067,6 @@
         document.getElementById('menu').classList.add('hidden');
         game.active = true;
         updateSpotifyWidgetVisibility();
-        if (game.musicEnabled && spotifyState.ready && spotifyState.controller && spotifyState.controller.resume) spotifyState.controller.resume();
     }
 
     function showEndScreen(isPlayerWin) {
@@ -1057,6 +1101,16 @@
         saveConfig();
     }
 
+    let spotifyDesktopLaunchAttempted = false;
+
+    function isDesktopDevice() {
+        return matchMedia('(pointer:fine)').matches && !/Android|iPhone|iPad|iPod|Mobile|Windows Phone|webOS/i.test(navigator.userAgent);
+    }
+
+    function tryOpenSpotifyDesktopTab() {
+        return;
+    }
+
     function startGame() {
         document.getElementById('menu').classList.add('hidden');
         document.getElementById('end-screen').classList.add('hidden');
@@ -1079,7 +1133,7 @@
         game.active = true;
         setBasePanelMode('army');
         syncAudioTogglesUI();
-        if (game.musicEnabled) playSpotifyPlaylist();
+        pauseSpotifyPlaylist();
         
         if(!game.loopStarted) {
             game.loopStarted = true;
@@ -1093,7 +1147,6 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
-        document.getElementById('cfg-music').checked = game.musicEnabled;
         document.getElementById('cfg-effects').checked = game.effectsEnabled;
         syncAudioTogglesUI();
         document.getElementById('cfg-use-ai').checked = game.useGenAI;
@@ -1137,10 +1190,9 @@
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
-        game.musicEnabled = document.getElementById('cfg-music').checked;
+        game.musicEnabled = true;
         game.effectsEnabled = document.getElementById('cfg-effects').checked;
         syncAudioTogglesUI();
-        if (!game.musicEnabled) pauseSpotifyPlaylist();
         
         game.useGenAI = document.getElementById('cfg-use-ai').checked;
         game.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
