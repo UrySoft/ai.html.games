@@ -205,6 +205,269 @@
             .btn-stack .btn-label{ font-size: 0.5rem; }
         }
 
+
+        .mp-top-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0 14px;}
+        .mp-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+        .mp-card{background:#151515;border:2px solid #3a3a3a;border-radius:10px;padding:14px;text-align:left;box-shadow:0 8px 20px rgba(0,0,0,.45);}
+        .mp-badge{display:inline-block;background:#263238;color:#fff;border:1px solid #4f5b62;border-radius:999px;padding:4px 10px;font:700 .72rem sans-serif;letter-spacing:.8px;margin-bottom:8px;}
+        .mp-card h3{font-family:'Impact',sans-serif;letter-spacing:1px;color:var(--accent);margin-bottom:8px;font-size:1.3rem;}
+        .mp-steps{font: .82rem/1.35 sans-serif;color:#d8d8d8;margin-bottom:10px;}
+        .mp-divider{height:1px;background:#333;margin:12px 0;}
+        .mp-box{width:100%;min-height:120px;resize:vertical;background:#070707;color:#d7ffd7;border:1px solid #4a4a4a;border-radius:8px;padding:10px;font: .75rem/1.35 monospace;}
+        .mp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+        .mp-status{margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #444;font:700 .82rem/1.35 sans-serif;background:#222;color:#eee;}
+        .mp-status.ok{background:#12381b;border-color:#2f7f46;color:#c9ffd5;}
+        .mp-status.warn{background:#3a2f12;border-color:#8d6d1f;color:#ffe8a8;}
+        .mp-status.err{background:#3c1616;border-color:#8e2b2b;color:#ffbaba;}
+        @media (min-width: 880px){ .mp-grid{grid-template-columns:1fr 1fr;} }
+
+        .mp-modal{width:min(1100px,94vw);max-height:88vh;overflow:auto;border-width:4px;background:
+            radial-gradient(circle at top, rgba(255,244,214,0.08), transparent 38%),
+            linear-gradient(180deg, #66543a 0%, #463624 100%);
+            border-color:#1f160d !important;
+            box-shadow:0 18px 44px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(208,179,119,0.14);
+            color:#f0e2bf;
+        }
+        .mp-modal h1,.mp-modal h3{color:#f3deb1;letter-spacing:.06em;text-shadow:0 2px 0 rgba(0,0,0,.45);}
+        .mp-modal .subtitle{color:#d7c297;}
+        .mp-modal .settings-box{
+            background:linear-gradient(180deg, rgba(50,38,24,.94), rgba(30,22,13,.96));
+            border:1px solid #8a6a3c;
+            box-shadow:inset 0 1px 0 rgba(255,236,182,0.08), 0 8px 18px rgba(0,0,0,.25);
+        }
+        .mp-modal .separator{background:linear-gradient(90deg, transparent, rgba(214,182,122,.55), transparent);}
+        .mp-modal .mp-copy{
+            font-family:Georgia, 'Times New Roman', serif;
+        }
+        .mp-tabs{display:flex;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+        .mp-tab{
+            min-width:220px;
+            padding:12px 18px;
+            border:2px solid #6f5330 !important;
+            background:linear-gradient(180deg,#5b462e,#382818) !important;
+            color:#dfc595 !important;
+            font-family:Georgia, 'Times New Roman', serif !important;
+            font-size:1.05rem !important;
+            letter-spacing:.04em;
+            text-transform:uppercase;
+            box-shadow:0 6px 12px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,236,196,.08);
+            transition:transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
+        }
+        .mp-tab:hover{transform:translateY(-1px);}
+        .mp-tab.active{
+            background:linear-gradient(180deg,#b08a4b,#7b5b2b) !important;
+            color:#1f1307 !important;
+            border-color:#d3b06c !important;
+            box-shadow:0 3px 0 #2a1d0d, 0 10px 20px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,247,213,.35);
+            transform:translateY(1px);
+        }
+        .mp-role{
+            display:inline-flex;align-items:center;gap:8px;padding:8px 12px;margin:0 0 10px;
+            border:1px solid #9d7a42;border-radius:999px;background:rgba(181,143,76,.12);
+            color:#f0dcae;font:700 .95rem/1.1 Georgia, 'Times New Roman', serif;letter-spacing:.05em;text-transform:uppercase;
+        }
+        .mp-modal p{color:#e0d1af !important;font-family:Georgia, 'Times New Roman', serif !important;}
+        .mp-modal .btn-modal{
+            background:linear-gradient(180deg,#6b5235,#43311f);
+            border-color:#8e6d40;
+            color:#f2dfb2;
+            font-family:Georgia, 'Times New Roman', serif;
+            letter-spacing:.03em;
+            box-shadow:0 6px 12px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,233,190,.08);
+        }
+        .mp-modal .btn-modal:hover{filter:brightness(1.05);}
+        .mp-modal .mp-box{
+            min-height:132px;background:#14100a;color:#eadcb8;border:1px solid #8e6e42;border-radius:10px;
+            box-shadow:inset 0 1px 6px rgba(0,0,0,.45);
+            font:.8rem/1.45 Consolas, Monaco, monospace;
+        }
+        .mp-modal .mp-status{
+            background:rgba(36,26,16,.96);border-color:#8e6e42;color:#efdcb6;font-family:Georgia, 'Times New Roman', serif;
+        }
+        .mp-modal .mp-status.ok{background:#253621;border-color:#698d4f;color:#dff2c9;}
+        .mp-modal .mp-status.warn{background:#4a3816;border-color:#ad8744;color:#ffe2a2;}
+        .mp-modal .mp-status.err{background:#4b2320;border-color:#a3574b;color:#ffd1cb;}
+        @media (max-width: 700px){
+            .mp-tab{min-width:calc(50% - 8px);font-size:.95rem !important;padding:11px 12px;}
+            .mp-modal{width:min(96vw,1100px);}
+        }
+
+
+
+        /* Multiplayer UI v2.35 refinements: greener palette + more spacing */
+        .mp-modal{
+            width:min(1100px,94vw);
+            padding:24px 22px 22px;
+            background:
+                radial-gradient(circle at top, rgba(168,196,102,0.10), transparent 34%),
+                linear-gradient(180deg, rgba(36,46,22,0.98) 0%, rgba(21,28,14,0.98) 100%);
+            border-color:#1a1f12 !important;
+            box-shadow:0 18px 44px rgba(0,0,0,0.58), inset 0 0 0 2px rgba(118,140,66,0.18);
+            color:#e7eed1;
+        }
+        .mp-modal h1,.mp-modal h3{color:#f0f5d8;text-shadow:0 2px 0 rgba(0,0,0,.45);}
+        .mp-modal .subtitle{color:#bccb92;}
+        .mp-grid{gap:18px !important; margin-top:4px;}
+        .mp-modal .settings-box{
+            padding:18px 18px 16px;
+            background:
+                linear-gradient(180deg, rgba(57,73,31,0.96), rgba(31,40,18,0.98));
+            border:2px solid #6d8141;
+            border-radius:14px;
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 18px rgba(0,0,0,.24);
+        }
+        .mp-modal .separator{
+            height:1px;
+            margin:14px 0 16px;
+            background:linear-gradient(90deg, transparent, rgba(172,198,96,.5), transparent);
+        }
+        .mp-role{
+            margin:0 0 12px;
+            border:1px solid #93a85b;
+            background:rgba(142,168,79,.16);
+            color:#edf4d8;
+        }
+        .mp-modal p{
+            margin:0 0 12px !important;
+            color:#d9e2bf !important;
+            font-family:sans-serif !important;
+            line-height:1.45;
+        }
+        .mp-actions{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            justify-content:center;
+            margin:4px 0 14px;
+        }
+        .mp-modal .btn-modal{
+            min-height:52px;
+            padding:12px 18px;
+            background:linear-gradient(to bottom, #6b7a38, #404a20) !important;
+            border:2px solid #1a1e18 !important;
+            border-bottom:4px solid #111 !important;
+            border-radius:8px;
+            color:#fff !important;
+            font-family:'Impact','Arial Black',sans-serif !important;
+            font-size:1rem !important;
+            letter-spacing:.06em;
+            text-transform:uppercase;
+            text-shadow:1px 2px 2px #000;
+            box-shadow:inset 0 2px 2px rgba(255,255,255,0.16), 0 4px 8px rgba(0,0,0,0.34);
+        }
+        .mp-modal .btn-modal:hover{filter:brightness(1.03);}
+        .mp-modal .btn-modal:active{
+            transform:translateY(2px);
+            border-bottom-width:2px !important;
+        }
+        .mp-tab{
+            min-width:220px;
+            flex:1 1 280px;
+            max-width:360px;
+            margin:0;
+            background:linear-gradient(to bottom, #586629, #333d17) !important;
+            border-color:#202713 !important;
+            color:#dfe9bf !important;
+            opacity:.84;
+        }
+        .mp-tab.active{
+            background:linear-gradient(to bottom, #92ac49, #5a6a28) !important;
+            border-color:#b4cf65 !important;
+            color:#fff !important;
+            opacity:1;
+            box-shadow:0 4px 0 #111, 0 10px 18px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.25);
+        }
+        .mp-box{
+            width:100%;
+            min-height:136px;
+            margin-top:2px;
+            padding:14px 14px;
+            background:#090b07;
+            color:#d8f1c6;
+            border:2px solid #6f8440;
+            border-radius:12px;
+            box-shadow:inset 0 1px 8px rgba(0,0,0,.5);
+            font:.78rem/1.45 Consolas, Monaco, monospace;
+        }
+        .mp-status{
+            margin-top:18px;
+            padding:12px 14px;
+            border-radius:10px;
+            border:1px solid #61723a;
+            background:rgba(26,33,16,.98);
+            color:#e7efd0;
+        }
+        .mp-status.ok{background:#18311b;border-color:#4d8a58;color:#d6ffd8;}
+        .mp-status.warn{background:#313a19;border-color:#98a654;color:#f0f7c8;}
+        .mp-status.err{background:#442020;border-color:#9b4a4a;color:#ffd6d6;}
+        @media (max-width: 700px){
+            .mp-modal{
+                width:min(96vw,1100px);
+                padding:20px 14px 18px;
+            }
+            .mp-grid{gap:14px !important;}
+            .mp-modal .settings-box{padding:14px 12px 14px;}
+            .mp-tabs{gap:8px; margin-bottom:12px;}
+            .mp-tab{
+                min-width:0;
+                max-width:none;
+                flex:1 1 calc(50% - 8px);
+                padding:11px 10px;
+                font-size:.9rem !important;
+            }
+            .mp-actions{
+                gap:8px;
+                margin:2px 0 12px;
+            }
+            .mp-modal .btn-modal{
+                width:100%;
+                max-width:none;
+                min-height:48px;
+                font-size:.92rem !important;
+                padding:11px 12px;
+            }
+            .mp-box{
+                min-height:124px;
+                padding:12px 11px;
+            }
+        }
+
+        .mp-working{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:10px;
+            margin-top:14px;
+            padding:11px 14px;
+            border-radius:10px;
+            border:1px solid #8ea85d;
+            background:rgba(38,53,19,0.96);
+            color:#eef8d3;
+            font:700 .84rem/1.2 sans-serif;
+            letter-spacing:.02em;
+        }
+        .mp-working.hidden{display:none !important;}
+        .mp-spinner{
+            width:18px;
+            height:18px;
+            border:3px solid rgba(255,255,255,0.18);
+            border-top-color:#dff4a7;
+            border-radius:50%;
+            animation: mpSpin .8s linear infinite;
+            flex:0 0 auto;
+        }
+        .mp-modal.is-busy .mp-tab,
+        .mp-modal.is-busy .mp-card-action{
+            opacity:.72;
+            pointer-events:none;
+            filter:saturate(.75);
+        }
+        @keyframes mpSpin{
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+
+
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: transparent; display: flex; flex-direction: column; 
@@ -528,7 +791,70 @@
 
         <button id="btn-resume" class="btn-start btn-resume hidden" onclick="resumeGame()">▶ REANUDAR OPERACIÓN</button>
         <button id="btn-start-text" class="btn-start" onclick="startGame()">NUEVA OPERACIÓN</button>
+        <button class="btn-modal btn-manual-main" onclick="openMultiplayerMenu()">🌐 MULTIJUGADOR</button>
         <button class="btn-modal btn-manual-main" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
+    </div>
+
+    
+    <div id="multiplayer-screen" class="screen hidden" style="z-index: 680;">
+        <div class="menu-overlay" style="background: rgba(0,0,0,0.92);"></div>
+        <div class="modal mp-modal">
+            <h1 style="margin-bottom:8px;">MULTIJUGADOR</h1>
+            <p class="subtitle" style="margin-bottom:18px;">Emparejamiento por WhatsApp - fase 1</p>
+
+            <div class="mp-tabs">
+                <button id="mp-create-tab" class="btn-modal mp-tab active" onclick="showMultiplayerPane('host')">Crear partida</button>
+                <button id="mp-join-tab" class="btn-modal mp-tab" onclick="showMultiplayerPane('guest')">Unirse a partida</button>
+            </div>
+
+            <div class="mp-grid" style="display:grid; gap:16px;">
+                <div id="mp-host-card" class="settings-box">
+                    <div class="mp-role">⚔️ Crear partida</div><h3 style="margin:0 0 10px;">Anfitrión</h3>
+                    <div class="separator"></div>
+                    <p style="margin:0 0 10px; color:#d0d0d0; font-family:sans-serif;">1. Genera la invitación y envíala por WhatsApp.</p>
+                    <div class="mp-actions">
+                        <button class="btn-modal mp-card-action" onclick="mpCreateInvitation()">Generar invitación</button>
+                        <button class="btn-modal mp-card-action" onclick="mpCopyField('mp-host-offer')">Copiar invitación</button>
+                        <button class="btn-modal mp-card-action" onclick="mpShareWhatsApp('mp-host-offer')">Enviar por WhatsApp</button>
+                    </div>
+                    <textarea id="mp-host-offer" class="mp-box" placeholder="Aquí aparecerá la invitación para enviar al otro jugador."></textarea>
+                    <div class="separator"></div>
+                    <p style="margin:0 0 10px; color:#d0d0d0; font-family:sans-serif;">2. Pega aquí la respuesta del invitado y conecta.</p>
+                    <div class="mp-actions">
+                        <button class="btn-modal mp-card-action" onclick="mpPasteField('mp-host-answer')">Pegar respuesta</button>
+                        <button class="btn-modal mp-card-action" onclick="mpHostConnect()">Conectar</button>
+                    </div>
+                    <textarea id="mp-host-answer" class="mp-box" placeholder="Pega aquí la respuesta que te envíe el otro jugador."></textarea>
+                </div>
+
+                <div id="mp-guest-card" class="settings-box hidden">
+                    <div class="mp-role">🪖 Unirse a partida</div><h3 style="margin:0 0 10px;">Invitado</h3>
+                    <div class="separator"></div>
+                    <p style="margin:0 0 10px; color:#d0d0d0; font-family:sans-serif;">1. Pega la invitación que te han enviado.</p>
+                    <div class="mp-actions">
+                        <button class="btn-modal mp-card-action" onclick="mpPasteField('mp-guest-offer')">Pegar invitación</button>
+                        <button class="btn-modal mp-card-action" onclick="mpProcessInvitation()">Procesar invitación</button>
+                    </div>
+                    <textarea id="mp-guest-offer" class="mp-box" placeholder="Pega aquí el mensaje recibido por WhatsApp."></textarea>
+                    <div class="separator"></div>
+                    <p style="margin:0 0 10px; color:#d0d0d0; font-family:sans-serif;">2. Copia la respuesta y envíala por WhatsApp al anfitrión.</p>
+                    <div class="mp-actions">
+                        <button class="btn-modal mp-card-action" onclick="mpCopyField('mp-guest-answer')">Copiar respuesta</button>
+                        <button class="btn-modal mp-card-action" onclick="mpShareWhatsApp('mp-guest-answer')">Enviar por WhatsApp</button>
+                    </div>
+                    <textarea id="mp-guest-answer" class="mp-box" placeholder="Aquí aparecerá la respuesta para enviar al anfitrión."></textarea>
+                </div>
+            </div>
+
+            <div id="mp-working" class="mp-working hidden"><span class="mp-spinner"></span><span id="mp-working-text">Procesando...</span></div>
+
+            <div id="mp-status" class="mp-status warn">Sin conexión. Genera una invitación o pega una invitación recibida.</div>
+
+            <div class="mp-actions" style="justify-content:center; margin-top:16px;">
+                <button class="btn-modal" onclick="mpReset()">Reiniciar emparejamiento</button>
+                <button class="btn-modal" onclick="closeMultiplayerMenu()">Volver</button>
+            </div>
+        </div>
     </div>
 
     <div id="end-screen" class="screen hidden" style="z-index: 700;">
@@ -3220,6 +3546,330 @@ async function evaluateEnemyAIGemini() {
             let my = (u.y / canvas.height) * mCanvas.height;
             mCtx.fillRect((u.x * s) - 2, my - 2, 4, 4); 
         });
+    }
+
+
+    const MP_PREFIX_INVITE = 'MUDSTEEL_INVITE::';
+    const MP_PREFIX_REPLY = 'MUDSTEEL_REPLY::';
+    let multiplayer = { role: null, pc: null, dc: null, offerText: '', answerText: '', connected: false, busy: false };
+
+    function openMultiplayerMenu() {
+        document.getElementById('multiplayer-screen').classList.remove('hidden');
+        showMultiplayerPane('host');
+        mpSetStatus('Sin conexión. Genera una invitación o pega una invitación recibida.', 'warn');
+    }
+
+    function closeMultiplayerMenu() {
+        document.getElementById('multiplayer-screen').classList.add('hidden');
+    }
+
+    function showMultiplayerPane(mode) {
+        const isHost = mode !== 'guest';
+        document.getElementById('mp-host-card').classList.toggle('hidden', !isHost);
+        document.getElementById('mp-guest-card').classList.toggle('hidden', isHost);
+        document.getElementById('mp-create-tab').classList.toggle('active', isHost);
+        document.getElementById('mp-join-tab').classList.toggle('active', !isHost);
+    }
+
+    function mpSetStatus(text, tone='warn') {
+        const el = document.getElementById('mp-status');
+        if (!el) return;
+        el.textContent = text;
+        el.className = 'mp-status ' + tone;
+    }
+
+    function mpSetBusy(isBusy, text='Procesando...') {
+        multiplayer.busy = !!isBusy;
+        const box = document.getElementById('mp-working');
+        const label = document.getElementById('mp-working-text');
+        const modal = document.querySelector('#multiplayer-screen .mp-modal');
+        if (label) label.textContent = text;
+        if (box) box.classList.toggle('hidden', !isBusy);
+        if (modal) modal.classList.toggle('is-busy', !!isBusy);
+    }
+
+    async function mpAutoCopyText(value, okText, warnText) {
+        const normalized = String(value || '').trim();
+        if (!normalized) return false;
+        try {
+            await navigator.clipboard.writeText(normalized);
+            if (okText) mpSetStatus(okText, 'ok');
+            return true;
+        } catch (e) {
+            if (warnText) mpSetStatus(warnText, 'warn');
+            return false;
+        }
+    }
+
+    function mpGuardBusy() {
+        if (!multiplayer.busy) return false;
+        mpSetStatus('Espera a que termine el proceso actual.', 'warn');
+        return true;
+    }
+
+    function mpEncodeCompact(prefix, payload) {
+        return prefix + btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    }
+
+    function mpWrapMessage(kind, compact) {
+        if (kind === 'invite') {
+            return [
+                'Mud & Steel - Invitación multijugador',
+                '',
+                'Pega este mensaje en el juego, en Multijugador > Unirse a partida > Pegar invitación.',
+                'No modifiques el bloque de conexión:',
+                '',
+                compact
+            ].join('\n');
+        }
+        return [
+            'Mud & Steel - Respuesta multijugador',
+            '',
+            'Envía este mensaje al anfitrión. Debe pegarlo en Multijugador > Crear partida > Pegar respuesta.',
+            'No modifiques el bloque de conexión:',
+            '',
+            compact
+        ].join('\n');
+    }
+
+    function mpExtractCompactPayload(text, prefix) {
+        const raw = String(text || '').trim();
+        const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const match = raw.match(new RegExp(escaped + '([A-Za-z0-9+/=_-]+)'));
+        if (!match) {
+            throw new Error(prefix === MP_PREFIX_INVITE ? 'Invitación no válida.' : 'Respuesta no válida.');
+        }
+        return prefix + match[1];
+    }
+
+    function mpDecodePayload(text, prefix) {
+        const compact = mpExtractCompactPayload(text, prefix);
+        const body = compact.slice(prefix.length).trim();
+        if (!body) throw new Error('Texto incompleto.');
+        return JSON.parse(decodeURIComponent(escape(atob(body))));
+    }
+
+    async function mpCopyField(id) {
+        if (mpGuardBusy()) return;
+        const el = document.getElementById(id);
+        const value = (el && el.value || '').trim();
+        if (!value) { mpSetStatus('No hay texto para copiar todavía.', 'err'); return; }
+        const copied = await mpAutoCopyText(value, 'Texto copiado. Ya puedes pegarlo donde quieras.', 'No se pudo copiar automáticamente. Selecciona el texto y cópialo manualmente.');
+        if (!copied) {
+            try { el.focus(); el.select(); } catch(err) {}
+        }
+    }
+
+    async function mpPasteField(id) {
+        if (mpGuardBusy()) return;
+        const el = document.getElementById(id);
+        if (!el) return;
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                el.value = text;
+                mpSetStatus('Texto pegado desde el portapapeles.', 'ok');
+            } else {
+                mpSetStatus('El portapapeles está vacío.', 'warn');
+            }
+        } catch (e) {
+            mpSetStatus('Tu navegador no permitió pegar automáticamente. Pega el texto manualmente.', 'warn');
+            el.focus();
+        }
+    }
+
+    async function mpShareWhatsApp(id) {
+        if (mpGuardBusy()) return;
+        const el = document.getElementById(id);
+        const value = (el && el.value || '').trim();
+        if (!value) { mpSetStatus('No hay texto para enviar todavía.', 'err'); return; }
+        await mpAutoCopyText(value, '', '');
+        window.open('https://wa.me/?text=' + encodeURIComponent(value), '_blank', 'noopener');
+        mpSetStatus('WhatsApp abierto. El texto ya está listo para pegar.', 'ok');
+    }
+
+    function mpCleanupPeer(keepStatus=false) {
+        try { if (multiplayer.dc) multiplayer.dc.close(); } catch (e) {}
+        try { if (multiplayer.pc) multiplayer.pc.close(); } catch (e) {}
+        multiplayer.pc = null;
+        multiplayer.dc = null;
+        multiplayer.role = null;
+        multiplayer.connected = false;
+        multiplayer.offerText = '';
+        multiplayer.answerText = '';
+        multiplayer.busy = false;
+        if (!keepStatus) mpSetStatus('Emparejamiento reiniciado.', 'warn');
+    }
+
+    function mpAttachDataChannel(dc) {
+        multiplayer.dc = dc;
+        dc.onopen = () => {
+            mpSetStatus('Canal de datos abierto. Validando enlace...', 'warn');
+            mpSendTestPing();
+        };
+        dc.onclose = () => {
+            if (multiplayer.connected) mpSetStatus('Canal de datos cerrado. Reinicia el emparejamiento.', 'err');
+        };
+        dc.onmessage = (ev) => {
+            let msg = null;
+            try { msg = JSON.parse(ev.data); } catch (e) { return; }
+            if (!msg || !msg.type) return;
+            if (msg.type === 'ping') {
+                if (multiplayer.dc && multiplayer.dc.readyState === 'open') multiplayer.dc.send(JSON.stringify({ type: 'pong', t: Date.now() }));
+            } else if (msg.type === 'pong') {
+                multiplayer.connected = true;
+                mpSetStatus('Conexión validada. Fase 1 completada correctamente.', 'ok');
+            }
+        };
+    }
+
+    function mpCreatePeerConnection(role) {
+        mpCleanupPeer(true);
+        const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        multiplayer.role = role;
+        multiplayer.pc = pc;
+        multiplayer.connected = false;
+        pc.onconnectionstatechange = () => {
+            const state = pc.connectionState || 'new';
+            if (state === 'connected') {
+                multiplayer.connected = true;
+                mpSetBusy(false);
+                mpSetStatus('Conectado como ' + (multiplayer.role === 'host' ? 'anfitrión' : 'invitado') + '. Validando canal...', 'ok');
+                mpSendTestPing();
+            } else if (state === 'connecting') {
+                mpSetBusy(true, 'Conectando...');
+                mpSetStatus('Conectando con el otro jugador...', 'warn');
+            } else if (state === 'failed') {
+                mpSetBusy(false);
+                mpSetStatus('La conexión ha fallado. Reinicia el emparejamiento.', 'err');
+            } else if (state === 'disconnected') {
+                mpSetBusy(false);
+                mpSetStatus('Conexión interrumpida. Puedes reintentar el emparejamiento.', 'warn');
+            }
+        };
+        pc.oniceconnectionstatechange = () => {
+            if (pc.iceConnectionState === 'failed') {
+                mpSetBusy(false);
+                mpSetStatus('Fallo ICE. Reintenta el emparejamiento.', 'err');
+            }
+        };
+        if (role === 'guest') pc.ondatachannel = (ev) => mpAttachDataChannel(ev.channel);
+        return pc;
+    }
+
+    function mpSendTestPing() {
+        if (multiplayer.dc && multiplayer.dc.readyState === 'open') {
+            multiplayer.dc.send(JSON.stringify({ type: 'ping', t: Date.now() }));
+        }
+    }
+
+    function mpWaitForIceComplete(pc) {
+        return new Promise((resolve) => {
+            if (!pc || pc.iceGatheringState === 'complete') return resolve();
+            const handler = () => {
+                if (pc.iceGatheringState === 'complete') {
+                    pc.removeEventListener('icegatheringstatechange', handler);
+                    resolve();
+                }
+            };
+            pc.addEventListener('icegatheringstatechange', handler);
+            setTimeout(() => {
+                try { pc.removeEventListener('icegatheringstatechange', handler); } catch (e) {}
+                resolve();
+            }, 4500);
+        });
+    }
+
+    async function mpCreateInvitation() {
+        if (mpGuardBusy()) return;
+        if (!window.RTCPeerConnection) return mpSetStatus('Este navegador no soporta WebRTC para el multijugador.', 'err');
+        mpSetBusy(true, 'Generando invitación...');
+        mpSetStatus('Generando invitación. Espera un instante...', 'warn');
+        try {
+            const pc = mpCreatePeerConnection('host');
+            mpAttachDataChannel(pc.createDataChannel('mudsteel'));
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            await mpWaitForIceComplete(pc);
+            const compact = mpEncodeCompact(MP_PREFIX_INVITE, { v: 1, desc: pc.localDescription });
+            const text = mpWrapMessage('invite', compact);
+            multiplayer.offerText = text;
+            document.getElementById('mp-host-offer').value = text;
+            const copied = await mpAutoCopyText(
+                text,
+                'Invitación generada y copiada al portapapeles. Ya puedes pegarla en WhatsApp.',
+                'Invitación generada. No se pudo copiar sola; usa el botón de copiar.'
+            );
+            if (!copied) {
+                const field = document.getElementById('mp-host-offer');
+                if (field) { try { field.focus(); field.select(); } catch (e) {} }
+            }
+        } catch (e) {
+            mpSetStatus('No se pudo generar la invitación. Reinicia el emparejamiento y vuelve a intentarlo.', 'err');
+        } finally {
+            mpSetBusy(false);
+        }
+    }
+
+    async function mpProcessInvitation() {
+        if (mpGuardBusy()) return;
+        if (!window.RTCPeerConnection) return mpSetStatus('Este navegador no soporta WebRTC para el multijugador.', 'err');
+        const raw = document.getElementById('mp-guest-offer').value;
+        mpSetBusy(true, 'Procesando invitación...');
+        mpSetStatus('Procesando invitación. Espera un instante...', 'warn');
+        try {
+            const payload = mpDecodePayload(raw, MP_PREFIX_INVITE);
+            if (!payload.desc) throw new Error('Texto incompleto.');
+            const pc = mpCreatePeerConnection('guest');
+            await pc.setRemoteDescription(payload.desc);
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await mpWaitForIceComplete(pc);
+            const compact = mpEncodeCompact(MP_PREFIX_REPLY, { v: 1, desc: pc.localDescription });
+            const reply = mpWrapMessage('reply', compact);
+            multiplayer.answerText = reply;
+            document.getElementById('mp-guest-answer').value = reply;
+            const copied = await mpAutoCopyText(
+                reply,
+                'Respuesta generada y copiada al portapapeles. Ya puedes pegarla en WhatsApp.',
+                'Respuesta generada. No se pudo copiar sola; usa el botón de copiar.'
+            );
+            if (!copied) {
+                const field = document.getElementById('mp-guest-answer');
+                if (field) { try { field.focus(); field.select(); } catch (e) {} }
+            }
+        } catch (e) {
+            mpSetStatus(e && e.message ? e.message : 'La invitación no es válida.', 'err');
+        } finally {
+            mpSetBusy(false);
+        }
+    }
+
+    async function mpHostConnect() {
+        if (mpGuardBusy()) return;
+        const raw = document.getElementById('mp-host-answer').value;
+        if (!multiplayer.pc || multiplayer.role !== 'host') return mpSetStatus('Primero debes generar la invitación del anfitrión.', 'err');
+        mpSetBusy(true, 'Conectando...');
+        try {
+            const payload = mpDecodePayload(raw, MP_PREFIX_REPLY);
+            if (!payload.desc) throw new Error('Texto incompleto.');
+            await multiplayer.pc.setRemoteDescription(payload.desc);
+            mpSetStatus('Respuesta aplicada. Esperando a que el canal quede listo...', 'warn');
+        } catch (e) {
+            mpSetStatus(e && e.message ? e.message : 'La respuesta no es válida.', 'err');
+            mpSetBusy(false);
+        }
+    }
+
+    function mpReset() {
+        mpCleanupPeer();
+        mpSetBusy(false);
+        ['mp-host-offer','mp-host-answer','mp-guest-offer','mp-guest-answer'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        showMultiplayerPane('host');
+        mpSetStatus('Sin conexión. Genera una invitación o pega una invitación recibida.', 'warn');
     }
 
     enhanceTrenchButtons();

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trench Warfare: Mud & Steel v1.72</title>
+    <title>Trench Warfare: Mud & Steel v2.28</title>
     <style>
         :root {
             --militar-green: #4b5320;
             --enemy-blue: #2c3e50;
             --mud: #3e2723;
-            --ui-bg: rgba(10, 10, 10, 0.98);
+            --ui-bg: repeating-linear-gradient(45deg, #252b21, #252b21 10px, #1f241c 10px, #1f241c 20px);
             --accent: #ffcc00;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
@@ -27,89 +27,182 @@
         
         #hud {
             flex-shrink: 0;
-            height: 60px; width: 100%;
-            background: linear-gradient(to bottom, rgba(20,20,20,1), rgba(20,20,20,0.8));
+            height:80px; width: 100%;
+            background: repeating-linear-gradient(45deg, #1a1e18, #1a1e18 10px, #121511 10px, #121511 20px);
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 10px; border-bottom: 2px solid var(--accent); z-index: 100;
+            padding: 0 15px; border-bottom: 5px solid #0a0c09; z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.9);
         }
         .faction-info { display: flex; flex-direction: column; width: 30%; max-width: 140px; }
-        .faction-info span { font-size: 0.65rem; font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; }
+        .faction-info span { font-size: 0.65rem; font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000; }
         
         .stats-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
         .casualties { color: #aaa; font-size: 0.6rem; font-family: monospace; }
         .cas-num { color: #ff4444; font-weight: bold; font-size: 0.75rem; }
 
-        .hp-bar { width: 100%; height: 12px; background: #222; border: 1px solid #555; border-radius: 2px; }
-        .hp-fill { height: 100%; transition: width 0.3s ease-out; }
-        #res-disp { color: var(--accent); font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px rgba(255,204,0,0.5); text-align: center; width: 25%;}
+        .hp-bar {
+            width: 100%; height: 18px; background: #111; 
+            border: 2px solid #555; border-radius: 3px; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.2); 
+            overflow: hidden;
+        }
+        .hp-fill { height: 100%; transition: width 0.3s ease-out; box-shadow: inset 0 2px 2px rgba(255,255,255,0.3); }
+        
+        #res-disp { 
+            color: var(--accent); font-size: 1.5rem; font-weight: bold; font-family: 'Impact', sans-serif;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8), 0 0 10px rgba(255,204,0,0.4); text-align: center; width: 25%;
+        }
 
-        .hud-tools { display: flex; align-items: center; gap: 4px; width: 35%; max-width: 120px; }
-        .btn-icon { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #fff; text-shadow: 0 2px 4px #000; transition: 0.2s; padding: 2px; }
+        .hud-tools { display: flex; align-items: center; gap: 8px; width: 35%; max-width: 120px; }
+        .btn-icon { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #fff; text-shadow: 0 3px 5px #000; transition: 0.2s; }
         .btn-icon:active { transform: scale(0.9); }
 
         #minimap-box {
-            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
-            width: 60%; max-width: 450px; min-width: 250px; height: 55px;
-            background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 4px; z-index: 100;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+            position: absolute; top: 86px; left: 50%; transform: translateX(-50%);
+            width: min(66vw, 450px); min-width: 250px; height: 64px;
+            background: rgba(10,12,10,0.85); border: 3px solid #333; border-radius: 4px; z-index: 100;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 4px 6px rgba(0,0,0,0.6);
         }
-        #m-canvas { width: 100%; height: 100%; display: block; }
+        #m-canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: pointer; }
 
-        canvas#gameCanvas { flex-grow: 1; flex-shrink: 1; min-height: 0; display: block; image-rendering: pixelated; }
+        canvas#gameCanvas { flex-grow: 1; flex-shrink: 1; min-height: 0; display: block; image-rendering: pixelated; touch-action: none; -webkit-user-select:none; }
 
         #controls {
             flex-shrink: 0;
-            height: 24vh; 
-            min-height: 170px; max-height: 240px;
-            background: var(--ui-bg); border-top: 3px solid var(--militar-green);
-            display: flex; padding: 6px; z-index: 100; width: 100%;
-            padding-bottom: 10px;
+            height: 18svh;
+            min-height: 138px; max-height: 162px;
+            background: var(--ui-bg); border-top: 5px solid #0a0c09;
+            display: flex; padding: 8px; z-index: 100; width: 100%;
+            padding-bottom: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
         }
-        
-        .panel { display: flex; gap: 6px; width: 100%; height: 100%; }
+
+        .panel { display: flex; gap: 8px; width: 100%; height: 100%; }
         .hidden { display: none !important; }
+        #base-side-controls{
+            width: 152px;
+            min-width: 152px;
+            max-width: 152px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        }
+        #base-side-controls .btn{
+            flex:1;
+            min-height:0;
+        }
+        #base-main-panel{
+            flex:1;
+            min-width:0;
+            display:flex;
+        }
+        #base-army-view,#base-radio-view{
+            width:100%;
+            height:100%;
+        }
 
         #unit-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 6px;
-            flex: 0.75;
+            gap: 8px;
+            width:100%;
+            height:100%;
         }
 
         .btn {
-            background: linear-gradient(to bottom, #5a6628, #3e471a); color: white; 
-            border: 2px solid #222; border-radius: 4px; cursor: pointer; 
-            font-size: 0.65rem; font-weight: bold; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
-            text-align: center; line-height: 1.1; text-shadow: 1px 1px 0 #000; padding: 2px;
-            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #6b7a38, #404a20); color: #fff; 
+            border: 2px solid #1a1e18; border-bottom: 4px solid #111; border-radius: 6px; 
+            cursor: pointer; position: relative;
+            font-family: 'Impact', 'Arial Black', sans-serif; font-size: 0.72rem; font-weight: normal; letter-spacing: .8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+            box-shadow: inset 0 2px 2px rgba(255,255,255,0.2), 0 4px 5px rgba(0,0,0,0.6);
+            text-align: center; line-height: 1.08; text-shadow: 1px 2px 2px #000; padding: 6px 5px 5px;
+            width: 100%; height: 100%; transition: transform 0.1s, border-bottom 0.1s, box-shadow 0.1s;
         }
-        .btn:active { transform: translateY(2px); box-shadow: 0 0 2px rgba(0,0,0,0.5); }
-        .icon-large { font-size: 1.4rem; margin-bottom: 2px; display: block; }
-        
-        .btn-toggle { background: linear-gradient(to bottom, #2b4c7e, #182e52); border-color: #5bc0de; }
-        .btn-toggle-alt { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); }
-        .btn-retreat { background: linear-gradient(to bottom, #8b3a3a, #5c2626); border-color: #ff6666; }
-        .btn-evac { background: linear-gradient(to bottom, #2d5a2d, #1a331a); border-color: #4caf50; }
-        
-        .trench-col { display: flex; flex-direction: column; gap: 6px; width: 100%; height: 100%; }
-        .trench-row { display: flex; gap: 4px; flex: 1; align-items: stretch; width: 100%; }
-
-        .pct-btn, .type-btn { 
-            background: #333; border-color: #555; font-size: 0.65rem; color: #aaa; 
-            flex: 1; padding: 2px; border-radius: 4px; border: 2px solid #222; 
-            font-weight: bold; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; height: 100%;
+        .btn:active { 
+            transform: translateY(3px); 
+            border-bottom: 1px solid #111;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.6); 
         }
-        .active-pct { background: linear-gradient(to bottom, #2d4a22, #1a2e11); border-color: #0f0; color: #fff; box-shadow: 0 0 8px rgba(0,255,0,0.4); }
-        .active-type { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: var(--accent); color: #fff; box-shadow: 0 0 8px rgba(255,204,0,0.4); }
+        .icon-large { font-size: 1.62rem; margin-bottom: 0; display: block; line-height: 1; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8)); }
+        .btn-label-main{display:block;font-size:0.7rem;line-height:0.96;letter-spacing:.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+        .btn-cost{display:block;color:var(--accent);font-family:sans-serif;font-size:0.63rem;line-height:1;margin-top:1px;font-weight:bold;white-space:nowrap;}
+        
+        .led {
+            position: absolute; top: 4px; right: 4px;
+            width: 8px; height: 8px; border-radius: 50%; border: 1px solid #000; 
+            background: #f00; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.8); transition: 0.2s;
+        }
+        .led-on { background: #4caf50; box-shadow: 0 0 6px #4caf50, inset 1px 1px 2px rgba(255,255,255,0.5); }
+        .led-off { background: #660000; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.9); }
 
-        .t-label-box {
-            background:#111; border:1px solid var(--accent); color:var(--accent); 
-            border-radius:4px; padding:0 6px; font-weight:bold; font-size:1rem; 
-            display:flex; align-items:center; justify-content:center; height: 100%;
+        .btn-toggle { background: linear-gradient(to bottom, #3b5a8e, #1a2c4e); border-color: #0d1627; }
+        .btn-toggle-alt { background: linear-gradient(to bottom, #cca300, #806600); border-color: #403300; }
+        .btn-retreat { background: linear-gradient(to bottom, #a34747, #5c2626); border-color: #2e1313; }
+        .btn-evac { background: linear-gradient(to bottom, #3a6b3a, #1f3a1f); border-color: #0f1d0f; }
+        
+        .trench-col { position: relative; display: flex; flex-direction: column; gap: 4px; width: 100%; height: 100%; min-height: 0; }
+        .trench-layout { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 5px; width: 100%; height: 100%; min-height: 0; }
+        .trench-row { display: grid; grid-template-columns: 1.18fr 1.18fr 1.18fr 0.86fr 0.86fr 1fr 1fr; gap: 4px; align-items: stretch; width: 100%; min-height: 0; }
+
+        .pct-btn, .type-btn, .trench-order-btn { 
+            background: #333; border-color: #111; color: #d5d5d5; 
+            padding: 5px 4px; border-radius: 4px; border: 2px solid #222; border-bottom: 3px solid #111;
+            font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.55px;
+            font-weight: normal; cursor: pointer; transition: 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 2px; height: 100%; min-width: 0;
+            line-height: 1.02; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-size: 0.72rem;
+        }
+        .btn-stack{
+            flex-direction: column;
+            justify-content: center;
+            gap: 3px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            white-space: normal;
+        }
+        .btn-stack .btn-icon{
+            font-size: 1.18rem;
+            line-height: 1;
+            width: auto;
+            height: auto;
+            display: block;
+            text-shadow: 0 2px 2px #000;
+            pointer-events:none;
+        }
+        .btn-stack .btn-label{
+            display:block;
+            width:100%;
+            font-size: 0.62rem;
+            line-height: 0.95;
+            letter-spacing: 0.45px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events:none;
+        }
+        .type-btn,.trench-order-btn{font-size:0.72rem;}
+        .pct-btn{ font-size: 0.78rem; font-weight: bold; }
+        .pct-btn:active, .type-btn:active, .trench-order-btn:active { transform: translateY(2px); border-bottom: 1px solid #111;}
+        .active-pct { background: linear-gradient(to bottom, #4caf50, #2e6b30); border-color: #1a401b; color: #fff; box-shadow: 0 0 8px rgba(0,255,0,0.4); text-shadow: 1px 1px #000;}
+        .active-type { background: linear-gradient(to bottom, #b8860b, #8b6508); border-color: #665200; color: #fff; box-shadow: 0 0 8px rgba(255,204,0,0.4); text-shadow: 1px 1px #000;}
+        .trench-order-btn.btn-retreat { background: linear-gradient(to bottom, #d14a4a, #7b1f1f); border-color: #4a1010; color: #fff; text-shadow: 1px 1px #000; }
+        .trench-order-btn.btn-toggle-alt { background: linear-gradient(to bottom, #ffd84a, #b68600); border-color: #705200; color: #111; text-shadow: none; }
+        .trench-order-btn.btn-toggle-alt .btn-icon,
+        .trench-order-btn.btn-toggle-alt .btn-label{ text-shadow:none; color:#111; }
+        .trench-order-btn.btn-evac { color: #fff; }
+        @media (max-width: 900px) {
+            .pct-btn, .type-btn, .trench-order-btn { font-size: 0.68rem; padding: 4px 3px; }
+            .btn-stack .btn-icon{ font-size: 1.04rem; }
+            .btn-stack .btn-label{ font-size: 0.58rem; }
+        }
+
+        @media (max-width: 860px) {
+            .trench-row { grid-template-columns: 1.08fr 1.08fr 1.08fr 0.8fr 0.8fr 0.92fr 0.92fr; gap: 3px; }
+            .pct-btn, .type-btn, .trench-order-btn { font-size: 0.6rem; padding: 3px 2px; letter-spacing: 0.2px; }
+            .btn-stack .btn-icon{ font-size: 0.96rem; }
+            .btn-stack .btn-label{ font-size: 0.5rem; }
         }
 
         .screen {
@@ -129,21 +222,20 @@
             z-index: 1; position: relative;
         }
 
-        #menu h1 { color: var(--accent); font-size: 3rem; margin-bottom: 5px; text-shadow: 0px 4px 6px #000; }
-        #menu p.subtitle { color: #8bc34a; margin-bottom: 20px; font-size: 1rem; letter-spacing: 3px; font-weight: bold; text-shadow: 0px 2px 4px #000; }
+        #menu h1 { color: var(--accent); font-size: 3.5rem; margin-bottom: 5px; text-shadow: 0px 4px 8px #000; font-family: 'Impact', sans-serif;}
+        #menu p.subtitle { color: #8bc34a; margin-bottom: 20px; font-size: 1rem; letter-spacing: 3px; font-family: 'Impact', sans-serif; text-shadow: 0px 2px 4px #000; }
         
         .author { color: #ccc; font-size: 0.85rem; margin-bottom: 20px; font-family: sans-serif; text-shadow: 0px 2px 4px #000; }
         .author a { color: var(--accent); text-decoration: none; font-weight: bold; padding: 2px 5px; border-bottom: 1px solid transparent; transition: 0.2s; }
         .author a:hover { border-bottom: 1px solid var(--accent); }
         
         .mode-container { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; width: 90%; max-width: 400px; margin-left: auto; margin-right: auto;}
-        .mode-btn { background: #222; border: 2px solid #555; color: #aaa; padding: 12px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; transition: 0.2s; line-height: 1.3;}
+        .mode-btn { background: rgba(34,34,34,0.8); border: 2px solid #555; color: #aaa; padding: 12px; flex: 1; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; transition: 0.2s; line-height: 1.3;}
         .mode-btn.active { background: linear-gradient(to bottom, #2b4c7e, #182e52); color: #fff; border-color: #5bc0de; box-shadow: 0 0 8px rgba(91,192,222,0.5); }
         
         .btn-start {
-            background: transparent; color: var(--accent); border: 2px solid var(--accent);
-            padding: 15px 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6); color: var(--accent); border: 2px solid var(--accent); font-family: 'Impact', sans-serif; letter-spacing: 2px;
+            padding: 15px 50px; font-size: 1.4rem; cursor: pointer; transition: 0.3s; margin-top: 10px; border-radius: 4px;
         }
         .btn-start:active { background: var(--accent); color: #000; }
         .btn-resume { border-color: #5bc0de; color: #5bc0de; margin-bottom: 10px;}
@@ -152,7 +244,7 @@
         .btn-modal { 
             background: linear-gradient(to bottom, #5a6628, #3e471a); color: #fff; 
             border: 2px solid #222; border-radius: 4px; padding: 12px 20px; 
-            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; 
+            font-family: 'Impact', sans-serif; font-size: 1.1rem; letter-spacing: 1px; cursor: pointer; transition: 0.3s; 
             display: block; width: 80%; max-width: 250px; margin: 15px auto;
             box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 3px 5px rgba(0,0,0,0.5);
             text-align: center; text-shadow: 1px 1px 0 #000;
@@ -161,12 +253,12 @@
         .btn-manual-main { background: rgba(34,34,34,0.8); border-color: #555; color: #fff; }
         .btn-danger { background: linear-gradient(to bottom, #8b3a3a, #5c2626); border-color: #ff6666; }
         
-        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: center;}
+        .modal { background: #1a1a1a; padding: 20px; border: 2px solid var(--accent); border-radius: 8px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9);}
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 0.9rem; padding-bottom: 10px; border-bottom: 1px solid #333; }
         
         .cfg-group { background: #222; padding: 10px; border-radius: 5px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
-        .cfg-group h3 { margin-bottom: 10px; font-size: 1.1rem; color: #fff; text-align: left; border-bottom: 1px solid #444; padding-bottom: 5px;}
-        .cfg-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; margin-bottom: 6px; align-items: center; text-align: left;}
+        .cfg-group h3 { margin-bottom: 10px; font-size: 1.1rem; color: #fff; text-align: left; border-bottom: 1px solid #444; padding-bottom: 5px; font-family:'Impact', sans-serif;}
+        .cfg-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; margin-bottom: 6px; align-items: center; text-align: left; font-family:sans-serif;}
         .cfg-input { width: 60px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: right; border-radius: 3px; }
         .cfg-input-text { width: 140px; background: #000; color: #0f0; border: 1px solid #555; padding: 4px; font-family: monospace; text-align: left; border-radius: 3px; font-size: 0.7rem;}
         
@@ -174,13 +266,154 @@
         .aura-zone { background: #1a332a; padding: 6px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #4caf50; }
         .ai-zone { background: #102a3a; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #5bc0de; }
 
-        .manual-content { text-align: left; color: #ddd; font-size: 0.9rem; line-height: 1.5; }
-        .manual-content h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
-        .manual-content h3 { color: #5bc0de; font-size: 1rem; margin-top: 10px; }
+        .manual-content { text-align: left; color: #ddd; font-size: 0.85rem; line-height: 1.4; font-family:sans-serif;}
+        .manual-content h2 { color: var(--accent); border-bottom: 1px solid #555; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-family:'Impact', sans-serif; letter-spacing:1px;}
+        .manual-content h3 { color: #5bc0de; font-size: 1rem; margin-top: 10px; font-family:'Impact', sans-serif;}
         .manual-content ul { padding-left: 20px; margin-bottom: 10px; }
         .manual-content li { margin-bottom: 5px; }
-        .manual-content p { margin-bottom: 10px; }
-    </style>
+        .manual-content p { margin-bottom: 8px; }
+
+        #base-spotify-widget{
+            width:100%;
+            height:100%;
+            padding:8px 10px;
+            border:2px solid rgba(255,204,0,.45);
+            border-radius:12px;
+            background:linear-gradient(180deg,rgba(29,36,24,.94),rgba(15,17,13,.96));
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+            pointer-events:auto;
+            display:flex;
+            flex-direction:column;
+            justify-content:flex-start;
+            gap:6px;
+            overflow:hidden;
+        }
+        .base-spotify-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            min-width:0;
+        }
+        #base-spotify-widget .base-spotify-title{
+            font-family:'Impact',sans-serif;
+            letter-spacing:1px;
+            color:var(--accent);
+            font-size:.82rem;
+            line-height:1;
+            min-width:0;
+            flex:1;
+        }
+        .spotify-open-btn{
+            flex:0 0 clamp(180px,26vw,260px);
+            min-width:180px;
+            min-height:34px;
+            height:34px;
+            padding:4px 10px;
+            font-size:.64rem;
+            white-space:nowrap;
+        }
+        .spotify-main-row{
+            display:grid;
+            grid-template-columns:52px minmax(0,1fr);
+            gap:10px;
+            align-items:center;
+            min-height:0;
+        }
+        #spotify-track-title{
+            font-family:sans-serif;
+            font-size:.9rem;
+            font-weight:700;
+            color:#fff;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        #spotify-track-artist{
+            font-family:sans-serif;
+            font-size:.74rem;
+            color:#bdbdbd;
+            margin-top:2px;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        #spotify-cover{
+            width:52px;
+            height:52px;
+            object-fit:cover;
+            object-position:center top;
+            border-radius:8px;
+            border:1px solid rgba(255,255,255,.18);
+            background:#111;
+        }
+        #spotify-track-album{
+            font-family:sans-serif;
+            font-size:.68rem;
+            color:#c6b98a;
+            margin-top:2px;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        #spotify-status-text{
+            margin-top:auto;
+            font-family:'Impact',sans-serif;
+            font-size:.72rem;
+            letter-spacing:1px;
+            color:#d7d7d7;
+            line-height:1;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .spotify-meta-row,.base-spotify-actions,.spotify-volume-row,#spotify-volume-note,#spotify-embed-wrap,#spotify-player-host,#spotify-player-host iframe{ display:none !important; height:0 !important; min-height:0 !important; max-height:0 !important; overflow:hidden !important; opacity:0 !important; pointer-events:none !important; }
+        @media (min-width: 1100px) and (max-height: 820px){
+            #controls{ min-height:166px; height:22vh; max-height:184px; }
+            #base-side-controls{ width:112px; min-width:112px; max-width:112px; }
+            #base-side-controls .btn{ font-size:.56rem; padding:4px 3px; }
+            #base-side-controls .btn span{ font-size:.48rem !important; }
+            #base-spotify-widget{ padding:7px 9px; gap:5px; }
+            .base-spotify-header{ gap:8px; }
+            .spotify-open-btn{ flex-basis:168px; min-width:168px; min-height:32px; height:32px; padding:4px 8px; font-size:.58rem; }
+            .spotify-main-row{ grid-template-columns:46px minmax(0,1fr); gap:8px; }
+            #spotify-cover{ width:46px; height:46px; }
+            #spotify-track-title{ font-size:.8rem; }
+            #spotify-track-artist{ font-size:.66rem; }
+            #spotify-track-album,#spotify-status-text{ font-size:.6rem; }
+        }
+
+        @media (max-width: 640px){
+            #hud{height:72px; padding:6px 8px;}
+            .hud-tools{gap:6px;}
+            .btn-icon{width:40px; height:40px; font-size:1.1rem;}
+            #allies-bar,#enemies-bar{height:22px;}
+            #controls{ min-height:152px; height:24vh; max-height:210px; padding:6px; }
+            .panel{ gap:6px; }
+            #base-side-controls{ width:102px; min-width:102px; max-width:102px; gap:6px; }
+            #base-side-controls .btn{ font-size:.54rem; letter-spacing:.3px; padding:4px 3px; }
+            #base-side-controls .btn span{ font-size:.46rem !important; }
+            #unit-grid{ gap:6px; }
+            .btn{ font-size:.62rem; }
+            .icon-large{ font-size:1.3rem; margin-bottom:0; }
+            .btn-label-main{font-size:.61rem;}
+            .btn-cost{font-size:.56rem;}
+            .led{ width:7px; height:7px; top:3px; right:3px; }
+            #base-spotify-widget{ padding:8px 9px; border-radius:10px; }
+            .base-spotify-title{ font-size:.75rem !important; margin-bottom:4px !important; }
+            .spotify-meta-row{ display:grid; grid-template-columns:56px minmax(0,1fr); gap:8px; align-items:center; }
+            #spotify-cover{ width:56px !important; height:56px !important; border-radius:8px; }
+            #spotify-track-title{ font-size:.78rem; line-height:1.05; }
+            #spotify-track-artist,#spotify-track-album,#spotify-status-text{ font-size:.62rem; line-height:1.05; }
+            #spotify-embed-wrap{ height:0 !important; min-height:0 !important; max-height:0 !important; margin:0 !important; opacity:0; pointer-events:none; }
+            #spotify-player-host, #spotify-player-host iframe{ height:0 !important; max-height:0 !important; min-height:0 !important; }
+            .base-spotify-actions{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; margin-top:6px; }
+            .base-spotify-actions .btn{ min-height:34px; height:34px; font-size:.56rem; padding:3px 4px; }
+            .spotify-volume-row{ margin-top:4px; gap:4px; font-size:.6rem; }
+            #spotify-volume{ width:100%; }
+        }
+
+</style>
 </head>
 <body>
 
@@ -210,43 +443,65 @@
 
     <div id="minimap-box"><canvas id="m-canvas"></canvas></div>
     <canvas id="gameCanvas"></canvas>
-
     <div id="controls">
         <div id="base-panel" class="panel">
-            <button id="rally-btn" class="btn btn-toggle" style="flex: 0.25;" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block;">AL FRENTE</span></button>
-            
-            <div id="unit-grid">
-                <button class="btn" onclick="spawnUnit('infantry')"><span class="icon-large">🪖</span> INFANTERÍA<br><span id="lbl-mp-inf" style="color:var(--accent)">10 MP</span></button>
-                <button class="btn" onclick="spawnUnit('grenadier')"><span class="icon-large">💣</span> GRANADERO<br><span id="lbl-mp-gre" style="color:var(--accent)">20 MP</span></button>
-                <button class="btn" onclick="spawnUnit('flamethrower')"><span class="icon-large">🔥</span> LANZAS<br><span id="lbl-mp-fla" style="color:var(--accent)">35 MP</span></button>
-                <button class="btn" onclick="spawnUnit('sniper')"><span class="icon-large">🎯</span> FRANCO<br><span id="lbl-mp-sni" style="color:var(--accent)">40 MP</span></button>
-                <button class="btn" onclick="spawnUnit('medic')"><span class="icon-large">⛑️</span> MÉDICO<br><span id="lbl-mp-med" style="color:var(--accent)">70 MP</span></button>
-                <button class="btn" onclick="spawnUnit('officer')"><span class="icon-large">🎖️</span> OFICIAL<br><span id="lbl-mp-off" style="color:var(--accent)">80 MP</span></button>
+            <div id="base-side-controls">
+                <button id="rally-btn" class="btn btn-toggle" onclick="toggleRally()">📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block; font-family:sans-serif; font-weight:bold;">AL FRENTE</span></button>
+                <button id="radio-toggle-btn" class="btn btn-toggle-alt" onclick="toggleBaseRadioPanel()">📻 RADIO</button>
+            </div>
+            <div id="base-main-panel">
+                <div id="base-army-view">
+                    <div id="unit-grid">
+                        <button class="btn" onclick="spawnUnit('infantry')"><div class="led" id="led-infantry"></div><span class="icon-large">🪖</span><span class="btn-label-main">INFANTERÍA</span><span id="lbl-mp-inf" class="btn-cost">10 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('grenadier')"><div class="led" id="led-grenadier"></div><span class="icon-large">💣</span><span class="btn-label-main">GRANADERO</span><span id="lbl-mp-gre" class="btn-cost">20 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('flamethrower')"><div class="led" id="led-flamethrower"></div><span class="icon-large">🔥</span><span class="btn-label-main">LANZALLAMAS</span><span id="lbl-mp-fla" class="btn-cost">35 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('sniper')"><div class="led" id="led-sniper"></div><span class="icon-large">🎯</span><span class="btn-label-main">FRANCO</span><span id="lbl-mp-sni" class="btn-cost">50 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('medic')"><div class="led" id="led-medic"></div><span class="icon-large">⛑️</span><span class="btn-label-main">MÉDICO</span><span id="lbl-mp-med" class="btn-cost">75 MP</span></button>
+                        <button class="btn" onclick="spawnUnit('officer')"><div class="led" id="led-officer"></div><span class="icon-large">🎖️</span><span class="btn-label-main">OFICIAL</span><span id="lbl-mp-off" class="btn-cost">100 MP</span></button>
+                    </div>
+                </div>
+                
+                <div id="base-radio-view" class="hidden">
+                    <div id="base-spotify-widget">
+                        <div class="base-spotify-header">
+                            <div class="base-spotify-title">🎵 RADIO DE LA BASE</div>
+                            <button class="btn btn-toggle spotify-open-btn" onclick="openSpotifyPlaylist(event)">🎧 ABRIR SPOTIFY</button>
+                        </div>
+                        <div class="spotify-main-row">
+                            <img id="spotify-cover" alt="Carátula de la playlist" src="https://urysoft.github.io/ai.html.games/games/mudandsteel/mudandsteel_loop_vertical.png">
+                            <div class="spotify-meta-text">
+                                <div id="spotify-track-title">Mud &amp; Steel : Trench Warfare</div>
+                                <div id="spotify-track-artist">Lista oficial de Spotify</div>
+                                <div id="spotify-track-album">Mud &amp; Steel · lista de combate</div>
+                            </div>
+                        </div>
+                        <div id="spotify-status-text">PULSA EL BOTÓN PARA ABRIR LA PLAYLIST</div>
+                    </div>
+                </div>
             </div>
         </div>
-        
+
         <div id="trench-panel" class="panel hidden">
             <div class="trench-col">
-                <div class="trench-row">
-                    <div class="t-label-box" id="t-label">T1</div>
-                    <button id="type-infantry" class="type-btn" onclick="toggleType('infantry')">🪖 INF</button>
-                    <button id="type-grenadier" class="type-btn" onclick="toggleType('grenadier')">💣 GRA</button>
-                    <button id="type-flamethrower" class="type-btn" onclick="toggleType('flamethrower')">🔥 LAN</button>
-                    <button id="type-sniper" class="type-btn" onclick="toggleType('sniper')">🎯 FRA</button>
-                    <button id="type-medic" class="type-btn" onclick="toggleType('medic')">⛑️ MED</button>
-                    <button id="type-officer" class="type-btn" onclick="toggleType('officer')">🎖️ OFI</button>
-                </div>
-                <div class="trench-row">
-                    <button id="pct-25" class="pct-btn" onclick="setPct(0.25)">25%</button>
-                    <button id="pct-50" class="pct-btn" onclick="setPct(0.50)">50%</button>
-                    <button id="pct-75" class="pct-btn" onclick="setPct(0.75)">75%</button>
-                    <button id="pct-100" class="pct-btn active-pct" onclick="setPct(1.00)">100%</button>
-                </div>
-                <div class="trench-row">
-                    <button class="btn btn-retreat" style="font-size:0.65rem;" onclick="executeOrder('PREV')">◀ RETIRADA<br>COMPLETA</button>
-                    <button class="btn btn-evac" style="font-size:0.65rem;" onclick="executeOrder('EVAC')">🏥 RETIRADA<br>HERIDOS</button>
-                    <button class="btn" style="font-size:0.65rem;" onclick="executeOrder('NEXT')">▶ AVANCE<br>SIGUIENTE</button>
-                    <button class="btn btn-toggle-alt" style="font-size:0.65rem;" onclick="executeOrder('FRONT')">⏩ AVANCE<br>FRENTE</button>
+                <div class="trench-layout">
+                    <div class="trench-row">
+                        <button id="type-infantry" class="type-btn btn-stack" onclick="toggleType('infantry')"><span class="btn-icon">🪖</span><span class="btn-label">INFANTERÍA</span></button>
+                        <button id="type-grenadier" class="type-btn btn-stack" onclick="toggleType('grenadier')"><span class="btn-icon">💣</span><span class="btn-label">GRANADERO</span></button>
+                        <button id="type-flamethrower" class="type-btn btn-stack" onclick="toggleType('flamethrower')"><span class="btn-icon">🔥</span><span class="btn-label">LANZALLAMAS</span></button>
+                        <button id="pct-25" class="pct-btn" onclick="setPct(0.25)">25%</button>
+                        <button id="pct-50" class="pct-btn" onclick="setPct(0.50)">50%</button>
+                        <button class="btn btn-retreat trench-order-btn btn-stack" onclick="executeOrder('PREV')"><span class="btn-icon">◀</span><span class="btn-label">RETIRADA</span></button>
+                        <button class="btn btn-evac trench-order-btn btn-stack" onclick="executeOrder('EVAC')"><span class="btn-icon">🏥</span><span class="btn-label">HERIDOS</span></button>
+                    </div>
+                    <div class="trench-row">
+                        <button id="type-sniper" class="type-btn btn-stack" onclick="toggleType('sniper')"><span class="btn-icon">🎯</span><span class="btn-label">FRANCOTIRADOR</span></button>
+                        <button id="type-medic" class="type-btn btn-stack" onclick="toggleType('medic')"><span class="btn-icon">⛑️</span><span class="btn-label">MÉDICO</span></button>
+                        <button id="type-officer" class="type-btn btn-stack" onclick="toggleType('officer')"><span class="btn-icon">🎖️</span><span class="btn-label">OFICIAL</span></button>
+                        <button id="pct-75" class="pct-btn" onclick="setPct(0.75)">75%</button>
+                        <button id="pct-100" class="pct-btn active-pct" onclick="setPct(1.00)">100%</button>
+                        <button class="btn trench-order-btn btn-stack" onclick="executeOrder('NEXT')"><span class="btn-icon">▶</span><span class="btn-label">AVANCE</span></button>
+                        <button class="btn btn-toggle-alt trench-order-btn btn-stack" onclick="executeOrder('FRONT')"><span class="btn-icon">⏩</span><span class="btn-label">FRENTE</span></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -258,7 +513,7 @@
         <img id="bg-img" class="bg-media hidden" alt="background">
         
         <h1>MUD & STEEL</h1>
-        <p class="subtitle">TRENCH WARFARE V1.72</p>
+        <p class="subtitle">TRENCH WARFARE V2.28</p>
         <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
         
         <div class="mode-container" style="margin-top: 10px;">
@@ -266,62 +521,83 @@
             <button id="btn-mode-lim" class="mode-btn" onclick="setGameMode('limited')">📦 RECURSOS<br>LIMITADOS</button>
         </div>
 
+        <div style="display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; margin: 12px 0 8px; padding: 10px 16px; background: rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.12); border-radius:12px;">
+            <label style="display:flex; align-items:center; gap:8px; font-family:sans-serif; font-size:0.95rem; color:#fff;">🔊 Efectos <input type="checkbox" id="menu-effects" style="transform: scale(1.2);" onchange="toggleEffectsFromMenu(this.checked)"></label>
+            <div style="font-family:sans-serif; font-size:0.82rem; color:#c8c8c8;">🎧 Spotify se abre manualmente desde la radio de la base.</div>
+        </div>
+
         <button id="btn-resume" class="btn-start btn-resume hidden" onclick="resumeGame()">▶ REANUDAR OPERACIÓN</button>
         <button id="btn-start-text" class="btn-start" onclick="startGame()">NUEVA OPERACIÓN</button>
         <button class="btn-modal btn-manual-main" onclick="openManual()">📖 MANUAL DEL JUEGO</button>
     </div>
 
+    <div id="end-screen" class="screen hidden" style="z-index: 700;">
+        <div class="menu-overlay" style="background: rgba(0,0,0,0.9);"></div>
+        <div class="modal" style="border-width: 4px;">
+            <h1 id="end-title" style="font-size: 3.5rem; margin-bottom: 5px; font-family:'Impact',sans-serif; text-shadow: 0px 4px 0px #000;"></h1>
+            <p id="end-desc" style="color: #aaa; margin-bottom: 25px; font-family:sans-serif;"></p>
+            
+            <div style="display:flex; justify-content:space-around; margin-bottom: 30px; background:#111; padding:20px; border-radius:8px; border:1px solid #333;">
+                <div>
+                    <h3 style="color:#4caf50; font-family:'Impact'; font-size:1.2rem; margin-bottom:10px;">BAJAS ENEMIGAS</h3>
+                    <p id="end-e-cas" style="font-size:2.5rem; font-weight:bold; color:#fff; text-shadow: 0 0 10px #4caf50;"></p>
+                </div>
+                <div>
+                    <h3 style="color:#f44336; font-family:'Impact'; font-size:1.2rem; margin-bottom:10px;">TUS BAJAS</h3>
+                    <p id="end-p-cas" style="font-size:2.5rem; font-weight:bold; color:#fff; text-shadow: 0 0 10px #f44336;"></p>
+                </div>
+            </div>
+            
+            <button class="btn-start" onclick="location.reload()" style="background:#222; width:100%;">VOLVER AL CUARTEL GENERAL</button>
+        </div>
+    </div>
+
     <div id="manual-screen" class="screen hidden" style="z-index: 600;">
         <div class="menu-overlay" style="background: rgba(0,0,0,0.95);"></div>
         <div class="modal">
-            <h1 style="color:var(--accent); text-align:center; margin-bottom: 10px;">MANUAL DE OPERACIONES</h1>
+            <h1 style="color:var(--accent); text-align:center; margin-bottom: 10px; font-family:'Impact',sans-serif;">MANUAL TÁCTICO DE CAMPO</h1>
             <div class="manual-content">
-                <p><strong>Mud & Steel</strong> simula la crudeza de la guerra de trincheras. En esta guerra de desgaste, la táctica, la logística y la psicología de tus tropas determinarán la victoria o la derrota.</p>
+                <p>Bienvenido al frente, Comandante. <strong>Mud & Steel</strong> es un simulador crudo de guerra de trincheras. En esta guerra de desgaste, no basta con avanzar; deberás gestionar la logística, el miedo y la brutalidad del fuego cruzado.</p>
                 
-                <h2>🤖 IA Enemiga (Comandante Gemini)</h2>
-                <p>Opcionalmente, puedes activar que la IA enemiga sea controlada por un sistema dinámico táctico que analizará el mapa para responder a tus movimientos. ¡Incluso podrás leer sus pensamientos en una pantalla en su base!</p>
+                <h2>🎯 Objetivo Principal: El Asedio</h2>
+                <p>Tu misión es empujar la línea del frente capturando trincheras sucesivas hasta alcanzar el Búnker del Cuartel General enemigo. Las tropas no ganan con solo llegar al final: <strong>deben detenerse frente a la base enemiga y abrir fuego contra sus gruesos muros de hormigón</strong>. Solo cuando los Puntos de Salud (HP) de la base lleguen a cero, conseguirás la victoria.</p>
 
-                <h2>🎯 Modos de Juego</h2>
+                <h2>🪖 Clases de Tropas y Tácticas</h2>
                 <ul>
-                    <li><strong>Recursos Continuos:</strong> Los Puntos de Mando (MP) se regeneran constantemente.</li>
-                    <li><strong>Recursos Limitados:</strong> Comienzas con un presupuesto cerrado. ¡Si se agotan, no podrás desplegar más tropas!</li>
-                </ul>
-
-                <h2>🪖 Tipos de Tropa</h2>
-                <ul>
-                    <li><strong>Infantería (🪖):</strong> Versátil. Buen alcance y daño decente.</li>
-                    <li><strong>Granadero (💣):</strong> Infantería pesada. Ignoran gran parte de la protección de las trincheras.</li>
-                    <li><strong>Lanzallamas (🔥):</strong> Daño en área que ignora trincheras.</li>
-                    <li><strong>Francotirador (🎯):</strong> Larga distancia y visión superior.</li>
+                    <li><strong>Infantería (🪖):</strong> Económica y versátil. Su fusil con bayoneta tiene buen alcance. Ideal para sostener líneas.</li>
+                    <li><strong>Granadero (💣):</strong> Lenta y pesada, pero sus explosivos ignoran gran parte de los sacos de arena enemigos.</li>
+                    <li><strong>Lanzallamas (🔥):</strong> Su chorro de fuego ignora coberturas y prende a los enemigos. <strong>Un soldado en llamas perderá vida y moral rápidamente; el pánico lo obligará a huir despavorido hacia su retaguardia.</strong></li>
+                    <li><strong>Francotirador (🎯):</strong> Ojos de águila. Dispara muy lento, pero un solo impacto puede ser letal a larga distancia.</li>
                     <li><strong>Médico / Sanitario (⛑️):</strong> Escanea el campo de batalla en busca de tropas heridas y sale de la trinchera para correr hacia ellas y curarlas con su aura verde.</li>
                     <li><strong>Oficial (🎖️):</strong> Llevan solo una pistola, pero <strong>proyectan un aura de mando dorada</strong>. Buscan a tropas asustadas para restaurarles la moral activamente y hacerlos casi inmunes al terror.</li>
                 </ul>
             </div>
-            <button class="btn-modal" onclick="closeManual()">CERRAR MANUAL</button>
+            <button class="btn-modal" onclick="closeManual()">ENTENDIDO</button>
         </div>
     </div>
 
     <div id="options-screen" class="screen hidden">
         <div class="menu-overlay" style="background: rgba(0,0,0,0.95);"></div>
         <div class="modal">
-            <h2 style="color:var(--accent); text-align:center; margin-bottom: 5px;">PANEL DE MANDO</h2>
+            <h2 style="color:var(--accent); text-align:center; margin-bottom: 5px; font-family:'Impact',sans-serif;">PANEL DE MANDO</h2>
             <p class="author">Creado por <a href="https://www.linkedin.com/in/oriol-badia/" target="_blank">Oriol Badia Campanera</a></p>
             
-            <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL</button>
+            <button class="btn-modal btn-manual-main" style="margin-bottom: 20px;" onclick="openManual()">📖 LEER MANUAL DE CAMPO</button>
             
             <div class="ai-zone">
                 <h3 style="color: #5bc0de; margin-bottom: 8px;">🤖 COMANDANTE ENEMIGO (IA)</h3>
                 <div class="cfg-label">Activar Consola de IA Avanzada <input type="checkbox" id="cfg-use-ai" style="transform: scale(1.3);"></div>
                 <div class="cfg-label">API Key de Gemini (Opcional) <input type="password" id="cfg-gemini-key" class="cfg-input-text" placeholder="AIzaSy..."></div>
-                <p style="font-size:0.65rem; color:#aaa; margin-bottom:8px; text-align:left;">Si dejas la clave en blanco, se ejecutará una simulación táctica local en la consola para no consumir tu cuota.</p>
+                <p style="font-size:0.65rem; color:#aaa; margin-bottom:8px; text-align:left; font-family:sans-serif;">Si dejas la clave en blanco, se ejecutará una simulación táctica local en la consola para no consumir tu cuota.</p>
                 <div class="cfg-label">Intervalo de Decisión (seg) <input type="number" id="cfg-ai-interval" class="cfg-input"></div>
             </div>
 
             <div class="cfg-group" style="border-color: #aaa;">
                 <h3 style="color: #aaa;">⚙️ AJUSTES GENERALES</h3>
-                <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-sound" style="transform: scale(1.3);" onchange="game.soundEnabled = this.checked;"></div>
+                <div class="cfg-label">Efectos de Sonido <input type="checkbox" id="cfg-effects" style="transform: scale(1.3);" onchange="game.effectsEnabled = this.checked;"></div>
                 <div class="cfg-label">Recursos Iniciales (Modo Limitado) <input type="number" id="cfg-max-mp" class="cfg-input"></div>
                 <div class="cfg-label">Tiempo del Cadáver (Segundos) <input type="number" id="cfg-corpse-time" class="cfg-input"></div>
+                <div class="cfg-label">Máx. tropas vivas por ejército (0 = ilimitado) <input type="number" min="0" id="cfg-max-alive-troops" class="cfg-input"></div>
                 <div class="cfg-label">Mostrar Alcances y Visión <input type="checkbox" id="toggle-ranges" style="transform: scale(1.3);" onchange="game.showRanges = this.checked;"></div>
             </div>
 
@@ -442,12 +718,349 @@
 </div>
 
 <script>
-    function playSound(file, vol = 0.5) {
-        if (!game.soundEnabled) return;
-        let a = new Audio(file);
-        a.volume = vol;
-        a.play().catch(e => {});
+    
+    const SPOTIFY_PLAYLIST = {
+        uri: 'spotify:playlist:07OQAKCANdnVxfz1XnRgLM',
+        appUrl: 'spotify:playlist:07OQAKCANdnVxfz1XnRgLM',
+        webUrl: 'https://open.spotify.com/playlist/07OQAKCANdnVxfz1XnRgLM',
+        name: 'Mud & Steel : Trench Warfare',
+        owner: 'uryheavy',
+        cover: 'https://urysoft.github.io/ai.html.games/games/mudandsteel/mudandsteel_loop_vertical.png'
+    };
+    let spotifyState = {
+        isPlaying: false,
+        currentURI: SPOTIFY_PLAYLIST.uri
+    };
+
+    const SOUND_BASE_URL = new URL('./', window.location.href).href;
+    const SOUND_FILES = Object.freeze({
+        flamethrower: new URL('lanzallamas1.mp3', SOUND_BASE_URL).href,
+        grenade: new URL('granada1.mp3', SOUND_BASE_URL).href,
+        medic: new URL('medico1.mp3', SOUND_BASE_URL).href,
+        death1: new URL('muerte1.mp3', SOUND_BASE_URL).href,
+        death2: new URL('muerte2.mp3', SOUND_BASE_URL).href,
+        death3: new URL('muerte3.mp3', SOUND_BASE_URL).href,
+        death4: new URL('muerte4.mp3', SOUND_BASE_URL).href,
+        death5: new URL('muerte5.mp3', SOUND_BASE_URL).href,
+        pistol: new URL('pistola1.mp3', SOUND_BASE_URL).href,
+        rifle: new URL('rifle1.mp3', SOUND_BASE_URL).href,
+        sniper: new URL('francotirador1.mp3', SOUND_BASE_URL).href,
+        whistle: new URL('silbato1.mp3', SOUND_BASE_URL).href
+    });
+
+    const SOUND_POOL_SIZE = Object.freeze({
+        [SOUND_FILES.flamethrower]: 2,
+        [SOUND_FILES.grenade]: 4,
+        [SOUND_FILES.medic]: 3,
+        [SOUND_FILES.death1]: 2,
+        [SOUND_FILES.death2]: 2,
+        [SOUND_FILES.death3]: 2,
+        [SOUND_FILES.death4]: 2,
+        [SOUND_FILES.death5]: 2,
+        [SOUND_FILES.pistol]: 6,
+        [SOUND_FILES.rifle]: 8,
+        [SOUND_FILES.sniper]: 4,
+        [SOUND_FILES.whistle]: 2
+    });
+
+    function buildAudioCandidates(file) {
+        const out = [];
+        if (file) out.push(file);
+        if (typeof file === 'string') {
+            const shortName = file.split('/').pop().split('?')[0].split('#')[0];
+            if (shortName && !out.includes(shortName)) out.push(shortName);
+        }
+        return out;
     }
+
+    function createAudioElement(src, volume = 1, loop = false) {
+        const a = new Audio();
+        a.preload = 'auto';
+        a.loop = !!loop;
+        a.volume = volume;
+        a.src = src;
+        try { a.load(); } catch (e) {}
+        return a;
+    }
+
+    function createSoundPool(file, count = 4) {
+        const candidates = buildAudioCandidates(file);
+        return {
+            file,
+            candidates,
+            candidateIndex: 0,
+            nextIndex: 0,
+            audios: Array.from({ length: Math.max(1, count) }, () => createAudioElement(candidates[0] || file || '', 1, false))
+        };
+    }
+
+    const SOUND_POOLS = new Map();
+    Object.values(SOUND_FILES).forEach(file => {
+        SOUND_POOLS.set(file, createSoundPool(file, SOUND_POOL_SIZE[file] || 4));
+    });
+
+    let flamerAudio = createAudioElement(SOUND_FILES.flamethrower, 0.3, true);
+    let audioUnlocked = false;
+
+    function unlockAudioSystem() {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        SOUND_POOLS.forEach(pool => {
+            pool.audios.forEach(a => {
+                a.muted = true;
+                const p = a.play();
+                if (p && p.catch) p.catch(() => {});
+                a.pause();
+                a.currentTime = 0;
+                a.muted = false;
+            });
+        });
+        flamerAudio.muted = true;
+        const fp = flamerAudio.play();
+        if (fp && fp.catch) fp.catch(() => {});
+        flamerAudio.pause();
+        flamerAudio.currentTime = 0;
+        flamerAudio.muted = false;
+    }
+
+    ['pointerdown','touchstart','keydown','mousedown'].forEach(evt => {
+        window.addEventListener(evt, unlockAudioSystem, { once: true, passive: true });
+    });
+
+    const DEATH_SOUNDS = [SOUND_FILES.death1, SOUND_FILES.death2, SOUND_FILES.death3, SOUND_FILES.death4, SOUND_FILES.death5];
+    let lastDeathSoundIndex = -1;
+
+    function spotifyUriToOpenUrl(uri) {
+        if (!uri || !uri.startsWith('spotify:')) return '';
+        const parts = uri.split(':');
+        return parts.length >= 3 ? `https://open.spotify.com/${parts[1]}/${parts[2]}` : '';
+    }
+
+    function parseSpotifyKind(uri) {
+        const parts = (uri || '').split(':');
+        return parts[1] || 'playlist';
+    }
+
+    function getCurrentSpotifyDisplay() {
+        const fallback = spotifyState.currentURI && spotifyState.currentURI !== SPOTIFY_PLAYLIST.uri
+            ? { title: 'Reproduciendo en Spotify', artist: 'Spotify', album: 'Colección en reproducción', cover: SPOTIFY_PLAYLIST.cover }
+            : { title: SPOTIFY_PLAYLIST.name, artist: SPOTIFY_PLAYLIST.owner, album: 'Lista: ' + SPOTIFY_PLAYLIST.name, cover: SPOTIFY_PLAYLIST.cover };
+        return spotifyState.metaCache[spotifyState.currentURI] || fallback;
+    }
+
+    async function fetchSpotifyMetadata(uri) {
+        if (!uri || spotifyState.metaCache[uri]) return;
+        const openUrl = spotifyUriToOpenUrl(uri);
+        if (!openUrl) return;
+        try {
+            const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(openUrl)}`);
+            if (!res.ok) throw new Error('oEmbed');
+            const data = await res.json();
+            const kind = parseSpotifyKind(uri);
+            spotifyState.metaCache[uri] = {
+                title: data.title || 'Spotify',
+                artist: data.author_name || data.provider_name || 'Spotify',
+                album: kind === 'playlist' ? ('Lista: ' + (data.title || SPOTIFY_PLAYLIST.name)) : (kind === 'album' ? 'Álbum en Spotify' : 'Tema en Spotify'),
+                cover: data.thumbnail_url || SPOTIFY_PLAYLIST.cover
+            };
+            updateSpotifyTrackUI();
+        } catch (err) {
+            if (!spotifyState.metaCache[uri]) {
+                spotifyState.metaCache[uri] = uri === SPOTIFY_PLAYLIST.uri
+                    ? { title: SPOTIFY_PLAYLIST.name, artist: SPOTIFY_PLAYLIST.owner, album: 'Lista: ' + SPOTIFY_PLAYLIST.name, cover: SPOTIFY_PLAYLIST.cover }
+                    : { title: 'Reproduciendo en Spotify', artist: 'Spotify', album: 'Colección en reproducción', cover: SPOTIFY_PLAYLIST.cover };
+                updateSpotifyTrackUI();
+            }
+        }
+    }
+
+    function setSpotifyTrackByURI(uri) {
+        spotifyState.currentURI = uri || SPOTIFY_PLAYLIST.uri;
+        updateSpotifyTrackUI();
+        fetchSpotifyMetadata(spotifyState.currentURI);
+    }
+
+    
+    function updateSpotifyTrackUI() {
+        const title = document.getElementById('spotify-track-title');
+        const artist = document.getElementById('spotify-track-artist');
+        const album = document.getElementById('spotify-track-album');
+        const cover = document.getElementById('spotify-cover');
+        if (title) title.textContent = SPOTIFY_PLAYLIST.name;
+        if (artist) artist.textContent = 'Lista oficial de Spotify';
+        if (album) album.textContent = 'Mud & Steel · lista de combate';
+        if (cover) cover.src = SPOTIFY_PLAYLIST.cover;
+    }
+
+    function updateSpotifyWidgetVisibility() {
+        const radioView = document.getElementById('base-radio-view');
+        const armyView = document.getElementById('base-army-view');
+        const radioBtn = document.getElementById('radio-toggle-btn');
+        if (!radioView || !armyView || !radioBtn) return;
+        const showRadio = game.active && game.basePanelMode === 'radio';
+        radioView.classList.toggle('hidden', !showRadio);
+        armyView.classList.toggle('hidden', showRadio);
+        radioBtn.innerHTML = showRadio ? '⬅ VOLVER' : '📻 RADIO';
+        radioBtn.classList.toggle('btn-toggle-alt', !showRadio);
+        radioBtn.classList.toggle('btn-retreat', showRadio);
+    }
+
+    function setBasePanelMode(mode = 'army') {
+        game.basePanelMode = mode === 'radio' ? 'radio' : 'army';
+        updateSpotifyWidgetVisibility();
+    }
+
+    function toggleBaseRadioPanel() {
+        setBasePanelMode(game.basePanelMode === 'radio' ? 'army' : 'radio');
+    }
+
+    function syncAudioTogglesUI() {
+        const menuEffects = document.getElementById('menu-effects');
+        const cfgEffects = document.getElementById('cfg-effects');
+        if (menuEffects) menuEffects.checked = !!game.effectsEnabled;
+        if (cfgEffects) cfgEffects.checked = !!game.effectsEnabled;
+        updateSpotifyTrackUI();
+        updateSpotifyStatusUI();
+    }
+
+    function updateSpotifyStatusUI() {
+        const el = document.getElementById('spotify-status-text');
+        if (!el) return;
+        el.textContent = spotifyState.isPlaying ? 'SPOTIFY ABIERTO EN OTRA PESTAÑA' : 'PULSA EL BOTÓN PARA ABRIR LA PLAYLIST';
+        el.style.color = spotifyState.isPlaying ? '#4caf50' : '#ffcc00';
+    }
+
+    function updateSpotifyVolumeNotice() {}
+
+    function toggleMusicFromMenu() {
+        return;
+    }
+
+    function toggleEffectsFromMenu(checked) {
+        game.effectsEnabled = !!checked;
+        syncAudioTogglesUI();
+        saveConfig();
+        if (!game.effectsEnabled && !flamerAudio.paused) {
+            flamerAudio.pause();
+            flamerAudio.currentTime = 0;
+        }
+    }
+
+    function loadSpotifyTrack() {
+        updateSpotifyTrackUI();
+        updateSpotifyStatusUI();
+    }
+
+    function openSpotifyPlaylist(ev) {
+        if (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+        spotifyState.isPlaying = true;
+        updateSpotifyStatusUI();
+
+        try {
+            const spotifyWin = window.open(SPOTIFY_PLAYLIST.webUrl, '_blank', 'noopener,noreferrer');
+            if (spotifyWin) {
+                spotifyWin.opener = null;
+                return;
+            }
+        } catch (err) {}
+
+        const anchor = document.createElement('a');
+        anchor.href = SPOTIFY_PLAYLIST.webUrl;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.position = 'fixed';
+        anchor.style.left = '-9999px';
+        anchor.style.top = '-9999px';
+        anchor.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(anchor);
+        anchor.click();
+        setTimeout(() => anchor.remove(), 1200);
+    }
+
+    function playSpotifyPlaylist(ev) {
+        openSpotifyPlaylist(ev);
+    }
+
+    function pauseSpotifyPlaylist() {
+        spotifyState.isPlaying = false;
+        updateSpotifyStatusUI();
+    }
+
+    function nextSpotifyTrack() {
+        openSpotifyPlaylist();
+    }
+
+    function setSpotifyTrackByURI() {
+        spotifyState.currentURI = SPOTIFY_PLAYLIST.uri;
+        updateSpotifyTrackUI();
+    }
+
+    function fetchSpotifyMetadata() {}
+
+    function toggleSpotifyAtFriendlyBase() {
+        return;
+    }
+
+    function playSound(file, vol = 0.5) {
+        if (!game.effectsEnabled || !file) return;
+        if (!audioUnlocked) unlockAudioSystem();
+        let pool = SOUND_POOLS.get(file);
+        if (!pool) {
+            pool = createSoundPool(file, 3);
+            SOUND_POOLS.set(file, pool);
+        }
+        const audio = pool.audios.find(a => a.paused || a.ended) || pool.audios[pool.nextIndex++ % pool.audios.length];
+        const tryPlay = (candidatePos = pool.candidateIndex || 0) => {
+            if (!pool.candidates.length) return;
+            const src = pool.candidates[candidatePos];
+            if (audio.src !== src) {
+                audio.pause();
+                audio.currentTime = 0;
+                audio.src = src;
+                try { audio.load(); } catch (e) {}
+            }
+            audio.volume = vol;
+            audio.currentTime = 0;
+            const p = audio.play();
+            if (p && p.catch) {
+                p.catch(() => {
+                    if (candidatePos + 1 < pool.candidates.length) {
+                        pool.candidateIndex = candidatePos + 1;
+                        tryPlay(candidatePos + 1);
+                    }
+                });
+            }
+        };
+        tryPlay(pool.candidateIndex || 0);
+    }
+
+    function playRandomDeathSound() {
+        if (!game.effectsEnabled || !DEATH_SOUNDS.length) return;
+        let idx = Math.floor(Math.random() * DEATH_SOUNDS.length);
+        if (DEATH_SOUNDS.length > 1 && idx === lastDeathSoundIndex) idx = (idx + 1 + Math.floor(Math.random() * (DEATH_SOUNDS.length - 1))) % DEATH_SOUNDS.length;
+        lastDeathSoundIndex = idx;
+        playSound(DEATH_SOUNDS[idx], 0.4);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updateSpotifyTrackUI();
+        updateSpotifyStatusUI();
+        updateSpotifyWidgetVisibility();
+    });
+
+    function bindSpotifyUIProtection() {
+        ['base-panel','base-radio-view','radio-toggle-btn','rally-btn','base-spotify-widget'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            ['touchstart','touchend','mousedown','mouseup','click'].forEach(evt => {
+                el.addEventListener(evt, e => e.stopPropagation(), {passive:false});
+            });
+        });
+    }
+
 
     function updateMenuMedia() {
         let isVert = window.innerHeight > window.innerWidth;
@@ -478,12 +1091,43 @@
         };
         img.onerror = function() { img.style.display = 'none'; };
         updateMenuMedia();
+        setSpotifyTrackByURI(SPOTIFY_PLAYLIST.uri);
+        updateSpotifyWidgetVisibility();
+        bindSpotifyUIProtection();
     });
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const mCanvas = document.getElementById('m-canvas');
     const mCtx = mCanvas.getContext('2d');
+
+    function enhanceTrenchButtons() {
+        document.querySelectorAll('#trench-panel .type-btn, #trench-panel .trench-order-btn').forEach(btn => {
+            if (btn.dataset.enhanced === '1') return;
+            const raw = btn.textContent.trim().replace(/\s+/g, ' ');
+            const match = raw.match(/^(\S+)\s+(.+)$/);
+            if (!match) return;
+            btn.dataset.enhanced = '1';
+            btn.classList.add('btn-stack');
+            btn.innerHTML = `<span class="btn-icon">${match[1]}</span><span class="btn-label">${match[2]}</span>`;
+        });
+    }
+
+    function minimapClientX(evt) {
+        if (evt.touches && evt.touches[0]) return evt.touches[0].clientX;
+        if (evt.changedTouches && evt.changedTouches[0]) return evt.changedTouches[0].clientX;
+        return evt.clientX;
+    }
+
+    function jumpCameraFromMinimap(evt) {
+        if (!game || !canvas) return;
+        evt.preventDefault();
+        const rect = mCanvas.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (minimapClientX(evt) - rect.left) / Math.max(1, rect.width)));
+        const worldX = ratio * game.worldW;
+        const target = Math.max(0, Math.min(game.worldW - canvas.width, worldX - (canvas.width / 2)));
+        game.camTargetX = target;
+    }
 
     const BASE_W = 180, SAFE_ZONE = 300, TRENCH_W = 80, HORIZON_Y = 120;
     
@@ -515,39 +1159,48 @@
         infantry: { cost: 10, hp: 100, speed: 1.2, dmg: 50, vision: 300, range: 250, fireRate: 3000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
         grenadier: { cost: 20, hp: 250, speed: 0.5, dmg: 100, vision: 300, range: 150, fireRate: 4000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
         flamethrower: { cost: 35, hp: 50, speed: 2.0, dmg: 5, vision: 300, range: 80, fireRate: 100, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        sniper: { cost: 40, hp: 80, speed: 1.0, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
-        medic: { cost: 70, hp: 50, speed: 0.75, dmg: 25, vision: 300, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 10, auraRange: 50, auraRate: 5 },
-        officer: { cost: 80, hp: 100, speed: 1.0, dmg: 25, vision: 400, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 20, auraRange: 100, auraRate: 10 }
+        sniper: { cost: 50, hp: 80, speed: 1.0, dmg: 100, vision: 500, range: 450, fireRate: 10000, maxMoral: 50, terrorRange: 50, terrorDmg: 10 },
+        medic: { cost: 75, hp: 50, speed: 0.75, dmg: 25, vision: 300, range: 120, fireRate: 3000, maxMoral: 150, terrorRange: 80, terrorDmg: 10, auraRange: 50, auraRate: 5 },
+        officer: { cost: 100, hp: 100, speed: 1.0, dmg: 50, vision: 400, range: 120, fireRate: 600, maxMoral: 250, terrorRange: 100, terrorDmg: 30, auraRange: 100, auraRate: 10 }
     };
-    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, medic: 5, officer: 5 };
+    const DEFAULT_TRENCH_DMG = { infantry: 5, grenadier: 20, flamethrower: 5, sniper: 20, medic: 5, officer: 25 };
 
     let game = { 
-        active: false, loopStarted: false, worldW: 3500, camX: 0, 
+        active: false, loopStarted: false, worldW: 3500, camX: 0, camTargetX: null, 
         mp: 100, eMp: 100, pHp: 100, eHp: 100, pCas: 0, eCas: 0, 
-        selected: -1, selectedPct: 1.0, 
+        selected: -1, selectedArea: null, selectedPct: 1.0, 
         selectedTypes: new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']), 
         baseRally: 'FRONT', showRanges: false,
-        resourceMode: 'infinite', maxResources: 2000, corpseTime: 120,
-        soundEnabled: true,
+        resourceMode: 'infinite', maxResources: 2000, corpseTime: 120, maxAliveTroopsPerArmy: 50,
+        musicEnabled: true,
+        effectsEnabled: true,
+        basePanelMode: 'army',
         useGenAI: false, geminiKey: "", aiInterval: 5, lastAiTime: 0, isAiThinking: false,
         aiThoughts: ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."],
+        aiFrontTrench: null,
+        aiMemory: {},
         config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
-        trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG))
+        trenchDmg: JSON.parse(JSON.stringify(DEFAULT_TRENCH_DMG)),
+        pxMountains: [], pxMid: [], mudPatches: []
     };
     
     let unitIdCounter = 0;
     const trenches = [], units = [], bullets = [], craters = [], corpses = [], explosions = [], obstacles = [];
+    let shells = [], dyingUnits = [];
+    
     let drag = { is: false, x: 0, cam: 0, dist: 0 };
 
     function loadConfig() {
         try {
-            let saved = localStorage.getItem('mudAndSteelConfig_v172');
+            let saved = localStorage.getItem('mudAndSteelConfig_v185');
             if (saved) {
                 let parsed = JSON.parse(saved);
                 game.maxResources = parsed.maxResources !== undefined ? parsed.maxResources : 2000;
                 game.corpseTime = parsed.corpseTime !== undefined ? parsed.corpseTime : 120;
+                game.maxAliveTroopsPerArmy = parsed.maxAliveTroopsPerArmy !== undefined ? Math.max(0, Number(parsed.maxAliveTroopsPerArmy) || 0) : 50;
                 game.resourceMode = parsed.resourceMode || 'infinite';
-                game.soundEnabled = parsed.soundEnabled !== undefined ? parsed.soundEnabled : true;
+                game.musicEnabled = parsed.musicEnabled !== undefined ? parsed.musicEnabled : true;
+                game.effectsEnabled = parsed.effectsEnabled !== undefined ? parsed.effectsEnabled : true;
                 game.useGenAI = parsed.useGenAI || false;
                 game.geminiKey = parsed.geminiKey || "";
                 game.aiInterval = parsed.aiInterval || 5;
@@ -559,30 +1212,36 @@
                 if(parsed.trenchDmg) game.trenchDmg = { ...DEFAULT_TRENCH_DMG, ...parsed.trenchDmg };
             }
         } catch(e) { console.log("Error loading config", e); }
+        game.maxAliveTroopsPerArmy = Math.max(0, Number(game.maxAliveTroopsPerArmy) || 0);
         setGameMode(game.resourceMode);
         updateCostLabels();
+        syncAudioTogglesUI();
     }
 
     function saveConfig() {
         let data = {
             maxResources: game.maxResources,
             corpseTime: game.corpseTime,
+            maxAliveTroopsPerArmy: game.maxAliveTroopsPerArmy,
             resourceMode: game.resourceMode,
-            soundEnabled: game.soundEnabled,
+            musicEnabled: game.musicEnabled,
+            effectsEnabled: game.effectsEnabled,
             useGenAI: game.useGenAI,
             geminiKey: game.geminiKey,
             aiInterval: game.aiInterval,
             config: game.config,
             trenchDmg: game.trenchDmg
         };
-        try { localStorage.setItem('mudAndSteelConfig_v172', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('mudAndSteelConfig_v185', JSON.stringify(data)); } catch(e) {}
     }
 
     function resetConfig() {
         if(confirm("¿Estás seguro de restablecer todos los valores de fábrica?")) {
             game.maxResources = 2000;
             game.corpseTime = 120;
-            game.soundEnabled = true;
+            game.maxAliveTroopsPerArmy = 50;
+            game.musicEnabled = true;
+            game.effectsEnabled = true;
             game.useGenAI = false;
             game.geminiKey = "";
             game.aiInterval = 5;
@@ -591,6 +1250,7 @@
             populateOptionsUI();
             saveConfig();
             updateCostLabels();
+            syncAudioTogglesUI();
             alert("Configuración restablecida.");
         }
     }
@@ -608,11 +1268,37 @@
         document.getElementById('menu').classList.remove('hidden');
         document.getElementById('btn-resume').classList.remove('hidden');
         document.getElementById('btn-start-text').innerText = "REINICIAR OPERACIÓN";
+        pauseSpotifyPlaylist();
+        setBasePanelMode('army');
     }
 
     function resumeGame() {
         document.getElementById('menu').classList.add('hidden');
         game.active = true;
+        updateSpotifyWidgetVisibility();
+    }
+
+    function showEndScreen(isPlayerWin) {
+        game.active = false;
+        document.getElementById('end-screen').classList.remove('hidden');
+        pauseSpotifyPlaylist();
+        setBasePanelMode('army');
+        
+        let title = document.getElementById('end-title');
+        let desc = document.getElementById('end-desc');
+        
+        if (isPlayerWin) {
+            title.innerText = "¡VICTORIA!";
+            title.style.color = "#4caf50";
+            desc.innerText = "El Cuartel General enemigo ha sido neutralizado. La línea del frente es nuestra.";
+        } else {
+            title.innerText = "DERROTA";
+            title.style.color = "#f44336";
+            desc.innerText = "Nuestras defensas han caído. El enemigo ha aplastado nuestra posición.";
+        }
+        
+        document.getElementById('end-p-cas').innerText = game.pCas;
+        document.getElementById('end-e-cas').innerText = game.eCas;
     }
 
     function setGameMode(mode) {
@@ -624,13 +1310,26 @@
         saveConfig();
     }
 
+    let spotifyDesktopLaunchAttempted = false;
+
+    function isDesktopDevice() {
+        return matchMedia('(pointer:fine)').matches && !/Android|iPhone|iPad|iPod|Mobile|Windows Phone|webOS/i.test(navigator.userAgent);
+    }
+
+    function tryOpenSpotifyDesktopTab() {
+        return;
+    }
+
     function startGame() {
         document.getElementById('menu').classList.add('hidden');
+        document.getElementById('end-screen').classList.add('hidden');
         
         unitIdCounter = 0;
         trenches.length = 0; units.length = 0; bullets.length = 0; craters.length = 0; corpses.length = 0; explosions.length = 0; obstacles.length = 0;
+        shells.length = 0; dyingUnits.length = 0;
         game.pCas = 0; game.eCas = 0; game.pHp = 100; game.eHp = 100;
         game.aiThoughts = ["SISTEMA IA INICIADO...", "ESPERANDO DATOS DEL FRENTE..."];
+        game.aiMemory = {};
         game.lastAiTime = Date.now();
         deselectTrench();
         
@@ -642,6 +1341,9 @@
 
         resize(); generateMap();
         game.active = true;
+        setBasePanelMode('army');
+        syncAudioTogglesUI();
+        pauseSpotifyPlaylist();
         
         if(!game.loopStarted) {
             game.loopStarted = true;
@@ -655,7 +1357,9 @@
     function populateOptionsUI() {
         document.getElementById('cfg-max-mp').value = game.maxResources;
         document.getElementById('cfg-corpse-time').value = game.corpseTime;
-        document.getElementById('cfg-sound').checked = game.soundEnabled;
+        document.getElementById('cfg-max-alive-troops').value = game.maxAliveTroopsPerArmy;
+        document.getElementById('cfg-effects').checked = game.effectsEnabled;
+        syncAudioTogglesUI();
         document.getElementById('cfg-use-ai').checked = game.useGenAI;
         document.getElementById('cfg-gemini-key').value = game.geminiKey;
         document.getElementById('cfg-ai-interval').value = game.aiInterval;
@@ -694,10 +1398,23 @@
         document.getElementById('lbl-mp-off').innerText = game.config.officer.cost + " MP";
     }
 
+    function getAliveTroopCount(side) {
+        return units.reduce((count, u) => count + ((u.side === side && u.hp > 0) ? 1 : 0), 0);
+    }
+
+    function hasReachedAliveTroopCap(side) {
+        const cap = Math.max(0, Number(game.maxAliveTroopsPerArmy) || 0);
+        if (cap === 0) return false;
+        return getAliveTroopCount(side) >= cap;
+    }
+
     function saveAndCloseOptions() {
         game.maxResources = Number(document.getElementById('cfg-max-mp').value);
         game.corpseTime = Number(document.getElementById('cfg-corpse-time').value);
-        game.soundEnabled = document.getElementById('cfg-sound').checked;
+        game.maxAliveTroopsPerArmy = Math.max(0, Number(document.getElementById('cfg-max-alive-troops').value) || 0);
+        game.musicEnabled = true;
+        game.effectsEnabled = document.getElementById('cfg-effects').checked;
+        syncAudioTogglesUI();
         
         game.useGenAI = document.getElementById('cfg-use-ai').checked;
         game.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
@@ -737,8 +1454,18 @@
         for (let i = 0; i < numT; i++) {
             trenches.push({ x: pStart + (i * segW) + (Math.random() * (segW - TRENCH_W)), w: TRENCH_W, owner: 'neutral', progress: 0 });
         }
+        
+        game.pxMountains = [];
+        for(let i=0; i<40; i++) game.pxMountains.push({x: Math.random()*game.worldW, w: 100+Math.random()*250, h: 20+Math.random()*70});
+        
+        game.pxMid = [];
+        for(let i=0; i<70; i++) game.pxMid.push({x: Math.random()*game.worldW, type: Math.random()>0.5?'tree':'ruin', h: 10+Math.random()*40});
+        
+        game.mudPatches = [];
+        for(let i=0; i<200; i++) game.mudPatches.push({x: Math.random()*game.worldW, y: HORIZON_Y + 20 + Math.random()*(canvas.height - HORIZON_Y - 20), r: 15+Math.random()*40, c: Math.random()>0.7?'#3a221d':'#472f25'});
+
         for(let i=0; i < 40; i++) {
-            craters.push({ x: Math.random() * game.worldW, y: HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 50), r: 15 + Math.random() * 30, color: `rgba(50, 40, 30, 0.6)` });
+            craters.push({ x: Math.random() * game.worldW, y: HORIZON_Y + 30 + Math.random() * (canvas.height - HORIZON_Y - 50), r: 15 + Math.random() * 30 });
         }
         
         for (let i = 0; i < 35; i++) {
@@ -746,7 +1473,7 @@
             let attempts = 0;
             while(!valid && attempts < 50) {
                 ox = pStart + Math.random() * width;
-                oy = HORIZON_Y + 50 + Math.random() * (canvas.height - HORIZON_Y - 90);
+                oy = HORIZON_Y + 40 + Math.random() * (canvas.height - HORIZON_Y - 60);
                 valid = true;
                 for(let t of trenches) {
                     if (Math.abs(ox - (t.x + t.w/2)) < t.w/2 + 35) { valid = false; break; }
@@ -770,37 +1497,127 @@
     }
     window.addEventListener('resize', resize);
 
-    const getX = e => e.touches ? e.touches[0].clientX : e.clientX;
-    canvas.addEventListener('mousedown', e => { drag.is = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; });
-    canvas.addEventListener('touchstart', e => { drag.is = true; drag.x = getX(e); drag.cam = game.camX; drag.dist = 0; }, {passive: false});
-    function handleMove(e) { if(drag.is) { let d = drag.x - getX(e); drag.dist += Math.abs(d); game.camX = Math.max(0, Math.min(game.worldW - canvas.width, drag.cam + d)); } }
-    window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove, {passive: false});
-    function handleEnd(e, isTouch) {
-        if(drag.is && drag.dist < 10) { 
-            if (e.target.closest('#controls') || e.target.closest('#hud') || e.target.closest('.screen')) { drag.is = false; return; }
-            handleTap((isTouch ? e.changedTouches[0].clientX : e.clientX) + game.camX); 
+    function getPointerClientX(e) {
+        if (typeof e.clientX === 'number') return e.clientX;
+        if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientX;
+        if (e.touches && e.touches[0]) return e.touches[0].clientX;
+        return 0;
+    }
+    function clientXToWorldX(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const relX = rect.width ? (clientX - rect.left) / rect.width : 0;
+        const clamped = Math.max(0, Math.min(1, relX));
+        return game.camX + clamped * canvas.width;
+    }
+    function beginCanvasDrag(clientX) {
+        drag.is = true;
+        drag.x = clientX;
+        drag.cam = game.camX;
+        drag.dist = 0;
+    }
+    function moveCanvasDrag(clientX) {
+        if (!drag.is) return;
+        const d = drag.x - clientX;
+        drag.dist += Math.abs(d);
+        game.camX = Math.max(0, Math.min(game.worldW - canvas.width, drag.cam + d));
+    }
+    function endCanvasDrag(clientX, target) {
+        if (drag.is && drag.dist < 10) {
+            const t = target || document.elementFromPoint(clientX, window.innerHeight * 0.5);
+            if (!(t && (t.closest('#controls') || t.closest('#hud') || t.closest('.screen') || t.closest('#minimap-box')))) {
+                handleTap(clientXToWorldX(clientX));
+            }
         }
         drag.is = false;
     }
-    window.addEventListener('mouseup', e => handleEnd(e, false)); window.addEventListener('touchend', e => handleEnd(e, true));
+
+    canvas.addEventListener('pointerdown', e => {
+        if (e.pointerType === 'touch') e.preventDefault();
+        beginCanvasDrag(e.clientX);
+        try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+    }, { passive: false });
+
+    canvas.addEventListener('pointermove', e => {
+        if (!drag.is) return;
+        if (e.pointerType === 'touch') e.preventDefault();
+        moveCanvasDrag(e.clientX);
+    }, { passive: false });
+
+    canvas.addEventListener('pointerup', e => {
+        if (e.pointerType === 'touch') e.preventDefault();
+        endCanvasDrag(e.clientX, e.target);
+        try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+    }, { passive: false });
+
+    canvas.addEventListener('pointercancel', () => { drag.is = false; }, { passive: true });
+    canvas.addEventListener('touchstart', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
+    mCanvas.addEventListener('pointerdown', jumpCameraFromMinimap, { passive: false });
+    mCanvas.addEventListener('touchstart', jumpCameraFromMinimap, { passive: false });
+
+    function getNoMansLandZones() {
+        const zones = [];
+        let left = BASE_W;
+        trenches.forEach(t => {
+            if ((t.x - left) > 40) zones.push({ kind: 'nml', index: zones.length, x1: left, x2: t.x });
+            left = t.x + t.w;
+        });
+        const right = game.worldW - BASE_W;
+        if ((right - left) > 40) zones.push({ kind: 'nml', index: zones.length, x1: left, x2: right });
+        return zones;
+    }
+
+    function resetAreaSelectionDefaults() {
+        game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']);
+        ['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
+        setPct(1.0);
+    }
+
+    function selectArea(area) {
+        if (!area) { deselectTrench(); return; }
+        game.selected = area.kind === 'trench' ? area.index : -1;
+        game.selectedArea = { kind: area.kind, index: area.index };
+        document.getElementById('base-panel').classList.add('hidden');
+        document.getElementById('trench-panel').classList.remove('hidden');
+        resetAreaSelectionDefaults();
+    }
+
+    function isSameSelectedArea(area) {
+        return !!area && !!game.selectedArea && game.selectedArea.kind === area.kind && game.selectedArea.index === area.index;
+    }
+
+    function getAreaFromTap(wx) {
+        let trenchIdx = -1;
+        trenches.forEach((t, i) => { if (wx > t.x - 20 && wx < t.x + t.w + 20) trenchIdx = i; });
+        if (trenchIdx !== -1) return { kind: 'trench', index: trenchIdx };
+        const zones = getNoMansLandZones();
+        for (const zone of zones) {
+            if (wx >= zone.x1 + 8 && wx <= zone.x2 - 8) return zone;
+        }
+        return null;
+    }
 
     function handleTap(wx) {
-        let found = -1;
-        trenches.forEach((t, i) => { if (wx > t.x - 20 && wx < t.x + t.w + 20) found = i; });
-        if(found !== -1) {
-            game.selected = found;
-            document.getElementById('base-panel').classList.add('hidden');
-            document.getElementById('trench-panel').classList.remove('hidden');
-            document.getElementById('t-label').innerText = "T" + (found + 1);
-            
-            game.selectedTypes = new Set(['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer']);
-            ['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer'].forEach(t => document.getElementById('type-' + t).classList.add('active-type'));
-            setPct(1.0);
-        } else { deselectTrench(); }
+        if (wx >= 0 && wx <= BASE_W) {
+            deselectTrench();
+            return;
+        }
+        const area = getAreaFromTap(wx);
+        if (!area) {
+            deselectTrench();
+            return;
+        }
+        if (isSameSelectedArea(area)) {
+            deselectTrench();
+            return;
+        }
+        selectArea(area);
     }
 
     function deselectTrench() {
         game.selected = -1;
+        game.selectedArea = null;
         document.getElementById('base-panel').classList.remove('hidden');
         document.getElementById('trench-panel').classList.add('hidden');
     }
@@ -808,7 +1625,7 @@
     function toggleRally() {
         game.baseRally = game.baseRally === 'FIRST' ? 'FRONT' : 'FIRST';
         let t = game.baseRally === 'FIRST' ? '<span style="color:#5bc0de">1ª TRINCHERA</span>' : '<span style="color:var(--accent)">AL FRENTE</span>';
-        document.getElementById('rally-btn').innerHTML = `📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block;">${t}</span>`;
+        document.getElementById('rally-btn').innerHTML = `📍 DESTINO:<br><span style="color:var(--accent); font-size:0.8rem; margin-top:5px; display:block; font-family:sans-serif; font-weight:bold;">${t}</span>`;
     }
 
     function setPct(val) {
@@ -823,10 +1640,12 @@
         else { game.selectedTypes.add(type); btn.classList.add('active-type'); }
     }
 
-    function spawnUnit(type, isE = false) {
+    function spawnUnit(type, isE = false, enemyTargetTrench = null) {
         let conf = game.config[type];
-        if (!isE) { if (game.mp < conf.cost) return; game.mp -= conf.cost; } 
-        else { if (game.eMp < conf.cost) return; game.eMp -= conf.cost; }
+        const side = isE ? 'enemy' : 'player';
+        if (hasReachedAliveTroopCap(side)) return false;
+        if (!isE) { if (game.mp < conf.cost) return false; game.mp -= conf.cost; } 
+        else { if (game.eMp < conf.cost) return false; game.eMp -= conf.cost; }
         
         let initialRank = (type === 'officer') ? 7 : 0; 
         let rankBonus = RANKS[initialRank];
@@ -834,62 +1653,87 @@
         let startHp = conf.hp + rankBonus.hpBonus;
         let startMoral = conf.maxMoral + rankBonus.moralBonus;
 
+        let h = canvas.height - HORIZON_Y;
+        let numDoors = 5;
+        let spacing = h / numDoors;
+        let doorIdx = Math.floor(Math.random() * numDoors);
+        let spawnY = HORIZON_Y + doorIdx * spacing + spacing / 2;
+        
+        let fRate = Number(conf.fireRate);
+        if (isNaN(fRate) || fRate <= 0) fRate = DEFAULT_CONFIG[type].fireRate;
+
         units.push({
-            id: unitIdCounter++, x: isE ? game.worldW - BASE_W - 20 : BASE_W + 20,
-            y: HORIZON_Y + 40 + Math.random() * (canvas.height - HORIZON_Y - 80),
+            id: unitIdCounter++, 
+            x: isE ? game.worldW - BASE_W + 15 : BASE_W - 15,
+            y: spawnY,
             side: isE ? 'enemy' : 'player', type: type, 
             hp: startHp, maxHp: startHp, 
             morale: startMoral, maxMoral: startMoral, 
             broken: false, isRescuing: false,
+            burnTimer: 0, forceFireTimer: 0,
             kills: rankBonus.kills, rankIdx: initialRank, 
             radius: 14, baseSpeed: conf.speed, visionRange: conf.vision, weaponRange: conf.range,
-            dir: isE ? -1 : 1, state: 'MOVE', inT: -1, 
-            lastAtk: Date.now() - conf.fireRate, // Permite disparar pronto la primera vez
-            fireOffset: Math.random() * Math.min(2000, conf.fireRate), // Desfase aleatorio asignado al nacer
+            dir: isE ? -1 : 1, state: 'MOVE', inT: -1, targetTrench: isE && Number.isInteger(enemyTargetTrench) ? enemyTargetTrench : null, 
+            lastAtk: Date.now() - fRate, 
+            fireOffset: Math.random() * Math.min(2000, fRate),
+            walkPhase: Math.random() * Math.PI * 2,
+            aimAngle: isE ? Math.PI : 0,
             targetMode: isE ? 'FRONT' : game.baseRally
         });
+        return true;
     }
 
     function executeOrder(type, forcedTrench = -1, forcedSide = 'player') {
-        let targetTrench = forcedTrench !== -1 ? forcedTrench : game.selected;
-        if (targetTrench === -1) return;
-        
-        if (type === 'PREV' && targetTrench === 0 && forcedSide === 'player') {
-            alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa (T1)!");
+        const selectedArea = forcedTrench !== -1
+            ? { kind: 'trench', index: forcedTrench }
+            : (game.selectedArea || (game.selected !== -1 ? { kind: 'trench', index: game.selected } : null));
+        if (!selectedArea) return;
+
+        const isTrenchArea = selectedArea.kind === 'trench';
+        const targetTrench = isTrenchArea ? selectedArea.index : -1;
+        const zone = isTrenchArea ? null : getNoMansLandZones().find(z => z.index === selectedArea.index);
+        if (!isTrenchArea && !zone) return;
+
+        if (isTrenchArea && type === 'PREV' && targetTrench === 0 && forcedSide === 'player') {
+            alert("¡ÓRDENES DEL ALTO MANDO: Prohibido abandonar la primera línea de defensa!");
             return;
         }
 
-        let pool = units.filter(u => u.side === forcedSide && u.inT === targetTrench && (forcedSide === 'enemy' || game.selectedTypes.has(u.type)));
-        
-        if (type === 'NEXT' || type === 'FRONT') { pool = pool.filter(u => !u.broken); }
+        let pool = units.filter(u => {
+            if (u.side !== forcedSide) return false;
+            if (forcedSide !== 'enemy' && !game.selectedTypes.has(u.type)) return false;
+            if (isTrenchArea) return u.inT === targetTrench;
+            return u.inT === -1 && u.x >= zone.x1 && u.x <= zone.x2;
+        });
+
+        if (type === 'NEXT' || type === 'FRONT') pool = pool.filter(u => !u.broken);
         if (type === 'EVAC') pool = pool.filter(u => u.hp < u.maxHp);
-        
-        if (pool.length === 0) return; 
+        if (pool.length === 0) return;
 
-        pool.sort((a, b) => (type === 'PREV' || type === 'EVAC') ? (a.hp/a.maxHp - b.hp/b.maxHp) : (b.hp/b.maxHp - a.hp/a.maxHp));
+        pool.sort((a, b) => (type === 'PREV' || type === 'EVAC') ? (a.hp / a.maxHp - b.hp / b.maxHp) : (b.hp / b.maxHp - a.hp / a.maxHp));
         const count = forcedSide === 'enemy' ? pool.length : Math.ceil(pool.length * game.selectedPct);
-        
-        let tCenter = trenches[targetTrench].x + trenches[targetTrench].w/2;
+        const centerX = isTrenchArea ? (trenches[targetTrench].x + trenches[targetTrench].w / 2) : ((zone.x1 + zone.x2) / 2);
 
-        if (type === 'NEXT' || type === 'FRONT') {
-            playSound('silbato1.mp3', 0.6);
-        }
+        if (type === 'NEXT' || type === 'FRONT') playSound(SOUND_FILES.whistle, 0.6);
 
-        for(let i=0; i<count; i++) {
-            pool[i].state = 'MOVE'; pool[i].inT = -1; 
-            if (type === 'PREV' || type === 'EVAC') { 
-                pool[i].dir = forcedSide === 'player' ? -1 : 1; 
-                pool[i].x = tCenter + (pool[i].dir * 50) - (Math.random() * 15); 
-                pool[i].targetMode = type === 'EVAC' ? 'BASE' : 'PREV'; 
-            } else { 
-                pool[i].dir = forcedSide === 'player' ? 1 : -1; 
-                pool[i].x = tCenter + (pool[i].dir * 50) + (Math.random() * 15); 
-                pool[i].targetMode = type; 
+        for (let i = 0; i < count; i++) {
+            const u = pool[i];
+            u.state = 'MOVE';
+            u.inT = -1;
+            u.targetTrench = null;
+            if (type === 'PREV' || type === 'EVAC') {
+                u.dir = forcedSide === 'player' ? -1 : 1;
+                u.x = centerX + (u.dir * 50) - (Math.random() * 15);
+                u.targetMode = type === 'EVAC' ? 'BASE' : 'PREV';
+            } else {
+                u.dir = forcedSide === 'player' ? 1 : -1;
+                u.x = centerX + (u.dir * 50) + (Math.random() * 15);
+                u.targetMode = type;
             }
         }
     }
 
-    function addAiConsoleLine(text) {
+        function addAiConsoleLine(text) {
         let words = text.split(' ');
         let line = '';
         for(let i=0; i<words.length; i++) {
@@ -903,62 +1747,398 @@
         if (game.aiThoughts.length > 8) game.aiThoughts = game.aiThoughts.slice(game.aiThoughts.length - 8);
     }
 
+    
+function getEnemyAiMemory(i) {
+        if (!game.aiMemory[i]) game.aiMemory[i] = { prevCount: 0, recentLosses: 0, failedUntil: 0, retreatUntil: 0, lastOrder: "", holdUntil: 0 };
+        const m = game.aiMemory[i];
+        m.recentLosses *= 0.78;
+        return m;
+    }
+
+    function getTrenchCenter(i) {
+        const t = trenches[i];
+        return t ? (t.x + t.w / 2) : 0;
+    }
+
+    function getEnemyTrenchAssessment(i) {
+        const now = Date.now();
+        const center = getTrenchCenter(i);
+        const m = getEnemyAiMemory(i);
+        const insideEnemy = units.filter(u => u.side === 'enemy' && u.inT === i);
+        const insidePlayer = units.filter(u => u.side === 'player' && u.inT === i);
+        const nearEnemy = units.filter(u => u.side === 'enemy' && u.inT === -1 && Math.abs(u.x - center) < 230);
+        const nearPlayer = units.filter(u => u.side === 'player' && Math.abs(u.x - center) < 230);
+        const enemyAll = insideEnemy.concat(nearEnemy);
+        const playerAll = insidePlayer.concat(nearPlayer);
+        const healthy = insideEnemy.filter(u => !u.broken && u.hp >= u.maxHp * 0.55);
+        const wounded = insideEnemy.filter(u => u.hp < u.maxHp * 0.45);
+        const broken = insideEnemy.filter(u => u.broken);
+        const support = insideEnemy.filter(u => u.type === 'medic' || u.type === 'officer');
+        const assault = insideEnemy.filter(u => ['grenadier','flamethrower','infantry'].includes(u.type) && !u.broken);
+        const playerHealthy = playerAll.filter(u => !u.broken && u.hp >= u.maxHp * 0.45).length;
+        const playerBroken = playerAll.filter(u => u.broken).length;
+        const enemyPower = healthy.length * 1.3 + support.length * 0.7 + assault.length * 0.9 - wounded.length * 0.35 - broken.length * 0.9;
+        const playerPower = playerHealthy * 1.25 + insidePlayer.length * 0.6 + nearPlayer.length * 0.5 - playerBroken * 0.35;
+        const underAttack = nearPlayer.length > 0 || insidePlayer.length > 0;
+        const targetIndex = Math.max(0, i - 1);
+        const targetCenter = getTrenchCenter(targetIndex);
+        const targetPlayer = units.filter(u => u.side === 'player' && (u.inT === targetIndex || (u.inT === -1 && Math.abs(u.x - targetCenter) < 230)));
+        const targetEnemy = units.filter(u => u.side === 'enemy' && (u.inT === targetIndex || (u.inT === -1 && Math.abs(u.x - targetCenter) < 230)));
+        const targetPressure = targetPlayer.filter(u => !u.broken).length * 1.2 - targetEnemy.filter(u => !u.broken).length * 0.35;
+        const currentCount = insideEnemy.length;
+        if (m.prevCount > currentCount) m.recentLosses += (m.prevCount - currentCount);
+        m.prevCount = currentCount;
+        const targetHealthy = targetPlayer.filter(u => !u.broken);
+        const targetSupports = targetPlayer.filter(u => u.type === 'medic' || u.type === 'officer').length;
+        const targetAssault = targetPlayer.filter(u => ['grenadier','flamethrower','infantry'].includes(u.type) && !u.broken).length;
+        const frontlineBonus = Math.max(0, (trenches.length - 1 - i) * 0.2);
+        const baseThreatBonus = targetIndex === 0 ? 1.35 : 0;
+        const pressureDelta = enemyPower - playerPower;
+        const hardDefense = insidePlayer.length > 0 || playerPower > enemyPower + 1.4;
+        const cautiousHold = underAttack && playerPower > enemyPower * 0.8;
+        return {
+            index: i,
+            center,
+            insideEnemy,
+            insidePlayer,
+            healthyCount: healthy.length,
+            woundedCount: wounded.length,
+            brokenCount: broken.length,
+            supportCount: support.length,
+            assaultCount: assault.length,
+            enemyPower,
+            playerPower,
+            underAttack,
+            targetIndex,
+            targetPressure,
+            targetDefenders: targetPlayer.length,
+            targetHealthyCount: targetHealthy.length,
+            targetSupportCount: targetSupports,
+            targetAssaultCount: targetAssault,
+            reserveNearby: nearEnemy.length,
+            recentLosses: m.recentLosses,
+            failedUntil: m.failedUntil || 0,
+            retreatUntil: m.retreatUntil || 0,
+            holdUntil: m.holdUntil || 0,
+            pushPriority: baseThreatBonus + frontlineBonus + Math.max(0, 1.4 - targetHealthy.length * 0.22),
+            canAssault: now >= (m.failedUntil || 0) && now >= (m.retreatUntil || 0),
+            shouldHold: cautiousHold || now < (m.holdUntil || 0),
+            shouldRetreat: (hardDefense && healthy.length <= 1 && wounded.length >= 2) || (playerPower > enemyPower + 3.2 && healthy.length < 3) || (m.recentLosses >= 3.2 && healthy.length < 3),
+            assaultScore: enemyPower - (targetHealthy.length * 1.05 + targetSupports * 0.4 + targetPressure * 0.35) - (hardDefense ? 1.25 : 0) - (m.recentLosses * 0.24) + frontlineBonus + baseThreatBonus,
+            woundedNeedEvac: wounded.length >= 2 || insideEnemy.some(u => u.hp < u.maxHp * 0.3),
+            pressureDelta,
+            hardDefense
+        };
+    }
+
     function buildGameStateString() {
         let eTroops = units.filter(u => u.side === 'enemy').length;
         let pTroops = units.filter(u => u.side === 'player').length;
-        let s = `MP:${Math.floor(game.eMp)}. Ally Alive:${eTroops}. Enemy Alive:${pTroops}. `;
+        const assessments = trenches.map((_, i) => getEnemyTrenchAssessment(i));
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        const staging = chooseEnemyStagingAssessment(assessments);
+        let s = `MP enemigo:${Math.floor(game.eMp)}. Tropas enemigas vivas:${eTroops}. Tropas jugadoras vivas:${pTroops}. frenteReal:T${frontline}. lineaPreparacion:${staging ? 'T' + staging.index : 'ninguna'}. `;
         trenches.forEach((t, i) => {
-            let inside = units.filter(u => u.inT === i && u.side === 'enemy').length;
-            s += `T${i}(${t.owner.charAt(0).toUpperCase()}):${inside} troops. `;
+            const a = assessments[i];
+            const wave = getEnemyWavePlanForAssessment(a);
+            s += `T${i} dueño:${t.owner}. guarnicion:${a.insideEnemy.length}. sanos:${a.healthyCount}. heridos:${a.woundedCount}. rotos:${a.brokenCount}. presion:${a.playerPower.toFixed(1)}. objetivo:T${a.targetIndex}. defensoresObjetivo:${a.targetDefenders}. bajoAtaque:${a.underAttack ? 'si':'no'}. perdidasRecientes:${a.recentLosses.toFixed(1)}. `;
+            if (wave) s += `oleada:${wave.mode}. preparacion:${wave.readiness.toFixed(2)}. faltanInf:${wave.missing.infantry}. faltanGre:${wave.missing.grenadier}. faltanFla:${wave.missing.flamethrower}. faltanSni:${wave.missing.sniper}. faltanMed:${wave.missing.medic}. faltanOff:${wave.missing.officer}. `;
         });
         return s;
     }
 
-    function simulateSmartAI(stateStr) {
-        let pFront = -1;
-        trenches.forEach((t, i) => { if (t.owner === 'player' || units.some(u=>u.inT===i && u.side==='player')) pFront = Math.max(pFront, i); });
-        
-        let decision = { thought: "", spawn: null, order: null };
-        let rn = Math.random();
-        
-        if (game.eMp < 15) {
-            decision.thought = "Ahorrando recursos para asalto pesado.";
-        } else if (game.eMp >= game.config.officer.cost && rn < 0.1) {
-            decision.thought = "La moral decae. Desplegando Oficial al frente.";
-            decision.spawn = "officer";
-        } else if (game.eMp >= game.config.medic.cost && rn < 0.2) {
-            decision.thought = "Bajas insostenibles. Solicito Sanitario.";
-            decision.spawn = "medic";
-        } else if (game.eMp >= game.config.sniper.cost && rn < 0.4) {
-            decision.thought = "El enemigo se expone en el barro. Francotirador listo.";
-            decision.spawn = "sniper";
-        } else if (game.eMp >= game.config.grenadier.cost && rn < 0.6) {
-            decision.thought = "Trincheras fuertemente defendidas. ¡Granaderos al asalto!";
-            decision.spawn = "grenadier";
-        } else {
-            decision.thought = "Línea debilitada. Enviando infantería básica.";
-            decision.spawn = "infantry";
+    function getEnemyFrontlineIndexFromAssessments(assessments) {
+        const occupied = assessments.filter(a => a.insideEnemy.length > 0).map(a => a.index);
+        return occupied.length ? Math.min(...occupied) : trenches.length - 1;
+    }
+
+    function chooseEnemyStagingAssessment(assessments) {
+        if (!assessments || !assessments.length) return null;
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        const front = assessments.find(a => a.index === frontline) || assessments[0];
+        const rearIdx = Math.min(trenches.length - 1, frontline + 1);
+        const rear = assessments.find(a => a.index === rearIdx) || null;
+        const prev = Number.isInteger(game.aiFrontTrench) ? assessments.find(a => a.index === game.aiFrontTrench) : null;
+        let desiredIdx = frontline;
+
+        if (front && (front.underAttack || front.healthyCount < 3 || front.recentLosses > 1.4) && rear) desiredIdx = rear.index;
+        if (prev && prev.insideEnemy.length >= 2 && !prev.shouldRetreat) {
+            if (prev.index === desiredIdx) desiredIdx = prev.index;
+            else if (prev.index === rearIdx && rear && rear.healthyCount >= 2 && (front.underAttack || front.healthyCount < 4)) desiredIdx = rearIdx;
+            else if (prev.index === frontline && front && !front.shouldRetreat && (!rear || rear.healthyCount < 2)) desiredIdx = frontline;
         }
 
-        if (rn > 0.5) {
-            for(let i = trenches.length-1; i>=0; i--) {
-                let enInT = units.filter(u => u.side === 'enemy' && u.inT === i);
-                if (enInT.length > 3) {
-                    if (rn > 0.8) {
-                        decision.thought += ` ¡T${i} Avanzad a la siguiente línea!`;
-                        decision.order = { trench: i, action: "NEXT" };
-                    } else if (enInT.some(u => u.hp < u.maxHp * 0.4)) {
-                        decision.thought += ` Demasiados heridos en T${i}. Evacuar a la base.`;
-                        decision.order = { trench: i, action: "EVAC" };
+        let chosen = assessments.find(a => a.index === desiredIdx) || front || assessments[0];
+        if (chosen && chosen.shouldRetreat && rear && rear.index !== chosen.index && !rear.shouldRetreat) chosen = rear;
+        game.aiFrontTrench = chosen ? chosen.index : frontline;
+        return chosen;
+    }
+
+    function chooseEnemySpawnTargetTrench(assessments) {
+        const staging = chooseEnemyStagingAssessment(assessments);
+        return staging ? staging.index : Math.max(0, trenches.length - 2);
+    }
+
+    function countUnitsByType(unitList) {
+        const out = { infantry: 0, grenadier: 0, flamethrower: 0, sniper: 0, medic: 0, officer: 0 };
+        unitList.forEach(u => { if (out[u.type] !== undefined) out[u.type]++; });
+        return out;
+    }
+
+    function getEnemyWavePlanForAssessment(a) {
+        if (!a) return null;
+        const stagingCenter = getTrenchCenter(a.index);
+        const targetCenter = getTrenchCenter(a.targetIndex);
+        const stagingUnits = units.filter(u => u.side === 'enemy' && ((u.inT === a.index) || (u.inT === -1 && Math.abs(u.x - stagingCenter) < 240)));
+        const targetUnits = units.filter(u => u.side === 'player' && ((u.inT === a.targetIndex) || (u.inT === -1 && Math.abs(u.x - targetCenter) < 240)));
+        const present = countUnitsByType(stagingUnits);
+        const targetCounts = countUnitsByType(targetUnits);
+        const targetInsideCount = targetUnits.filter(u => u.inT === a.targetIndex).length;
+        const targetHealthyUnits = targetUnits.filter(u => !u.broken && u.hp >= u.maxHp * 0.45);
+        const targetDense = a.targetDefenders >= 5 || targetHealthyUnits.length >= 4 || targetCounts.infantry + targetCounts.grenadier + targetCounts.officer >= 5;
+        const trenchPacked = targetInsideCount >= 3 || a.targetAssaultCount >= 3 || a.targetIndex <= 1;
+        const hostileSupports = targetCounts.medic + targetCounts.officer;
+        const hostileMarksmen = targetCounts.sniper;
+        const frontlineThreat = a.underAttack || a.playerPower > a.enemyPower + 0.55 || a.targetPressure > 1.0;
+        const recentFailure = a.recentLosses >= 1.25 || a.brokenCount >= 2 || a.shouldRetreat;
+        const desired = { infantry: 3, grenadier: 1, flamethrower: 0, sniper: 0, medic: 0, officer: 0 };
+
+        if (targetDense) {
+            desired.grenadier = 2;
+            desired.infantry = 3;
+        }
+        if (a.targetDefenders >= 7 || targetCounts.grenadier >= 2 || targetCounts.officer >= 1) {
+            desired.grenadier = Math.max(desired.grenadier, 3);
+            desired.officer = 1;
+        }
+        if (trenchPacked || targetCounts.flamethrower >= 1 || hostileSupports >= 2) {
+            desired.flamethrower = Math.max(desired.flamethrower, 1);
+        }
+        if ((trenchPacked && targetDense) || a.targetDefenders >= 8) {
+            desired.flamethrower = Math.max(desired.flamethrower, 2);
+        }
+        if (!targetDense && a.targetDefenders <= 2) {
+            desired.infantry = 4;
+            desired.grenadier = Math.max(desired.grenadier, 1);
+        }
+        if (frontlineThreat) {
+            desired.sniper = 1;
+            desired.infantry = Math.max(desired.infantry, 3);
+        }
+        if (frontlineThreat && (a.playerPower > a.enemyPower + 1.2 || hostileMarksmen >= 1)) {
+            desired.sniper = 2;
+        }
+        if (recentFailure || a.woundedNeedEvac || a.woundedCount >= 2 || stagingUnits.some(u => u.hp < u.maxHp * 0.45)) {
+            desired.medic = 1;
+        }
+        if (desired.grenadier >= 2 || desired.flamethrower >= 1 || stagingUnits.length >= 6 || a.recentLosses >= 1.0) {
+            desired.officer = 1;
+        }
+
+        desired.infantry = Math.max(3, Math.min(desired.infantry, 4));
+        desired.grenadier = Math.max(1, Math.min(desired.grenadier, 3));
+        desired.flamethrower = Math.min(desired.flamethrower, 2);
+        desired.sniper = Math.min(desired.sniper, 2);
+        desired.medic = Math.min(desired.medic, 1);
+        desired.officer = Math.min(desired.officer, 1);
+
+        const missing = {};
+        Object.keys(desired).forEach(k => missing[k] = Math.max(0, desired[k] - (present[k] || 0)));
+        const totalDesired = Object.values(desired).reduce((sum, v) => sum + v, 0);
+        const totalReady = Object.keys(desired).reduce((sum, k) => sum + Math.min(desired[k], present[k] || 0), 0);
+        const readiness = totalReady / Math.max(1, totalDesired);
+
+        let mode = 'hold';
+        let priority = ['sniper','grenadier','infantry','officer','flamethrower','medic'];
+        if (recentFailure) {
+            mode = 'recover';
+            priority = ['medic','sniper','officer','grenadier','infantry','flamethrower'];
+        } else if (frontlineThreat && readiness < 0.82) {
+            mode = 'hold';
+            priority = ['sniper','grenadier','infantry','officer','flamethrower','medic'];
+        } else if (targetDense || trenchPacked) {
+            mode = 'breach';
+            priority = ['grenadier','grenadier','flamethrower','infantry','officer','sniper','medic'];
+        } else {
+            mode = 'push';
+            priority = ['grenadier','infantry','flamethrower','officer','sniper','medic'];
+        }
+
+        const canLaunch = readiness >= 0.74 && present.grenadier >= Math.min(2, desired.grenadier) && present.flamethrower >= Math.min(1, desired.flamethrower) && present.infantry >= 3;
+        return {
+            mode,
+            desired,
+            present,
+            missing,
+            readiness,
+            spawnTargetTrench: a.index,
+            priority,
+            canLaunch,
+            targetCounts,
+            frontlineThreat,
+            recentFailure
+        };
+    }
+
+    function chooseEnemySpawnFromAssessments(assessments) {
+        const mp = game.eMp;
+        const cfg = game.config;
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        const staging = chooseEnemyStagingAssessment(assessments);
+        const bestPush = staging || [...assessments]
+            .filter(a => a.index <= frontline + 1)
+            .sort((a, b) => (b.pushPriority + b.assaultScore * 0.55 + (b.index === frontline ? 0.45 : 0)) - (a.pushPriority + a.assaultScore * 0.55 + (a.index === frontline ? 0.45 : 0)))[0] || assessments[0] || null;
+        const defenseHotspot = [...assessments].filter(a => a.underAttack).sort((a,b) => (b.playerPower - b.enemyPower) - (a.playerPower - a.enemyPower))[0];
+        const brokenHotspot = [...assessments].filter(a => a.brokenCount >= 2 || a.recentLosses > 1.8).sort((a,b) => (b.brokenCount + b.recentLosses) - (a.brokenCount + a.recentLosses))[0];
+        const medicalHotspot = [...assessments].filter(a => a.woundedCount >= 2).sort((a,b) => b.woundedCount - a.woundedCount)[0];
+
+        if (bestPush && !bestPush.shouldRetreat) {
+            const wave = getEnemyWavePlanForAssessment(bestPush);
+            if (wave) {
+                for (const type of wave.priority) {
+                    if (wave.missing[type] > 0 && mp >= cfg[type].cost) {
+                        return { type, targetTrench: wave.spawnTargetTrench, mode: wave.mode, readiness: wave.readiness };
                     }
-                    break;
+                }
+                if (wave.readiness < 0.78 && wave.present.infantry < wave.desired.infantry && mp >= cfg.infantry.cost) {
+                    return { type: 'infantry', targetTrench: wave.spawnTargetTrench, mode: wave.mode, readiness: wave.readiness };
+                }
+                if (wave.frontlineThreat && wave.present.sniper < Math.min(1, wave.desired.sniper) && mp >= cfg.sniper.cost) {
+                    return { type: 'sniper', targetTrench: wave.spawnTargetTrench, mode: 'hold', readiness: wave.readiness };
                 }
             }
         }
-        return decision;
+
+        if (defenseHotspot) {
+            if (mp >= cfg.sniper.cost && defenseHotspot.playerPower > defenseHotspot.enemyPower + 0.6) return { type: 'sniper', targetTrench: defenseHotspot.index, mode: 'hold', readiness: 0 };
+            if (mp >= cfg.grenadier.cost && defenseHotspot.healthyCount < 3) return { type: 'grenadier', targetTrench: defenseHotspot.index, mode: 'hold', readiness: 0 };
+            if (mp >= cfg.infantry.cost && defenseHotspot.healthyCount < 4) return { type: 'infantry', targetTrench: defenseHotspot.index, mode: 'hold', readiness: 0 };
+        }
+        if (medicalHotspot && mp >= cfg.medic.cost && medicalHotspot.supportCount < 1) return { type: 'medic', targetTrench: medicalHotspot.index, mode: 'recover', readiness: 0 };
+        if (brokenHotspot && mp >= cfg.officer.cost && brokenHotspot.supportCount < 2) return { type: 'officer', targetTrench: brokenHotspot.index, mode: 'recover', readiness: 0 };
+        if (mp >= cfg.grenadier.cost && bestPush) return { type: 'grenadier', targetTrench: bestPush.index, mode: 'push', readiness: 0 };
+        if (mp >= cfg.infantry.cost) return { type: 'infantry', targetTrench: chooseEnemySpawnTargetTrench(assessments), mode: 'push', readiness: 0 };
+        return null;
     }
 
-    async function evaluateEnemyAIGemini() {
+    function sanitizeEnemyDecision(decision) {
+        if (!decision || typeof decision !== 'object') return { thought: 'Sin decisión válida.', spawn: null, spawnTargetTrench: null, order: null };
+        const assessments = trenches.map((_, i) => getEnemyTrenchAssessment(i));
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        const clean = { thought: String(decision.thought || '').slice(0, 180), spawn: decision.spawn || null, spawnTargetTrench: Number.isInteger(decision.spawnTargetTrench) ? decision.spawnTargetTrench : chooseEnemySpawnTargetTrench(assessments), order: null };
+        const allowedUnits = ['infantry','grenadier','flamethrower','sniper','medic','officer'];
+        if (!allowedUnits.includes(clean.spawn) || game.eMp < game.config[clean.spawn]?.cost) clean.spawn = null;
+        clean.spawnTargetTrench = Math.max(0, Math.min(trenches.length - 1, clean.spawnTargetTrench));
+
+        if (decision.order && Number.isInteger(decision.order.trench) && decision.order.trench >= 0 && decision.order.trench < trenches.length) {
+            const action = String(decision.order.action || '').toUpperCase();
+            const a = assessments[decision.order.trench];
+            if (['NEXT','PREV','EVAC','FRONT'].includes(action)) {
+                if (action === 'NEXT') {
+                    const reservePush = a.index > frontline && !a.underAttack && !a.shouldRetreat && a.healthyCount >= 2 && a.insideEnemy.length >= 2;
+                    const assaultPush = !a.shouldRetreat && a.healthyCount >= 3 && (a.assaultScore > -1.15 || a.targetHealthyCount <= a.healthyCount + 1 || a.index > frontline);
+                    if (reservePush || assaultPush) clean.order = { trench: decision.order.trench, action };
+                } else if (action === 'FRONT') {
+                    const decisivePush = !a.shouldRetreat && a.healthyCount >= 4 && !a.underAttack && (a.assaultScore > -0.85 || a.targetHealthyCount <= a.healthyCount + 1 || a.targetIndex === 0);
+                    if (decisivePush) clean.order = { trench: decision.order.trench, action };
+                } else if (action === 'PREV' && (a.shouldRetreat || (a.hardDefense && a.healthyCount <= 2) || a.recentLosses > 2.8)) clean.order = { trench: decision.order.trench, action };
+                else if (action === 'EVAC' && a.woundedNeedEvac) clean.order = { trench: decision.order.trench, action };
+            }
+        }
+        return clean;
+    }
+
+    function forceEnemyAdvanceFlow() {
+        if (!game.active) return;
+        const assessments = trenches.map((_, i) => getEnemyTrenchAssessment(i));
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        if (!Number.isInteger(frontline)) return;
+
+        for (let i = trenches.length - 1; i > frontline; i--) {
+            const a = assessments[i];
+            if (!a || a.underAttack || a.shouldRetreat) continue;
+            if (a.insideEnemy.length >= 4 || a.healthyCount >= 3) {
+                executeOrder('NEXT', i, 'enemy');
+                return;
+            }
+        }
+
+        const front = assessments[frontline];
+        if (!front || front.underAttack || front.shouldRetreat) return;
+        if (front.healthyCount >= 5 && (front.assaultScore > -1.1 || front.targetHealthyCount <= front.healthyCount + 1)) {
+            executeOrder(front.targetIndex === 0 || front.healthyCount >= 7 ? 'FRONT' : 'NEXT', frontline, 'enemy');
+        }
+    }
+
+function simulateSmartAI(stateStr) {
+        const now = Date.now();
+        const assessments = trenches.map((_, i) => getEnemyTrenchAssessment(i));
+        const frontline = getEnemyFrontlineIndexFromAssessments(assessments);
+        const front = assessments[frontline] || assessments[0];
+        const staging = chooseEnemyStagingAssessment(assessments) || front;
+        const stagingWave = staging ? getEnemyWavePlanForAssessment(staging) : null;
+        let decision = { thought: "", spawn: null, spawnTargetTrench: chooseEnemySpawnTargetTrench(assessments), order: null };
+
+        const crisisRetreat = assessments
+            .filter(a => a.insideEnemy.length > 0 && a.shouldRetreat && (a.playerPower > a.enemyPower + 3 || (a.healthyCount <= 1 && a.woundedCount >= 2)))
+            .sort((a,b) => (b.playerPower - b.enemyPower + b.recentLosses) - (a.playerPower - a.enemyPower + a.recentLosses))[0];
+
+        if (crisisRetreat) {
+            const m = getEnemyAiMemory(crisisRetreat.index);
+            m.retreatUntil = now + 6500;
+            m.holdUntil = now + 3800;
+            decision.thought = `T${crisisRetreat.index} cede terreno para no ser aniquilada.`;
+            decision.order = { trench: crisisRetreat.index, action: crisisRetreat.woundedNeedEvac ? 'EVAC' : 'PREV' };
+        } else {
+            const reserveTransfer = assessments
+                .filter(a => staging && a.index > staging.index && !a.underAttack && !a.shouldRetreat && (a.insideEnemy.length >= 3 || a.healthyCount >= 2))
+                .sort((a,b) => (b.index + b.healthyCount * 0.35 + b.insideEnemy.length * 0.18) - (a.index + a.healthyCount * 0.35 + a.insideEnemy.length * 0.18))[0];
+
+            if (reserveTransfer) {
+                decision.thought = `T${reserveTransfer.index} empuja reservas hacia T${staging.index} para fijar una línea del frente útil.`;
+                decision.order = { trench: reserveTransfer.index, action: 'NEXT' };
+            } else if (staging && stagingWave && !staging.underAttack && !staging.shouldRetreat && staging.index > frontline && stagingWave.canLaunch && staging.healthyCount >= 5) {
+                decision.thought = `T${staging.index} ya ha formado un grupo de asalto y acerca la línea de preparación al frente.`;
+                decision.order = { trench: staging.index, action: 'NEXT' };
+            } else if (staging && stagingWave && !staging.underAttack && !staging.shouldRetreat && stagingWave.canLaunch && staging.healthyCount >= 5) {
+                const action = (staging.targetIndex === 0 || staging.healthyCount >= 7 || staging.assaultScore > 0.15) ? 'FRONT' : 'NEXT';
+                decision.thought = `T${staging.index} lanza un asalto estructurado: granaderos delante, lanzallamas detrás y apoyo para consolidar.`;
+                decision.order = { trench: staging.index, action };
+                const m = getEnemyAiMemory(staging.index);
+                m.failedUntil = now + 2600;
+            } else {
+                const evacCandidate = assessments
+                    .filter(a => a.insideEnemy.length > 0 && a.woundedNeedEvac && a.underAttack && a.woundedCount >= 2)
+                    .sort((a,b) => (b.woundedCount + b.recentLosses) - (a.woundedCount + a.recentLosses))[0];
+                if (evacCandidate && Math.random() > 0.4) {
+                    decision.thought = `T${evacCandidate.index} evacúa heridos y se recompone para seguir avanzando.`;
+                    decision.order = { trench: evacCandidate.index, action: 'EVAC' };
+                } else if (staging && stagingWave && stagingWave.frontlineThreat && stagingWave.present.sniper < Math.min(1, stagingWave.desired.sniper)) {
+                    decision.thought = `T${staging.index} se hace fuerte en el frente y pide francotiradores para repeler ataques mientras prepara el asalto.`;
+                } else if (staging && stagingWave && stagingWave.readiness < 0.74) {
+                    decision.thought = `T${staging.index} aguanta en la línea del frente y sigue montando una fuerza con granaderos, lanzallamas y apoyo antes de atacar.`;
+                } else if (front && front.underAttack) {
+                    decision.thought = `T${front.index} resiste el contacto mientras la oleada enemiga se termina de formar en T${staging ? staging.index : front.index}.`;
+                } else {
+                    decision.thought = `El enemigo concentra tropas en T${staging ? staging.index : frontline} hasta reunir un ataque en condiciones contra la siguiente trinchera rival.`;
+                }
+            }
+        }
+
+        const spawnPlan = chooseEnemySpawnFromAssessments(assessments);
+        if (spawnPlan) {
+            decision.spawn = spawnPlan.type;
+            decision.spawnTargetTrench = Number.isInteger(spawnPlan.targetTrench) ? spawnPlan.targetTrench : decision.spawnTargetTrench;
+            if (!decision.thought) {
+                const stageText = spawnPlan.mode === 'recover' ? 'recomponer la línea' : 'preparar la siguiente oleada de asalto';
+                decision.thought = `Solicitando ${spawnPlan.type} para ${stageText}.`;
+            }
+        }
+        if (staging && decision.spawn && !Number.isInteger(decision.spawnTargetTrench)) decision.spawnTargetTrench = staging.index;
+        return sanitizeEnemyDecision(decision);
+    }
+
+async function evaluateEnemyAIGemini() {
         if (!game.active || game.isAiThinking || !game.useGenAI) return;
 
         let now = Date.now();
@@ -972,8 +2152,8 @@
 
         if (game.geminiKey && game.geminiKey.trim() !== "") {
             try {
-                let prompt = `You are a ruthless WW1 enemy commander. Respond ONLY in strict JSON. State: ${stateStr}. Choose 1 unit to spawn (infantry, grenadier, flamethrower, sniper, medic, officer) if you have enough MP. Choose 1 order (NEXT, PREV, EVAC) for 1 trench if you have troops there. Format: {"thought": "Short military reasoning in Spanish", "spawn": "unit_name_or_null", "order": {"trench": index, "action": "ACTION"} or null}`;
-                
+                let prompt = `Eres el comandante enemigo de una guerra de trincheras. Responde SOLO en JSON estricto. OBJETIVO ESTRATEGICO PRINCIPAL: conquistar la base amiga y empujar el frente hacia ella siempre que no sea suicida. Debes equilibrar ofensiva y supervivencia, pero no puedes quedarte pasivo. REGLAS: 1) Prioriza NEXT o FRONT cuando exista una ventana ofensiva razonable, aunque no sea perfecta. 2) Defiende una trinchera propia solo si está realmente bajo presión o el intercambio sería claramente malo. 3) Usa PREV o EVAC solo para preservar una fuerza que luego deba volver a atacar. 4) Antes de pedir spawn, analiza la siguiente trinchera amiga a asaltar y prepara una oleada útil; no pidas solo infantry por defecto. 5) DOCTRINA DE SPAWN: si la trinchera objetivo está llena de soldados, prioriza grenadier para abrir camino y aguantar, luego flamethrower detrás de los granaderos para limpiar la trinchera, luego officer para sostener el asalto; infantry da masa y ocupación, sniper sirve para repeler ataques mientras se forma el escuadrón en la trinchera del frente, y medic sirve para curar retiradas o recomponer un ataque fallido. 6) Si la oleada todavía no es viable, hazte fuerte en la trinchera del frente y espera allí mientras sigues generando tropas adecuadas. 7) No ordenes NEXT o FRONT desde una trinchera colapsada, pero sí desde una que tenga al menos 3 soldados sanos o una buena oportunidad local. 8) Tu decisión debe ayudar a conquistar la siguiente trinchera amiga y acercarte a su base. 9) Mantén una linea de preparacion enemiga estable: una trinchera de frente activa donde acumular tropas, repeler ataques y esperar a completar la oleada antes de asaltar. 10) No acumules tropas indefinidamente en la primera trinchera enemiga; empuja reservas hacia esa linea de preparacion y haz rotación automática de retaguardia al frente. 11) Si una trinchera enemiga trasera tiene excedente, ordénale NEXT aunque el frente no esté en crisis. 12) Usa spawnTargetTrench para reforzar la trinchera de preparación activa o la trinchera más adelantada si la oleada ya está lista. 13) Spawn permitido: infantry, grenadier, flamethrower, sniper, medic, officer. 14) Orden permitida: NEXT, PREV, EVAC, FRONT para una sola trinchera. Incluye también spawnTargetTrench. ESTADO TACTICO: ${stateStr}. FORMATO EXACTO: {"thought":"razonamiento militar breve en español","spawn":"unit_or_null","spawnTargetTrench":indice_o_null,"order":{"trench":indice,"action":"ACTION"}|null}`;
+
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${game.geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -982,12 +2162,12 @@
                     })
                 });
                 let data = await response.json();
-                let text = data.candidates[0].content.parts[0].text;
+                let text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                let decision = JSON.parse(text);
-                
+                let decision = sanitizeEnemyDecision(JSON.parse(text));
+
                 if (decision.thought) addAiConsoleLine("> " + decision.thought);
-                if (decision.spawn) spawnUnit(decision.spawn, true);
+                if (decision.spawn) spawnUnit(decision.spawn, true, decision.spawnTargetTrench);
                 if (decision.order) executeOrder(decision.order.action, decision.order.trench, 'enemy');
 
             } catch(e) {
@@ -997,7 +2177,7 @@
             setTimeout(() => {
                 let decision = simulateSmartAI(stateStr);
                 if (decision.thought) addAiConsoleLine("> " + decision.thought);
-                if (decision.spawn) spawnUnit(decision.spawn, true);
+                if (decision.spawn) spawnUnit(decision.spawn, true, decision.spawnTargetTrench);
                 if (decision.order) executeOrder(decision.order.action, decision.order.trench, 'enemy');
                 game.isAiThinking = false;
             }, 800);
@@ -1005,12 +2185,12 @@
         }
         game.isAiThinking = false;
     }
-
     setInterval(() => { 
         if(game.active && game.resourceMode === 'infinite' && document.getElementById('options-screen').classList.contains('hidden') && document.getElementById('manual-screen').classList.contains('hidden')) { 
             game.mp += 3; game.eMp += 3; 
         } 
     }, 1000);
+
 
     setInterval(() => {
         if (!game.active || document.getElementById('options-screen').classList.contains('hidden') === false) return;
@@ -1018,36 +2198,34 @@
         if (game.useGenAI) {
             evaluateEnemyAIGemini();
         } else {
-            let infCost = game.config.infantry.cost;
-            let greCost = game.config.grenadier.cost;
-            let flaCost = game.config.flamethrower.cost;
-            let sniCost = game.config.sniper.cost;
-            let medCost = game.config.medic.cost;
-            let offCost = game.config.officer.cost;
-
-            let rn = Math.random();
-            if (game.eMp >= flaCost && rn > 0.85) spawnUnit('flamethrower', true);
-            else if (game.eMp >= offCost && rn > 0.80) spawnUnit('officer', true);
-            else if (game.eMp >= medCost && rn > 0.75) spawnUnit('medic', true);
-            else if (game.eMp >= sniCost && rn > 0.70) spawnUnit('sniper', true);
-            else if (game.eMp >= greCost && rn > 0.60) spawnUnit('grenadier', true);
-            else if (game.eMp >= infCost && rn > 0.2) spawnUnit('infantry', true);
-
-            trenches.forEach((t, i) => {
-                const eIn = units.filter(u => u.side === 'enemy' && u.inT === i && u.state === 'IDLE');
-                eIn.forEach(u => { if (u.hp < u.maxHp * 0.35 && Math.random() > 0.5) { u.state = 'MOVE'; u.inT = -1; u.x += 45; u.dir = 1; u.targetMode = 'BASE'; } });
-                
-                const eHealthy = eIn.filter(u => u.hp >= u.maxHp * 0.4 && !u.broken);
-                if(eHealthy.length >= 4 && Math.random() > 0.6) { 
-                    playSound('silbato1.mp3', 0.6); 
-                    eHealthy.forEach(u => { u.state = 'MOVE'; u.inT = -1; u.x -= 45; u.dir = -1; u.targetMode = 'NEXT'; }); 
-                }
-            });
+            const decision = simulateSmartAI(buildGameStateString());
+            if (decision.thought) addAiConsoleLine("> " + decision.thought);
+            if (decision.spawn) spawnUnit(decision.spawn, true, decision.spawnTargetTrench);
+            if (decision.order) executeOrder(decision.order.action, decision.order.trench, 'enemy');
         }
     }, 2000);
 
+    setInterval(() => {
+        if (game.active) forceEnemyAdvanceFlow();
+    }, 1200);
+
     function update() {
         if(!document.getElementById('options-screen').classList.contains('hidden') || !document.getElementById('manual-screen').classList.contains('hidden')) return; 
+
+        if (game.camTargetX !== null) {
+            const delta = game.camTargetX - game.camX;
+            if (Math.abs(delta) < 2) game.camX = game.camTargetX;
+            else game.camX += delta * 0.18;
+            if (Math.abs(game.camTargetX - game.camX) < 2) game.camTargetX = null;
+        }
+
+        ['infantry', 'grenadier', 'flamethrower', 'sniper', 'medic', 'officer'].forEach(t => {
+            let led = document.getElementById('led-' + t);
+            if (led) {
+                if (game.mp >= game.config[t].cost) led.className = 'led led-on';
+                else led.className = 'led led-off';
+            }
+        });
 
         let playerFront = -1;
         let enemyFront = trenches.length;
@@ -1071,86 +2249,65 @@
 
         explosions.forEach((ex, i) => { ex.r += (ex.maxR - ex.r) * 0.15; ex.life--; if(ex.life <= 0) explosions.splice(i, 1); });
         corpses.forEach((c, i) => { c.life--; if(c.life <= 0) corpses.splice(i, 1); });
-
-        for (let i = bullets.length - 1; i >= 0; i--) {
-            let b = bullets[i];
-            b.x += b.vx; 
-            b.y += b.vy; 
-            b.life--;
+        
+        // 1. FÍSICAS DE CASQUILLOS LARGAS
+        for(let i = shells.length - 1; i >= 0; i--) {
+            let s = shells[i];
+            s.x += s.vx; 
+            s.vy += 0.5; // gravedad
+            s.y += s.vy; 
+            s.rot += s.vrot; // rotacion
             
-            if (b.type === 'fire') b.r += 0.4;
-            let hitSomething = false;
-
-            for (let j = 0; j < units.length; j++) {
-                let u = units[j];
-                if (u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) {
-                    if (b.type !== 'fire' && hitSomething) continue; 
-                    
-                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 4;
-                    if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
-                        
-                        let actualDmg = b.dmg;
-                        let inAnyTrench = false;
-                        
-                        if (u.state !== 'HEAL') {
-                            for (let k = 0; k < trenches.length; k++) {
-                                let t = trenches[k];
-                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) {
-                                    inAnyTrench = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (inAnyTrench) {
-                            if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
-                        }
-                        
-                        u.hp -= actualDmg; 
-                        
-                        if (u.hp <= 0 && b.sourceId !== undefined) {
-                            let shooter = units.find(s => s.id === b.sourceId);
-                            if (shooter) {
-                                shooter.kills++;
-                                let nextRank = shooter.rankIdx + 1;
-                                let maxRankAllowed = (shooter.type === 'officer') ? MAX_OFFICER_RANK : MAX_ENLISTED_RANK;
-
-                                if (nextRank <= maxRankAllowed && nextRank < RANKS.length && shooter.kills >= RANKS[nextRank].kills) {
-                                    let hpDiff = RANKS[nextRank].hpBonus - RANKS[shooter.rankIdx].hpBonus;
-                                    let moralDiff = RANKS[nextRank].moralBonus - RANKS[shooter.rankIdx].moralBonus;
-                                    shooter.rankIdx = nextRank;
-                                    shooter.hp += hpDiff;
-                                    shooter.morale += moralDiff;
-                                }
-                            }
-                        }
-                        
-                        hitSomething = true;
-                        if (b.type !== 'fire') break; 
-                    }
-                }
+            if (s.y > s.groundY) { 
+                s.y = s.groundY; 
+                s.vy = -s.vy * 0.4; // rebote
+                s.vx *= 0.5; // fricción
+                s.vrot *= 0.5;
             }
+            s.life--; 
+            if (s.life <= 0) shells.splice(i, 1);
+        }
 
-            if(hitSomething || b.life <= 0) {
-                if (hitSomething && b.type === 'grenade') {
-                    explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
-                    playSound('granada1.mp3', 0.6); 
-                }
-                if (b.type !== 'fire' || b.life <= 0) {
-                    bullets.splice(i, 1);
-                }
+        for(let i=dyingUnits.length-1; i>=0; i--) {
+            let du = dyingUnits[i];
+            du.deathTimer--;
+            if(du.deathTimer <= 0) {
+                let cLife = game.corpseTime * 60;
+                corpses.push({x: du.x, y: du.y, side: du.side, type: du.type, life: cLife, maxLife: cLife});
+                dyingUnits.splice(i, 1);
             }
         }
 
+        let anyFlamethrowerShooting = false; 
+
         for (let i = units.length - 1; i >= 0; i--) {
-            const u = units[i];
+            let u = units[i];
             
+            if (u.hp <= 0) {
+                if (u.side === 'player') game.pCas++; else game.eCas++;
+                playRandomDeathSound(); 
+                dyingUnits.push({ ...u, deathTimer: 30 });
+                units.splice(i, 1);
+                continue; 
+            }
+
             let rConf = RANKS[u.rankIdx];
             u.maxMoral = game.config[u.type].maxMoral + rConf.moralBonus;
             u.maxHp = game.config[u.type].hp + rConf.hpBonus;
             u.visionRange = game.config[u.type].vision;
             u.weaponRange = game.config[u.type].range;
             u.baseSpeed = game.config[u.type].speed;
+
+            // 3. DAÑO Y PÁNICO EXTREMO DE FUEGO
+            if (u.burnTimer > 0) {
+                u.burnTimer--;
+                u.hp -= 0.15; // Un poco menos de daño para que tenga tiempo de correr
+                u.morale -= 2.0; // Moral cae a 0 instantáneamente
+                
+                if (Math.random() > 0.5) {
+                    explosions.push({x: u.x + (Math.random()*10-5), y: u.y + (Math.random()*10-5), r: 2, maxR: 6, life: 10});
+                }
+            }
             
             if (u.state === 'HEAL') { 
                 u.hp += 0.25; u.morale += (3 / 60); u.morale = Math.min(u.maxMoral, u.morale);
@@ -1253,68 +2410,98 @@
                     }
                 }
             });
-            
-            let isRetreating = (u.side === 'player' && u.dir === -1) || (u.side === 'enemy' && u.dir === 1);
-            let canShoot = target && (minDist <= u.weaponRange) && !u.broken && !isRetreating;
-            
-            let seesTarget = target && (minDist <= u.visionRange);
-            let targetInTrench = target && target.inT !== -1 && target.state === 'IDLE';
-            let stopToShoot = canShoot && !targetInTrench;
 
-            // EVITAR DISPAROS SINCRONIZADOS AL VER UN ENEMIGO POR PRIMERA VEZ
-            let uConf = game.config[u.type];
-            if (!canShoot) {
-                if (Date.now() - u.lastAtk > uConf.fireRate) {
-                    u.lastAtk = Date.now() - uConf.fireRate;
-                }
+            let baseEdgeX = u.side === 'player' ? game.worldW - BASE_W : BASE_W;
+            let distToBase = Math.abs(u.x - baseEdgeX);
+            if (u.broken) {
+                minDist = distToBase;
+                target = { x: baseEdgeX, y: u.y, isBase: true };
+                healTarget = null;
+                moralTarget = null;
+            } else if (distToBase < minDist) {
+                minDist = distToBase;
+                target = { x: baseEdgeX, y: u.y, isBase: true };
+            }
+
+            let forcedRetreat = (u.targetMode === 'PREV' || u.targetMode === 'EVAC');
+            if (forcedRetreat) {
+                target = null;
+                minDist = Infinity;
+                healTarget = null;
+                moralTarget = null;
+            }
+
+            let isRetreating = forcedRetreat || u.broken || (u.side === 'player' && u.dir === -1) || (u.side === 'enemy' && u.dir === 1);
+            let canShoot = target && (minDist <= u.weaponRange) && !u.broken && !isRetreating;
+
+            let seesTarget = !u.broken && !forcedRetreat && target && (minDist <= u.visionRange);
+            let targetInTrench = !u.broken && !forcedRetreat && target && target.inT !== undefined && target.inT !== -1 && target.state === 'IDLE';
+            let stopToShoot = !u.broken && !forcedRetreat && canShoot && !targetInTrench;
+
+            // 4. DIRECCIÓN DE APUNTADO AL HUIR
+            if (u.broken) {
+                u.aimAngle = u.dir === 1 ? 0 : Math.PI;
+            } else if (target) {
+                u.aimAngle = Math.atan2(target.y - u.y, target.x - u.x);
+            } else {
+                u.aimAngle = u.dir === 1 ? 0 : Math.PI;
             }
 
             let dx = 0, dy = 0, isMoving = false;
             let isSupportMove = false;
             let supportTarget = null;
-            
+            let roleMoveTarget = null;
+            let roleMoveStopDist = 0;
+
             if (u.type === 'medic') supportTarget = healTarget;
             if (u.type === 'officer') supportTarget = moralTarget;
 
             if (u.type === 'medic') {
                 if (supportTarget && !u.isRescuing) {
-                    playSound('medico1.mp3', 0.6);
+                    playSound(SOUND_FILES.medic, 0.6);
                     u.isRescuing = true;
-                } else if (!supportTarget) {
-                    u.isRescuing = false;
+                } else if (!supportTarget) { u.isRescuing = false; }
+            }
+
+            if (!u.broken && !forcedRetreat && u.targetMode !== 'BASE' && u.targetMode !== 'PREV' && u.state !== 'HEAL') {
+                if ((u.type === 'medic' || u.type === 'officer') && supportTarget) {
+                    let supportInTrench = supportTarget.inT !== undefined && supportTarget.inT !== -1 && supportTarget.state === 'IDLE';
+                    if (u.inT === -1 || supportInTrench) {
+                        roleMoveTarget = supportTarget;
+                        roleMoveStopDist = game.config[u.type].auraRange * 0.6;
+                    }
+                }
+                if (!roleMoveTarget && u.type === 'flamethrower' && target && minDist <= u.visionRange) {
+                    let enemyInTrench = target.inT !== undefined && target.inT !== -1 && target.state === 'IDLE';
+                    if (u.inT === -1 || enemyInTrench) {
+                        roleMoveTarget = target;
+                        roleMoveStopDist = Math.max(28, u.weaponRange * 0.65);
+                    }
                 }
             }
 
-            if (!u.broken && u.targetMode !== 'BASE' && u.targetMode !== 'PREV' && u.state !== 'HEAL' && supportTarget) {
-                let distToSupp = Math.hypot(supportTarget.x - u.x, supportTarget.y - u.y);
-                let auraR = game.config[u.type].auraRange;
-                
-                if (distToSupp > auraR * 0.6) { 
+            if (roleMoveTarget) {
+                let distToRole = Math.hypot(roleMoveTarget.x - u.x, roleMoveTarget.y - u.y);
+
+                if (distToRole > roleMoveStopDist) { 
                     if (u.inT !== -1 && u.state === 'IDLE') {
-                        let sameTrench = (supportTarget.inT === u.inT && supportTarget.state === 'IDLE');
                         u.state = 'MOVE'; 
                         let tCenter = trenches[u.inT].x + trenches[u.inT].w/2;
+                        let rearDir = u.side === 'player' ? -1 : 1;
                         u.inT = -1; 
-                        
-                        if (!sameTrench) {
-                            let rearDir = u.side === 'player' ? -1 : 1;
-                            u.x = tCenter + (rearDir * 35); 
-                        }
+                        u.x = tCenter + (rearDir * 35);
                     }
-                    let a = Math.atan2(supportTarget.y - u.y, supportTarget.x - u.x);
-                    dx = Math.cos(a) * u.baseSpeed; 
-                    dy = Math.sin(a) * u.baseSpeed; 
-                    isMoving = true;
-                    isSupportMove = true;
+                    let a = Math.atan2(roleMoveTarget.y - u.y, roleMoveTarget.x - u.x);
+                    dx = Math.cos(a) * u.baseSpeed; dy = Math.sin(a) * u.baseSpeed; 
+                    isMoving = true; isSupportMove = true;
                 } else {
-                    isMoving = false;
-                    isSupportMove = true;
+                    isMoving = false; isSupportMove = true;
                 }
             }
 
             if (!isSupportMove) {
                 if (u.inT === -1 && u.state === 'MOVE') {
-                    if (u.targetMode === 'BASE') {
+                    if (u.targetMode === 'BASE' || forcedRetreat) {
                         if (!canShoot) { dx = u.baseSpeed * u.dir; isMoving = true; }
                     } else if (seesTarget && !stopToShoot && !targetInTrench) {
                         let a = Math.atan2(target.y - u.y, target.x - u.x);
@@ -1327,44 +2514,43 @@
 
             if (isMoving) {
                 obstacles.forEach(ob => {
-                    let dxOb = ob.x - u.x;
-                    let dyOb = ob.y - u.y;
-                    let dist = Math.hypot(dxOb, dyOb);
+                    let dxOb = ob.x - u.x; let dyOb = ob.y - u.y; let dist = Math.hypot(dxOb, dyOb);
                     if (dist < ob.r + u.radius + 5) {
-                        if ((u.dir === 1 && dxOb > 0) || (u.dir === -1 && dxOb < 0)) {
-                            dy += (dyOb > 0 ? -1 : 1) * u.baseSpeed * 2.0; 
-                            dx *= 0.3; 
-                        }
+                        if ((u.dir === 1 && dxOb > 0) || (u.dir === -1 && dxOb < 0)) { dy += (dyOb > 0 ? -1 : 1) * u.baseSpeed * 2.0; dx *= 0.3; }
                     }
                 });
 
                 let moveMag = Math.hypot(dx, dy);
-                if (moveMag > u.baseSpeed * 1.5) {
-                    dx = (dx / moveMag) * u.baseSpeed;
-                    dy = (dy / moveMag) * u.baseSpeed;
-                }
+                if (moveMag > u.baseSpeed * 1.5) { dx = (dx / moveMag) * u.baseSpeed; dy = (dy / moveMag) * u.baseSpeed; }
 
                 let nextX = u.x + dx; let blocked = false;
-                if (nextX <= BASE_W + 20 && u.side === 'player' && u.dir === -1) { if (u.targetMode === 'BASE' || u.targetMode === 'EVAC' || u.targetMode === 'PREV') { u.state = 'HEAL'; blocked = true; } else { u.state = 'IDLE'; u.dir = 1; blocked = true; } }
-                if (nextX >= game.worldW - BASE_W - 20 && u.side === 'enemy' && u.dir === 1) { if (u.targetMode === 'BASE' || u.targetMode === 'EVAC' || u.targetMode === 'PREV') { u.state = 'HEAL'; blocked = true; } else { u.state = 'IDLE'; u.dir = -1; blocked = true; } }
+                
+                if (nextX <= BASE_W && u.side === 'player' && u.dir === -1) { 
+                    if (u.targetMode === 'BASE' || u.targetMode === 'EVAC' || u.targetMode === 'PREV') { u.state = 'HEAL'; blocked = true; } 
+                    else { u.state = 'IDLE'; u.dir = 1; blocked = true; } 
+                }
+                if (nextX >= game.worldW - BASE_W && u.side === 'enemy' && u.dir === 1) { 
+                    if (u.targetMode === 'BASE' || u.targetMode === 'EVAC' || u.targetMode === 'PREV') { u.state = 'HEAL'; blocked = true; } 
+                    else { u.state = 'IDLE'; u.dir = -1; blocked = true; } 
+                }
+
+                if (u.side === 'player' && nextX >= game.worldW - BASE_W - u.radius) { blocked = true; }
+                if (u.side === 'enemy' && nextX <= BASE_W + u.radius) { blocked = true; }
 
                 if(!blocked) {
                     trenches.forEach((t, idx) => {
                         if (Math.abs(nextX - (t.x + t.w/2)) < 15) {
                             let eInT = units.filter(en => en.side !== u.side && en.inT === idx).length;
-                            if(eInT > 0) { 
-                                blocked = true; 
-                            } else if (!isSupportMove) { 
+                            if(eInT > 0) { blocked = true; } else if (!isSupportMove) { 
                                 if (u.side === 'player' && u.dir === 1) { 
                                     if (u.targetMode === 'NEXT' || (u.targetMode === 'FIRST' && t.owner !== 'enemy')) { u.state = 'IDLE'; u.inT = idx; blocked = true; } 
-                                    else if (u.targetMode === 'FRONT') {
-                                        if (idx >= playerFront) { u.state = 'IDLE'; u.inT = idx; blocked = true; }
-                                    }
+                                    else if (u.targetMode === 'FRONT') { if (idx >= playerFront) { u.state = 'IDLE'; u.inT = idx; blocked = true; } }
                                 }
                                 else if (u.side === 'enemy' && u.dir === -1) {
-                                    if (u.targetMode === 'NEXT') { u.state = 'IDLE'; u.inT = idx; blocked = true; }
+                                    if (u.targetMode === 'NEXT') { u.state = 'IDLE'; u.inT = idx; u.targetTrench = null; blocked = true; }
                                     else if (u.targetMode === 'FRONT') {
-                                        if (idx <= enemyFront) { u.state = 'IDLE'; u.inT = idx; blocked = true; }
+                                        const desiredIdx = Number.isInteger(u.targetTrench) ? u.targetTrench : enemyFront;
+                                        if (idx <= desiredIdx) { u.state = 'IDLE'; u.inT = idx; u.targetTrench = null; blocked = true; }
                                     }
                                 }
                                 else if ((u.side === 'player' && u.dir === -1 && u.targetMode === 'PREV') || (u.side === 'enemy' && u.dir === 1 && u.targetMode === 'PREV')) {
@@ -1377,59 +2563,174 @@
                 if(!blocked) { u.x += dx; u.y += dy; u.y = Math.min(Math.max(u.y, HORIZON_Y + 20), canvas.height - 20); }
             }
 
-            if (u.inT !== -1) { 
-                let t = trenches[u.inT]; 
-                let enemiesAlive = units.filter(en => en.side !== u.side && en.inT === u.inT).length;
-                
-                if (enemiesAlive === 0) {
-                    t.owner = u.side;
-                    t.progress = u.side === 'player' ? 20 : -20;
-                } else {
-                    t.progress += (u.side === 'player' ? 0.05 : -0.05); 
-                    if (t.progress >= 20) { t.owner = 'player'; t.progress = 20; }
-                    if (t.progress <= -20) { t.owner = 'enemy'; t.progress = -20; }
-                }
-            }
-
-            if(canShoot && Date.now() - u.lastAtk > (uConf.fireRate + (u.fireOffset || 0))) {
-                u.lastAtk = Date.now(); 
-                u.fireOffset = Math.random() * Math.min(2000, uConf.fireRate); // Recalcular desfase para el siguiente disparo
-                
-                let a = Math.atan2(target.y - u.y, target.x - u.x);
-                let gunTipX = u.x + Math.cos(a) * 15;
-                let gunTipY = u.y + Math.sin(a) * 15;
-                
-                if (u.type === 'flamethrower') {
-                    playSound('lanzallamas1.mp3', 0.3);
-                    let spread = (Math.random() - 0.5) * 0.4; 
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a + spread)*6, vy: Math.sin(a + spread)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
-                } else if (u.type === 'grenadier') {
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*6, vy: Math.sin(a)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'grenade', color: '#222' });
-                } else if (u.type === 'sniper') {
-                    playSound('francotirador1.mp3', 0.6);
-                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 8, life: 5}); 
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
-                } else if (u.type === 'officer' || u.type === 'medic') {
-                    playSound('pistola1.mp3', 0.4);
-                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 5, life: 3}); 
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*14, vy: Math.sin(a)*14, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'bullet', color: '#ffffbb' }); 
-                } else {
-                    playSound('rifle1.mp3', 0.25);
-                    explosions.push({x: gunTipX, y: gunTipY, r: 1, maxR: 6, life: 4}); 
-                    bullets.push({ x: u.x, y: u.y, vx: Math.cos(a)*15, vy: Math.sin(a)*15, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'bullet', color: '#ffffbb' });
-                }
-                u.dir = (target.x > u.x) ? 1 : -1;
-            }
-
-            if (u.x > game.worldW - BASE_W + 20) { game.eHp -= 10; u.hp = 0; }
-            if (u.x < BASE_W - 20 && u.side === 'enemy') { game.pHp -= 10; u.hp = 0; }
+            let uConf = game.config[u.type];
+            let fRate = Number(uConf.fireRate);
+            if (isNaN(fRate) || fRate <= 0) fRate = DEFAULT_CONFIG[u.type].fireRate;
             
-            if (u.hp <= 0) {
-                if (u.side === 'player') game.pCas++; else game.eCas++;
-                let cLife = game.corpseTime * 60; 
-                corpses.push({x: u.x, y: u.y, side: u.side, type: u.type, life: cLife, maxLife: cLife}); 
-                playSound('muerte1.mp3', 0.4); 
-                units.splice(i, 1);
+            let actuallyShooting = false;
+
+            if (u.type === 'flamethrower' && canShoot) {
+                u.forceFireTimer = 60; 
+            }
+
+            if (u.type === 'flamethrower' && u.forceFireTimer > 0) {
+                u.forceFireTimer--;
+                actuallyShooting = true;
+            } else if (canShoot) {
+                actuallyShooting = true;
+            }
+
+            if (!actuallyShooting) {
+                if (Date.now() - u.lastAtk > fRate) { u.lastAtk = Date.now() - fRate; }
+            }
+
+            let uOffset = u.fireOffset || 0;
+            if (isNaN(uOffset)) uOffset = 0;
+
+            if(actuallyShooting && Date.now() - u.lastAtk > (fRate + uOffset)) {
+                u.lastAtk = Date.now(); 
+                u.fireOffset = Math.random() * Math.min(2000, fRate); 
+                
+                let a = u.aimAngle;
+                let wLen = u.type === 'sniper' ? 40 : (u.type === 'flamethrower' ? 24 : 16);
+                
+                // 1. CASQUILLOS LARGOS Y FÍSICOS
+                if (u.type !== 'flamethrower') {
+                    let shellA = a + (Math.PI/2) * (u.dir === 1 ? -1 : 1) + (Math.random()*0.5 - 0.25);
+                    shells.push({ 
+                        x: u.x, y: u.y, 
+                        vx: Math.cos(shellA) * (2 + Math.random()*2), 
+                        vy: -2 - Math.random()*2, 
+                        life: 300, 
+                        groundY: u.y + 10 + Math.random()*10,
+                        rot: Math.random()*Math.PI*2,
+                        vrot: (Math.random()-0.5)*0.5
+                    });
+                }
+
+                let gunTipX = u.x + Math.cos(a) * wLen;
+                let gunTipY = u.y + Math.sin(a) * wLen;
+
+                if (u.type === 'flamethrower') {
+                    anyFlamethrowerShooting = true;
+                    let spread = (Math.random() - 0.5) * 0.4; 
+                    bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a + spread)*6, vy: Math.sin(a + spread)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'fire', color: Math.random() > 0.5 ? '#ff4500' : '#ffaa00', r: 3 });
+                } else if (u.type === 'grenadier') {
+                    bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*6, vy: Math.sin(a)*6, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'grenade', color: '#222' });
+                } else if (u.type === 'sniper') {
+                    playSound(SOUND_FILES.sniper, 0.6);
+                    bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*22, vy: Math.sin(a)*22, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 60, type: 'bullet', color: '#ffffff' });
+                } else if (u.type === 'officer' || u.type === 'medic') {
+                    playSound(SOUND_FILES.pistol, 0.4);
+                    bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*14, vy: Math.sin(a)*14, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 30, type: 'bullet', color: '#ffffbb' }); 
+                } else {
+                    playSound(SOUND_FILES.rifle, 0.25);
+                    bullets.push({ x: gunTipX, y: gunTipY, vx: Math.cos(a)*15, vy: Math.sin(a)*15, side: u.side, sourceType: u.type, sourceId: u.id, dmg: uConf.dmg, life: 50, type: 'bullet', color: '#ffffbb' });
+                }
+                
+                u.dir = (Math.abs(a) < Math.PI/2) ? 1 : -1;
+            }
+        }
+
+        if (anyFlamethrowerShooting && game.effectsEnabled) {
+            if (flamerAudio.paused) {
+                flamerAudio.play().catch(()=>{
+                    const fallback = buildAudioCandidates(SOUND_FILES.flamethrower)[1];
+                    if (fallback && flamerAudio.src !== fallback) {
+                        flamerAudio.src = fallback;
+                        try { flamerAudio.load(); } catch (e) {}
+                        flamerAudio.play().catch(()=>{});
+                    }
+                });
+            }
+        } else {
+            if (!flamerAudio.paused) {
+                flamerAudio.pause();
+                flamerAudio.currentTime = 0;
+            }
+        }
+
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx; 
+            b.y += b.vy; 
+            b.life--;
+            
+            if (b.type === 'fire') b.r += 0.4;
+            let hitSomething = false;
+
+            if (b.side === 'player' && b.x >= game.worldW - BASE_W) {
+                game.eHp -= b.dmg / 40; 
+                hitSomething = true;
+            } else if (b.side === 'enemy' && b.x <= BASE_W) {
+                game.pHp -= b.dmg / 40;
+                hitSomething = true;
+            }
+
+            for (let j = 0; j < units.length; j++) {
+                let u = units[j];
+                if (u.side !== b.side && u.state !== 'HEAL' && u.hp > 0) {
+                    if (b.type !== 'fire' && hitSomething) continue; 
+                    
+                    let hitRadius = b.type === 'fire' ? u.radius + b.r : u.radius + 4;
+                    if (Math.hypot(b.x - u.x, b.y - u.y) < hitRadius) { 
+                        
+                        let actualDmg = b.dmg;
+                        let inAnyTrench = false;
+                        
+                        if (u.state !== 'HEAL') {
+                            for (let k = 0; k < trenches.length; k++) {
+                                let t = trenches[k];
+                                if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) {
+                                    inAnyTrench = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (inAnyTrench) {
+                            if (game.trenchDmg[b.sourceType] !== undefined) actualDmg = game.trenchDmg[b.sourceType];
+                        }
+                        
+                        u.hp -= actualDmg; 
+                        
+                        if (b.type === 'fire') {
+                            u.burnTimer = 180; 
+                        }
+                        
+                        if (u.hp <= 0 && b.sourceId !== undefined) {
+                            let shooter = units.find(s => s.id === b.sourceId);
+                            if (shooter) {
+                                shooter.kills++;
+                                let nextRank = shooter.rankIdx + 1;
+                                let maxRankAllowed = (shooter.type === 'officer') ? MAX_OFFICER_RANK : MAX_ENLISTED_RANK;
+
+                                if (nextRank <= maxRankAllowed && nextRank < RANKS.length && shooter.kills >= RANKS[nextRank].kills) {
+                                    let hpDiff = RANKS[nextRank].hpBonus - RANKS[shooter.rankIdx].hpBonus;
+                                    let moralDiff = RANKS[nextRank].moralBonus - RANKS[shooter.rankIdx].moralBonus;
+                                    shooter.rankIdx = nextRank;
+                                    shooter.hp += hpDiff;
+                                    shooter.morale += moralDiff;
+                                }
+                            }
+                        }
+                        
+                        hitSomething = true;
+                        if (b.type !== 'fire') break; 
+                    }
+                }
+            }
+
+            if(hitSomething || b.life <= 0) {
+                if (hitSomething && b.type === 'grenade') {
+                    explosions.push({x: b.x, y: b.y, r: 5, maxR: 35, life: 15});
+                    playSound(SOUND_FILES.grenade, 0.6); 
+                } else if (hitSomething && b.type !== 'fire') {
+                    explosions.push({x: b.x, y: b.y, r: 1, maxR: 8, life: 5}); 
+                }
+                if (b.type !== 'fire' || b.life <= 0) {
+                    bullets.splice(i, 1);
+                }
             }
         }
 
@@ -1442,7 +2743,12 @@
                 if (grp.length === 0) return;
 
                 let tCenter = trenches[i].x + trenches[i].w/2;
-                grp.sort((a,b) => Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter));
+
+                grp.sort((a,b) => {
+                    let dy = a.y - b.y;
+                    if (Math.abs(dy) > 2) return dy;
+                    return Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter);
+                });
 
                 let padY = 30; 
                 let availableH = canvas.height - HORIZON_Y - (padY * 2);
@@ -1452,110 +2758,221 @@
                 let maxRows = Math.floor(availableH / minSafeSpacing);
                 if(maxRows < 1) maxRows = 1;
 
-                let chunkedCols = [];
-                for(let k=0; k<grp.length; k+=maxRows) {
-                    let chunk = grp.slice(k, k+maxRows);
-                    chunk.sort((a,b) => a.y - b.y); 
-                    chunkedCols.push(chunk);
+                let numCols = Math.ceil(grp.length / maxRows);
+                let slots = [];
+
+                for (let c = 0; c < numCols; c++) {
+                    let isLastCol = (c === numCols - 1);
+                    let itemsInCol = isLastCol ? (grp.length - c * maxRows) : maxRows;
+                    if (itemsInCol <= 0) continue; 
+                    
+                    let dynamicSpacing = itemsInCol > 1 ? (availableH / (itemsInCol - 1)) : 0;
+                    if (dynamicSpacing > 120) dynamicSpacing = 120;
+                    let startY = centerY - ((itemsInCol - 1) * dynamicSpacing) / 2;
+
+                    let offset = c === 0 ? 0 : (40 + c * 32);
+                    let targetX = tCenter + (offset * (side === 'player' ? -1 : 1));
+
+                    for (let r = 0; r < itemsInCol; r++) {
+                        slots.push({ x: targetX, y: startY + r * dynamicSpacing });
+                    }
                 }
 
-                chunkedCols.forEach((chunk, colIndex) => {
-                    let N = chunk.length;
-                    let dynamicSpacing = N > 1 ? (availableH / (N - 1)) : 0;
-                    if (dynamicSpacing > 120) dynamicSpacing = 120;
-
-                    let startY = centerY - ((N - 1) * dynamicSpacing) / 2;
-
-                    chunk.forEach((u, row) => {
-                        let offset = colIndex === 0 ? 0 : (40 + colIndex * 32);
-                        let targetX = tCenter + (offset * (side === 'player' ? -1 : 1));
-                        let targetY = startY + row * dynamicSpacing;
-
-                        u.x += (targetX - u.x) * 0.15; 
-                        u.y += (targetY - u.y) * 0.15;
-                    });
+                slots.sort((a,b) => {
+                    let dy = a.y - b.y;
+                    if (Math.abs(dy) > 2) return dy;
+                    return Math.abs(a.x - tCenter) - Math.abs(b.x - tCenter);
                 });
+
+                for (let k = 0; k < grp.length; k++) {
+                    let u = grp[k];
+                    let s = slots[k];
+                    u.x += (s.x - u.x) * 0.15; 
+                    u.y += (s.y - u.y) * 0.15;
+                }
             });
         }
 
         document.getElementById('res-disp').innerText = "MP: " + Math.floor(game.mp);
-        document.getElementById('p-hp').style.width = game.pHp + "%";
-        document.getElementById('e-hp').style.width = game.eHp + "%";
+        document.getElementById('p-hp').style.width = Math.max(0, game.pHp) + "%";
+        document.getElementById('e-hp').style.width = Math.max(0, game.eHp) + "%";
         document.getElementById('p-cas').innerText = game.pCas;
         document.getElementById('e-cas').innerText = game.eCas;
 
-        if(game.pHp <= 0 || game.eHp <= 0) { game.active = false; alert(game.pHp > 0 ? "¡VICTORIA!" : "DERROTA"); location.reload(); }
+        if(game.pHp <= 0 || game.eHp <= 0) { 
+            showEndScreen(game.pHp > 0); 
+        }
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let grad = ctx.createLinearGradient(0,0,0, HORIZON_Y); grad.addColorStop(0, '#2b3036'); grad.addColorStop(1, '#5a6268');
+        
+        let grad = ctx.createLinearGradient(0,0,0, HORIZON_Y); 
+        grad.addColorStop(0, '#1a1c20'); grad.addColorStop(1, '#4a4e54');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, HORIZON_Y);
+
+        ctx.fillStyle = '#2a2d34';
+        game.pxMountains.forEach(m => {
+            let px = (m.x - game.camX * 0.1) % game.worldW; if(px < -m.w) px += game.worldW;
+            ctx.beginPath(); ctx.moveTo(px, HORIZON_Y); ctx.lineTo(px + m.w/2, HORIZON_Y - m.h); ctx.lineTo(px + m.w, HORIZON_Y); ctx.fill();
+        });
+
+        ctx.fillStyle = '#1c1e22';
+        game.pxMid.forEach(m => {
+            let px = (m.x - game.camX * 0.3) % game.worldW; if(px < -20) px += game.worldW;
+            if (m.type === 'tree') {
+                ctx.fillRect(px, HORIZON_Y - m.h, 4, m.h);
+                ctx.beginPath(); ctx.moveTo(px+2, HORIZON_Y-m.h); ctx.lineTo(px+10, HORIZON_Y-m.h-10); ctx.stroke();
+            } else { ctx.fillRect(px, HORIZON_Y - m.h, 20, m.h); ctx.fillRect(px+5, HORIZON_Y - m.h - 10, 10, 10); }
+        });
 
         ctx.save(); ctx.translate(-game.camX, 0);
 
         ctx.fillStyle = '#4e342e'; ctx.fillRect(0, HORIZON_Y, game.worldW, canvas.height - HORIZON_Y);
         
-        craters.forEach(c => { ctx.fillStyle = c.color; ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r, c.r*0.5, 0, 0, Math.PI*2); ctx.fill(); });
+        game.mudPatches.forEach(p => {
+            ctx.fillStyle = p.c; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r, p.r*0.5, 0, 0, Math.PI*2); ctx.fill();
+        });
+
+        craters.forEach(c => { 
+            ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.ellipse(c.x, c.y+2, c.r+4, (c.r+4)*0.5, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#271915'; ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r, c.r*0.5, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#1a100d'; ctx.beginPath(); ctx.ellipse(c.x, c.y+c.r*0.2, c.r*0.8, c.r*0.4, 0, 0, Math.PI*2); ctx.fill();
+        });
+
+        if (game.selectedArea && game.selectedArea.kind === 'nml') {
+            const zone = getNoMansLandZones().find(z => z.index === game.selectedArea.index);
+            if (zone) {
+                ctx.fillStyle = 'rgba(255,204,0,0.08)';
+                ctx.fillRect(zone.x1, HORIZON_Y - 4, zone.x2 - zone.x1, canvas.height - HORIZON_Y + 4);
+                ctx.strokeStyle = 'rgba(255,204,0,0.6)';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(zone.x1 + 6, HORIZON_Y - 10, Math.max(0, zone.x2 - zone.x1 - 12), canvas.height);
+            }
+        }
+
+        trenches.forEach((t, i) => {
+            ctx.fillStyle = '#221511'; ctx.fillRect(t.x, HORIZON_Y, t.w, canvas.height);
+            ctx.fillStyle = '#3e2723'; 
+            for(let y = HORIZON_Y + 10; y < canvas.height; y+=25) { 
+                ctx.fillRect(t.x + 5, y, t.w - 10, 15); ctx.fillStyle = '#1a110a'; ctx.fillRect(t.x + 5, y+15, t.w-10, 3); ctx.fillStyle = '#3e2723'; 
+            }
+            let tGrad = ctx.createLinearGradient(t.x, 0, t.x+15, 0); 
+            tGrad.addColorStop(0, 'rgba(0,0,0,0.8)'); tGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = tGrad; ctx.fillRect(t.x, HORIZON_Y, 15, canvas.height);
+
+            let sbColor = t.owner === 'player' ? '#556b2f' : (t.owner === 'enemy' ? '#8b0000' : '#555555');
+            for(let y = HORIZON_Y; y < canvas.height; y+=14) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.beginPath(); ctx.ellipse(t.x - 2, y + 4, 8, 12, 0, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(t.x + t.w + 8, y + 4, 8, 12, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = sbColor; ctx.beginPath(); ctx.ellipse(t.x - 5, y, 8, 12, 0, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = sbColor; ctx.beginPath(); ctx.ellipse(t.x + t.w + 5, y, 8, 12, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            }
+            if(game.selected === i) { ctx.strokeStyle = 'rgba(255,204,0,0.6)'; ctx.lineWidth = 4; ctx.strokeRect(t.x - 15, HORIZON_Y - 10, t.w + 30, canvas.height); }
+        });
 
         obstacles.forEach(ob => {
-            ctx.save();
-            ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
-            ctx.shadowBlur = 4; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 4;
-            
             if (ob.type === 'hedgehog') {
-                ctx.strokeStyle = '#8a939e'; ctx.lineWidth = 4; ctx.lineCap = 'square';
-                ctx.beginPath();
-                ctx.moveTo(ob.x - 12, ob.y - 12); ctx.lineTo(ob.x + 12, ob.y + 12);
-                ctx.moveTo(ob.x + 12, ob.y - 12); ctx.lineTo(ob.x - 12, ob.y + 12);
-                ctx.moveTo(ob.x, ob.y - 16); ctx.lineTo(ob.x, ob.y + 16);
-                ctx.stroke();
-                
-                ctx.strokeStyle = '#4a4a4a'; ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(ob.x - 12, ob.y - 12); ctx.lineTo(ob.x + 12, ob.y + 12);
-                ctx.stroke();
+                ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(ob.x - 10 + 6, ob.y - 10 + 6); ctx.lineTo(ob.x + 14 + 6, ob.y + 14 + 6); ctx.stroke();
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 5; ctx.lineCap = 'square';
+                ctx.beginPath(); ctx.moveTo(ob.x - 12, ob.y - 12); ctx.lineTo(ob.x + 12, ob.y + 12); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(ob.x + 12, ob.y - 12); ctx.lineTo(ob.x - 12, ob.y + 12); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(ob.x, ob.y - 16); ctx.lineTo(ob.x, ob.y + 16); ctx.stroke();
+                ctx.strokeStyle = '#8a939e'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ob.x - 12, ob.y - 12); ctx.lineTo(ob.x + 12, ob.y + 12); ctx.stroke();
             } else {
-                ctx.fillStyle = '#4e3b2b'; 
-                ctx.fillRect(ob.x - 3, ob.y - ob.r - 4, 6, 8); 
-                ctx.fillRect(ob.x - 3, ob.y + ob.r - 4, 6, 8); 
-                
-                ctx.strokeStyle = '#6e757c'; ctx.lineWidth = 1.5; ctx.beginPath();
-                ctx.moveTo(ob.x, ob.y - ob.r);
-                for (let wy = -ob.r; wy <= ob.r; wy += 4) {
-                    let wx = ob.x + (Math.sin(wy * 1.5) * 8) + (Math.random() * 4 - 2);
-                    ctx.lineTo(wx, ob.y + wy);
-                }
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(ob.x, ob.y - ob.r);
-                for (let wy = -ob.r; wy <= ob.r; wy += 5) {
-                    let wx = ob.x - (Math.sin(wy * 1.2) * 8) + (Math.random() * 4 - 2);
-                    ctx.lineTo(wx, ob.y + wy);
-                }
-                ctx.stroke();
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(ob.x + 2, ob.y - ob.r - 8, 4, 15); ctx.fillRect(ob.x + 2, ob.y + ob.r - 8, 4, 15); 
+                ctx.fillStyle = '#3e2723'; ctx.fillRect(ob.x - 4, ob.y - ob.r - 12, 5, 18); ctx.fillRect(ob.x - 4, ob.y + ob.r - 12, 5, 18); 
+                ctx.fillStyle = '#5d4037'; ctx.fillRect(ob.x - 4, ob.y - ob.r - 12, 5, 2); ctx.fillRect(ob.x - 4, ob.y + ob.r - 12, 5, 2);
+                ctx.strokeStyle = '#6e757c'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ob.x, ob.y - ob.r - 5);
+                for (let wy = -ob.r; wy <= ob.r; wy += 4) { let wx = ob.x + (Math.sin(wy * 1.5) * 8) + (Math.random() * 4 - 2); ctx.lineTo(wx, ob.y + wy - 5); } ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(ob.x, ob.y - ob.r - 5);
+                for (let wy = -ob.r; wy <= ob.r; wy += 5) { let wx = ob.x - (Math.sin(wy * 1.2) * 8) + (Math.random() * 4 - 2); ctx.lineTo(wx, ob.y + wy - 5); } ctx.stroke();
             }
-            ctx.restore();
         });
 
         const drawBase = (x, isP) => {
-            ctx.fillStyle = '#555'; ctx.fillRect(x, HORIZON_Y - 30, BASE_W, canvas.height);
-            ctx.fillStyle = '#444'; ctx.fillRect(x + (isP ? BASE_W-20 : 0), HORIZON_Y - 30, 20, canvas.height);
-            ctx.fillStyle = '#aa3333';
-            if(isP) { ctx.fillRect(x + 20, HORIZON_Y + 10, 30, 10); ctx.fillRect(x + 30, HORIZON_Y, 10, 30); }
-            else { ctx.fillRect(x + BASE_W - 50, HORIZON_Y + 10, 30, 10); ctx.fillRect(x + BASE_W - 40, HORIZON_Y, 10, 30); }
-            ctx.fillStyle = '#777'; ctx.fillRect(x + (isP ? 40 : BASE_W-40), HORIZON_Y - 80, 4, 50);
-            ctx.fillStyle = isP ? '#4caf50' : '#f44336'; ctx.fillRect(x + (isP ? 44 : BASE_W-70), HORIZON_Y - 80, 30, 20);
+            let h = canvas.height - HORIZON_Y;
+            
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(isP ? x : x - 15, HORIZON_Y, BASE_W + 15, h);
+
+            ctx.fillStyle = '#4a4d4a'; 
+            ctx.fillRect(x, HORIZON_Y, BASE_W, h);
+            
+            ctx.fillStyle = '#3a3d3a';
+            for(let i=HORIZON_Y; i<canvas.height; i+=40) {
+                ctx.fillRect(x, i, BASE_W, 2);
+            }
+
+            ctx.fillStyle = '#555855';
+            ctx.fillRect(x, HORIZON_Y - 40, BASE_W, 40);
+            ctx.strokeStyle = '#222'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(x, HORIZON_Y); ctx.lineTo(x, HORIZON_Y-40); ctx.lineTo(x+BASE_W, HORIZON_Y-40); ctx.lineTo(x+BASE_W, HORIZON_Y); ctx.stroke();
+
+            let numDoors = 5;
+            let spacing = h / numDoors;
+            for(let i=0; i<numDoors; i++) {
+                let cy = HORIZON_Y + i*spacing + spacing/2;
+                let dx = isP ? x + BASE_W - 25 : x + 5;
+                
+                ctx.strokeStyle = '#2a2d2a';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(dx-3, cy - 23, 26, 46);
+                
+                ctx.fillStyle = '#111';
+                ctx.fillRect(dx, cy - 20, 20, 40);
+                
+                ctx.fillStyle = '#000';
+                ctx.fillRect(isP ? dx : dx + 15, cy - 20, 5, 40); 
+            }
+
+            let stripeX = isP ? x + BASE_W - 8 : x;
+            for(let sy = HORIZON_Y; sy < canvas.height; sy+=20) {
+                ctx.fillStyle = (Math.floor(sy / 20) % 2 === 0) ? '#ffcc00' : '#111';
+                ctx.fillRect(stripeX, sy, 8, 20);
+            }
+
+            let cx = isP ? x + 20 : x + BASE_W - 80;
+            let cy = HORIZON_Y - 70;
+            ctx.fillStyle = '#333'; ctx.fillRect(cx, cy, 60, 30); 
+            ctx.fillStyle = '#444'; ctx.fillRect(cx - 5, cy - 10, 70, 10); 
+            ctx.fillStyle = isP ? '#8ce' : '#e88'; 
+            ctx.fillRect(cx + 5, cy + 5, 50, 15);
+            ctx.fillStyle = '#111'; ctx.fillRect(cx + 25, cy + 5, 10, 15); 
+
+            let tx = isP ? x + 90 : x + 20; let ty = HORIZON_Y - 10;
+            ctx.fillStyle = isP ? '#445330' : '#333'; 
+            ctx.beginPath(); ctx.moveTo(tx+15, ty-30); ctx.lineTo(tx+45, ty-40); ctx.lineTo(tx+45, ty+10); ctx.lineTo(tx+15, ty+20); ctx.fill();
+            ctx.fillStyle = isP ? '#556b2f' : '#444'; 
+            ctx.beginPath(); ctx.moveTo(tx, ty+20); ctx.lineTo(tx+15, ty-30); ctx.lineTo(tx+30, ty+20); ctx.fill();
+            ctx.fillStyle = '#111'; 
+            ctx.beginPath(); ctx.moveTo(tx+10, ty+20); ctx.lineTo(tx+15, ty-10); ctx.lineTo(tx+20, ty+20); ctx.fill();
+            ctx.fillStyle = '#cc3333'; ctx.beginPath(); ctx.moveTo(tx+20, ty-15); ctx.lineTo(tx+35, ty-20); ctx.lineTo(tx+30, ty); ctx.fill(); 
+
+            let fx = isP ? cx + 30 : cx + 30; let fy = cy - 60;
+            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(fx + 4, fy, 4, 60); 
+            ctx.fillStyle = '#999'; ctx.fillRect(fx, fy, 4, 60); 
+            let time = Date.now() / 150; ctx.fillStyle = isP ? '#4caf50' : '#f44336';
+            let flagW = 40; let dir = isP ? 1 : -1;
+            let flagStartX = fx + 4;
+            if (!isP) flagStartX = fx - flagW;
+            for(let i=0; i<flagW; i++) { 
+                let waveY = Math.sin(time + (i * 0.15 * dir)) * 5; 
+                ctx.fillRect(flagStartX + i, fy + waveY, 2, 25); 
+            }
         };
         drawBase(0, true); drawBase(game.worldW - BASE_W, false);
 
-        trenches.forEach((t, i) => {
-            ctx.fillStyle = '#1a110a'; ctx.fillRect(t.x, HORIZON_Y, t.w, canvas.height);
-            ctx.fillStyle = '#3e2723'; for(let y = HORIZON_Y + 10; y < canvas.height; y+=30) { ctx.fillRect(t.x + 5, y, t.w - 10, 8); }
-            ctx.fillStyle = t.owner === 'player' ? '#556b2f' : (t.owner === 'enemy' ? '#8b0000' : '#333333');
-            ctx.fillRect(t.x - 10, HORIZON_Y, 15, canvas.height); ctx.fillRect(t.x + t.w - 5, HORIZON_Y, 15, canvas.height);
-            if(game.selected === i) { ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 3; ctx.strokeRect(t.x - 15, HORIZON_Y - 10, t.w + 30, canvas.height); }
+        // 1. DIBUJADO CASQUILLOS
+        shells.forEach(s => { 
+            ctx.save();
+            ctx.translate(s.x, s.y);
+            ctx.rotate(s.rot);
+            ctx.fillStyle = `rgba(255, 204, 0, ${Math.min(1, s.life / 60)})`;
+            ctx.fillRect(-2, -1, 4, 2); 
+            ctx.restore();
         });
 
         corpses.forEach(c => {
@@ -1564,9 +2981,40 @@
                 ctx.fillStyle = 'rgba(156, 39, 176, 0.15)'; ctx.strokeStyle = 'rgba(156, 39, 176, 0.6)'; 
                 ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(c.x, c.y, tRange, 0, Math.PI*2); ctx.fill(); ctx.stroke();
             }
-            ctx.fillStyle = 'rgba(100, 0, 0, 0.6)'; ctx.beginPath(); ctx.ellipse(c.x, c.y + 6, 18, 9, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'rgba(50, 0, 0, 0.6)'; ctx.beginPath(); ctx.ellipse(c.x + 2, c.y + 8, 20, 10, 0, 0, Math.PI*2); ctx.fill();
             ctx.font = "24px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.fillStyle = `rgba(255, 255, 255, ${c.life / c.maxLife})`; ctx.fillText("💀", c.x, c.y - 4);
+        });
+
+        dyingUnits.forEach(du => {
+            let p = 1 - (du.deathTimer / 30); 
+            ctx.save(); 
+            ctx.translate(du.x, du.y + p * 15); 
+            ctx.globalAlpha = 1 - p;
+            
+            let rX = Math.max(0.1, 20 * p);
+            let rY = Math.max(0.1, 10 * p);
+            ctx.fillStyle = `rgba(150, 0, 0, ${p})`;
+            ctx.beginPath(); ctx.ellipse(0, 5, rX, rY, 0, 0, Math.PI*2); ctx.fill();
+            
+            ctx.rotate((Math.PI / 2) * p * du.dir);
+            ctx.fillStyle = '#e0ac69'; ctx.beginPath(); ctx.arc(0, 0, du.radius, 0, Math.PI); ctx.fill();
+            
+            let isP = du.side === 'player';
+            ctx.fillStyle = isP ? (du.type==='medic'?'#ffffff':'#4b5320') : (du.type==='medic'?'#eeeeee':'#2c3e50');
+            ctx.beginPath(); ctx.arc(0, 0, du.radius + 1, Math.PI, Math.PI*2); ctx.fill(); 
+            
+            ctx.font = "16px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = '#ffffff';
+            let icon = '🪖';
+            if (du.type === 'grenadier') icon = '💣';
+            if (du.type === 'flamethrower') icon = '🔥';
+            if (du.type === 'sniper') icon = '🎯';
+            if (du.type === 'officer') icon = '🎖️';
+            if (du.type === 'medic') icon = '⛑️';
+            ctx.fillText(icon, 0, -du.radius/2 + 2); 
+            
+            ctx.restore();
         });
 
         units.forEach(u => {
@@ -1576,58 +3024,104 @@
                 if (u.type === 'officer') {
                     ctx.fillStyle = 'rgba(255, 215, 0, 0.05)';
                     ctx.beginPath(); ctx.arc(u.x, u.y, game.config.officer.auraRange, 0, Math.PI*2); ctx.fill();
-                    if (game.showRanges) {
-                        ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)'; ctx.lineWidth = 1; ctx.stroke();
-                    }
+                    if (game.showRanges) { ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)'; ctx.lineWidth = 1; ctx.stroke(); }
                 }
                 if (u.type === 'medic') {
                     ctx.fillStyle = 'rgba(76, 175, 80, 0.05)';
                     ctx.beginPath(); ctx.arc(u.x, u.y, game.config.medic.auraRange, 0, Math.PI*2); ctx.fill();
-                    if (game.showRanges) {
-                        ctx.strokeStyle = 'rgba(76, 175, 80, 0.3)'; ctx.lineWidth = 1; ctx.stroke();
-                    }
+                    if (game.showRanges) { ctx.strokeStyle = 'rgba(76, 175, 80, 0.3)'; ctx.lineWidth = 1; ctx.stroke(); }
                 }
             }
 
             let isProtected = false;
-            if (u.state !== 'HEAL') {
-                trenches.forEach(t => {
-                    if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) isProtected = true;
-                });
-            }
+            if (u.state !== 'HEAL') { trenches.forEach(t => { if (Math.abs(u.x - (t.x + t.w/2)) <= t.w/2 + 12) isProtected = true; }); }
             
             if (game.showRanges && u.state !== 'HEAL') {
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.visionRange, 0, Math.PI*2); ctx.stroke();
+                ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.visionRange, 0, Math.PI*2); ctx.stroke();
                 ctx.strokeStyle = 'rgba(255, 50, 50, 0.25)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.weaponRange, 0, Math.PI*2); ctx.stroke();
             }
+            
             if(u.state === 'HEAL') { ctx.fillStyle = 'rgba(0, 255, 0, 0.2)'; ctx.beginPath(); ctx.arc(u.x, u.y, u.radius + 6, 0, Math.PI*2); ctx.fill(); }
 
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-            ctx.beginPath(); ctx.ellipse(u.x, u.y + u.radius, u.radius + 4, u.radius / 2, 0, 0, Math.PI*2); ctx.fill();
+            let isMoving = u.state === 'MOVE' && u.state !== 'HEAL';
+            let bob = isMoving ? Math.sin(Date.now()/80 + u.walkPhase) * 2 : 0;
+            let breath = u.state === 'IDLE' ? 1 + Math.sin(Date.now()/300 + u.walkPhase)*0.04 : 1;
 
-            ctx.fillStyle = '#111'; 
-            let gunOffset = u.dir === 1 ? 0 : -15;
-            ctx.fillRect(u.x + gunOffset, u.y + 2, 15, u.type === 'flamethrower' ? 5 : 3); 
-            
-            ctx.fillStyle = '#e0ac69';
-            ctx.beginPath(); ctx.arc(u.x, u.y, u.radius, 0, Math.PI); ctx.fill();
+            ctx.save();
+            ctx.translate(u.x, u.y + bob);
+            ctx.scale(1, breath);
 
-            if (isP) {
-                if (u.type === 'medic') ctx.fillStyle = '#ffffff'; 
-                else ctx.fillStyle = '#4b5320';
-            } else {
-                if (u.type === 'medic') ctx.fillStyle = '#eeeeee'; 
-                else ctx.fillStyle = '#2c3e50';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.beginPath(); ctx.ellipse(6, u.radius + 4 - bob, u.radius + 4, u.radius / 2, 0, 0, Math.PI*2); ctx.fill();
+
+            if (u.type === 'medic') {
+                ctx.fillStyle = '#fff'; ctx.fillRect(-10, -8, 12, 16);
+                ctx.fillStyle = '#f00'; ctx.fillRect(-6, -4, 4, 8); ctx.fillRect(-8, -2, 8, 4);
+            } else if (u.type === 'flamethrower') {
+                ctx.fillStyle = '#222'; ctx.fillRect(-12, -6, 8, 12); 
+                ctx.fillStyle = '#555'; ctx.fillRect(-12, -8, 8, 2); 
             }
 
-            ctx.beginPath(); ctx.arc(u.x, u.y, u.radius + 1, Math.PI, Math.PI*2); ctx.fill(); 
-            ctx.strokeStyle = isP ? (u.type === 'medic' ? '#cccccc' : '#3d451a') : '#1a252f';
-            ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.moveTo(u.x - u.radius - 3, u.y); ctx.lineTo(u.x + u.radius + 3, u.y); ctx.stroke();
+            ctx.fillStyle = '#e0ac69';
+            ctx.beginPath(); ctx.arc(0, 0, u.radius, 0, Math.PI); ctx.fill();
+            
+            ctx.save();
+            let angle = u.aimAngle !== undefined ? u.aimAngle : (u.dir === 1 ? 0 : Math.PI);
+            ctx.rotate(angle);
+            let uConf = game.config[u.type];
+            let fRate = Number(uConf.fireRate);
+            if (isNaN(fRate) || fRate <= 0) fRate = DEFAULT_CONFIG[u.type].fireRate;
+            let isFiring = (Date.now() - u.lastAtk < 100);
+            let recoil = isFiring ? -3 : 0;
+            ctx.translate(recoil, 0);
+            if (Math.abs(angle) > Math.PI / 2) ctx.scale(1, -1);
 
-            ctx.font = "18px Arial"; 
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#111';
+            
+            if (u.type === 'sniper') {
+                ctx.fillStyle = '#4e342e'; ctx.fillRect(0, 2, 22, 4); ctx.strokeRect(0, 2, 22, 4);
+                ctx.fillStyle = '#222'; ctx.fillRect(22, 2.5, 18, 3); ctx.strokeRect(22, 2.5, 18, 3);
+                ctx.fillRect(10, -2, 10, 4); 
+            } else if (u.type === 'officer' || u.type === 'medic') {
+                ctx.fillStyle = '#222'; ctx.fillRect(2, 2, 10, 4); ctx.strokeRect(2, 2, 10, 4);
+                ctx.fillRect(4, 6, 4, 4); 
+            } else if (u.type === 'flamethrower') {
+                ctx.fillStyle = '#222'; ctx.fillRect(0, 2, 20, 5); ctx.strokeRect(0, 2, 20, 5);
+                ctx.fillStyle = '#ff4500'; ctx.fillRect(20, 3, 4, 3); 
+            } else { 
+                ctx.fillStyle = '#4e342e'; ctx.fillRect(0, 2, 16, 4); ctx.strokeRect(0, 2, 16, 4);
+                ctx.fillStyle = '#222'; ctx.fillRect(16, 2.5, 12, 3); ctx.strokeRect(16, 2.5, 12, 3);
+                if (u.type === 'infantry') { ctx.fillStyle = '#ddd'; ctx.fillRect(25, 5, 8, 2); }
+            }
+
+            // 2. FOGONAZO DIBUJADO
+            if (isFiring && u.type !== 'flamethrower' && u.type !== 'grenadier') {
+                let tx = (u.type === 'sniper') ? 40 : (u.type === 'officer' || u.type === 'medic' ? 12 : 28);
+                let ty = 4;
+                ctx.fillStyle = '#ffcc00';
+                ctx.beginPath();
+                ctx.moveTo(tx, ty-1);
+                ctx.lineTo(tx+6, ty-4);
+                ctx.lineTo(tx+5, ty-1);
+                ctx.lineTo(tx+12, ty);
+                ctx.lineTo(tx+5, ty+1);
+                ctx.lineTo(tx+6, ty+4);
+                ctx.lineTo(tx, ty+1);
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            ctx.fillStyle = isP ? (u.type==='medic'?'#ffffff':'#4b5320') : (u.type==='medic'?'#eeeeee':'#2c3e50');
+            ctx.beginPath(); ctx.arc(0, 0, u.radius + 1, Math.PI, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = isP ? (u.type==='medic'?'#cccccc':'#3d451a') : '#1a252f'; 
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(-u.radius-3, 0); ctx.lineTo(u.radius+3, 0); ctx.stroke();
+
+            ctx.font = "16px Arial"; 
+            ctx.textAlign = "center"; 
+            ctx.textBaseline = "middle";
             let icon = '🪖';
             if (u.type === 'grenadier') icon = '💣';
             if (u.type === 'flamethrower') icon = '🔥';
@@ -1637,77 +3131,34 @@
             
             ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 4; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 2;
             ctx.fillStyle = '#ffffff'; 
-            ctx.fillText(icon, u.x, u.y + 1); 
+            ctx.fillText(icon, 0, -u.radius/2 + 2); 
             ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
 
-            let barY = u.y - 20;
-            
-            let rConf = RANKS[u.rankIdx];
-            let baseY = u.y - 8; 
-            let hw = 6; 
-            
-            ctx.beginPath();
-            ctx.strokeStyle = rConf.color;
-            ctx.fillStyle = rConf.color;
-            ctx.lineWidth = 1.5;
-            ctx.lineJoin = 'miter';
-            ctx.lineCap = 'round';
+            ctx.restore(); 
 
+            let barY = u.y - 20 + bob;
+            let rConf = RANKS[u.rankIdx]; let baseY = u.y - 8 + bob; let hw = 6; 
+            
+            ctx.beginPath(); ctx.strokeStyle = rConf.color; ctx.fillStyle = rConf.color; ctx.lineWidth = 1.5; ctx.lineJoin = 'miter'; ctx.lineCap = 'round';
             if (rConf.type !== 'none') {
                 if (rConf.type === 'enlisted') {
-                    for(let c = 0; c < rConf.ch; c++) {
-                        let cy = baseY - (c * 3.5);
-                        ctx.moveTo(u.x - hw, cy + 3.5);
-                        ctx.lineTo(u.x, cy);
-                        ctx.lineTo(u.x + hw, cy + 3.5);
-                    }
-                    for(let r = 0; r < rConf.ro; r++) {
-                        let ry = baseY + 5 + (r * 2.5);
-                        ctx.moveTo(u.x - hw, ry - 3.5);
-                        ctx.quadraticCurveTo(u.x, ry + 2.5, u.x + hw, ry - 3.5);
-                    }
+                    for(let c = 0; c < rConf.ch; c++) { let cy = baseY - (c * 3.5); ctx.moveTo(u.x - hw, cy + 3.5); ctx.lineTo(u.x, cy); ctx.lineTo(u.x + hw, cy + 3.5); }
+                    for(let r = 0; r < rConf.ro; r++) { let ry = baseY + 5 + (r * 2.5); ctx.moveTo(u.x - hw, ry - 3.5); ctx.quadraticCurveTo(u.x, ry + 2.5, u.x + hw, ry - 3.5); }
                     ctx.stroke();
                 } else if (rConf.type === 'bar') {
-                    let spacing = 5;
-                    let startX = u.x - ((rConf.n - 1) * spacing) / 2;
-                    for(let i=0; i<rConf.n; i++) {
-                        ctx.fillRect(startX + (i*spacing) - 1.5, baseY - 4, 3, 10);
-                    }
+                    let spacing = 5; let startX = u.x - ((rConf.n - 1) * spacing) / 2;
+                    for(let i=0; i<rConf.n; i++) { ctx.fillRect(startX + (i*spacing) - 1.5, baseY - 4, 3, 10); }
                 } else if (rConf.type === 'oak') {
-                    ctx.beginPath();
-                    ctx.moveTo(u.x, baseY - 5);
-                    ctx.lineTo(u.x + 4, baseY);
-                    ctx.lineTo(u.x, baseY + 5);
-                    ctx.lineTo(u.x - 4, baseY);
-                    ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(u.x, baseY - 5); ctx.lineTo(u.x + 4, baseY); ctx.lineTo(u.x, baseY + 5); ctx.lineTo(u.x - 4, baseY); ctx.fill();
                 } else if (rConf.type === 'eagle') {
-                    ctx.beginPath();
-                    ctx.moveTo(u.x - 5, baseY - 4);
-                    ctx.lineTo(u.x, baseY + 3);
-                    ctx.lineTo(u.x + 5, baseY - 4);
-                    ctx.lineTo(u.x + 3, baseY - 4);
-                    ctx.lineTo(u.x, baseY + 1);
-                    ctx.lineTo(u.x - 3, baseY - 4);
-                    ctx.fill();
-                    ctx.fillRect(u.x - 1.5, baseY - 6, 3, 3);
+                    ctx.beginPath(); ctx.moveTo(u.x - 5, baseY - 4); ctx.lineTo(u.x, baseY + 3); ctx.lineTo(u.x + 5, baseY - 4); ctx.lineTo(u.x + 3, baseY - 4); ctx.lineTo(u.x, baseY + 1); ctx.lineTo(u.x - 3, baseY - 4); ctx.fill(); ctx.fillRect(u.x - 1.5, baseY - 6, 3, 3);
                 } else if (rConf.type === 'star') {
-                    let spacing = 7;
-                    let startX = u.x - ((rConf.n - 1) * spacing) / 2;
+                    let spacing = 7; let startX = u.x - ((rConf.n - 1) * spacing) / 2;
                     for(let i=0; i<rConf.n; i++) {
-                        let cx = startX + (i*spacing);
-                        let cy = baseY;
-                        let spikes = 5, outerR = 3.5, innerR = 1.5;
-                        let rot = Math.PI / 2 * 3;
-                        let x = cx, y = cy;
-                        let step = Math.PI / spikes;
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy - outerR);
-                        for (let j = 0; j < spikes; j++) {
-                            x = cx + Math.cos(rot) * outerR; y = cy + Math.sin(rot) * outerR; ctx.lineTo(x, y); rot += step;
-                            x = cx + Math.cos(rot) * innerR; y = cy + Math.sin(rot) * innerR; ctx.lineTo(x, y); rot += step;
-                        }
-                        ctx.lineTo(cx, cy - outerR);
-                        ctx.fill();
+                        let cx = startX + (i*spacing); let cy = baseY; let spikes = 5, outerR = 3.5, innerR = 1.5; let rot = Math.PI / 2 * 3; let x = cx, y = cy; let step = Math.PI / spikes;
+                        ctx.beginPath(); ctx.moveTo(cx, cy - outerR);
+                        for (let j = 0; j < spikes; j++) { x = cx + Math.cos(rot) * outerR; y = cy + Math.sin(rot) * outerR; ctx.lineTo(x, y); rot += step; x = cx + Math.cos(rot) * innerR; y = cy + Math.sin(rot) * innerR; ctx.lineTo(x, y); rot += step; }
+                        ctx.lineTo(cx, cy - outerR); ctx.fill();
                     }
                 }
             }
@@ -1715,12 +3166,7 @@
             ctx.font = "10px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 2; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
             ctx.fillStyle = '#ffffff'; 
-            
-            if (u.broken) {
-                ctx.fillText("🏳️", u.x - 16, barY + 3);
-            } else if (isProtected) { 
-                ctx.fillText("🛡️", u.x - 16, barY + (u.morale < u.maxMoral ? 3 : 1.5));
-            }
+            if (u.broken) { ctx.fillText("🏳️", u.x - 16, barY + 3); } else if (isProtected) { ctx.fillText("🛡️", u.x - 16, barY + (u.morale < u.maxMoral ? 3 : 1.5)); }
             ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
 
             if(u.hp < u.maxHp) { ctx.fillStyle='#000'; ctx.fillRect(u.x-10, barY, 20, 3); ctx.fillStyle='#0f0'; ctx.fillRect(u.x-10, barY, 20*(u.hp/u.maxHp), 3); }
@@ -1733,11 +3179,8 @@
             } else if (b.type === 'grenade') {
                 ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
             } else {
-                ctx.lineWidth = b.color === '#ffffff' ? 4 : 3; 
-                ctx.shadowColor = b.color; ctx.shadowBlur = 4;
-                ctx.strokeStyle = b.color;
-                ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * 2, b.y - b.vy * 2); ctx.stroke(); 
-                ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
+                ctx.lineWidth = b.color === '#ffffff' ? 4 : 3; ctx.shadowColor = b.color; ctx.shadowBlur = 4; ctx.strokeStyle = b.color;
+                ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * 2, b.y - b.vy * 2); ctx.stroke(); ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
             }
         });
 
@@ -1748,33 +3191,19 @@
         });
 
         if (game.useGenAI) {
-            let cx = game.worldW - BASE_W + 5;
-            let cy = HORIZON_Y - 50;
-            ctx.fillStyle = 'rgba(0, 20, 0, 0.85)';
-            ctx.fillRect(cx, cy, BASE_W - 10, 150);
-            ctx.strokeStyle = '#0f0';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(cx, cy, BASE_W - 10, 150);
-
-            ctx.font = "10px Courier New";
-            ctx.fillStyle = '#0f0';
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            ctx.fillText(">> GEMINI AI C&C", cx + 5, cy + 5);
-            ctx.fillText("--------------------", cx + 5, cy + 15);
-
-            for(let k=0; k<game.aiThoughts.length; k++) {
-                ctx.fillText("> " + game.aiThoughts[k], cx + 5, cy + 30 + (k*14));
-            }
+            let cx = game.worldW - BASE_W + 5; let cy = HORIZON_Y - 50;
+            ctx.fillStyle = 'rgba(0, 20, 0, 0.85)'; ctx.fillRect(cx, cy, BASE_W - 10, 150);
+            ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.strokeRect(cx, cy, BASE_W - 10, 150);
+            ctx.font = "10px Courier New"; ctx.fillStyle = '#0f0'; ctx.textAlign = "left"; ctx.textBaseline = "top";
+            ctx.fillText(">> GEMINI AI C&C", cx + 5, cy + 5); ctx.fillText("--------------------", cx + 5, cy + 15);
+            for(let k=0; k<game.aiThoughts.length; k++) { ctx.fillText("> " + game.aiThoughts[k], cx + 5, cy + 30 + (k*14)); }
         }
-
         ctx.restore(); drawMinimap();
     }
 
     function drawMinimap() {
         mCtx.clearRect(0,0,mCanvas.width, mCanvas.height); let s = mCanvas.width / game.worldW;
         mCtx.fillStyle = 'rgba(255, 255, 255, 0.15)'; mCtx.fillRect(game.camX * s, 0, canvas.width * s, mCanvas.height);
-        
         mCtx.fillStyle = '#4caf50'; mCtx.fillRect(0, 0, BASE_W * s, mCanvas.height);
         mCtx.fillStyle = '#f44336'; mCtx.fillRect((game.worldW - BASE_W) * s, 0, BASE_W * s, mCanvas.height);
         
@@ -1793,7 +3222,9 @@
         });
     }
 
+    enhanceTrenchButtons();
     loadConfig();
+    syncAudioTogglesUI();
     function loop() { if(game.active) { update(); draw(); } requestAnimationFrame(loop); }
     requestAnimationFrame(loop);
 </script>
