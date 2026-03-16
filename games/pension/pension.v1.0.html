@@ -11,19 +11,20 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap');
         
-        body { background-color: #020617; font-family: 'Inter', sans-serif; color: #f8fafc; margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden; }
+        body { background-color: #020617; font-family: 'Inter', sans-serif; color: #f8fafc; margin: 0; padding: 0; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         
-        .panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
-        .panel-header { border-bottom: 1px solid #1e293b; padding: 0.5rem 0.75rem; background: #0f172a; border-radius: 0.75rem 0.75rem 0 0; }
+        .panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+        .panel-header { border-bottom: 1px solid #1e293b; padding: 0.75rem 1rem; background: rgba(15, 23, 42, 0.8); border-radius: 0.75rem 0.75rem 0 0; }
         
+        /* Sliders */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track { height: 3px; background: #334155; border-radius: 2px; }
+        input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #334155; border-radius: 2px; }
         input[type=range]::-webkit-slider-thumb { 
-            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; 
-            background: #fff; margin-top: -5.5px; cursor: pointer; border: 2px solid #020617;
-            box-shadow: 0 0 6px rgba(255,255,255,0.3); transition: transform 0.1s;
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; 
+            background: #fff; margin-top: -6px; cursor: pointer; border: 2px solid #020617;
+            box-shadow: 0 0 6px rgba(255,255,255,0.4); transition: transform 0.1s;
         }
         input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
         .slider-blue::-webkit-slider-thumb { background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
@@ -32,17 +33,16 @@
 
         input[type=number]::-webkit-inner-spin-button { display: none; }
         .svg-line { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
-        .grid-line { stroke: #1e293b; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+        .grid-line { stroke: #1e293b; stroke-width: 1px; vector-effect: non-scaling-stroke; stroke-dasharray: 2 4; }
         
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #020617; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
 </head>
-<body class="p-3 md:p-6 min-h-screen flex flex-col">
-    <div id="root" class="max-w-6xl mx-auto w-full flex-grow flex flex-col gap-4 pb-8"></div>
+<body class="p-3 md:p-4 lg:p-5 min-h-screen md:h-screen md:overflow-visible flex flex-col">
+    <div id="root" class="max-w-[1400px] mx-auto w-full flex flex-col gap-4 md:gap-4 pb-10 md:pb-12 lg:pb-12 overflow-visible"></div>
 
     <script type="text/babel">
         const { useState, useMemo } = React;
@@ -75,236 +75,273 @@
             const pReal = pTeorica * (userPt.solv / 100);
             const deficit = pTeorica - pReal;
 
+            // FUNCIONES DE ESCALADO DINÁMICO
             const getX = (v) => (v / 125) * 100;
-            const getPopY = (v) => 100 - (v / 40) * 100; 
+            const maxPopulation = Math.max(40, ...data.map(d => d.coti), ...data.map(d => d.pens));
+            const yMaxPop = Math.ceil(maxPopulation / 10) * 10; 
+            const popGridLines = Array.from({length: (yMaxPop/10) + 1}, (_, i) => i * 10);
+            const getPopY = (v) => 100 - (v / yMaxPop) * 100; 
             const getSolvY = (v) => 100 - (v / 120) * 100; 
 
             return (
-                <div className="w-full flex flex-col gap-4">
-                    
-                    {/* HEADER INTRODUCTORIO */}
-                    <header className="flex flex-col gap-3 py-2 shrink-0 border-b border-slate-800 pb-4">
-                        <div className="flex justify-between items-start">
+                <React.Fragment>
+                    {/* 1. HEADER */}
+                    <header className="flex flex-col gap-3 border-b border-slate-800 pb-3 shrink-0">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                             <div>
-                                <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight text-white leading-none">
+                                <h1 className="text-2xl md:text-[2rem] font-black uppercase tracking-tight text-white leading-none">
                                     Simulador Actuarial <span className="text-blue-500">de Pensiones</span>
                                 </h1>
-                                <p className="text-sm md:text-xs font-semibold text-slate-400 mt-1">
-                                    Creado por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline transition-colors">Oriol Badia Campanera</a>
+                                <p className="text-sm font-semibold text-slate-400 mt-2">
+                                    Arquitectura analítica creada por <a href="https://www.linkedin.com/in/oriol-badia" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline transition-colors">Oriol Badia Campanera</a>
                                 </p>
                             </div>
                             <button onClick={() => {setMig(REF.MIG); setJub(REF.JUB); setFer(REF.FER); setSueldo(REF.SUELDO); setEdad(REF.EDAD);}} 
-                                className="text-xs md:text-[10px] font-bold uppercase tracking-widest text-slate-300 border border-slate-700 hover:bg-slate-800 px-3 py-1.5 md:px-4 md:py-2 rounded-lg transition-colors flex items-center gap-1.5">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                                <span className="hidden sm:inline">Reset Valores Reales</span>
+                                className="w-full md:w-auto text-[11px] font-bold uppercase tracking-widest text-slate-200 border border-slate-700 hover:bg-slate-800 px-4 py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-md">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                Reset Valores Reales (España Hoy)
                             </button>
                         </div>
-                        <p className="text-[11px] md:text-xs text-slate-500 leading-relaxed max-w-4xl">
-                            Este dashboard analítico es una herramienta diseñada para visualizar la viabilidad financiera del sistema público de pensiones de reparto en España (2025-2150). Demuestra cómo el colapso demográfico provocado por la jubilación de la generación del <i>Baby Boom</i> y las tendencias de natalidad impactarán en el poder adquisitivo real de tu futura pensión, basándose en la necesidad de equilibrar cotizantes y pensionistas.
-                        </p>
+                        <div className="bg-slate-900/50 p-3 md:p-4 rounded-xl border border-slate-800 shadow-inner">
+                            <p className="text-xs text-slate-400 leading-relaxed">
+                                <strong className="text-slate-200 uppercase tracking-widest text-[10px]">¿Para qué sirve este Dashboard?</strong><br/>
+                                Este panel simula el futuro del sistema de pensiones de reparto en España. Un sistema de reparto significa que las pensiones de hoy se pagan con los impuestos de los trabajadores actuales. El problema radica en que la jubilación de la enorme generación del Baby Boom, sumada a la baja natalidad, rompe esta balanza matemática. Esta herramienta te permite actuar como "Ministro de Economía", ajustando las variables macroeconómicas para descubrir si es posible evitar el déficit y ver cómo impactará esto en el poder adquisitivo de <strong>tu propia pensión mensual</strong>.
+                            </p>
+                        </div>
                     </header>
 
-                    {/* SECCIÓN DE INPUTS */}
-                    <div className="grid grid-cols-12 gap-3 w-full">
+                    {/* 2. CONTROLES Y RESULTADOS */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full shrink-0">
                         
-                        {/* 1. Macro Escenario (7 columnas) */}
-                        <div className="col-span-12 md:col-span-7 panel flex flex-col">
-                            <div className="panel-header text-xs md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex justify-between items-center">
-                                <span>Escenario Macroeconómico</span>
-                                <span className="text-slate-600 italic lowercase font-normal">Variables de estado</span>
+                        {/* Macro Escenario (4 cols) */}
+                        <div className="md:col-span-4 panel">
+                            <div className="panel-header text-xs font-black text-slate-400 uppercase tracking-widest flex justify-between">
+                                <span>Macro Escenario</span>
+                                <span className="text-[10px] text-slate-500 italic font-normal mt-0.5 hidden sm:block">Palancas del Estado</span>
                             </div>
-                            <div className="p-4 flex flex-col gap-5 justify-center h-full">
+                            <div className="p-5 flex flex-col gap-6 h-full justify-center">
                                 <div>
-                                    <div className="flex justify-between items-end mb-1">
-                                        <span className="text-xs md:text-[10px] text-slate-300 font-semibold uppercase leading-none">Inmigración Neta</span>
-                                        <span className="text-sm font-mono text-blue-400 font-bold leading-none">{Math.round(mig/1000)}k/año</span>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-xs font-bold text-slate-200 uppercase">Inmigración Neta</span>
+                                        <span className="text-sm font-mono text-blue-400 font-bold">{Math.round(mig/1000)}k/año</span>
                                     </div>
-                                    <input type="range" min="0" max="1000000" step="25000" value={mig} onChange={e=>setMig(Number(e.target.value))} className="slider-blue mb-1.5" />
-                                    <p className="text-[11px] md:text-[9px] text-slate-500 leading-tight">Flujo anual de nuevos habitantes. Aporta liquidez a corto plazo al aumentar la base de cotizantes activos rápidamente.</p>
+                                    <input type="range" min="0" max="1500000" step="25000" value={mig} onChange={e=>setMig(Number(e.target.value))} className="slider-blue mb-2" />
+                                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                                        <strong>¿Qué es?</strong> Flujo de habitantes extra anuales.<br/>
+                                        <strong>Si lo modificas:</strong> Aumentar esta palanca infla rápidamente la curva azul de trabajadores. Es la vía más rápida para conseguir liquidez.
+                                    </p>
                                 </div>
                                 <div>
-                                    <div className="flex justify-between items-end mb-1">
-                                        <span className="text-xs md:text-[10px] text-slate-300 font-semibold uppercase leading-none">Edad Jubilación Legal</span>
-                                        <span className="text-sm font-mono text-orange-400 font-bold leading-none">{jub} años</span>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-xs font-bold text-slate-200 uppercase">Edad Jubilación Legal</span>
+                                        <span className="text-sm font-mono text-orange-400 font-bold">{jub} años</span>
                                     </div>
-                                    <input type="range" min="60" max="85" step="1" value={jub} onChange={e=>setJub(Number(e.target.value))} className="slider-orange mb-1.5" />
-                                    <p className="text-[11px] md:text-[9px] text-slate-500 leading-tight">Año de retiro. Un retraso reduce el gasto inmediato del sistema y amplía el periodo de cotización del trabajador.</p>
+                                    <input type="range" min="60" max="85" step="1" value={jub} onChange={e=>setJub(Number(e.target.value))} className="slider-orange mb-2" />
+                                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                                        <strong>¿Qué es?</strong> Año en que dejamos de aportar.<br/>
+                                        <strong>Si lo modificas:</strong> Retrasarla frena la subida de la curva naranja y extiende la base azul. Es la medida financiera más efectiva.
+                                    </p>
                                 </div>
                                 <div>
-                                    <div className="flex justify-between items-end mb-1">
-                                        <span className="text-xs md:text-[10px] text-slate-300 font-semibold uppercase leading-none">Tasa de Fertilidad</span>
-                                        <span className="text-sm font-mono text-emerald-400 font-bold leading-none">{fer} hijos/mujer</span>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-xs font-bold text-slate-200 uppercase">Tasa de Fertilidad</span>
+                                        <span className="text-sm font-mono text-emerald-400 font-bold">{fer} hijos</span>
                                     </div>
-                                    <input type="range" min="0.5" max="4" step="0.1" value={fer} onChange={e=>setFer(Number(e.target.value))} className="slider-emerald mb-1.5" />
-                                    <p className="text-[11px] md:text-[9px] text-slate-500 leading-tight">Nacimientos por mujer. Es vital para la estructura piramidal, aunque su efecto positivo tarda 20 años en reflejarse.</p>
+                                    <input type="range" min="0.5" max="4" step="0.1" value={fer} onChange={e=>setFer(Number(e.target.value))} className="slider-emerald mb-2" />
+                                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                                        <strong>¿Qué es?</strong> Hijos por mujer en edad fértil.<br/>
+                                        <strong>Si lo modificas:</strong> Modificarla hoy no salva el déficit inminente, pero asegura la supervivencia a partir de 2080.
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 2. Datos de Cotizante (5 columnas) */}
-                        <div className="col-span-12 md:col-span-5 panel flex flex-col">
-                            <div className="panel-header text-xs md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex justify-between items-center">
-                                <span>Datos del Cotizante</span>
-                                <span className="text-slate-600 italic lowercase font-normal">Variables personales</span>
+                        {/* Datos Personales (3 cols) */}
+                        <div className="md:col-span-3 panel">
+                            <div className="panel-header text-xs font-black text-slate-400 uppercase tracking-widest flex justify-between">
+                                <span>Datos Personales</span>
+                                <span className="text-[10px] text-slate-500 italic font-normal mt-0.5 hidden sm:block">Tu contexto</span>
                             </div>
-                            <div className="p-4 flex flex-col gap-6 justify-center h-full">
+                            <div className="p-5 flex flex-col gap-6 h-full justify-start mt-2">
                                 <div>
-                                    <label className="text-xs text-slate-300 font-semibold uppercase block mb-1">Sueldo Bruto Anual</label>
-                                    <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors mb-1.5">
+                                    <label className="text-xs font-bold text-slate-200 uppercase block mb-2">Sueldo Bruto Anual</label>
+                                    <div className="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors mb-2">
                                         <span className="text-slate-500 font-bold text-base">€</span>
-                                        <input type="number" value={sueldo} onChange={e=>setSueldo(e.target.value === '' ? '' : Number(e.target.value))} className="w-full font-mono text-base font-bold text-white bg-transparent outline-none" />
+                                        <input type="number" value={sueldo} onChange={e=>setSueldo(e.target.value === '' ? '' : Number(e.target.value))} className="w-full font-mono text-lg font-bold text-white bg-transparent outline-none" />
                                     </div>
-                                    <p className="text-[11px] md:text-[9px] text-slate-500 leading-tight">Base de cotización actual. El sistema calcula que tu primera pensión teórica será aprox. el 80% de este valor (tasa de reemplazo).</p>
+                                    <p className="text-xs text-slate-500 leading-relaxed">
+                                        El sistema calcula que tu primera pensión será aprox. el 80% de este valor (tasa de reemplazo).
+                                    </p>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-slate-300 font-semibold uppercase block mb-1">Tu Edad Actual</label>
-                                    <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors mb-1.5">
-                                        <input type="number" value={edad} onChange={e=>setEdad(e.target.value === '' ? '' : Number(e.target.value))} className="w-full font-mono text-base font-bold text-white bg-transparent outline-none text-right" />
-                                        <span className="text-[11px] md:text-[9px] text-slate-500 font-bold uppercase">Años</span>
+                                <div className="mt-2">
+                                    <label className="text-xs font-bold text-slate-200 uppercase block mb-2">Tu Edad Actual</label>
+                                    <div className="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors mb-2">
+                                        <input type="number" value={edad} onChange={e=>setEdad(e.target.value === '' ? '' : Number(e.target.value))} className="w-full font-mono text-lg font-bold text-white bg-transparent outline-none text-right" />
+                                        <span className="text-xs text-slate-500 font-bold uppercase">Años</span>
                                     </div>
-                                    <p className="text-[11px] md:text-[9px] text-slate-500 leading-tight">Determina en qué año exacto solicitarás el cobro y, por tanto, a qué nivel de solvencia se enfrentará tu pensión.</p>
+                                    <p className="text-xs text-slate-500 leading-relaxed">
+                                        Determina tu marcador en la línea temporal. Cruza tus datos con la solvencia futura.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Output Maestro (5 cols) */}
+                        <div className="md:col-span-5 panel bg-gradient-to-br from-slate-900 to-[#020617] relative overflow-visible">
+                            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                                <svg width="150" height="150" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            </div>
+                            <div className="panel-header bg-transparent border-slate-800 flex justify-between items-center pb-2">
+                                <span className="text-xs font-black text-blue-500 uppercase tracking-widest">Auditoría Financiera Final</span>
+                                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-3 py-1 rounded">AÑO {userPt.year}</span>
+                            </div>
+                            
+                            <div className="p-5 flex flex-col justify-between h-full z-10 relative">
+                                <div className="mb-4">
+                                    <p className="text-xs font-bold text-slate-300 uppercase mb-2">Pensión Real Ajustada</p>
+                                    <div className="flex items-baseline gap-2 mb-2">
+                                        <span className="text-5xl md:text-6xl font-black font-mono tracking-tighter text-white drop-shadow-md">{Math.round(pReal).toLocaleString()}€</span>
+                                        <span className="text-sm font-bold text-slate-500 uppercase">/mes</span>
+                                    </div>
+                                    <p className="text-[10px] md:text-xs text-slate-400 leading-relaxed mt-2 mb-4">
+                                        Esta cifra representa la realidad matemática: Es lo que el sistema <strong>realmente podrá pagarte</strong> en poder adquisitivo constante basándose en el nivel de autofinanciación proyectado para tu año de jubilación.
+                                    </p>
+                                    
+                                    <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t border-slate-800/80">
+                                        <div>
+                                            <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Promesa Legal Hoy</span>
+                                            <span className="font-mono text-base font-bold text-slate-400 line-through block mb-1">{Math.round(pTeorica)}€</span>
+                                            <span className="text-[10px] text-slate-500 leading-tight">Lo que el sistema te promete sobre el papel.</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-[10px] font-black text-red-500/80 uppercase tracking-widest mb-1">Déficit Generado</span>
+                                            <span className="font-mono text-base font-bold text-red-500 block mb-1">-{Math.round(deficit)}€</span>
+                                            <span className="text-[10px] text-slate-500 leading-tight">Agujero contable. Es dinero que falta y se deberá suplir con deuda o recortes.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Factor Solvencia */}
+                                <div className="bg-[#0f172a]/80 p-4 md:p-5 rounded-xl border border-slate-700 shadow-inner mt-2">
+                                    <div className="flex justify-between items-end mb-3">
+                                        <span className="text-xs font-bold text-slate-200 uppercase">Factor de Solvencia</span>
+                                        <span className={`text-4xl font-black font-mono tracking-tighter ${userPt.solv >= 100 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                            {Math.round(userPt.solv)}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full h-3 bg-slate-950 rounded-full overflow-visible border border-slate-800 mb-3">
+                                        <div className={`h-full transition-all duration-700 ${userPt.solv >= 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} style={{width: `${userPt.solv}%`}}></div>
+                                    </div>
+                                    <p className="text-[10px] md:text-xs text-slate-400 leading-relaxed">
+                                        La métrica maestra que define tu futuro. Indica qué porcentaje de los gastos del sistema están cubiertos por los ingresos reales. Si está por debajo de 100%, el sistema no se autofinancia. 
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* TARJETA CENTRAL: OUTPUTS DE IMPACTO */}
-                    <div className="panel bg-gradient-to-br from-slate-900 to-[#020617] flex flex-col relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
-                            <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                        </div>
-                        <div className="panel-header bg-transparent border-slate-800 flex justify-between items-center pb-2">
-                            <span className="text-xs md:text-[10px] font-black text-blue-500 uppercase tracking-widest">Resultado: Auditoría de Pensión Proyectada</span>
-                            <span className="text-xs md:text-[10px] font-mono font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded">AÑO {userPt.year}</span>
-                        </div>
-                        
-                        <div className="p-5 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                            {/* Salida 1: Dinero */}
-                            <div>
-                                <p className="text-xs text-slate-400 font-semibold uppercase mb-1">Pensión Real Ajustada</p>
-                                <div className="flex items-baseline gap-1 mb-1">
-                                    <span className="text-6xl lg:text-7xl font-black font-mono tracking-tighter text-white">{Math.round(pReal).toLocaleString()}€</span>
-                                    <span className="text-sm font-bold text-slate-500 uppercase">/mes</span>
-                                </div>
-                                <p className="text-[11px] md:text-[9px] text-slate-500 mb-5 leading-relaxed">
-                                    Esta es la cantidad real mensual (en poder adquisitivo de hoy) que el sistema tendrá capacidad de pagarte, asumiendo que no se emita nueva deuda pública para cubrir el déficit.
-                                </p>
-                                
-                                <div className="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-800">
-                                    <div>
-                                        <span className="block text-[10px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Promesa Legal Hoy</span>
-                                        <span className="font-mono text-base font-bold text-slate-400 line-through block mb-1">{Math.round(pTeorica)}€</span>
-                                        <span className="text-[10px] md:text-[8px] text-slate-500">Lo que las leyes actuales dicen que deberías cobrar al jubilarte.</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[10px] md:text-[9px] font-black text-red-500/80 uppercase tracking-widest mb-0.5">Recorte Actuarial</span>
-                                        <span className="font-mono text-base font-bold text-red-500 block mb-1">-{Math.round(deficit)}€</span>
-                                        <span className="text-[10px] md:text-[8px] text-slate-500">Pérdida forzada debido a la incapacidad financiera del sistema.</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Salida 2: Factor Solvencia */}
-                            <div className="bg-slate-950/60 p-5 md:p-6 rounded-xl border border-slate-800 z-10 relative">
-                                <div className="flex justify-between items-end mb-2">
-                                    <span className="text-xs md:text-[11px] font-semibold text-slate-400 uppercase">Factor de Solvencia</span>
-                                    <span className={`text-5xl font-black font-mono tracking-tighter ${userPt.solv > 80 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        {Math.round(userPt.solv)}%
-                                    </span>
-                                </div>
-                                <p className="text-[11px] md:text-[9px] text-slate-500 mb-4 leading-relaxed">
-                                    El indicador crítico: Representa la ratio entre ingresos por cotizaciones y gastos en pensiones en el año <strong>{userPt.year}</strong>. Si el valor es inferior al 100%, el sistema entra en déficit y la "Promesa Legal" se vuelve matemáticamente impagable de forma pura.
-                                </p>
-                                <div className="w-full h-3 md:h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 shadow-inner mb-2">
-                                    <div className={`h-full transition-all duration-700 ${userPt.solv > 80 ? 'bg-emerald-500' : 'bg-red-500'}`} style={{width: `${userPt.solv}%`}}></div>
-                                </div>
-                                <div className="flex justify-between text-[10px] md:text-[8px] font-bold text-slate-500 uppercase">
-                                    <span>Peligro de Quiebra</span>
-                                    <span>Equilibrio Financiero</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SECCIÓN INFERIOR: GRÁFICOS EXPLICADOS */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+                    {/* 3. GRÁFICOS */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 pb-4 md:pb-4">
                         
                         {/* Gráfico 1: Población */}
-                        <div className="panel flex flex-col relative overflow-hidden">
-                            <div className="panel-header flex justify-between items-start md:items-center absolute w-full z-10 bg-slate-900/90 backdrop-blur-md border-none pb-2 pt-3 flex-col md:flex-row gap-2 md:gap-0">
-                                <div className="flex flex-col">
-                                    <span className="text-xs md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Evolución Demográfica (Millones)</span>
-                                    <span className="text-[10px] md:text-[8px] text-slate-500 mt-0.5 font-medium max-w-[250px] leading-tight">Visualiza el cruce crítico provocado por el pico de jubilaciones del Baby Boom en torno al año 2050-2060 frente al estancamiento de la fuerza laboral.</span>
-                                </div>
-                                <div className="flex gap-3 text-[10px] md:text-[8px] font-bold uppercase shrink-0">
-                                    <span className="flex items-center gap-1 text-blue-400"><div className="w-2 h-2 rounded bg-blue-500"></div> Trabajadores</span>
-                                    <span className="flex items-center gap-1 text-orange-400"><div className="w-2 h-2 rounded bg-orange-500"></div> Jubilados</span>
+                        <div className="panel relative flex flex-col min-h-0 overflow-visible">
+                            <div className="panel-header bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shrink-0 z-10 p-3 md:p-4">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0">
+                                    <div>
+                                        <span className="block text-sm font-black text-slate-300 uppercase tracking-widest">Evolución Demográfica (M)</span>
+                                        <span className="block text-[11px] text-slate-400 mt-1 font-medium max-w-md leading-relaxed">
+                                            Visualiza el impacto estructural del <strong>Baby Boom</strong>. Observa cómo la curva naranja (jubilados) genera una "montaña" inasumible para la curva azul (cotizantes). Si ambas líneas se acercan, el sistema colapsa.
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-4 text-xs font-bold uppercase shrink-0">
+                                        <span className="flex items-center gap-1.5 text-blue-400"><div className="w-3 h-3 rounded bg-blue-500 shadow-[0_0_5px_#3b82f6]"></div> Trabajadores</span>
+                                        <span className="flex items-center gap-1.5 text-orange-400"><div className="w-3 h-3 rounded bg-orange-500 shadow-[0_0_5px_#f97316]"></div> Jubilados</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="h-[320px] w-full relative pt-24 md:pt-16 pb-8 px-4">
-                                <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                                    {[0, 10, 20, 30, 40].map(v => (
-                                        <g key={v}>
-                                            <line x1="0" y1={getPopY(v)} x2="100" y2={getPopY(v)} className="grid-line" />
-                                            <text x="0" y={getPopY(v) - 2} className="text-[7px] md:text-[5px] font-mono fill-slate-500">{v}M</text>
-                                        </g>
-                                    ))}
+                            
+                            <div className="relative min-h-[300px] h-[300px] md:min-h-[360px] md:h-[360px] lg:min-h-[360px] lg:h-[360px] xl:min-h-[380px] xl:h-[380px] mt-4 mb-8 mx-4 overflow-visible">
+                                {/* Eje Y HTML Dinámico */}
+                                {popGridLines.map(v => (
+                                    <span key={`y1-${v}`} className="absolute left-0 text-xs font-mono text-slate-500 -translate-y-1/2" style={{ top: `${getPopY(v)}%` }}>{v}M</span>
+                                ))}
+                                
+                                <div className="absolute inset-0 left-10">
+                                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                                        {popGridLines.map(v => <line key={`l1-${v}`} x1="0" y1={getPopY(v)} x2="100" y2={getPopY(v)} className="grid-line" />)}
+                                        
+                                        <path d={`M ${data.map(d => `${getX(d.x)},${getPopY(d.coti)}`).join(' L ')}`} fill="none" stroke="#3b82f6" strokeWidth="2.5" className="svg-line" />
+                                        <path d={`M ${data.map(d => `${getX(d.x)},${getPopY(d.pens)}`).join(' L ')}`} fill="none" stroke="#f97316" strokeWidth="2.5" className="svg-line" />
+                                        
+                                        <line x1={getX(retX)} y1="0" x2={getX(retX)} y2="100" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 4" className="svg-line" />
+                                    </svg>
                                     
-                                    <path d={`M ${data.map(d => `${getX(d.x)},${getPopY(d.coti)}`).join(' L ')}`} fill="none" stroke="#3b82f6" strokeWidth="2.5" className="svg-line" />
-                                    <path d={`M ${data.map(d => `${getX(d.x)},${getPopY(d.pens)}`).join(' L ')}`} fill="none" stroke="#f97316" strokeWidth="2.5" className="svg-line" />
-                                    
-                                    {/* Marcador Usuario */}
-                                    <line x1={getX(retX)} y1="0" x2={getX(retX)} y2="100" stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" className="svg-line" />
-                                    <circle cx={getX(retX)} cy={getPopY(userPt.coti)} r="3" fill="#3b82f6" stroke="#0f172a" strokeWidth="2" className="svg-line" />
-                                    <circle cx={getX(retX)} cy={getPopY(userPt.pens)} r="3" fill="#f97316" stroke="#0f172a" strokeWidth="2" className="svg-line" />
-                                </svg>
-                                <div className="absolute bottom-2 left-4 right-4 flex justify-between text-[11px] md:text-[9px] font-mono text-slate-500">
+                                    {/* PUNTOS HTML PERFECTOS */}
+                                    <div className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-[#0f172a] shadow-[0_0_8px_rgba(59,130,246,0.6)]" 
+                                         style={{ left: `${getX(retX)}%`, top: `${getPopY(userPt.coti)}%`, transform: 'translate(-50%, -50%)', zIndex: 20 }}></div>
+                                    <div className="absolute w-4 h-4 bg-orange-500 rounded-full border-2 border-[#0f172a] shadow-[0_0_8px_rgba(249,115,22,0.6)]" 
+                                         style={{ left: `${getX(retX)}%`, top: `${getPopY(userPt.pens)}%`, transform: 'translate(-50%, -50%)', zIndex: 20 }}></div>
+                                </div>
+                                
+                                {/* Eje X HTML */}
+                                <div className="absolute top-full left-10 right-0 flex justify-between text-xs font-mono text-slate-500 mt-3">
                                     <span>2025</span><span>2055</span><span>2085</span><span>2115</span><span>2150</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Gráfico 2: Solvencia */}
-                        <div className="panel flex flex-col relative overflow-hidden">
-                            <div className="panel-header flex justify-between items-start md:items-center absolute w-full z-10 bg-slate-900/90 backdrop-blur-md border-none pb-2 pt-3 flex-col md:flex-row gap-2 md:gap-0">
-                                <div className="flex flex-col">
-                                    <span className="text-xs md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Ratio Autofinanciación (%)</span>
-                                    <span className="text-[10px] md:text-[8px] text-slate-500 mt-0.5 font-medium max-w-[250px] leading-tight">Reflejo directo del déficit entre aportaciones e ingresos. Valores por debajo de la línea verde implican recortes directos en las pensiones futuras.</span>
+                        <div className="panel relative flex flex-col min-h-0 overflow-visible">
+                            <div className="panel-header bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shrink-0 z-10 p-3 md:p-4">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0">
+                                    <div>
+                                        <span className="block text-sm font-black text-slate-300 uppercase tracking-widest">Ratio de Autofinanciación (%)</span>
+                                        <span className="block text-[11px] text-slate-400 mt-1 font-medium max-w-md leading-relaxed">
+                                            Es el resultado directo del gráfico demográfico. Muestra el estado de la "caja fuerte". <strong>Cualquier área sombreada por debajo de la línea verde representa un déficit puro</strong>, momento en el cual el Estado tiene que emitir deuda para pagarte.
+                                        </span>
+                                    </div>
+                                    <span className="text-xs font-mono font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded shrink-0 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]">EQUILIBRIO (100%)</span>
                                 </div>
-                                <span className="text-[11px] md:text-[9px] font-mono font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded shrink-0">EQUILIBRIO 100%</span>
                             </div>
-                            <div className="h-[320px] w-full relative pt-24 md:pt-16 pb-8 px-4">
-                                <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                                    <defs>
-                                        <linearGradient id="solvGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-                                            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    {[0, 40, 80, 120].map(v => (
-                                        <g key={v}>
-                                            <line x1="0" y1={getSolvY(v)} x2="100" y2={getSolvY(v)} className="grid-line" />
-                                            <text x="0" y={getSolvY(v) - 2} className="text-[7px] md:text-[5px] font-mono fill-slate-500">{v}%</text>
-                                        </g>
-                                    ))}
-                                    {/* Umbral 100% */}
-                                    <line x1="0" y1={getSolvY(100)} x2="100" y2={getSolvY(100)} stroke="#10b981" strokeWidth="1.5" strokeDasharray="2 2" className="svg-line" />
-                                    
-                                    <path d={`M 0,100 L ${data.map(d => `${getX(d.x)},${getSolvY(d.solv)}`).join(' L ')} L 100,100 Z`} fill="url(#solvGrad)" />
-                                    <path d={`M ${data.map(d => `${getX(d.x)},${getSolvY(d.solv)}`).join(' L ')}`} fill="none" stroke="#3b82f6" strokeWidth="2.5" className="svg-line" />
-                                    
-                                    {/* Marcador Usuario */}
-                                    <line x1={getX(retX)} y1="0" x2={getX(retX)} y2="100" stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" className="svg-line" />
-                                    <circle cx={getX(retX)} cy={getSolvY(userPt.solv)} r="3" fill="#fff" stroke="#3b82f6" strokeWidth="2" className="svg-line" />
-                                </svg>
-                                <div className="absolute bottom-2 left-4 right-4 flex justify-between text-[11px] md:text-[9px] font-mono text-slate-500">
+                            
+                            <div className="relative min-h-[300px] h-[300px] md:min-h-[360px] md:h-[360px] lg:min-h-[360px] lg:h-[360px] xl:min-h-[380px] xl:h-[380px] mt-4 mb-8 mx-4 overflow-visible">
+                                {/* Eje Y HTML */}
+                                {[0, 25, 50, 75, 100, 120].map(v => (
+                                    <span key={`y2-${v}`} className="absolute left-0 text-xs font-mono text-slate-500 -translate-y-1/2" style={{ top: `${getSolvY(v)}%` }}>{v}%</span>
+                                ))}
+                                
+                                <div className="absolute inset-0 left-10">
+                                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                                        <defs>
+                                            <linearGradient id="solvGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
+                                                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                        
+                                        {[0, 25, 50, 75, 100, 120].map(v => <line key={`l2-${v}`} x1="0" y1={getSolvY(v)} x2="100" y2={getSolvY(v)} className="grid-line" />)}
+                                        <line x1="0" y1={getSolvY(100)} x2="100" y2={getSolvY(100)} stroke="#10b981" strokeWidth="2" strokeDasharray="4 4" className="svg-line" />
+                                        
+                                        <path d={`M 0,100 L ${data.map(d => `${getX(d.x)},${getSolvY(d.solv)}`).join(' L ')} L 100,100 Z`} fill="url(#solvGrad)" />
+                                        <path d={`M ${data.map(d => `${getX(d.x)},${getSolvY(d.solv)}`).join(' L ')}`} fill="none" stroke="#3b82f6" strokeWidth="3" className="svg-line" />
+                                        
+                                        <line x1={getX(retX)} y1="0" x2={getX(retX)} y2="100" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 4" className="svg-line" />
+                                    </svg>
+
+                                    {/* PUNTO HTML PERFECTO */}
+                                    <div className="absolute w-5 h-5 bg-white rounded-full border-[3px] border-blue-500 shadow-[0_0_12px_rgba(255,255,255,0.8)]" 
+                                         style={{ left: `${getX(retX)}%`, top: `${getSolvY(userPt.solv)}%`, transform: 'translate(-50%, -50%)', zIndex: 20 }}></div>
+                                </div>
+                                
+                                {/* Eje X HTML */}
+                                <div className="absolute top-full left-10 right-0 flex justify-between text-xs font-mono text-slate-500 mt-3">
                                     <span>2025</span><span>2055</span><span>2085</span><span>2115</span><span>2150</span>
                                 </div>
                             </div>
                         </div>
 
                     </div>
-                </div>
+                </React.Fragment>
             );
         };
 
