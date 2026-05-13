@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kiriki — Dados tradicionales</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0f172a;--panel2:#172033;--text:#f8fafc;--muted:#b6c3d6;
+  --gold:#f6c453;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--line:rgba(255,255,255,.13);
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#1d3557 0,#07111f 48%,#030712 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,select,input{font:inherit}
+button{border:0;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer;background:linear-gradient(#f8d477,#d99c1d);color:#1b1302;box-shadow:0 7px 18px rgba(0,0,0,.25)}
+button.secondary{background:#233148;color:var(--text);border:1px solid var(--line)}
+button.danger{background:linear-gradient(#f87171,#dc2626);color:white}
+button.good{background:linear-gradient(#86efac,#16a34a);color:#052e16}
+button:disabled{opacity:.45;filter:grayscale(.8);cursor:not-allowed}
+input,select{border:1px solid var(--line);background:#07111f;color:var(--text);border-radius:12px;padding:10px;min-width:0}
+.app{max-width:1180px;margin:0 auto;padding:10px 12px calc(84px + var(--safe-bottom))}
+.topbar{
+  position:sticky;top:0;z-index:50;margin:0 -12px 12px;padding:calc(8px + var(--safe-top)) 12px 9px;
+  background:rgba(7,17,31,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)
+}
+.titleline{display:flex;gap:10px;align-items:center;justify-content:space-between}
+h1{font-size:clamp(1.05rem,5vw,1.8rem);margin:0;letter-spacing:-.04em}
+.hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:9px}
+.hudbox{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:8px;min-height:72px}
+.hudlabel{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.hudval{font-size:.95rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hudsub{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:34px}
+@media(max-width:620px){
+  .topbar{padding:calc(6px + var(--safe-top)) 10px 7px}
+  .titleline{margin-bottom:6px}
+  .titleline button{padding:8px 10px;font-size:.82rem;border-radius:13px}
+  h1{font-size:1.45rem}
+  .hud{
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    margin-top:4px;
+  }
+  .hudbox{
+    min-height:54px;
+    padding:7px 8px;
+    border-radius:13px;
+  }
+  .hudbox:first-child{
+    grid-column:1/-1;
+    min-height:48px;
+  }
+  .hudbox:first-child .hudsub{
+    display:none;
+  }
+  .hudlabel{
+    font-size:.63rem;
+    letter-spacing:.055em;
+  }
+  .hudval{
+    font-size:.86rem;
+    line-height:1.05;
+  }
+  .hudsub{
+    margin-top:4px;
+    min-height:28px;
+    gap:4px;
+  }
+}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}}
+@media(max-width:620px){
+  .app{padding:6px 8px calc(76px + var(--safe-bottom))}
+  .grid{gap:8px}
+  .card{border-radius:16px}
+  .body{padding:8px}
+  .card h2,.card h3{font-size:.95rem;margin-bottom:6px}
+}
+.card{background:linear-gradient(180deg,rgba(23,32,51,.96),rgba(10,18,32,.96));border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.28);overflow:hidden}
+.card h2,.card h3{margin:0 0 10px}
+.body{padding:14px}
+.setupGrid{display:grid;gap:10px}
+.setupRow{display:grid;grid-template-columns:1.2fr .8fr auto;gap:8px;align-items:center}
+@media(max-width:520px){.setupRow{grid-template-columns:1fr 105px}.setupRow button{grid-column:1/-1}}
+.players{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:760px){.players{grid-template-columns:1fr}}
+.player{border:1px solid var(--line);border-radius:18px;padding:10px;background:rgba(255,255,255,.045)}
+.player.active{outline:2px solid var(--gold);box-shadow:0 0 0 4px rgba(246,196,83,.16)}
+.player.dead{opacity:.45;filter:grayscale(1)}
+.playerTop{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.name{font-weight:900}
+.kind{font-size:.78rem;color:var(--muted);background:rgba(255,255,255,.06);border-radius:999px;padding:3px 8px}
+.stars{display:flex;gap:1px;flex-wrap:wrap;margin-top:7px;font-size:1.18rem;line-height:1}
+.star{color:#334155;text-shadow:0 1px 0 rgba(255,255,255,.08)}
+.star.on{color:#facc15;text-shadow:0 0 8px rgba(250,204,21,.55)}
+.table{
+  min-height:460px;border-radius:28px;border:1px solid rgba(255,255,255,.13);display:grid;place-items:center;
+  background:
+    radial-gradient(ellipse at center, rgba(34,197,94,.26), transparent 69%),
+    linear-gradient(145deg,#0f4f2d,#052f1d 56%,#031d12);
+  position:relative;overflow:hidden;padding:18px
+}
+.table:before{
+  content:"";
+  position:absolute;inset:70px 54px;
+  border:2px solid rgba(255,255,255,.18);
+  border-radius:50%;
+  box-shadow:inset 0 0 28px rgba(0,0,0,.24), 0 0 0 16px rgba(255,255,255,.035);
+  pointer-events:none
+}
+.table:after{
+  content:"";
+  position:absolute;inset:110px 92px;
+  border:1px dashed rgba(255,255,255,.16);
+  border-radius:50%;
+  pointer-events:none
+}
+.tableCenter{
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  z-index:6;
+  transition:left .72s cubic-bezier(.2,.85,.2,1.15), top .72s cubic-bezier(.2,.85,.2,1.15), transform .72s ease;
+  will-change:left,top,transform;
+}
+.tableCenter:before{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:112px;height:112px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  border:1px dashed rgba(246,196,83,.34);
+  opacity:.8;
+  pointer-events:none;
+}
+.tableCenter:after{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:38px;height:38px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(246,196,83,.16), transparent 68%);
+  pointer-events:none;
+}
+.rollValue{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, calc(-50% + 64px));
+  z-index:8;
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(2,6,23,.78);
+  border:1px solid rgba(255,255,255,.16);
+  color:#f8fafc;
+  font-weight:900;
+  font-size:.88rem;
+  box-shadow:0 8px 18px rgba(0,0,0,.24);
+  white-space:nowrap;
+  pointer-events:none;
+}
+@media(max-width:620px){
+  .rollValue{
+    transform:translate(-50%, calc(-50% + 54px));
+    font-size:.76rem;
+    padding:6px 8px;
+  }
+}
+.cupPath{
+  position:absolute;
+  left:50%;
+  top:50%;
+  height:3px;
+  width:0;
+  background:linear-gradient(90deg, rgba(246,196,83,.55), rgba(246,196,83,.10));
+  transform-origin:0 50%;
+  z-index:2;
+  pointer-events:none;
+  border-radius:999px;
+  transition:width .72s cubic-bezier(.2,.85,.2,1.15), transform .72s cubic-bezier(.2,.85,.2,1.15);
+}
+.seat{
+  position:absolute;
+  width:112px;
+  min-height:74px;
+  padding:7px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(4,12,24,.86);
+  box-shadow:0 8px 20px rgba(0,0,0,.28);
+  text-align:center;
+  z-index:3;
+}
+.seat.active{outline:2px solid var(--gold);box-shadow:0 0 0 5px rgba(246,196,83,.13),0 8px 20px rgba(0,0,0,.28)}
+.seat.dead{opacity:.45;filter:grayscale(1)}
+.seatName{font-size:.82rem;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seatType{font-size:.68rem;color:var(--muted);margin-top:2px}
+.kirikiScore{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  width:42px;
+  margin:5px auto 2px;
+  line-height:1;
+}
+.kirikiScore .star{
+  font-size:.9rem;
+  width:13px;height:13px;
+  display:grid;place-items:center;
+}
+.seatStars{margin-top:3px}
+@media(max-width:520px){
+  .table{min-height:560px}
+  .table:before{inset:94px 28px;border-radius:50%}
+  .table:after{inset:132px 52px;border-radius:50%}
+  .seat{width:102px;min-height:70px;padding:6px}
+  .kirikiScore{width:39px}
+}
+
+.cupWrap{
+  position:absolute;
+  display:grid;
+  place-items:center;
+  min-height:130px;
+  width:132px;
+  max-width:34vw;
+  pointer-events:none;
+}
+.cupShadow{
+  position:absolute;
+  bottom:1px;
+  width:116px;
+  height:24px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(0,0,0,.55) 0, rgba(0,0,0,.20) 58%, transparent 76%);
+  filter:blur(2px);
+  opacity:.88;
+}
+.cup{
+  position:relative;
+  width:86px;
+  height:106px;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.92) 0%, #101010 18%, #202020 45%, #080808 72%, #000 100%);
+  border-left:2px solid rgba(255,255,255,.10);
+  border-right:2px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 18px 22px rgba(0,0,0,.42),
+    inset 10px 0 16px rgba(255,255,255,.045),
+    inset -14px 0 18px rgba(0,0,0,.60);
+  transform-origin:50% 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  clip-path:polygon(18% 8%, 82% 8%, 96% 92%, 4% 92%);
+}
+.cup:before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-3px;
+  transform:translateX(-50%);
+  width:58px;
+  height:19px;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 38% 26%, rgba(255,255,255,.16), transparent 28%),
+    linear-gradient(180deg,#202020,#050505);
+  border:2px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,.07),
+    inset 0 -4px 6px rgba(0,0,0,.65),
+    0 4px 6px rgba(0,0,0,.26);
+  z-index:3;
+}
+.cup:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-12px;
+  transform:translateX(-50%);
+  width:104px;
+  height:31px;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 38% 25%, rgba(255,255,255,.18), transparent 26%),
+    radial-gradient(ellipse at 50% 54%, #1b1b1b 0%, #090909 62%, #000 100%);
+  border:3px solid rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 3px 7px rgba(255,255,255,.07),
+    inset 0 -7px 10px rgba(0,0,0,.75),
+    0 8px 13px rgba(0,0,0,.34);
+  z-index:4;
+}
+.cup .label{display:none}
+.cupGrip{
+  position:absolute;
+  top:6px;
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 4px rgba(255,255,255,.10), inset 0 -2px 5px rgba(0,0,0,.45);
+  z-index:5;
+}
+.cupBand{
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:23px;
+  height:8px;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.14),rgba(255,255,255,.03));
+  box-shadow:0 1px 2px rgba(0,0,0,.35);
+  z-index:5;
+}
+.cupLeatherTexture{
+  position:absolute;
+  inset:0;
+  opacity:.18;
+  background:
+    repeating-linear-gradient(28deg, rgba(255,255,255,.08) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(105deg, rgba(0,0,0,.45) 0 1px, transparent 1px 6px);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  z-index:2;
+}
+.cup.shaking{
+  animation:shakeCup .75s ease-in-out infinite;
+}
+@keyframes shakeCup{
+  0%{transform:translate(0,0) rotate(0deg) scale(1)}
+  12%{transform:translate(-10px,-2px) rotate(-12deg) scale(1.04)}
+  24%{transform:translate(10px,2px) rotate(12deg) scale(1.04)}
+  36%{transform:translate(-9px,1px) rotate(-10deg) scale(1.03)}
+  48%{transform:translate(9px,-2px) rotate(10deg) scale(1.03)}
+  60%{transform:translate(-6px,2px) rotate(-7deg) scale(1.02)}
+  72%{transform:translate(6px,0) rotate(7deg) scale(1.02)}
+  84%{transform:translate(-3px,-1px) rotate(-4deg) scale(1.01)}
+  100%{transform:translate(0,0) rotate(0deg) scale(1)}
+}
+.diceRow{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:nowrap;
+  z-index:7;
+  max-width:150px;
+  padding:5px;
+  border-radius:16px;
+  background:rgba(2,6,23,.18);
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+}
+.die{
+  width:clamp(46px,15vw,66px);
+  height:clamp(46px,15vw,66px);
+  background:#f7f3e8;color:#111827;border:2px solid rgba(0,0,0,.25);
+  border-radius:12px;display:grid;place-items:center;box-shadow:0 8px 14px rgba(0,0,0,.28);position:relative;overflow:hidden;
+}
+.die .corner{position:absolute;font-size:.50rem;font-weight:900;color:#64748b;top:4px;left:5px}
+.die .bigLetter{font-size:clamp(1.75rem,8vw,2.75rem);font-weight:1000;line-height:1}
+.die.k .bigLetter{color:#dc2626}.die.q .bigLetter{color:#16a34a}.die.j .bigLetter{color:#2563eb}
+.pips{width:78%;height:78%;position:relative}
+.pip{position:absolute;width:15%;height:15%;border-radius:50%;background:#111827;box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.pip.red{background:#dc2626}
+.p1{left:8%;top:10%}.p2{left:42.5%;top:10%}.p3{right:8%;top:10%}
+.p4{left:8%;top:42.5%}.p5{left:42.5%;top:42.5%}.p6{right:8%;top:42.5%}
+.p7{left:8%;bottom:10%}.p8{left:42.5%;bottom:10%}.p9{right:8%;bottom:10%}
+.asdot{width:34%;height:34%;background:#111827;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,.28)}
+.snakeEyes{display:flex;align-items:center;justify-content:center;width:78%;height:78%}
+.snakeDot{width:30%;height:30%;background:#dc2626;border-radius:50%;box-shadow:0 3px 8px rgba(220,38,38,.45)}
+
+.miniPair{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.miniDie{
+  width:34px;height:34px;background:#f7f3e8;border:2px solid rgba(0,0,0,.24);border-radius:8px;
+  position:relative;display:grid;place-items:center;overflow:hidden;flex:0 0 auto;
+  box-shadow:0 3px 7px rgba(0,0,0,.2);
+}
+.miniDie .mCorner{position:absolute;top:2px;left:3px;font-size:.46rem;font-weight:900;color:#64748b;line-height:1}
+.miniDie .mLetter{font-size:1.25rem;font-weight:1000;line-height:1}
+.miniDie.k .mLetter{color:#dc2626}.miniDie.q .mLetter{color:#16a34a}.miniDie.j .mLetter{color:#2563eb}
+.mPip{position:absolute;width:18%;height:18%;border-radius:50%;background:#111827}
+.mPip.red{background:#dc2626}
+.mp1{left:8%;top:10%}.mp2{left:41%;top:10%}.mp3{right:8%;top:10%}
+.mp4{left:8%;top:41%}.mp5{left:41%;top:41%}.mp6{right:8%;top:41%}
+.mp7{left:8%;bottom:10%}.mp8{left:41%;bottom:10%}.mp9{right:8%;bottom:10%}
+.mAs{width:28%;height:28%;background:#111827;border-radius:50%}
+.mSnake{display:flex;align-items:center;justify-content:center;width:78%;height:78%}
+.mSnake span{width:32%;height:32%;background:#dc2626;border-radius:50%}
+
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.status{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:16px;padding:11px;line-height:1.36}
+.muted{color:var(--muted)}
+.big{font-weight:1000;font-size:1.08rem}
+.bottomActions{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;padding:9px 12px calc(9px + var(--safe-bottom));
+  background:rgba(7,17,31,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line)
+}
+.bottomInner{max-width:1180px;margin:0 auto;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.bottomInner button,.bottomInner select{min-height:44px}
+.log{height:210px;overflow:auto;background:#030712;border:1px solid var(--line);border-radius:16px;padding:10px;font-size:.9rem;line-height:1.35}
+.log p{margin:.35rem 0;padding:.42rem .55rem;border-left:3px solid rgba(255,255,255,.18);background:rgba(255,255,255,.035);border-radius:8px}
+
+.scale{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:620px){.scale{grid-template-columns:1fr}}
+.scaleItem{
+  padding:10px;border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:58px;
+}
+.scaleText{font-size:.95rem;font-weight:900;line-height:1.2}
+.hidden{display:none!important}
+.small{font-size:.84rem;color:var(--muted)}
+.warn{color:#fde68a}
+</style>
+
+<style>
+.instructionsHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.instructionsHeader h2{margin:0}
+.rulesGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+.ruleBox{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+  background:rgba(255,255,255,.045);
+}
+.ruleBox h3{
+  margin:0 0 6px;
+  font-size:1rem;
+}
+.ruleBox p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.35;
+  font-size:.92rem;
+}
+@media(max-width:620px){
+  .titleline{
+    align-items:flex-start;
+  }
+  .titleline .controls{
+    justify-content:flex-end;
+    gap:6px;
+  }
+  .titleline button{
+    padding:7px 8px;
+    font-size:.76rem;
+  }
+  .rulesGrid{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .ruleBox{
+    padding:9px;
+  }
+  .ruleBox h3{
+    font-size:.92rem;
+  }
+  .ruleBox p{
+    font-size:.84rem;
+  }
+}
+</style>
+
+
+<style>
+.kirikiScore{
+  position:relative;
+  width:58px;
+  height:58px;
+  margin:4px auto 2px;
+  display:block;
+}
+.kirikiScore svg{
+  width:100%;
+  height:100%;
+  display:block;
+  overflow:visible;
+}
+.kirikiScore .ray{
+  stroke:rgba(203,213,225,.32);
+  stroke-width:1.6;
+  stroke-linecap:round;
+}
+.kirikiScore .ray.on{
+  stroke:#facc15;
+  stroke-width:2.2;
+  filter:drop-shadow(0 0 3px rgba(250,204,21,.55));
+}
+.kirikiScore .scoreDot{
+  fill:#334155;
+  stroke:rgba(255,255,255,.18);
+  stroke-width:.8;
+}
+.kirikiScore .scoreDot.on{
+  fill:#facc15;
+  stroke:#fde68a;
+  filter:drop-shadow(0 0 4px rgba(250,204,21,.55));
+}
+.kirikiScore .centerDot{
+  fill:rgba(203,213,225,.55);
+}
+@media(max-width:620px){
+  .kirikiScore{
+    width:46px;
+    height:46px;
+  }
+  .seat .kirikiScore{
+    width:42px;
+    height:42px;
+  }
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="titleline">
+      <h1>Kiriki</h1>
+      <div class="controls">
+        <button class="secondary" id="setupBtn">Jugadores</button>
+        <button class="secondary" id="instructionsBtn">Instrucciones</button>
+        <button class="secondary" id="fullscreenBtn">Pantalla</button>
+        <button id="newBtn">Nueva</button>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="hudbox">
+        <div class="hudlabel">Turno</div>
+        <div class="hudval" id="hudTurn">—</div>
+        <div class="hudsub" id="hudTurnDice"></div>
+      </div>
+      <div class="hudbox">
+        <div class="hudlabel">Último anuncio</div>
+        <div class="hudval" id="hudBid">—</div>
+        <div class="hudsub" id="hudBidDice"></div>
+      </div>
+      <div class="hudbox">
+        <div class="hudlabel">Estado</div>
+        <div class="hudval" id="hudState">—</div>
+        <div class="hudsub" id="hudStateInfo"></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="card" id="setupCard">
+    <div class="body setupGrid">
+      <h2>Configuración de jugadores</h2>
+      <div class="small">Puedes mezclar IA y jugadores físicos. Los jugadores físicos juegan por turnos en el mismo móvil.</div>
+      <div id="setupRows" class="setupGrid"></div>
+      <div class="controls">
+        <button class="secondary" id="addPlayerBtn">Añadir jugador</button>
+        <button class="good" id="startBtn">Empezar partida</button>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="card hidden" id="instructionsCard">
+    <div class="body instructions">
+      <div class="instructionsHeader">
+        <h2>Instrucciones</h2>
+        <button class="secondary" id="closeInstructionsBtn">Cerrar</button>
+      </div>
+
+      <div class="rulesGrid">
+        <div class="ruleBox">
+          <h3>Objetivo</h3>
+          <p>Evitar acumular 9 estrellas negativas. Cuando un jugador llega a 9 queda eliminado. Gana el último jugador en pie.</p>
+        </div>
+
+        <div class="ruleBox">
+          <h3>Turno</h3>
+          <p>El jugador activo tira los dados bajo el cubilete, mira el resultado y anuncia una jugada. Puede decir la verdad o farolear.</p>
+        </div>
+
+        <div class="ruleBox">
+          <h3>Aceptar o destapar</h3>
+          <p>El siguiente jugador puede aceptar y tirar para igualar o superar el anuncio, o destapar para comprobar si el anuncio anterior era falso.</p>
+        </div>
+
+        <div class="ruleBox">
+          <h3>Penalización</h3>
+          <p>Si al destapar el valor real es menor que lo anunciado, se penaliza quien anunció. Si el valor real es igual o superior, se penaliza quien destapó.</p>
+        </div>
+
+        <div class="ruleBox">
+          <h3>Escala</h3>
+          <p>La escala va de 4 a 10, Tocho, parejas, Ojos de serpiente y Kiriki. La escala visual aparece en la sección “Escala visual”.</p>
+        </div>
+
+        <div class="ruleBox">
+          <h3>Kiriki</h3>
+          <p>Si sacas Kiriki puedes enviarlo a un rival. Ese rival debe tirar y destapar obligatoriamente. Si saca otro Kiriki, devuelve el punto negativo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <main class="grid" id="gameGrid">
+    <section class="card hidden" id="playersCard">
+      <div class="body">
+        <h2>Partida</h2>
+        <div class="players" id="players"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="body" style="display:grid;gap:10px">
+        <div class="status" id="status"></div>
+        <div class="table" id="tableArea">
+          <div id="tableSeats"></div>
+          <div id="cupPath" class="cupPath"></div>
+          <div id="diceArea" class="cupWrap tableCenter"></div>
+          <div id="rollValue" class="rollValue hidden"></div>
+        </div>
+        <div class="status small" id="privateInfo">Los dados permanecen ocultos hasta que el jugador activo decide mirarlos o se destapa.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="body">
+        <h3>Escala visual</h3>
+        <div class="scale" id="scale"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="body">
+        <h3>Registro</h3>
+        <div class="log" id="log"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottomActions">
+  <div class="bottomInner" id="actions"></div>
+</nav>
+
+<script>
+const MAX_NEG = 9;
+const bids = [
+  {rank:1,name:"4"},{rank:2,name:"5"},{rank:3,name:"6"},{rank:4,name:"7"},{rank:5,name:"8"},
+  {rank:6,name:"9"},{rank:7,name:"10"},{rank:8,name:"Tocho"},
+  {rank:9,name:"Pareja de negras"},{rank:10,name:"Pareja de rojas"},{rank:11,name:"Pareja de jotas"},
+  {rank:12,name:"Pareja de reinas"},{rank:13,name:"Pareja de reyes"},{rank:14,name:"Ojos de serpiente"},
+  {rank:15,name:"Kiriki"}
+];
+const faces = {
+  1:{name:"Negra", short:"7 negra", cls:"black7"},
+  2:{name:"Roja", short:"8 roja", cls:"red8"},
+  3:{name:"Jota", short:"J", cls:"j"},
+  4:{name:"Reina", short:"Q", cls:"q"},
+  5:{name:"Rey", short:"K", cls:"k"},
+  6:{name:"As", short:"As", cls:"as"}
+};
+const representativeByBid = {
+  1:[1,3],   // 4
+  2:[1,4],   // 5
+  3:[1,5],   // 6
+  4:[1,6],   // 7
+  5:[2,6],   // 8
+  6:[3,6],   // 9
+  7:[4,6],   // 10
+  8:[5,6],   // Tocho
+  9:[1,1],
+  10:[2,2],
+  11:[3,3],
+  12:[4,4],
+  13:[5,5],
+  14:[6,6],
+  15:[1,2]
+};
+
+let config = [
+  {name:"Oriol", type:"human"},
+  {name:"Ane", type:"ai"},
+  {name:"Iker", type:"ai"}
+];
+let state;
+let diceVisibleToCurrent = false;
+let aiLoopToken = 0;
+
+const $ = id => document.getElementById(id);
+const wait = ms => new Promise(r => setTimeout(r,ms));
+const bidByRank = r => bids.find(b=>b.rank===r);
+let audioCtx = null;
+
+function sound(type){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const now = audioCtx.currentTime;
+    const out = audioCtx.createGain();
+    out.connect(audioCtx.destination);
+    out.gain.setValueAtTime(0.0001, now);
+
+    function tone(freq, dur, gain=0.08, wave="sine", delay=0){
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = wave;
+      o.frequency.setValueAtTime(freq, now + delay);
+      g.gain.setValueAtTime(0.0001, now + delay);
+      g.gain.exponentialRampToValueAtTime(gain, now + delay + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+      o.connect(g); g.connect(out);
+      o.start(now + delay); o.stop(now + delay + dur + 0.03);
+    }
+
+    if(type === "shake"){
+      out.gain.exponentialRampToValueAtTime(0.18, now + 0.03);
+      out.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+      for(let i=0;i<7;i++) tone(80 + Math.random()*70, 0.07, 0.06, "square", i*0.09);
+    }else if(type === "announce"){
+      tone(520, .10, .07, "triangle", 0);
+      tone(740, .13, .06, "triangle", .09);
+    }else if(type === "challenge"){
+      tone(220, .18, .09, "sawtooth", 0);
+      tone(150, .25, .07, "sawtooth", .12);
+    }else if(type === "penalty"){
+      tone(180, .20, .10, "square", 0);
+      tone(110, .30, .08, "square", .16);
+    }else if(type === "kiriki"){
+      tone(660, .11, .08, "triangle", 0);
+      tone(880, .11, .08, "triangle", .12);
+      tone(1180, .20, .09, "triangle", .24);
+    }else if(type === "win"){
+      tone(523, .12, .08, "triangle", 0);
+      tone(659, .12, .08, "triangle", .13);
+      tone(784, .22, .09, "triangle", .27);
+    }
+  }catch(e){}
+}
+
+function renderSetup(){
+  $("setupRows").innerHTML = "";
+  config.forEach((p,i)=>{
+    const row=document.createElement("div");
+    row.className="setupRow";
+    row.innerHTML = `
+      <input aria-label="Nombre jugador ${i+1}" value="${escapeHtml(p.name)}" data-i="${i}" data-field="name">
+      <select aria-label="Tipo jugador ${i+1}" data-i="${i}" data-field="type">
+        <option value="human" ${p.type==="human"?"selected":""}>Jugador físico</option>
+        <option value="ai" ${p.type==="ai"?"selected":""}>IA</option>
+      </select>
+      <button class="secondary" data-remove="${i}" ${config.length<=3?"disabled":""}>Quitar</button>
+    `;
+    $("setupRows").appendChild(row);
+  });
+  document.querySelectorAll("[data-field]").forEach(el=>{
+    el.oninput=()=>{
+      const i=Number(el.dataset.i);
+      config[i][el.dataset.field]=el.value.trim() || `Jugador ${i+1}`;
+    };
+  });
+  document.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.onclick=()=>{config.splice(Number(btn.dataset.remove),1);renderSetup();}
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(m){
+    switch(m){
+      case '&': return '&amp;';
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '"': return '&quot;';
+      case "'": return '&#39;';
+      default: return m;
+    }
+  });
+}
+function log(msg){const p=document.createElement("p");p.innerHTML=msg;$("log").prepend(p)}
+function roll(){return [1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)]}
+function nextAlive(i){for(let g=0;g<30;g++){i=(i+1)%state.players.length;if(!state.players[i].dead)return i}return i}
+function alive(){return state.players.filter(p=>!p.dead)}
+function diceText(d){return d.map(x=>faces[x].name).join(" + ")}
+
+function evaluate(d){
+  const [a,b]=d, min=Math.min(a,b), max=Math.max(a,b);
+  if(min===1 && max===2) return bidByRank(15); // Negra + Roja
+  if(min===5 && max===6) return bidByRank(8);  // K + As, tocho
+  if(a===b) return bidByRank(8+a);
+  const sum=a+b;
+  return bidByRank(Math.max(1,Math.min(7,sum-3)));
+}
+
+function createPips(indices, prefix="", red=false){
+  return indices.map(p=>`<span class="${prefix}Pip ${red?'red':''} ${prefix}p${p}"></span>`).join("");
+}
+
+function dieHtml(n){
+  const f=faces[n];
+  if(n===1){
+    return `<div class="die"><div class="corner">NEGRA</div><div class="pips">
+      ${[1,3,4,5,6,7,9].map(p=>`<span class="pip p${p}"></span>`).join("")}
+    </div></div>`;
+  }
+  if(n===2){
+    return `<div class="die"><div class="corner">ROJA</div><div class="pips">
+      ${[1,2,3,4,6,7,8,9].map(p=>`<span class="pip red p${p}"></span>`).join("")}
+    </div></div>`;
+  }
+  if(n===6){
+    return `<div class="die"><div class="corner">AS</div><div class="snakeEyes"><span class="snakeDot"></span></div></div>`;
+  }
+  return `<div class="die ${f.cls}"><div class="corner">${f.name.toUpperCase()}</div><div class="bigLetter">${f.short}</div></div>`;
+}
+
+function miniDieHtml(n){
+  const f=faces[n];
+  if(n===1){
+    return `<div class="miniDie"><div class="mCorner">N</div>
+      ${[1,3,4,5,6,7,9].map(p=>`<span class="mPip mp${p}"></span>`).join("")}
+    </div>`;
+  }
+  if(n===2){
+    return `<div class="miniDie"><div class="mCorner">R</div>
+      ${[1,2,3,4,6,7,8,9].map(p=>`<span class="mPip red mp${p}"></span>`).join("")}
+    </div>`;
+  }
+  if(n===6){
+    return `<div class="miniDie"><div class="mCorner">As</div><div class="mSnake"><span></span></div></div>`;
+  }
+  return `<div class="miniDie ${f.cls}"><div class="mCorner">${f.name[0]}</div><div class="mLetter">${f.short === "As" ? "A" : f.short}</div></div>`;
+}
+
+function pairHtml(pair){
+  return `<div class="miniPair">${miniDieHtml(pair[0])}${miniDieHtml(pair[1])}</div>`;
+}
+
+
+function activeSeatPoint(){
+  if(!state || !state.players || !state.players.length) return {x:50,y:50};
+  const seat = seatPosition(state.current, state.players.length);
+
+  // Posición delante del jugador activo, pero sin tapar su marcador.
+  const mobile = window.innerWidth <= 620;
+  const fx = mobile ? 0.42 : 0.50;
+  const fy = mobile ? 0.38 : 0.48;
+
+  let x = 50 + (seat.x - 50) * fx;
+  let y = 50 + (seat.y - 50) * fy;
+
+  x = Math.max(24, Math.min(76, x));
+  y = Math.max(26, Math.min(74, y));
+
+  return {x,y};
+}
+
+function visibleDicePoint(){
+  // Al destapar o mirar, los dados se muestran cerca del centro, no encima del jugador.
+  if(!state || !state.players || !state.players.length) return {x:50,y:50};
+  const seat = seatPosition(state.current, state.players.length);
+  const mobile = window.innerWidth <= 620;
+  const fx = mobile ? 0.22 : 0.26;
+  const fy = mobile ? 0.20 : 0.24;
+  let x = 50 + (seat.x - 50) * fx;
+  let y = 50 + (seat.y - 50) * fy;
+  x = Math.max(34, Math.min(66, x));
+  y = Math.max(34, Math.min(66, y));
+  return {x,y};
+}
+
+
+function seatPosition(i,total){
+  // Reparte jugadores de forma simétrica alrededor del tapete.
+  // El jugador 0 queda abajo, y los demás quedan espaciados uniformemente.
+  const angle = (Math.PI / 2) + (i * 2 * Math.PI / total);
+  const mobile = window.innerWidth <= 620;
+  const rx = mobile ? 36 : 39;
+  const ry = mobile ? 35 : 38;
+  return {
+    x: 50 + rx * Math.cos(angle),
+    y: 50 + ry * Math.sin(angle)
+  };
+}
+
+function renderTableSeats(){
+  const host = $("tableSeats");
+  if(!host || !state) return;
+  host.innerHTML = "";
+  const total = state.players.length;
+  state.players.forEach((p,i)=>{
+    const pos = seatPosition(i,total);
+    const div = document.createElement("div");
+    div.className = "seat" + (i===state.current ? " active" : "") + (p.dead ? " dead" : "");
+    div.style.left = `${pos.x}%`;
+    div.style.top = `${pos.y}%`;
+    div.style.transform = "translate(-50%,-50%)";
+    div.innerHTML = `
+      <div class="seatName">${escapeHtml(p.name)}</div>
+      ${scoreHtml(p.neg)}
+      <div class="seatType">${p.type==="ai"?"IA":"Físico"}${p.dead?" · eliminado":""}</div>
+    `;
+    host.appendChild(div);
+  });
+}
+
+function moveCupToActive(){
+  const area = $("diceArea");
+  if(!area || !state) return;
+  const diceVisible = state.dice && (state.revealed || diceVisibleToCurrent);
+  const p = diceVisible ? visibleDicePoint() : activeSeatPoint();
+
+  area.style.left = p.x + "%";
+  area.style.top = p.y + "%";
+
+  const path = $("cupPath");
+  const table = $("tableArea");
+  if(path && table){
+    const rect = table.getBoundingClientRect();
+    const dx = (p.x - 50) * rect.width / 100;
+    const dy = (p.y - 50) * rect.height / 100;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    path.style.width = len + "px";
+    path.style.transform = `rotate(${angle}deg)`;
+  }
+}
+
+function renderDice(forceReveal=false){
+  const area=$("diceArea");
+  const visible = forceReveal || state.revealed || diceVisibleToCurrent;
+  if(!state.dice || !visible){
+    area.innerHTML = `
+      <div class="cupShadow"></div>
+      <div class="cup ${state.shaking ? 'shaking' : ''}">
+        <div class="cupLeatherTexture"></div>
+        <div class="cupGrip"></div>
+        <div class="cupBand"></div>
+      </div>
+    `;
+    return;
+  }
+  area.innerHTML = `<div class="diceRow">${state.dice.map(dieHtml).join("")}</div>`;
+}
+
+
+function scoreHtml(neg){
+  const rays = [];
+  const cx = 30, cy = 30, r1 = 7, r2 = 25;
+  for(let i=0;i<MAX_NEG;i++){
+    const angle = (-90 + i * 360 / MAX_NEG) * Math.PI / 180;
+    const x1 = cx + Math.cos(angle) * r1;
+    const y1 = cy + Math.sin(angle) * r1;
+    const x2 = cx + Math.cos(angle) * r2;
+    const y2 = cy + Math.sin(angle) * r2;
+    const on = i < neg ? "on" : "";
+    rays.push(`<line class="ray ${on}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"></line>`);
+    rays.push(`<circle class="scoreDot ${on}" cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3.1"></circle>`);
+  }
+  return `<div class="kirikiScore" aria-label="${neg} de ${MAX_NEG} negativos">
+    <svg viewBox="0 0 60 60" role="img">
+      ${rays.join("")}
+      <circle class="centerDot" cx="30" cy="30" r="2.4"></circle>
+    </svg>
+  </div>`;
+}
+
+function renderPlayers(){
+  $("players").innerHTML="";
+  state.players.forEach((p,i)=>{
+    const div=document.createElement("div");
+    div.className="player"+(i===state.current?" active":"")+(p.dead?" dead":"");
+    div.innerHTML=`<div class="playerTop"><div class="name">${escapeHtml(p.name)}</div><div class="kind">${p.type==="ai"?"IA":"Físico"}</div></div>
+      ${scoreHtml(p.neg)}
+      <div class="small">${p.neg}/${MAX_NEG} negativos${p.dead?" · eliminado":""}</div>`;
+    $("players").appendChild(div);
+  });
+}
+
+function renderScale(){
+  $("scale").innerHTML=bids.map(b=>`
+    <div class="scaleItem">
+      <div class="scaleText">${b.rank}. ${b.name}</div>
+      ${pairHtml(representativeByBid[b.rank])}
+    </div>
+  `).join("");
+}
+
+function setHud(){
+  const p=state.players[state.current];
+  $("hudTurn").textContent=state.gameOver ? "Fin de partida" : (p ? p.name+" · "+(p.type==="ai"?"IA":"físico") : "—");
+  const canShowTurnDice = p && !state.gameOver && state.dice && (state.revealed || (p.type==="human" && diceVisibleToCurrent));
+  $("hudTurnDice").innerHTML = canShowTurnDice ? pairHtml(state.dice) : "";
+  $("hudBid").textContent=state.lastBid ? `${state.lastBid.name} (${state.players[state.lastPlayer].name})` : "Sin anuncio";
+  $("hudBidDice").innerHTML = state.lastBid ? pairHtml(representativeByBid[state.lastBid.rank]) : `<span class="small muted">Aún no hay apuesta</span>`;
+  $("hudState").textContent=state.gameOver ? `Gana ${alive()[0]?.name || "nadie"}` : `${alive().length} jugadores · ${state.phase==="kirikiForced"?"respuesta Kiriki":(state.phase==="needRoll"?"lanzar/aceptar":"anunciar")}`;
+  $("hudStateInfo").innerHTML = state.gameOver ? "" : `<span class="small">${state.lastBid ? "Escala y turno con preview visual" : "Inicio de ronda"}</span>`;
+}
+
+function statusText(){
+  if(state.gameOver) return `<span class="big">Partida terminada.</span><br>Ganador: <b>${escapeHtml(alive()[0]?.name || "sin ganador")}</b>.`;
+  const p=state.players[state.current];
+  if(state.phase==="kirikiForced"){
+    const from = state.kirikiChallenge ? state.players[state.kirikiChallenge.from].name : "rival";
+    return `<span class="big">Respuesta obligatoria a Kiriki</span><br>${escapeHtml(p.name)} debe tirar y destapar. Solo otro <b>Kiriki</b> devuelve el punto negativo a <b>${escapeHtml(from)}</b>.`;
+  }
+  if(state.phase==="needBid" && state.dice){
+    const real=evaluate(state.dice);
+    return `<span class="big">Turno de ${escapeHtml(p.name)}</span><br>Tirada vista: <b>${diceText(state.dice)}</b>. Valor real: <b>${real.name}</b>.`;
+  }
+  return `<span class="big">Turno de ${escapeHtml(p.name)}</span><br>${state.lastBid ? `Debe igualar/superar <b>${state.lastBid.name}</b> o destapar.` : "Abre ronda: debe tirar y anunciar."}`;
+}
+
+function renderActions(){
+  const box=$("actions");
+  box.innerHTML="";
+  if(state.gameOver){
+    box.innerHTML=`<button id="again">Nueva partida</button>`;
+    $("again").onclick=startGame;
+    return;
+  }
+  const p=state.players[state.current];
+  if(p.type==="ai"){
+    box.innerHTML=`<span class="small">Turno de IA en curso…</span>`;
+    return;
+  }
+  if(state.phase==="kirikiForced"){
+    box.innerHTML=`<button class="danger" id="forcedKirikiBtn">Tirar y destapar obligado</button>`;
+    $("forcedKirikiBtn").onclick=()=>forcedKirikiResponse(state.current, true);
+    return;
+  }
+  if(state.phase==="needRoll"){
+    box.innerHTML=`
+      <button id="rollBtn">${state.lastBid?"Aceptar y tirar":"Tirar dados"}</button>
+      ${state.lastBid?`<button class="danger" id="challengeBtn">Destapar</button>`:""}
+    `;
+    $("rollBtn").onclick=humanRoll;
+    const ch=$("challengeBtn"); if(ch) ch.onclick=()=>resolveChallenge(state.current);
+    return;
+  }
+  if(state.phase==="needBid"){
+    const real=evaluate(state.dice);
+    const min=state.lastBid?state.lastBid.rank:1;
+    const opts=bids.filter(b=>b.rank>=min && b.rank<15).map(b=>`<option value="${b.rank}" ${b.rank===Math.max(real.rank,min)?"selected":""}>${b.name}</option>`).join("");
+    box.innerHTML=`
+      <button class="secondary" id="hideDiceBtn">${diceVisibleToCurrent?"Ocultar dados":"Mirar dados"}</button>
+      <select id="bidSelect">${opts}</select>
+      <button class="good" id="bidBtn">Anunciar</button>
+    `;
+    $("hideDiceBtn").onclick=()=>{diceVisibleToCurrent=!diceVisibleToCurrent;render()};
+    $("bidBtn").onclick=()=>humanBid(Number($("bidSelect").value));
+  }
+}
+
+function renderRollValue(){
+  const el = $("rollValue");
+  if(!el || !state || !state.dice){
+    if(el) el.classList.add("hidden");
+    return;
+  }
+  const current = state.players[state.current];
+  const visible = state.revealed || (current && current.type === "human" && diceVisibleToCurrent);
+  if(!visible){
+    el.classList.add("hidden");
+    return;
+  }
+  const val = evaluate(state.dice);
+  el.innerHTML = `Tirada: <b>${val.name}</b>`;
+  el.classList.remove("hidden");
+
+  const p = visibleDicePoint();
+  el.style.left = p.x + "%";
+  el.style.top = p.y + "%";
+}
+
+function render(){
+  renderPlayers();
+  renderTableSeats();
+  moveCupToActive();
+  renderDice();
+  renderRollValue();
+  setHud();
+  $("status").innerHTML=statusText();
+  $("privateInfo").innerHTML=state.phase==="kirikiForced"
+    ? `<b class="warn">Kiriki enviado:</b> el rival debe tirar y destapar obligatoriamente.`
+    : (state.phase==="needBid" && state.players[state.current]?.type==="human"
+      ? `<b class="warn">Vista privada:</b> usa “Mirar/Ocultar dados” antes de pasar el móvil.`
+      : `Información importante siempre arriba: turno, último anuncio y estado.`);
+  renderActions();
+}
+
+async function shakeCup(duration=900){
+  sound("shake");
+  state.shaking = true;
+  renderDice();
+  await wait(duration);
+  state.shaking = false;
+  renderDice();
+}
+
+
+function isPhysicalTurn(){
+  return !!(state && !state.gameOver && state.players[state.current] && state.players[state.current].type === "human");
+}
+
+function scheduleAiLoop(delay=450){
+  const token = ++aiLoopToken;
+  setTimeout(()=>aiLoop(token), delay);
+}
+
+async function humanRoll(){
+  if(!isPhysicalTurn() || state.phase !== "needRoll") return;
+  await shakeCup(850);
+  state.dice=roll();state.revealed=false;diceVisibleToCurrent=true;
+  const real=evaluate(state.dice);
+  if(real.rank===15){render(); await handleKiriki(state.current); return;}
+  state.phase="needBid";render();
+}
+
+function humanBid(rank){
+  sound("announce");
+  const bid=bidByRank(rank);
+  state.lastBid=bid;state.lastPlayer=state.current;
+  log(`<b>${escapeHtml(state.players[state.current].name)}</b> anuncia <b>${bid.name}</b>.`);
+  state.current=nextAlive(state.current);state.phase="needRoll";diceVisibleToCurrent=false;state.revealed=false;
+  render();
+  if(state.players[state.current]?.type === "ai") scheduleAiLoop(450);
+}
+
+function addNeg(i,why){
+  sound("penalty");
+  const p=state.players[i];p.neg++;
+  log(`<b>${escapeHtml(p.name)}</b> recibe una estrella negativa ${why}. Total: <b>${p.neg}/${MAX_NEG}</b>.`);
+  if(p.neg>=MAX_NEG){p.dead=true;log(`<b>${escapeHtml(p.name)}</b> queda eliminado.`)}
+  render();
+}
+
+function winnerCheck(){
+  if(alive().length<=1){sound("win");state.gameOver=true;state.revealed=true;diceVisibleToCurrent=false;render();return true}
+  return false;
+}
+
+function newRoundFrom(i){
+  state.current=state.players[i].dead?nextAlive(i):i;
+  state.lastBid=null;state.lastPlayer=null;state.dice=null;state.revealed=false;diceVisibleToCurrent=false;state.phase="needRoll";state.shaking=false;
+  log(`Nueva ronda. Abre <b>${escapeHtml(state.players[state.current].name)}</b>.`);
+  render();
+  if(state.players[state.current]?.type === "ai") scheduleAiLoop(500);
+}
+
+async function resolveChallenge(challenger){
+  sound("challenge");
+  if(!state.lastBid)return;
+  state.revealed=true;diceVisibleToCurrent=false;render();
+  const real=evaluate(state.dice);
+  const announcedTooHigh=real.rank < state.lastBid.rank;
+  const penalized=announcedTooHigh?state.lastPlayer:challenger;
+  log(`Se destapa: <b>${diceText(state.dice)}</b> = <b>${real.name}</b>. ${announcedTooHigh?"El anuncio era falso.":"El anuncio era válido."}`);
+  await wait(500);
+  addNeg(penalized, announcedTooHigh?"por farol fallido":"por destapar sin acierto");
+  if(winnerCheck())return;
+  newRoundFrom(penalized);
+}
+
+async function handleKiriki(playerIdx){
+  sound("kiriki");
+  state.revealed=true;diceVisibleToCurrent=false;render();
+  const p=state.players[playerIdx];
+  const targets=state.players.map((p,i)=>({p,i})).filter(o=>!o.p.dead && o.i!==playerIdx);
+  log(`<b>${escapeHtml(p.name)}</b> muestra <b>Kiriki</b>. Debe enviarlo a un rival, que queda obligado a superarlo sacando otro Kiriki.`);
+
+  async function assignTarget(t){
+    log(`<b>${escapeHtml(p.name)}</b> envía el Kiriki a <b>${escapeHtml(state.players[t].name)}</b>.`);
+    state.kirikiChallenge = {from: playerIdx, target: t};
+    state.current = t;
+    state.phase = "kirikiForced";
+    state.dice = null;
+    state.revealed = false;
+    diceVisibleToCurrent = false;
+    render();
+    if(state.players[t].type === "ai"){
+      await wait(650);
+      await forcedKirikiResponse(t, false);
+    }
+  }
+
+  if(p.type==="human"){
+    $("actions").innerHTML=`<select id="targetKiriki">${targets.map(o=>`<option value="${o.i}">${escapeHtml(o.p.name)}</option>`).join("")}</select><button class="danger" id="assignKiriki">Enviar Kiriki</button>`;
+    $("assignKiriki").onclick=()=>assignTarget(Number($("targetKiriki").value));
+    return;
+  }
+
+  await wait(650);
+  await assignTarget(chooseKirikiTarget(playerIdx));
+}
+
+function chooseKirikiTarget(playerIdx){
+  const targets=state.players.map((p,i)=>({p,i})).filter(o=>!o.p.dead && o.i!==playerIdx);
+  targets.sort((a,b)=>{
+    if(a.p.type==="human" && b.p.type!=="human")return -1;
+    if(a.p.type!=="human" && b.p.type==="human")return 1;
+    return b.p.neg-a.p.neg;
+  });
+  return targets[0].i;
+}
+
+
+async function forcedKirikiResponse(targetIdx, allowHuman=false){
+  const challenge = state.kirikiChallenge;
+  if(state.players[targetIdx]?.type === "human" && !allowHuman) return;
+  if(!challenge || challenge.target !== targetIdx || state.gameOver) return;
+  const responder = state.players[targetIdx];
+
+  await shakeCup(850);
+  state.dice = roll();
+  state.revealed = true;
+  diceVisibleToCurrent = false;
+  render();
+
+  const real = evaluate(state.dice);
+  log(`<b>${escapeHtml(responder.name)}</b> responde obligado y destapa: <b>${diceText(state.dice)}</b> = <b>${real.name}</b>.`);
+
+  await wait(600);
+  if(real.rank === 15){
+    log(`<b>${escapeHtml(responder.name)}</b> también saca <b>Kiriki</b>: devuelve el punto negativo a <b>${escapeHtml(state.players[challenge.from].name)}</b>.`);
+    addNeg(challenge.from, "por recibir la devolución de Kiriki");
+    if(winnerCheck()) return;
+    state.kirikiChallenge = null;
+    newRoundFrom(challenge.from);
+  }else{
+    log(`<b>${escapeHtml(responder.name)}</b> no supera el Kiriki y recibe el punto negativo.`);
+    addNeg(targetIdx, "por no responder al Kiriki");
+    if(winnerCheck()) return;
+    state.kirikiChallenge = null;
+    newRoundFrom(targetIdx);
+  }
+}
+
+function aiShouldChallenge(){
+  if(!state.lastBid)return false;
+  const r=state.lastBid.rank;
+  let p=.05;
+  if(r>=14)p=.58;else if(r>=12)p=.40;else if(r>=10)p=.28;else if(r>=8)p=.18;
+  return Math.random()<p;
+}
+
+function aiBid(realRank){
+  const min=state.lastBid?state.lastBid.rank:1;
+  let target=Math.max(min,realRank);
+  const bluff=(min>=realRank)?0.55:0.18;
+  if(Math.random()<bluff)target+=Math.floor(Math.random()*3);
+  return bidByRank(Math.max(min,Math.min(14,target)));
+}
+
+async function aiTurn(){
+  if(state.gameOver || !state.players[state.current] || state.players[state.current].type!=="ai")return;
+  const p=state.players[state.current];
+  if(state.lastBid && aiShouldChallenge()){
+    log(`<b>${escapeHtml(p.name)}</b> destapa el cubilete.`);
+    await wait(500); await resolveChallenge(state.current); return;
+  }
+  await shakeCup(800);
+  state.dice=roll();state.revealed=false;diceVisibleToCurrent=false;render();
+  log(`<b>${escapeHtml(p.name)}</b> tira dados ocultos.`);
+  await wait(350);
+  const real=evaluate(state.dice);
+  if(real.rank===15){await handleKiriki(state.current);return}
+  const bid=aiBid(real.rank);
+  sound("announce");
+  state.lastBid=bid;state.lastPlayer=state.current;
+  log(`<b>${escapeHtml(p.name)}</b> anuncia <b>${bid.name}</b>.`);
+  state.current=nextAlive(state.current);state.phase="needRoll";render();
+}
+
+async function aiLoop(token=aiLoopToken){
+  while(token === aiLoopToken && !state.gameOver && state.players[state.current]?.type === "ai"){
+    await wait(650);
+    if(token !== aiLoopToken || state.players[state.current]?.type !== "ai") break;
+    if(state.phase==="kirikiForced") await forcedKirikiResponse(state.current, false);
+    else await aiTurn();
+  }
+  render();
+}
+
+
+async function toggleFullscreen(){
+  try{
+    if(!document.fullscreenElement){
+      await document.documentElement.requestFullscreen();
+      $("fullscreenBtn").textContent = "Salir";
+    }else{
+      await document.exitFullscreen();
+      $("fullscreenBtn").textContent = "Pantalla";
+    }
+  }catch(e){
+    alert("El modo pantalla completa no está disponible en este navegador.");
+  }
+}
+
+function startGame(){
+  if(config.length<3){alert("Kiriki requiere mínimo 3 jugadores.");return}
+  state={
+    players:config.map((p,i)=>({name:p.name || `Jugador ${i+1}`,type:p.type,neg:0,dead:false})),
+    current:0,lastBid:null,lastPlayer:null,dice:null,revealed:false,phase:"needRoll",gameOver:false,shaking:false,kirikiChallenge:null
+  };
+  diceVisibleToCurrent=false;
+  $("log").innerHTML="";
+  $("setupCard").classList.add("hidden");
+  aiLoopToken++;
+  log(`Partida iniciada. Abre <b>${escapeHtml(state.players[0].name)}</b>.`);
+  render();
+  if(state.players[state.current]?.type === "ai") scheduleAiLoop(450);
+}
+
+$("addPlayerBtn").onclick=()=>{if(config.length<8){config.push({name:`Jugador ${config.length+1}`,type:"human"});renderSetup();}};
+$("startBtn").onclick=startGame;
+$("newBtn").onclick=startGame;
+$("setupBtn").onclick=()=>{$("setupCard").classList.toggle("hidden")};
+$("instructionsBtn").onclick=()=>{$("instructionsCard").classList.toggle("hidden")};
+$("fullscreenBtn").onclick=toggleFullscreen;
+document.addEventListener("fullscreenchange", ()=>{
+  $("fullscreenBtn").textContent = document.fullscreenElement ? "Salir" : "Pantalla";
+});
+$("closeInstructionsBtn").onclick=()=>{$("instructionsCard").classList.add("hidden")};
+
+window.addEventListener("resize", ()=>{ renderTableSeats(); moveCupToActive(); });
+renderSetup();
+renderScale();
+startGame();
+</script>
+</body>
+</html>
+
+<style>
+@media(max-width:620px){
+  .hudsub .miniDie{
+    width:28px;
+    height:28px;
+    border-radius:7px;
+  }
+  .hudsub .miniDie .mLetter{font-size:1.05rem}
+  .hudsub .miniDie .mCorner{font-size:.38rem}
+  .hudsub .miniPair{gap:4px}
+}
+</style>
+
+<style>
+@media(max-width:620px){
+  #gameGrid > section:nth-child(2){order:1}
+  #gameGrid > section:nth-child(1){order:2}
+  #gameGrid > section:nth-child(3){order:3}
+  #gameGrid > section:nth-child(4){order:4}
+  #gameGrid > section:nth-child(2) .body{
+    padding-top:6px;
+  }
+  #gameGrid > section:nth-child(2) .status{
+    display:none;
+  }
+  #privateInfo{
+    display:none;
+  }
+  .table{
+    min-height:min(52dvh, 420px);
+    height:min(52dvh, 420px);
+    border-radius:22px;
+    margin-top:0;
+  }
+  .table:before{inset:44px 24px}
+  .table:after{inset:72px 44px}
+  .seat{
+    width:88px;
+    min-height:58px;
+    padding:5px;
+    border-radius:13px;
+  }
+  .seatName{font-size:.72rem}
+  .seatType{font-size:.58rem}
+  .kirikiScore{
+    width:34px;
+    margin:3px auto 1px;
+    gap:0;
+  }
+  .kirikiScore .star{
+    width:11px;
+    height:11px;
+    font-size:.72rem;
+  }
+  .bottomActions{
+    padding:7px 10px calc(7px + var(--safe-bottom));
+  }
+  .bottomInner button,.bottomInner select{
+    min-height:40px;
+    padding:9px 12px;
+  }
+}
+</style>
+
+<style>
+#playersCard{display:none!important}
+</style>
+
+<style>
+@media(max-width:620px){
+  .titleline{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+  }
+  .titleline .controls{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:5px;
+  }
+  .titleline button{
+    width:100%;
+    padding:7px 5px;
+    font-size:.70rem;
+  }
+}
+</style>
