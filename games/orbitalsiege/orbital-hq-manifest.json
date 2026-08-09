@@ -1,0 +1,145 @@
+{
+  "package": "Orbital Siege HQ Models",
+  "version": "1.0.0",
+  "format": "glTF 2.0",
+  "generated": "2026-08-09T09:32:55.236Z",
+  "modelCount": 51,
+  "files": [
+    {
+      "file": "orbital-hq-turrets.gltf",
+      "bytes": 118299,
+      "models": 19,
+      "nodes": 397,
+      "meshes": 20,
+      "triangles": 5216
+    },
+    {
+      "file": "orbital-hq-alliance.gltf",
+      "bytes": 168310,
+      "models": 15,
+      "nodes": 795,
+      "meshes": 16,
+      "triangles": 1464
+    },
+    {
+      "file": "orbital-hq-void.gltf",
+      "bytes": 156756,
+      "models": 17,
+      "nodes": 599,
+      "meshes": 18,
+      "triangles": 3948
+    }
+  ],
+  "loading": {
+    "relativeTo": "HTML document",
+    "modeSetting": [
+      "auto",
+      "basic",
+      "hq"
+    ],
+    "fallback": "Models embedded procedurally in orbitalsiege.v2.0.html"
+  },
+  "contracts": {
+    "tower": {
+      "root": "tower_<key>",
+      "required": [
+        "head",
+        "muzzle_01",
+        "shield_socket",
+        "camera_focus"
+      ],
+      "optional": [
+        "rotor_*",
+        "rotor_gatling"
+      ]
+    },
+    "ship": {
+      "root": "ship_<key>",
+      "required": [
+        "muzzle_01",
+        "engine_main_01",
+        "shield_socket",
+        "camera_focus"
+      ],
+      "turret": [
+        "turret_<nn>_yaw",
+        "turret_<nn>_pitch",
+        "turret_<nn>_muzzle"
+      ]
+    },
+    "enemy": {
+      "root": "enemy_<key>",
+      "required": [
+        "muzzle_01",
+        "engine_main_01",
+        "shield_socket",
+        "camera_focus"
+      ],
+      "turret": [
+        "turret_<nn>_yaw",
+        "turret_<nn>_pitch",
+        "turret_<nn>_muzzle"
+      ]
+    }
+  },
+  "models": {
+    "towers": [
+      "blaster",
+      "gatling",
+      "flak",
+      "laser",
+      "cryo",
+      "missile",
+      "tesla",
+      "plasma",
+      "railgun",
+      "artillery",
+      "gravity",
+      "phase",
+      "antimatter",
+      "ionarray",
+      "photon",
+      "solar",
+      "helium3",
+      "laboratory",
+      "shipyard"
+    ],
+    "alliance": [
+      "fighter",
+      "gatlingfighter",
+      "strikefighter",
+      "corvette",
+      "flakcorvette",
+      "missilecorvette",
+      "frigate",
+      "missilefrigate",
+      "plasmafrigate",
+      "laserfrigate",
+      "gunship",
+      "ionfrigate",
+      "carrieralliance",
+      "destroyer",
+      "dreadnought"
+    ],
+    "void": [
+      "swarm",
+      "interceptor",
+      "corvette",
+      "armored",
+      "bomber",
+      "shield",
+      "jammer",
+      "carrier",
+      "repair",
+      "voidturret",
+      "voidyard",
+      "terraformer",
+      "overseer",
+      "leviathan",
+      "eclipse",
+      "sovereign",
+      "worldeater"
+    ]
+  },
+  "provenance": "Original procedural 3D artwork generated specifically for Orbital Siege; no third-party model assets are embedded."
+}
