@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Orbital Siege v2.7 · Global Command, defensa estratégica 3D multilingüe y autocontenida del Sistema Solar">
+  <meta name="description" content="Orbital Siege v2.7 · multilingual, self-contained 3D Solar System strategy defense">
   <title>Orbital Siege v2.7 · Global Command</title>
   <style>
     :root {
@@ -115,7 +115,7 @@
     #top-hud{position:absolute;top:var(--safe-t);left:50%;transform:translateX(-50%);width:min(1180px,calc(100% - 24px));min-height:58px;display:grid;grid-template-columns:1.4fr .72fr .72fr 1.45fr .62fr auto;align-items:stretch;border-radius:10px;overflow:hidden;pointer-events:auto}
     .hud-stat{min-width:0;padding:9px 13px;border-right:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;justify-content:center}
     .hud-stat label{font-size:.57rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}.hud-stat b{font-family:"Arial Narrow",Impact,sans-serif;font-size:1.2rem;line-height:1.1;letter-spacing:.04em;white-space:nowrap}
-    .shield-row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .shield-row{display:flex;justify-content:space-between;gap:10px;align-items:center;min-width:0}.shield-row>b{min-width:0;overflow:hidden;text-overflow:ellipsis}
     .meter{height:5px;margin-top:6px;border-radius:5px;background:rgba(255,255,255,.09);overflow:hidden}.meter>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--red),var(--gold),var(--green));box-shadow:0 0 10px currentColor;transition:width .2s}
     .population-row{display:flex;justify-content:space-between;gap:10px;margin-top:5px;color:#87a4b4;font-size:.43rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}.population-row b{font-family:inherit;font-size:.48rem;letter-spacing:.02em}.population-row .alive b{color:var(--green)}.population-row .fallen b{color:#ff7187}
     .economy-values{display:flex;align-items:baseline;gap:5px;white-space:nowrap}.economy-values span,.resource-market{display:flex;align-items:baseline;gap:2px;color:#8fa8b8;font-size:.43rem;letter-spacing:.04em}.economy-values .credit-value{color:var(--gold);text-shadow:0 0 10px rgba(255,210,118,.28)}.economy-values .helium-value{color:#8ff7ff;text-shadow:0 0 10px rgba(143,247,255,.42)}.economy-values .science-value{color:#b9a5ff;text-shadow:0 0 10px rgba(185,165,255,.48)}.resource-market{padding:1px 2px;border:1px solid transparent;border-radius:4px;background:transparent;cursor:pointer;font-family:inherit}.resource-market:hover,.resource-market:focus-visible{border-color:rgba(143,247,255,.48);background:rgba(143,247,255,.08)}.resource-market::after{content:"⇄";margin-left:1px;color:#ffd276;font-size:.5rem}.resource-market:last-child::after{display:none}.economy-values b{font-size:1.05rem}.economy-rate{display:block;margin-top:2px;color:#64d7df;font-size:.39rem;letter-spacing:.06em;white-space:nowrap}
@@ -732,7 +732,7 @@
     ];
 
     const stateDefaults = () => ({
-      version:VERSION,settings:{master:.75,music:.55,musicMode:"dynamic",sfx:.8,voiceAlerts:true,voiceLanguage:"es-ES",language:"es",voiceVolume:.82,uiScale:1,cameraSpeed:1,quality:"auto",shake:true,haptics:true,reducedMotion:false,distantIndicators:true,tutorial:true,autoWave:false,secretUnlocked:false,omnipotentMode:false},
+      version:VERSION,settings:{master:.75,music:.55,musicMode:"dynamic",sfx:.8,voiceAlerts:true,voiceLanguage:"en-US",language:"en",voiceVolume:.82,uiScale:1,cameraSpeed:1,quality:"auto",shake:true,haptics:true,reducedMotion:false,distantIndicators:true,tutorial:true,autoWave:false,secretUnlocked:false,omnipotentMode:false},
       records:{highScore:0,bestWave:0,wins:0,totalKills:0,endlessUnlocked:false},run:null
     });
 
@@ -742,7 +742,7 @@
         try{
           const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");
           if(raw){
-            this.data.settings={...this.data.settings,...raw.settings};this.data.settings.language=(raw.settings?.language||(raw.settings?.voiceLanguage||"es-ES").split("-")[0]||"es").slice(0,2);
+            this.data.settings={...this.data.settings,...raw.settings};this.data.settings.language=(raw.settings?.language||(raw.settings?.voiceLanguage||"en-US").split("-")[0]||"en").slice(0,2);
             this.data.records={...this.data.records,...raw.records};
             this.data.run=raw.run||null;
           }
@@ -908,6 +908,7 @@
       ["Cancelar","Cancel·lar","Cancel"],
       ["AUTO: NO","AUTO: NO","AUTO: OFF"],
       ["AUTO: SÍ","AUTO: SÍ","AUTO: ON"],
+      ["Corbeta","Corbeta","Corvette"],
       ["Sala de mando estratégico","Sala de comandament estratègic","Strategic command room"],
       ["Sala de mando · atlas y teatro 3D","Sala de comandament · atles i teatre 3D","Command room · 3D atlas and theater"],
       ["Panorama táctico","Panorama tàctic","Tactical overview"],
@@ -920,6 +921,7 @@
       ["Mapa táctico de contactos","Mapa tàctic de contactes","Tactical contact map"],
       ["Atlas tridimensional interactivo del Sistema Solar","Atles tridimensional interactiu del Sistema Solar","Interactive 3D atlas of the Solar System"],
       ["Teatro táctico tridimensional en tiempo real","Teatre tàctic tridimensional en temps real","Real-time 3D tactical theater"],
+      ["Teatro táctico","Teatre tàctic","Tactical theater"],
       ["Sector cartografiado","Sector cartografiat","Mapped sector"],
       ["Sistema Solar · 3D","Sistema Solar · 3D","Solar System · 3D"],
       ["Estado operacional","Estat operacional","Operational status"],
@@ -1195,18 +1197,493 @@
       ["Desbloquea el Portanaves Horizon y sus alas automáticas.","Desbloqueja el Portaavions Horizon i les seves ales automàtiques.","Unlocks the Horizon Carrier and its automated wings."],
       ["Acelera la reparación de flota y regenera defensas entre oleadas.","Accelera la reparació de la flota i regenera defenses entre onades.","Speeds up fleet repair and regenerates defenses between waves."],
       ["Desbloquea la Lanza de antimateria y el Acorazado Prometheus.","Desbloqueja la Llança d'antimatèria i el Cuirassat Prometheus.","Unlocks the Antimatter Lance and Prometheus Battleship."],
-      ["Construye al menos una defensa antes de iniciar la oleada.","Construeix almenys una defensa abans d'iniciar l'onada.","Build at least one defense before launching the wave."]
+      ["Construye al menos una defensa antes de iniciar la oleada.","Construeix almenys una defensa abans d'iniciar l'onada.","Build at least one defense before launching the wave."],
+      ["Astillero","Drassana","Shipyard"],
+      ["Laboratorio","Laboratori","Laboratory"],
+      ["Astillero anterior","Drassana anterior","Previous shipyard"],
+      ["Astillero siguiente","Drassana següent","Next shipyard"],
+      ["Laboratorio anterior","Laboratori anterior","Previous laboratory"],
+      ["Laboratorio siguiente","Laboratori següent","Next laboratory"],
+      ["Navegación científica","Navegació científica","Laboratory navigation"],
+      ["Navegación industrial","Navegació industrial","Shipyard navigation"],
+      ["Producción de este lab","Producció d'aquest laboratori","This lab's output"],
+      ["Tecnologías","Tecnologies","Technologies"],
+      ["Capacidad","Capacitat","Capacity"],
+      ["Producción","Producció","Production"],
+      ["Cola","Cua","Queue"],
+      ["Casco","Casc","Hull"],
+      ["Escudo","Escut","Shield"],
+      ["Sin escudo","Sense escut","No shield"],
+      ["NIVEL","NIVELL","LEVEL"],
+      ["ESCUDO","ESCUT","SHIELD"],
+      ["SIN ESCUDO","SENSE ESCUT","NO SHIELD"],
+      ["OPERATIVA","OPERATIVA","OPERATIONAL"],
+      ["MÁXIMO","MÀXIM","MAXIMUM"],
+      ["MEJORAR","MILLORAR","UPGRADE"],
+      ["AMPLIAR","AMPLIAR","EXPAND"],
+      ["ESPECIALIZAR","ESPECIALITZAR","SPECIALIZE"],
+      ["REPARAR","REPARAR","REPAIR"],
+      ["MOSTRAR ALCANCE","MOSTRAR ABAST","SHOW RANGE"],
+      ["OCULTAR ALCANCE","AMAGAR ABAST","HIDE RANGE"],
+      ["SEGUIR CÁMARA","SEGUIR CÀMERA","FOLLOW CAMERA"],
+      ["CÁMARA ACTIVA","CÀMERA ACTIVA","CAMERA ACTIVE"],
+      ["VENDER","VENDRE","SELL"],
+      ["CERRAR","TANCAR","CLOSE"],
+      ["DESMANTELAR","DESMUNTAR","DECOMMISSION"],
+      ["CONSTRUYENDO","CONSTRUINT","BUILDING"],
+      ["EN COLA","A LA CUA","QUEUED"],
+      ["ACTIVA POR PROTOCOLO ORIOL Ω","ACTIVA PEL PROTOCOL ORIOL Ω","ACTIVE VIA ORIOL Ω PROTOCOL"],
+      ["Prioridad de objetivo","Prioritat d'objectiu","Target priority"],
+      ["Más cercano","Més proper","Nearest"],
+      ["Más rápido","Més ràpid","Fastest"],
+      ["Más fuerte","Més fort","Strongest"],
+      ["Menos vida","Menys vida","Lowest health"],
+      ["Blindado","Blindat","Armored"],
+      ["Jefe","Cap","Boss"],
+      ["Precisión","Precisió","Accuracy"],
+      ["Daño / ráfaga","Dany / ràfega","Damage / burst"],
+      ["Casco estructural","Casc estructural","Structural hull"],
+      ["Escudo energético","Escut energètic","Energy shield"],
+      ["NO DISPONIBLE","NO DISPONIBLE","UNAVAILABLE"],
+      ["HOSTIL","HOSTIL","HOSTILE"],
+      ["OBJETIVO PRINCIPAL","OBJECTIU PRINCIPAL","PRIMARY TARGET"],
+      ["LIBERAR PRIORIDAD","ALLIBERAR PRIORITAT","CLEAR PRIORITY"],
+      ["PASADA DE ATAQUE","PASSADA D'ATAC","ATTACK RUN"],
+      ["RUPTURA","RUPTURA","BREAKAWAY"],
+      ["VIRAJE","VIRATGE","TURNAROUND"],
+      ["INTERCEPCIÓN","INTERCEPCIÓ","INTERCEPTION"],
+      ["POSICIÓN DE TIRO","POSICIÓ DE TIR","FIRING POSITION"],
+      ["PATRULLA","PATRULLA","PATROL"],
+      ["RETIRADA","RETIRADA","RETREAT"],
+      ["REPARACIÓN","REPARACIÓ","REPAIR"],
+      ["REGRESO","RETORN","RETURNING"],
+      ["Flota autónoma","Flota autònoma","Autonomous fleet"],
+      ["Dársenas disponibles · selecciona una nave","Dàrsenes disponibles · selecciona una nau","Shipyard berths available · select a ship"],
+      ["Construye, repara y coordina una fuerza autónoma vinculada a este astillero. Cada casco consume créditos y Helio‑3 refinado.","Construeix, repara i coordina una força autònoma vinculada a aquesta drassana. Cada buc consumeix crèdits i Heli‑3 refinat.","Build, repair, and coordinate an autonomous force assigned to this shipyard. Every hull consumes credits and refined Helium-3."],
+      ["disponibles.","disponibles.","available."],
+      ["Táctica de la flotilla","Tàctica de la flotilla","Flotilla tactics"],
+      ["Defensa","Defensa","Defense"],
+      ["Equilibrada","Equilibrada","Balanced"],
+      ["Agresiva","Agressiva","Aggressive"],
+      ["Patrulla cercana y retirada temprana para proteger el planeta y el astillero.","Patrulla propera i retirada anticipada per protegir el planeta i la drassana.","Close patrol and early withdrawal to protect the planet and shipyard."],
+      ["Intercepción flexible con un equilibrio entre alcance, supervivencia y presión.","Intercepció flexible amb un equilibri entre abast, supervivència i pressió.","Flexible interception balancing range, survivability, and pressure."],
+      ["Busca combates lejanos, mantiene la ofensiva y solo se retira con daños críticos.","Busca combats llunyans, manté l'ofensiva i només es retira amb danys crítics.","Seeks distant engagements, maintains the offensive, and retreats only after critical damage."],
+      ["; cada Laboratorio la genera continuamente y el recurso pertenece a toda la red solar.","; cada Laboratori en genera contínuament i el recurs pertany a tota la xarxa solar.","; every Laboratory generates it continuously, and the resource belongs to the entire solar network."],
+      ["CI de la red","CI de la xarxa","Network SR"],
+      ["Árbol tecnológico","Arbre tecnològic","Technology tree"],
+      ["red científica","xarxa científica","science network"],
+      ["industria lunar","indústria lunar","lunar industry"],
+      ["Drones extractores y refinerías orbitales procesan el regolito de","Drons extractors i refineries orbitals processen el regòlit de","Extractor drones and orbital refineries process the regolith of"],
+      ["La producción es global y continúa aunque cambies de planeta.","La producció és global i continua encara que canviïs de planeta.","Production is global and continues even when you switch planets."],
+      ["GLOBAL","GLOBAL","GLOBAL"],
+      ["Elige especialización","Tria una especialització","Choose a specialization"],
+      ["La elección es permanente para esta torreta. Coste:","L'elecció és permanent per a aquesta torreta. Cost:","The choice is permanent for this turret. Cost:"],
+      ["Doctrina de mando","Doctrina de comandament","Command doctrine"],
+      ["Adaptación estratégica","Adaptació estratègica","Strategic adaptation"],
+      ["Selecciona una mejora permanente para el resto de esta misión.","Selecciona una millora permanent per a la resta d'aquesta missió.","Select a permanent upgrade for the rest of this mission."],
+      ["Munición reforzada","Munició reforçada","Reinforced ammunition"],
+      ["+12 % de daño para todas las defensas.","+12 % de dany per a totes les defenses.","+12% damage for all defenses."],
+      ["Cadencia sincronizada","Cadència sincronitzada","Synchronized fire rate"],
+      ["Recargas un 10 % más rápidas.","Recàrregues un 10 % més ràpides.","10% faster reloads."],
+      ["Óptica orbital","Òptica orbital","Orbital optics"],
+      ["+10 % de alcance global.","+10 % d'abast global.","+10% global range."],
+      ["Economía de guerra","Economia de guerra","War economy"],
+      ["+18 % de recompensas futuras.","+18 % de recompenses futures.","+18% future rewards."],
+      ["Nanorreparación","Nanoreparació","Nanorepair"],
+      ["Repara planeta y torretas al finalizar cada oleada.","Repara el planeta i les torretes en acabar cada onada.","Repairs the planet and turrets at the end of each wave."],
+      ["Capacitores de vacío","Condensadors de buit","Vacuum capacitors"],
+      ["+30 % de regeneración de energía.","+30 % de regeneració d'energia.","+30% energy regeneration."],
+      ["La misión queda congelada. Puedes continuar, volver al último inicio de oleada o regresar al centro de mando.","La missió queda congelada. Pots continuar, tornar a l'últim inici d'onada o regresar al centre de comandament.","The mission is frozen. You can continue, return to the start of the latest wave, or go back to the command center."],
+      ["El Soberano Abisal ha sido destruido. Los ocho frentes planetarios quedan bajo protección orbital.","El Sobirà Abissal ha estat destruït. Els vuit fronts planetaris queden sota protecció orbital.","The Abyssal Sovereign has been destroyed. All eight planetary fronts are under orbital protection."],
+      ["Puntuación","Puntuació","Score"],
+      ["Destruidos","Destruïts","Destroyed"],
+      ["Naves construidas","Naus construïdes","Ships built"],
+      ["Naves perdidas","Naus perdudes","Ships lost"],
+      ["Eficiencia","Eficiència","Efficiency"],
+      ["Control orbital","Control orbital","Orbital controls"],
+      ["Arrastra sobre el espacio para rotar la cámara. Usa la rueda del ratón o pellizca con dos dedos para acercarte o abarcar todo el sistema de lunas.","Arrossega sobre l'espai per girar la càmera. Usa la roda del ratolí o pessiga amb dos dits per apropar-te o abastar tot el sistema de llunes.","Drag across space to rotate the camera. Use the mouse wheel or pinch with two fingers to zoom in or frame the entire moon system."],
+      ["Construye tu red","Construeix la teva xarxa","Build your network"],
+      ["Selecciona un arma y toca una ranura luminosa. Hay tres órbitas planetarias y una órbita independiente alrededor de cada luna o bastión para torretas y astilleros.","Selecciona una arma i toca una ranura lluminosa. Hi ha tres òrbites planetàries i una òrbita independent al voltant de cada lluna o bastió per a torretes i drassanes.","Select a weapon and tap a glowing slot. There are three planetary orbits and a separate orbit around each moon or bastion for turrets and shipyards."],
+      ["Analiza la incursión","Analitza la incursió","Analyze the incursion"],
+      ["El informe muestra la composición y los sectores de entrada. Pulsa «Iniciar oleada» cuando tu defensa esté preparada.","L'informe mostra la composició i els sectors d'entrada. Prem «Iniciar onada» quan la defensa estigui preparada.","The report shows the force composition and entry sectors. Press “Start wave” when your defense is ready."],
+      ["Mando táctico","Comandament tàctic","Tactical command"],
+      ["Selecciona cualquier unidad para seguirla. B activa el director automático de batalla, H vuelve al planeta y R abre la sala de mando.","Selecciona qualsevol unitat per seguir-la. B activa el director automàtic de batalla, H torna al planeta i R obre la sala de comandament.","Select any unit to follow it. B enables the automatic battle director, H returns to the planet, and R opens the command room."],
+      ["Economía de Helio‑3","Economia d'Heli‑3","Helium-3 economy"],
+      ["En lunas rocosas despliega complejos mineros. Producen créditos y Helio‑3 para toda la red solar; cada nave del astillero necesita ambos recursos.","Desplega complexos miners a les llunes rocoses. Produeixen crèdits i Heli‑3 per a tota la xarxa solar; cada nau de la drassana necessita tots dos recursos.","Deploy mining complexes on rocky moons. They produce credits and Helium-3 for the entire solar network; every shipyard vessel needs both resources."],
+      ["Proyecta tu flota","Projecta la teva flota","Project your fleet"],
+      ["Desde la oleada 2 despliega un astillero. Con V saltas en hiperespacio entre planetas durante la batalla y puedes trasladar contigo toda la flota desplegada.","Des de l'onada 2 pots desplegar una drassana. Amb V saltes per l'hiperespai entre planetes durant la batalla i pots traslladar-hi tota la flota desplegada.","From wave 2 onward, deploy a shipyard. Press V to jump through hyperspace between planets during battle and take the entire deployed fleet with you."],
+      ["Entrenamiento","Entrenament","Training"],
+      ["Finalizar","Finalitzar","Finish"],
+      ["Siguiente ›","Següent ›","Next ›"],
+      ["Control cinematográfico y navegación","Control cinematogràfic i navegació","Cinematic controls and navigation"],
+      ["Centro de vistas","Centre de vistes","View center"],
+      ["Cerrar vistas","Tancar les vistes","Close views"],
+      ["Elige un encuadre, recorre unidades o abre una capa de mando. Todos los cambios de objetivo conservan el zoom; el director de batalla amplía solo cuando necesita abarcar más acción.","Tria un enquadrament, recorre unitats o obre una capa de comandament. Tots els canvis d'objectiu conserven el zoom; el director de batalla només amplia quan necessita abastar més acció.","Choose a framing, cycle through units, or open a command layer. Every target change preserves zoom; the battle director pulls back only when it needs to frame more action."],
+      ["Encuadre del teatro","Enquadrament del teatre","Theater framing"],
+      ["Retorno táctico · tecla H","Retorn tàctic · tecla H","Tactical return · H key"],
+      ["Sistema planetario completo · tecla Z","Sistema planetari complet · tecla Z","Complete planetary system · Z key"],
+      ["Director de batalla","Director de batalla","Battle director"],
+      ["Encuadra el combate más intenso · tecla B","Enquadra el combat més intens · tecla B","Frames the most intense engagement · B key"],
+      ["Satélite característico · foco directo","Satèl·lit característic · focus directe","Signature satellite · direct focus"],
+      ["Bastión orbital","Bastió orbital","Orbital bastion"],
+      ["conservar zoom","conservar el zoom","preserve zoom"],
+      ["Satélites de","Satèl·lits de","Satellites of"],
+      ["Unidades y puntos de interés","Unitats i punts d'interès","Units and points of interest"],
+      ["Siguiente defensa","Defensa següent","Next defense"],
+      ["Recorrer torretas y astilleros","Recórrer torretes i drassanes","Cycle through turrets and shipyards"],
+      ["Siguiente aliada","Aliada següent","Next ally"],
+      ["Recorrer la flota desplegada","Recórrer la flota desplegada","Cycle through the deployed fleet"],
+      ["Siguiente hostil","Hostil següent","Next hostile"],
+      ["Inspección sin designar prioridad","Inspecció sense designar prioritat","Inspect without assigning priority"],
+      ["Capas de mando","Capes de comandament","Command layers"],
+      ["Atlas solar","Atles solar","Solar atlas"],
+      ["Ocho planetas, frentes y viajes","Vuit planetes, fronts i viatges","Eight planets, fronts, and travel"],
+      ["Contactos de largo alcance","Contactes de llarg abast","Long-range contacts"],
+      ["Estado detallado y traslado de flota","Estat detallat i trasllat de flota","Detailed status and fleet transfer"],
+      ["No hay defensas desplegadas","No hi ha defenses desplegades","No defenses deployed"],
+      ["No hay naves aliadas desplegadas","No hi ha naus aliades desplegades","No allied ships deployed"],
+      ["No hay contactos hostiles","No hi ha contactes hostils","No hostile contacts"],
+      ["Campaña simultánea del Sistema Solar","Campanya simultània del Sistema Solar","Simultaneous Solar System campaign"],
+      ["Cerrar mando planetario","Tancar el comandament planetari","Close planetary command"],
+      ["Los mundos conquistados levantan estructuras colosales y pueden liberarse destruyendo su núcleo. Si un Devorador Ω completa la aniquilación, el planeta queda reducido para siempre a lava y escombros: no existe reconstrucción.","Els mons conquerits alcen estructures colossals i es poden alliberar destruint-ne el nucli. Si un Devorador Ω completa l'aniquilació, el planeta queda reduït per sempre a lava i runa: no es pot reconstruir.","Conquered worlds raise colossal structures and can be liberated by destroying their core. If an Ω Devourer completes annihilation, the planet is permanently reduced to lava and debris: reconstruction is impossible."],
+      ["Trasladar la flota desplegada en este salto","Traslladar la flota desplegada en aquest salt","Transfer the deployed fleet with this jump"],
+      ["naves listas para transferencia","naus preparades per a la transferència","ships ready for transfer"],
+      ["No hay naves activas en","No hi ha naus actives a","No active ships at"],
+      ["Cuna humana y punto de partida de la defensa.","Bressol de la humanitat i punt de partida de la defensa.","Cradle of humanity and starting point of the defense."],
+      ["Colonias marcianas bajo una atmósfera tenue y nubes ocasionales.","Colònies marcianes sota una atmosfera tènue i núvols ocasionals.","Martian colonies beneath a thin atmosphere and occasional clouds."],
+      ["Ciudades aerostáticas ocultas bajo capas corrosivas y persistentes.","Ciutats aerostàtiques ocultes sota capes corrosives i persistents.","Aerostat cities hidden beneath persistent, corrosive cloud layers."],
+      ["Fundiciones solares sobre un mundo sin atmósfera sustancial.","Foneries solars sobre un món sense una atmosfera substancial.","Solar foundries on a world without a substantial atmosphere."],
+      ["Megacolonias orbitales entre bandas de nubes y tormentas gigantes.","Megacolònies orbitals entre bandes de núvols i tempestes gegants.","Orbital megacolonies among cloud bands and giant storms."],
+      ["El gran anillo industrial del sistema exterior.","El gran anell industrial del sistema exterior.","The great industrial ring of the outer system."],
+      ["Hábitats criogénicos entre nubes de metano y anillos inclinados.","Hàbitats criogènics entre núvols de metà i anells inclinats.","Cryogenic habitats among methane clouds and tilted rings."],
+      ["Último baluarte bajo nubes dinámicas y anillos oscuros.","Últim baluard sota núvols dinàmics i anells foscos.","The final stronghold beneath dynamic clouds and dark rings."],
+      ["satélite con órbita defensiva","satèl·lit amb òrbita defensiva","satellite with a defensive orbit"],
+      ["satélites con órbita defensiva","satèl·lits amb òrbita defensiva","satellites with defensive orbits"],
+      ["zona minera","zona minera","mining zone"],
+      ["zonas mineras","zones mineres","mining zones"],
+      ["Nuevo frente","Nou front","New front"],
+      ["subvención","subvenció","grant"],
+      ["Escala","Escala","Scale"],
+      ["Bloqueado · supera oleada","Bloquejat · supera l'onada","Locked · clear wave"],
+      ["Teatro visible","Teatre visible","Visible theater"],
+      ["Frente principal","Front principal","Primary front"],
+      ["Frente autónomo","Front autònom","Autonomous front"],
+      ["Línea atravesada","Línia travessada","Line breached"],
+      ["integridad","integritat","integrity"],
+      ["Restos, lava y campo de escombros sin señal vital","Restes, lava i camp de runa sense senyal vital","Remains, lava, and a debris field with no life signs"],
+      ["ESTRUCTURAS DEL VACÍO","ESTRUCTURES DEL BUIT","VOID STRUCTURES"],
+      ["INVASIÓN PRINCIPAL","INVASIÓ PRINCIPAL","PRIMARY INVASION"],
+      ["CONTACTOS","CONTACTES","CONTACTS"],
+      ["BASE ENEMIGA","BASE ENEMIGA","ENEMY BASE"],
+      ["LIBERACIÓN PENDIENTE","ALLIBERAMENT PENDENT","LIBERATION PENDING"],
+      ["IRRECUPERABLE","IRRECUPERABLE","IRRECOVERABLE"],
+      ["Caza Wasp","Caça Wasp","Wasp Fighter"],
+      ["Caza pulso","Caça de pols","Pulse fighter"],
+      ["Superioridad","Superioritat","Space superiority"],
+      ["Cañones de pulso dobles · sin escudo","Canons de pols dobles · sense escut","Twin pulse cannons · no shield"],
+      ["Interceptor ligero que ejecuta pasadas de alta velocidad contra cazas y enjambres.","Interceptor lleuger que executa passades d'alta velocitat contra caces i eixams.","Light interceptor that makes high-speed attack runs against fighters and swarms."],
+      ["Caza Gatling Raptor","Caça Gatling Raptor","Raptor Gatling Fighter"],
+      ["Caza Gatling","Caça Gatling","Gatling fighter"],
+      ["Gatling rotativa de seis tubos · sin escudo","Gatling rotativa de sis tubs · sense escut","Six-barrel rotary Gatling · no shield"],
+      ["Caza de proximidad con ráfagas dispersas, devastadoras a corta distancia.","Caça de proximitat amb ràfegues disperses, devastadores a curta distància.","Close-range fighter with dispersed bursts that are devastating at short range."],
+      ["Cazabombardero Valkyrie","Caçabombarder Valkyrie","Valkyrie Strike Fighter"],
+      ["Cazabomb.","Caçabomb.","Strike fighter"],
+      ["Ataque pesado","Atac pesant","Heavy attack"],
+      ["Cañones y torpedos de plasma · sin escudo","Canons i torpedes de plasma · sense escut","Plasma cannons and torpedoes · no shield"],
+      ["Ataca naves pesadas en picado y rompe contacto antes de una nueva pasada.","Ataca naus pesants en picat i trenca el contacte abans d'una nova passada.","Dives on heavy ships and breaks contact before beginning another attack run."],
+      ["Corbeta Láser Aegis","Corbeta Làser Aegis","Aegis Laser Corvette"],
+      ["Corb. láser","Corb. làser","Laser corv."],
+      ["Escolta antiescudo","Escorta antiescut","Anti-shield escort"],
+      ["Emisor láser rojo neón continuo","Emissor làser vermell de neó continu","Continuous neon-red laser emitter"],
+      ["Escolta móvil que funde escudos y mantiene una distancia de tiro estable.","Escorta mòbil que fon escuts i manté una distància de tir estable.","Mobile escort that melts shields while maintaining a stable firing distance."],
+      ["Corbeta Flak Bastion","Corbeta Flak Bastion","Bastion Flak Corvette"],
+      ["Corb. Flak","Corb. Flak","Flak corv."],
+      ["Defensa de área","Defensa d'àrea","Area defense"],
+      ["Proyectil Flak de fragmentación expansiva","Projectil Flak de fragmentació expansiva","Expanding-fragmentation Flak shell"],
+      ["Detona una carga principal y una nube de subexplosiones sobre formaciones densas.","Detona una càrrega principal i un núvol de subexplosions sobre formacions denses.","Detonates a main charge and a cloud of secondary blasts over dense formations."],
+      ["Corbeta Enjambre Hydra","Corbeta Eixam Hydra","Hydra Swarm Corvette"],
+      ["Corb. enjambre","Corb. eixam","Swarm corv."],
+      ["Salva táctica","Salva tàctica","Tactical salvo"],
+      ["Seis micromisiles guiados secuenciales","Sis micromíssils guiats seqüencials","Six sequential guided micromissiles"],
+      ["Satura blancos medios con trayectorias escalonadas sin invadir el alcance de artillería.","Satura objectius mitjans amb trajectòries esglaonades sense envair l'abast de l'artilleria.","Saturates medium targets along staggered trajectories without encroaching on artillery range."],
+      ["Fragata Lancer","Fragata Lancer","Lancer Frigate"],
+      ["Frag. rail","Frag. rail","Rail frig."],
+      ["Railgun antiblindaje + Gatling defensiva","Canó de rails antiblindatge + Gatling defensiva","Anti-armor railgun + defensive Gatling"],
+      ["Plataforma de fuego medio que perfora blindaje y cubre su perímetro con Gatling.","Plataforma de foc mitjà que perfora blindatge i cobreix el seu perímetre amb Gatling.","Medium fire platform that pierces armor and covers its perimeter with Gatling fire."],
+      ["Fragata Enjambre Tempest","Fragata Eixam Tempest","Tempest Swarm Frigate"],
+      ["Frag. enjambre","Frag. eixam","Swarm frig."],
+      ["Saturación","Saturació","Saturation"],
+      ["Nueve misiles guiados + Gatling defensiva","Nou míssils guiats + Gatling defensiva","Nine guided missiles + defensive Gatling"],
+      ["Lanza salvas secuenciales contra capitales y conserva una cortina Gatling cercana.","Llança salves seqüencials contra naus capitals i manté una cortina Gatling propera.","Launches sequential salvos against capital ships while maintaining a close Gatling screen."],
+      ["Fragata Plasma Helios","Fragata de Plasma Helios","Helios Plasma Frigate"],
+      ["Frag. plasma","Frag. plasma","Plasma frig."],
+      ["Proyector de plasma + Gatling defensiva","Projector de plasma + Gatling defensiva","Plasma projector + defensive Gatling"],
+      ["Proyecta plasma pesado sobre naves blindadas y repele cazas a corta distancia.","Projecta plasma pesant sobre naus blindades i repel·leix caces a curta distància.","Projects heavy plasma onto armored ships and repels fighters at short range."],
+      ["Fragata Láser Solaria","Fragata Làser Solaria","Solaria Laser Frigate"],
+      ["Frag. láser","Frag. làser","Laser frig."],
+      ["Haz capital","Feix capital","Capital beam"],
+      ["Láser rojo neón de alta potencia + Gatling","Làser vermell de neó d'alta potència + Gatling","High-power neon-red laser + Gatling"],
+      ["Mantiene un haz continuo de gran alcance para derribar escudos y naves capitales.","Manté un feix continu de gran abast per abatre escuts i naus capitals.","Maintains a continuous long-range beam to bring down shields and capital ships."],
+      ["Cañonera Vulcan","Canonera Vulcan","Vulcan Gunship"],
+      ["Cañonera","Canonera","Gunship"],
+      ["Supresión cercana","Supressió propera","Close suppression"],
+      ["Dos Gatling pesadas y munición trazadora","Dues Gatling pesants i munició traçadora","Two heavy Gatlings and tracer ammunition"],
+      ["Corbeta blindada que crea una cortina cinética contra cazas y estructuras ligeras.","Corbeta blindada que crea una cortina cinètica contra caces i estructures lleugeres.","Armored corvette that creates a kinetic screen against fighters and light structures."],
+      ["Fragata Iónica Faraday","Fragata Iònica Faraday","Faraday Ion Frigate"],
+      ["Frag. iónica","Frag. iònica","Ion frig."],
+      ["Control de flota","Control de flota","Fleet control"],
+      ["Matriz Tesla de cinco saltos + Gatling","Matriu Tesla de cinc salts + Gatling","Five-jump Tesla array + Gatling"],
+      ["Inmoviliza grupos, agota escudos y protege a la línea capital contra enjambres.","Immobilitza grups, esgota escuts i protegeix la línia capital contra eixams.","Immobilizes groups, drains shields, and protects the capital line from swarms."],
+      ["Portanaves Horizon","Portaavions Horizon","Horizon Carrier"],
+      ["Portanaves","Portaavions","Carrier"],
+      ["Proyección de cazas","Projecció de caces","Fighter projection"],
+      ["Alas Wasp automáticas + salvas de misiles + Gatling","Ales Wasp automàtiques + salves de míssils + Gatling","Automated Wasp wings + missile salvos + Gatling"],
+      ["Mantiene dos cazas de escolta y proyecta potencia de combate a gran distancia.","Manté dos caces d'escorta i projecta potència de combat a gran distància.","Maintains two escort fighters and projects combat power over long distances."],
+      ["Destructor Titan","Destructor Titan","Titan Destroyer"],
+      ["Destructor","Destructor","Destroyer"],
+      ["Nave capital","Nau capital","Capital ship"],
+      ["Artillería pesada + láser capital + Gatling defensiva","Artilleria pesant + làser capital + Gatling defensiva","Heavy artillery + capital laser + defensive Gatling"],
+      ["Centro de fuego de largo alcance con batería nuclear lenta, láser rojo y defensa Gatling.","Centre de foc de llarg abast amb bateria nuclear lenta, làser vermell i defensa Gatling.","Long-range fire center with a slow nuclear battery, red laser, and Gatling defense."],
+      ["Acorazado Prometheus","Cuirassat Prometheus","Prometheus Battleship"],
+      ["Acorazado","Cuirassat","Battleship"],
+      ["Aniquilación capital","Aniquilació capital","Capital annihilation"],
+      ["Lanza de antimateria + láseres + baterías Gatling","Llança d'antimatèria + làsers + bateries Gatling","Antimatter lance + lasers + Gatling batteries"],
+      ["El casco aliado más pesado. Devasta bases y supercapitales desde distancia extrema.","El buc aliat més pesant. Devasta bases i supercapitals des d'una distància extrema.","The heaviest allied hull. It devastates bases and supercapital ships from extreme range."],
+      ["Ejecuta pasadas rápidas, rompe el contacto y vira para una nueva aproximación.","Executa passades ràpides, trenca el contacte i vira per a una nova aproximació.","Executes fast attack runs, breaks contact, and turns for another approach."],
+      ["Mantiene una posición estable a distancia efectiva según su masa y alcance.","Manté una posició estable a distància efectiva segons la seva massa i abast.","Maintains a stable position at an effective distance based on its mass and range."],
+      ["Construcción de naves","Construcció de naus","Ship construction"],
+      ["Cancelar y recuperar el 75 %","Cancel·lar i recuperar el 75 %","Cancel and recover 75%"],
+      ["táctica","tàctica","tactics"],
+      ["en producción","en producció","in production"],
+      ["lista para intercepción","preparada per a la intercepció","ready for interception"],
+      ["Producción cancelada · sin coste","Producció cancel·lada · sense cost","Production canceled · no cost"],
+      ["Cañón","Canó","Cannon"],
+      ["Láser","Làser","Laser"],
+      ["Misiles","Míssils","Missiles"],
+      ["Artillería","Artilleria","Artillery"],
+      ["Gravedad","Gravetat","Gravity"],
+      ["Fase","Fase","Phase"],
+      ["Antimateria","Antimatèria","Antimatter"],
+      ["Iónico","Iònic","Ion"],
+      ["Fotónica","Fotònica","Photon"],
+      ["Fulgor","Fulgor","Flare"],
+      ["Mina He‑3","Mina He‑3","He-3 mine"],
+      ["Salva táctica","Salva tàctica","Tactical salvo"],
+      ["Dos proyectiles por descarga.","Dos projectils per descàrrega.","Two projectiles per shot."],
+      ["Penetra el 55 % de la resistencia cinética.","Penetra el 55 % de la resistència cinètica.","Pierces 55% of kinetic resistance."],
+      ["Cadencia un 34 % superior.","Cadència un 34 % superior.","34% higher fire rate."],
+      ["Daño superior y munición incendiaria.","Dany superior i munició incendiària.","Higher damage and incendiary ammunition."],
+      ["Aumenta mucho el radio de explosión.","Augmenta molt el radi d'explosió.","Greatly increases blast radius."],
+      ["Más daño y ralentización breve.","Més dany i alentiment breu.","More damage and brief slowing."],
+      ["El haz rebota a dos objetivos.","El feix rebota cap a dos objectius.","The beam chains to two targets."],
+      ["Daño creciente contra blindados.","Dany creixent contra blindats.","Increasing damage against armored targets."],
+      ["Ralentización mucho más intensa.","Alentiment molt més intens.","Much stronger slowing."],
+      ["Los enemigos congelados reciben daño extra.","Els enemics congelats reben dany addicional.","Frozen enemies take extra damage."],
+      ["Dieciséis micromisiles por salva.","Setze micromíssils per salva.","Sixteen micromissiles per salvo."],
+      ["Daño masivo contra jefes.","Dany massiu contra caps.","Massive damage against bosses."],
+      ["Tres saltos adicionales.","Tres salts addicionals.","Three additional jumps."],
+      ["Puede aturdir a toda la cadena.","Pot atordir tota la cadena.","Can stun the entire chain."],
+      ["Cada impacto genera una pequeña explosión.","Cada impacte genera una petita explosió.","Each hit creates a small explosion."],
+      ["Aplica una potente combustión.","Aplica una combustió potent.","Applies a powerful burn."],
+      ["Aumenta la energía del haz sin duplicar el disparo.","Augmenta l'energia del feix sense duplicar el tret.","Increases beam energy without duplicating the shot."],
+      ["Impacto devastador con recarga superior.","Impacte devastador amb una recàrrega més llarga.","Devastating impact with a longer reload."],
+      ["Onda expansiva un 60 % mayor.","Ona expansiva un 60 % més gran.","60% larger shockwave."],
+      ["Reduce la recarga sin convertir la ojiva en fuego rápido.","Redueix la recàrrega sense convertir l'ogiva en foc ràpid.","Reduces reload time without turning the warhead into rapid fire."],
+      ["Campo un 45 % mayor y más ralentización.","Camp un 45 % més gran i més alentiment.","45% larger field and stronger slowing."],
+      ["Duplica el daño central con una recarga mayor.","Duplica el dany central amb una recàrrega més llarga.","Doubles central damage with a longer reload."],
+      ["Amplía la anchura y la penetración del haz.","Amplia l'amplada i la penetració del feix.","Increases beam width and penetration."],
+      ["Gran incremento de daño concentrado.","Gran increment de dany concentrat.","Major increase in focused damage."],
+      ["Aumenta el radio seguro y el daño de área.","Augmenta el radi segur i el dany d'àrea.","Increases safe radius and area damage."],
+      ["Daño extremo contra naves capitales.","Dany extrem contra naus capitals.","Extreme damage against capital ships."],
+      ["La descarga salta a tres objetivos secundarios.","La descàrrega salta a tres objectius secundaris.","The discharge jumps to three secondary targets."],
+      ["Multiplica el daño contra escudos y amplía la detonación EMP.","Multiplica el dany contra escuts i amplia la detonació EMP.","Multiplies shield damage and expands the EMP detonation."],
+      ["Aumenta la penetración y divide el espectro del impacto.","Augmenta la penetració i divideix l'espectre de l'impacte.","Increases penetration and splits the impact spectrum."],
+      ["Mayor daño y cadencia a cambio de un radio menor.","Més dany i cadència a canvi d'un radi menor.","Higher damage and fire rate in exchange for a smaller radius."],
+      ["Aumenta mucho el radio térmico de la detonación.","Augmenta molt el radi tèrmic de la detonació.","Greatly increases the detonation's thermal radius."],
+      ["Concentra una explosión más pequeña y mucho más destructiva.","Concentra una explosió més petita i molt més destructiva.","Focuses a smaller, far more destructive explosion."],
+      ["Aumenta un 65 % la extracción de Helio‑3.","Augmenta un 65 % l'extracció d'Heli‑3.","Increases Helium-3 extraction by 65%."],
+      ["Duplica los ingresos comerciales y mejora la extracción.","Duplica els ingressos comercials i millora l'extracció.","Doubles commercial income and improves extraction."],
+      ["Aumenta un 55 % la producción científica.","Augmenta un 55 % la producció científica.","Increases science output by 55%."],
+      ["Reduce el coste de tecnologías y mejora la cadencia de investigación.","Redueix el cost de les tecnologies i millora el ritme de recerca.","Reduces technology costs and increases research speed."],
+      ["Aumenta la capacidad y acelera la construcción.","Augmenta la capacitat i accelera la construcció.","Increases capacity and accelerates construction."],
+      ["Mejora daño, reparación y escudos de la flota.","Millora el dany, la reparació i els escuts de la flota.","Improves fleet damage, repair, and shields."],
+      ["Aumenta la producción y potencia el daño global de las torretas.","Augmenta la producció i potencia el dany global de les torretes.","Increases output and boosts global turret damage."],
+      ["Las naves causan un 28 % más de daño y ganan dos puntos de capacidad.","Les naus causen un 28 % més de dany i guanyen dos punts de capacitat.","Ships deal 28% more damage and gain two capacity points."],
+      ["SOL","SOL","SUN"],
+      ["OLEADA","ONADA","WAVE"],
+      ["BASE ENEMIGA NV.","BASE ENEMIGA NV.","ENEMY BASE LV."],
+      ["TEATRO ACTIVO","TEATRE ACTIU","ACTIVE THEATER"],
+      ["HOSTILES","HOSTILS","HOSTILES"],
+      ["LÍNEA ATRAVESADA","LÍNIA TRAVESSADA","LINE BREACHED"],
+      ["OBJETIVO","OBJECTIU","TARGET"],
+      ["TIERRA","TERRA","EARTH"],
+      ["MARTE","MART","MARS"],
+      ["VENUS","VENUS","VENUS"],
+      ["MERCURIO","MERCURI","MERCURY"],
+      ["JÚPITER","JÚPITER","JUPITER"],
+      ["SATURNO","SATURN","SATURN"],
+      ["URANO","URÀ","URANUS"],
+      ["NEPTUNO","NEPTÚ","NEPTUNE"],
+      ["Satélite","Satèl·lit","Satellite"],
+      ["Satélites","Satèl·lits","Satellites"],
+      ["Atlas solar 3D","Atles solar 3D","3D solar atlas"],
+      ["Atlas solar ·","Atles solar ·","Solar atlas ·"],
+      ["operativos","operatius","operational"],
+      ["planetas operativos","planetes operatius","operational planets"],
+      ["Teatro 3D en tiempo real","Teatre 3D en temps real","Real-time 3D theater"],
+      ["Defensas próximas","Defenses properes","Nearby defenses"],
+      ["Teatro completo","Teatre complet","Complete theater"],
+      ["Destruidos","Destruïts","Destroyed"],
+      ["Ruta de hiperespacio","Ruta d'hiperespai","Hyperspace route"],
+      ["Distancia orbital","Distància orbital","Orbital distance"],
+      ["satélite característico","satèl·lit característic","signature satellite"],
+      ["satélites característicos","satèl·lits característics","signature satellites"],
+      ["Puedes transferir las","Pots transferir les","You can transfer the"],
+      ["naves desplegadas o dejar la flotilla defendiendo","naus desplegades o deixar la flotilla defensant","deployed ships or leave the flotilla defending"],
+      ["No hay flota desplegada para transferir.","No hi ha cap flota desplegada per transferir.","There is no deployed fleet to transfer."],
+      ["Viajar sin flota","Viatjar sense flota","Travel without fleet"],
+      ["Trasladar flota","Traslladar la flota","Transfer fleet"],
+      ["PROTOCOLO Ω","PROTOCOL Ω","Ω PROTOCOL"],
+      ["acceso total","accés total","full access"],
+      ["Recarga","Recàrrega","Reload"],
+      ["Doctrina","Doctrina","Doctrine"],
+      ["Distancia","Distància","Distance"],
+      ["Vulnerable a","Vulnerable a","Vulnerable to"],
+      ["Resiste","Resisteix","Resists"],
+      ["INTERNO","INTERN","INTERNAL"],
+      ["Blindaje","Blindatge","Armor"],
+      ["mil M","mil M","B"],
+      ["UA","UA","AU"],
+      ["Numeroso","Nombrós","Numerous"],
+      ["Muy rápido","Molt ràpid","Very fast"],
+      ["Ataca defensas","Ataca defenses","Attacks defenses"],
+      ["Protección","Protecció","Protection"],
+      ["Interferencia","Interferència","Jamming"],
+      ["Repara aliados","Repara aliats","Repairs allies"],
+      ["Defensa de ocupación","Defensa d'ocupació","Occupation defense"],
+      ["Producción enemiga","Producció enemiga","Enemy production"],
+      ["Núcleo de ocupación","Nucli d'ocupació","Occupation core"],
+      ["Nave capital I","Nau capital I","Capital ship I"],
+      ["Nave capital II","Nau capital II","Capital ship II"],
+      ["Nave capital III","Nau capital III","Capital ship III"],
+      ["Nave capital final","Nau capital final","Final capital ship"],
+      ["Superjefe de ciclo · aniquilador planetario","Supercap de cicle · aniquilador planetari","Cycle superboss · planetary annihilator"],
+      ["tiene escala visual y táctica","té escala visual i tàctica","has a visual and tactical scale"],
+      ["respecto a la Tierra y","respecte a la Terra i","relative to Earth and"],
+      ["Puedes transferir las","Pots transferir les","You can transfer the"],
+      ["No hay una flota desplegada que trasladar desde","No hi ha cap flota desplegada per traslladar des de","There is no deployed fleet to transfer from"],
+      ["Saltar con","Saltar amb","Jump with"],
+      ["Saltar sin flota","Saltar sense flota","Jump without fleet"],
+      ["Viajar a","Viatjar a","Travel to"],
+      ["Pantalla completa","Pantalla completa","Fullscreen"],
+      ["Hostiles","Hostils","Hostiles"],
+      ["Desplegar","Desplegar","Deploy"],
+      ["AUTO: NO","AUTO: NO","AUTO: OFF"],
+      ["AUTO: SÍ","AUTO: SÍ","AUTO: ON"],
+      ["fase crítica","fase crítica","critical phase"],
+      ["Pulso Ω: red defensiva colapsada","Pols Ω: xarxa defensiva col·lapsada","Ω pulse: defense network collapsed"],
+      ["Pulso nulo: energía drenada","Pols nul: energia drenada","Null pulse: energy drained"],
+      ["retirada para reparación","retirada per reparació","withdrawing for repairs"],
+      ["reparación completada","reparació completada","repairs complete"],
+      ["Requiere astillero nivel","Requereix una drassana de nivell","Requires shipyard level"],
+      ["Cola de producción completa","Cua de producció plena","Production queue full"],
+      ["Capacidad logística insuficiente","Capacitat logística insuficient","Insufficient logistics capacity"],
+      ["Helio‑3 insuficiente","Heli‑3 insuficient","Insufficient Helium-3"],
+      ["SIN COSTE","SENSE COST","NO COST"],
+      ["Retirar nave","Retirar la nau","Decommission ship"],
+      ["será desmantelada por","serà desmuntada per","will be decommissioned for"],
+      ["FRENTE","FRONT","FRONT"],
+      ["INCURSIÓN","INCURSIÓ","INCURSION"],
+      ["naves en formación de salto","naus en formació de salt","ships in jump formation"],
+      ["Transferencia de mando sin flota","Transferència de comandament sense flota","Command transfer without fleet"],
+      ["Resistencia infinita","Resistència infinita","Endless resistance"],
+      ["Puntuación ×","Puntuació ×","Score ×"],
+      ["Superjefe Ω cada 50 oleadas · supera tu récord","Supercap Ω cada 50 onades · supera el teu rècord","Ω superboss every 50 waves · beat your record"],
+      ["Red orbital bajo control enemigo","Xarxa orbital sota control enemic","Orbital network under enemy control"],
+      ["Reanuda la partida para construir","Reprèn la partida per construir","Resume the game to build"],
+      ["No se puede construir durante una ocupación · libera primero el planeta","No es pot construir durant una ocupació · allibera primer el planeta","You cannot build during an occupation · liberate the planet first"],
+      ["Tecnología bloqueada hasta la oleada","Tecnologia bloquejada fins a l'onada","Technology locked until wave"],
+      ["Investigación requerida","Recerca requerida","Research required"],
+      ["este teatro no tiene lunas rocosas","aquest teatre no té llunes rocoses","this theater has no rocky moons"],
+      ["Créditos insuficientes · necesitas","Crèdits insuficients · necessites","Insufficient credits · you need"],
+      ["Selecciona primero una torreta","Selecciona primer una torreta","Select a turret first"],
+      ["No hay una posición orbital seleccionada","No hi ha cap posició orbital seleccionada","No orbital position selected"],
+      ["El complejo minero solo puede desplegarse alrededor de una luna rocosa","El complex miner només es pot desplegar al voltant d'una lluna rocosa","The mining complex can only be deployed around a rocky moon"],
+      ["Ranura orbital ocupada","Ranura orbital ocupada","Orbital slot occupied"],
+      ["Control manual de cámara","Control manual de càmera","Manual camera control"],
+      [" Las naves quedarán autónomas y la cola pendiente se cancelará."," Les naus quedaran autònomes i la cua pendent es cancel·larà."," The ships will become autonomous and the pending queue will be canceled."],
+      ["Recuperarás","Recuperaràs","You will recover"],
+      ["Esta acción no se puede deshacer.","Aquesta acció no es pot desfer.","This action cannot be undone."],
+      ["Pulso iónico desplegado","Pols iònic desplegat","Ion pulse deployed"],
+      ["Detonación nuclear orbital confirmada","Detonació nuclear orbital confirmada","Orbital nuclear detonation confirmed"],
+      ["ALERTA: integridad planetaria crítica","ALERTA: integritat planetària crítica","ALERT: planetary integrity critical"],
+      ["Base enemiga en","Base enemiga a","Enemy base on"],
+      ["incursión lanzada hacia","incursió llançada cap a","raid launched toward"],
+      ["ANIQUILADO por","ANIQUILAT per","ANNIHILATED by"],
+      ["pérdida irreversible","pèrdua irreversible","irreversible loss"],
+      ["La línea terrestre ha caído","La línia terrestre ha caigut","Earth's defensive line has fallen"],
+      ["ocupado y terraformado · base enemiga nivel","ocupat i terraformitzat · base enemiga nivell","occupied and terraformed · enemy base level"],
+      ["operativa","operativa","operational"],
+      ["se desbloquea tras la oleada","es desbloqueja després de l'onada","unlocks after wave"],
+      ["fue aniquilado y no puede recuperarse ni visitarse","va ser aniquilat i no es pot recuperar ni visitar","was annihilated and can no longer be recovered or visited"],
+      ["operación de liberación iniciada","operació d'alliberament iniciada","liberation operation initiated"],
+      ["desplegado · subvención orbital","desplegat · subvenció orbital","deployed · orbital grant"],
+      ["naves transferidas a","naus transferides a","ships transferred to"],
+      ["Teatro transferido a","Teatre transferit a","Theater transferred to"],
+      ["OPERACIÓN DE LIBERACIÓN · DESTRUIR EL NÚCLEO","OPERACIÓ D'ALLIBERAMENT · DESTRUIR EL NUCLI","LIBERATION OPERATION · DESTROY THE CORE"],
+      ["Base enemiga detectada · elimina torretas, astillero y núcleo terraformador","Base enemiga detectada · elimina torretes, drassana i nucli terraformador","Enemy base detected · eliminate turrets, shipyard, and terraforming core"],
+      ["Misión iniciada","Missió iniciada","Mission started"],
+      ["Campaña restaurada","Campanya restaurada","Campaign restored"],
+      ["debe ser liberado","ha de ser alliberat","must be liberated"],
+      ["Bonificación de despliegue","Bonificació de desplegament","Deployment bonus"],
+      ["Sector asegurado","Sector assegurat","Sector secured"],
+      ["La invasión principal ha sido contenida · libera los planetas ocupados para vencer","La invasió principal ha estat continguda · allibera els planetes ocupats per vèncer","The main invasion has been contained · liberate the occupied planets to win"],
+      ["Requisito","Requisit","Requirement"],
+      ["Recursos requeridos","Recursos requerits","Required resources"],
+      ["Tecnología completada","Tecnologia completada","Technology completed"],
+      ["Abandonar el combate","Abandonar el combat","Abandon battle"],
+      ["Volverás al último inicio de oleada guardado.","Tornaràs a l'últim inici d'onada desat.","You will return to the latest saved wave start."],
+      ["Se perderá el progreso de esta misión.","Es perdrà el progrés d'aquesta missió.","Progress in this mission will be lost."],
+      ["PROTOCOLO ORIOL Ω DESBLOQUEADO · disponible en Opciones","PROTOCOL ORIOL Ω DESBLOQUEJAT · disponible a Opcions","ORIOL Ω PROTOCOL UNLOCKED · available in Settings"],
+      ["Protocolo Oriol Ω disponible en Opciones","Protocol Oriol Ω disponible a Opcions","Oriol Ω Protocol available in Settings"],
+      ["PROTOCOLO ORIOL Ω ACTIVO · TODO DESBLOQUEADO · RECURSOS ∞","PROTOCOL ORIOL Ω ACTIU · TOT DESBLOQUEJAT · RECURSOS ∞","ORIOL Ω PROTOCOL ACTIVE · EVERYTHING UNLOCKED · INFINITE RESOURCES"],
+      ["Protocolo Oriol Ω desactivado","Protocol Oriol Ω desactivat","Oriol Ω Protocol disabled"],
+      ["Vista inmersiva activada","Vista immersiva activada","Immersive view enabled"],
+      ["Vista inmersiva desactivada","Vista immersiva desactivada","Immersive view disabled"],
+      ["El navegador no permite pantalla completa en este contexto","El navegador no permet la pantalla completa en aquest context","The browser does not allow fullscreen in this context"],
+      ["Salir de pantalla completa","Sortir de la pantalla completa","Exit fullscreen"],
+      ["DEFENSA NO DISPONIBLE","DEFENSA NO DISPONIBLE","DEFENSE UNAVAILABLE"],
+      ["INVESTIGA","INVESTIGA","RESEARCH"],
+      ["REQUIERE LUNA ROCOSA","REQUEREIX UNA LLUNA ROCOSA","REQUIRES ROCKY MOON"],
+      ["FALTAN","FALTEN","MISSING"],
+      ["ASTILLERO NIVEL","DRASSANA NIVELL","SHIPYARD LEVEL"],
+      ["COLA LLENA","CUA PLENA","QUEUE FULL"],
+      ["TECNOLOGÍA COMPLETADA","TECNOLOGIA COMPLETADA","TECHNOLOGY COMPLETED"],
+      ["INSTALADA","INSTAL·LADA","INSTALLED"],
+      ["REQUISITOS PENDIENTES","REQUISITS PENDENTS","PENDING REQUIREMENTS"],
+      ["DESARROLLAR PROTOTIPO","DESENVOLUPAR PROTOTIP","DEVELOP PROTOTYPE"],
+      ["Torretas","Torretes","Turrets"],
+      ["Edificios","Edificis","Structures"],
+      ["construcción","construcció","construction"],
+      ["la cabecera muestra el total de la red","la capçalera mostra el total de la xarxa","the header shows the network total"],
+      ["Abrir","Obrir","Open"],
+      ["de","de","of"],
+      ["en","a","at"],
+      ["EN COMBATE","EN COMBAT","IN COMBAT"],
+      ["CONSTRUCCIÓN","CONSTRUCCIÓ","CONSTRUCTION"],
+      ["JEFE","CAP","BOSS"],
+      ["BLOQUEADA:","BLOQUEJADA:","LOCKED:"]
     ];
 
     class GameI18n {
       constructor(store){
-        this.store=store;this.current=this.normalize(store.data.settings.language||store.data.settings.voiceLanguage||"es");this.textState=new WeakMap();this.attrState=new WeakMap();this.attributes=["title","aria-label","placeholder"];
+        this.store=store;this.current=this.normalize(store.data.settings.language||store.data.settings.voiceLanguage||"en");this.textState=new WeakMap();this.attrState=new WeakMap();this.attributes=["title","aria-label","placeholder"];
         this.catalog={ca:new Map(GAME_TRANSLATION_ROWS.map(row=>[row[0],row[1]])),en:new Map(GAME_TRANSLATION_ROWS.map(row=>[row[0],row[2]]))};this.phrases={ca:[...this.catalog.ca.entries()].sort((a,b)=>b[0].length-a[0].length),en:[...this.catalog.en.entries()].sort((a,b)=>b[0].length-a[0].length)};
       }
-      normalize(value){const language=String(value||"es").toLowerCase().slice(0,2);return["es","ca","en"].includes(language)?language:"es"}
+      normalize(value){const language=String(value||"en").toLowerCase().slice(0,2);return["es","ca","en"].includes(language)?language:"en"}
       locale(language=this.current){return{ca:"ca-ES",en:"en-US"}[this.normalize(language)]||"es-ES"}
       translateText(value,language=this.current){
-        if(typeof value!=="string"||!value)return value;const lang=this.normalize(language);if(lang==="es")return value;const match=value.match(/^(\s*)([\s\S]*?)(\s*)$/),lead=match?.[1]||"",core=match?.[2]||value,tail=match?.[3]||"";if(!core)return value;const exact=this.catalog[lang].get(core);if(exact!==undefined)return lead+exact+tail;let translated=core;for(const [source,target] of this.phrases[lang])if(source.length>=4&&translated.includes(source))translated=translated.split(source).join(target);return lead+translated+tail
+        if(typeof value!=="string"||!value)return value;const lang=this.normalize(language),neutral={es:{kinetic:"cinético",explosive:"explosivo",energy:"energía",cryo:"criogénico",plasma:"plasma"},ca:{kinetic:"cinètic",explosive:"explosiu",energy:"energia",cryo:"criogènic",plasma:"plasma"},en:{kinetic:"kinetic",explosive:"explosive",energy:"energy",cryo:"cryo",plasma:"plasma"}},canonical=text=>text.replace(/\b(?:cinético|cinètic)\b/g,"kinetic").replace(/\b(?:explosivo|explosiu)\b/g,"explosive").replace(/\b(?:energía|energia)\b/g,"energy").replace(/\b(?:criogénico|criogènic)\b/g,"cryo"),translateNeutral=text=>Object.entries(neutral[lang]).reduce((copy,[source,target])=>copy.replace(new RegExp(`\\b${source}\\b`,"g"),target),canonical(text));if(lang==="es")return translateNeutral(value);const match=value.match(/^(\s*)([\s\S]*?)(\s*)$/),lead=match?.[1]||"",core=match?.[2]||value,tail=match?.[3]||"";if(!core)return value;const exact=this.catalog[lang].get(core);if(exact!==undefined)return lead+translateNeutral(exact)+tail;let translated=core;for(const [source,target] of this.phrases[lang])if(source.length>=4&&translated.includes(source))translated=translated.split(source).join(target);translated=translateNeutral(translated);if(lang==="en")translated=translated.replace(/(\d),(\d)/g,"$1.$2").replace(/\bUA\b/g,"AU").replace(/\bCI\b/g,"SR");return lead+translated+tail
       }
       translateValue(value,language=this.current){return typeof value==="string"?this.translateText(value,language):value}
       processText(node){
@@ -1224,7 +1701,7 @@
       apply(commit=true){
         this.current=this.normalize(this.store.data.settings.language||this.store.data.settings.voiceLanguage);this.store.data.settings.language=this.current;this.store.data.settings.voiceLanguage=this.locale();document.documentElement.lang=this.current;document.title=this.current==="ca"?"Orbital Siege v2.7 · Comandament Global":this.current==="en"?"Orbital Siege v2.7 · Global Command":"Orbital Siege v2.7 · Global Command";const meta=document.querySelector('meta[name="description"]');if(meta)meta.content=this.current==="ca"?"Orbital Siege v2.7 · defensa estratègica 3D multilingüe i autocontinguda del Sistema Solar":this.current==="en"?"Orbital Siege v2.7 · multilingual, self-contained 3D Solar System strategy defense":"Orbital Siege v2.7 · defensa estratégica 3D multilingüe y autocontenida del Sistema Solar";this.scan(document.body);if(commit)this.store.commit();return this.current
       }
-      setLanguage(value,commit=true){this.store.data.settings.language=this.normalize(value);this.store.data.settings.voiceLanguage=this.locale(this.store.data.settings.language);return this.apply(commit)}
+      setLanguage(value,commit=true){this.store.data.settings.language=this.normalize(value);this.store.data.settings.voiceLanguage=this.locale(this.store.data.settings.language);const language=this.apply(commit);window.OrbitalSiege?.ui?.refreshLocalizedCanvases?.();return language}
     }
 
     class RNG {
@@ -1360,17 +1837,17 @@
     }
 
     class VoiceCommander {
-      constructor(store){
-        this.store=store;this.supported=typeof speechSynthesis!=="undefined"&&typeof SpeechSynthesisUtterance!=="undefined";this.voices=[];this.lastKey="";this.lastAt=0;this.messages={
+      constructor(store,i18n){
+        this.store=store;this.i18n=i18n;this.supported=typeof speechSynthesis!=="undefined"&&typeof SpeechSynthesisUtterance!=="undefined";this.voices=[];this.lastKey="";this.lastAt=0;this.messages={
           "es":{voiceReady:()=>"Voz de mando operativa.",waveIncoming:d=>`Oleada ${d.wave} entrante.`,waveClear:()=>"Sector asegurado.",bossDetected:d=>`Alerta. Nave capital detectada: ${d.name||"contacto hostil"}.`,bossCritical:d=>`${d.name||"Nave capital"} en fase crítica.`,criticalIntegrity:()=>"Alerta. Integridad planetaria crítica.",planetDestroyed:d=>`${d.name||"Planeta"} ha sido aniquilado. Pérdida irreversible.`,occupation:d=>`${d.name||"Planeta"} ha sido ocupado por el enemigo.`,liberation:d=>`${d.name||"Planeta"} ha sido liberado.`,shieldReady:()=>"Matriz de escudo adaptativa operativa.",h3Sold:d=>`Venta confirmada. ${d.amount} unidades de helio tres por ${d.credits} créditos.`,objective:d=>`Objetivo principal: ${d.name||"contacto hostil"}.`},
           "ca":{voiceReady:()=>"Veu de comandament operativa.",waveIncoming:d=>`Onada ${d.wave} entrant.`,waveClear:()=>"Sector assegurat.",bossDetected:d=>`Alerta. Nau capital detectada: ${d.name||"contacte hostil"}.`,bossCritical:d=>`${d.name||"Nau capital"} en fase crítica.`,criticalIntegrity:()=>"Alerta. Integritat planetària crítica.",planetDestroyed:d=>`${d.name||"Planeta"} ha estat aniquilat. Pèrdua irreversible.`,occupation:d=>`${d.name||"Planeta"} ha estat ocupat per l'enemic.`,liberation:d=>`${d.name||"Planeta"} ha estat alliberat.`,shieldReady:()=>"Matriu d'escut adaptativa operativa.",h3Sold:d=>`Venda confirmada. ${d.amount} unitats d'heli tres per ${d.credits} crèdits.`,objective:d=>`Objectiu principal: ${d.name||"contacte hostil"}.`},
           "en":{voiceReady:()=>"Command voice online.",waveIncoming:d=>`Wave ${d.wave} incoming.`,waveClear:()=>"Sector secured.",bossDetected:d=>`Alert. Capital ship detected: ${d.name||"hostile contact"}.`,bossCritical:d=>`${d.name||"Capital ship"} has entered its critical phase.`,criticalIntegrity:()=>"Alert. Planetary integrity critical.",planetDestroyed:d=>`${d.name||"Planet"} has been annihilated. Irreversible loss.`,occupation:d=>`${d.name||"Planet"} has been occupied by the enemy.`,liberation:d=>`${d.name||"Planet"} has been liberated.`,shieldReady:()=>"Adaptive shield matrix online.",h3Sold:d=>`Sale confirmed. ${d.amount} helium three for ${d.credits} credits.`,objective:d=>`Primary target: ${d.name||"hostile contact"}.`}
         };if(this.supported){this.refreshVoices();speechSynthesis.addEventListener?.("voiceschanged",()=>this.refreshVoices())}
       }
       refreshVoices(){if(this.supported)this.voices=speechSynthesis.getVoices?.()||[]}
-      language(){return this.store.data.settings.voiceLanguage||"es-ES"}
+      language(){return this.store.data.settings.voiceLanguage||"en-US"}
       voice(){const language=this.language(),prefix=language.split("-")[0].toLowerCase();return this.voices.find(voice=>voice.lang===language)||this.voices.find(voice=>voice.lang?.toLowerCase().startsWith(prefix))||null}
-      announce(key,data={},priority=false){const settings=this.store.data.settings;if(!this.supported||!settings.voiceAlerts||settings.master<=0||settings.voiceVolume<=0||document.hidden)return false;const now=performance.now();if(key===this.lastKey&&now-this.lastAt<1300)return false;this.lastKey=key;this.lastAt=now;const language=this.language(),catalog=this.messages[language.split("-")[0]]||this.messages.es,make=catalog[key]||this.messages.es[key],copy=typeof make==="function"?make(data):data.text;if(!copy)return false;try{if(priority)speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(copy),voice=this.voice();utterance.lang=language;if(voice)utterance.voice=voice;utterance.volume=clamp((settings.voiceVolume??.82)*(settings.master??.75),0,1);utterance.rate=.96;utterance.pitch=.92;speechSynthesis.speak(utterance);return true}catch(e){return false}}
+      announce(key,data={},priority=false){const settings=this.store.data.settings;if(!this.supported||!settings.voiceAlerts||settings.master<=0||settings.voiceVolume<=0||document.hidden)return false;const now=performance.now();if(key===this.lastKey&&now-this.lastAt<1300)return false;this.lastKey=key;this.lastAt=now;const language=this.language(),languageKey=language.split("-")[0],catalog=this.messages[languageKey]||this.messages.en,make=catalog[key]||this.messages.en[key],localized={...data,name:this.i18n?.translateText?.(data.name,languageKey)??data.name,text:this.i18n?.translateText?.(data.text,languageKey)??data.text},copy=typeof make==="function"?make(localized):localized.text;if(!copy)return false;try{if(priority)speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(copy),voice=this.voice();utterance.lang=language;if(voice)utterance.voice=voice;utterance.volume=clamp((settings.voiceVolume??.82)*(settings.master??.75),0,1);utterance.rate=.96;utterance.pitch=.92;speechSynthesis.speak(utterance);return true}catch(e){return false}}
       stop(){if(this.supported)try{speechSynthesis.cancel()}catch(e){}}
     }
 
@@ -2018,18 +2495,18 @@
         const basic=(color,opacity=1)=>new THREE.MeshBasicMaterial({color,transparent:opacity<1,opacity,depthTest:false,depthWrite:false,side:THREE.DoubleSide}),g=new THREE.Group(),bg=new THREE.Mesh(new THREE.PlaneGeometry(width+1.8,8.2),basic(0x020611,.97)),hullBg=new THREE.Mesh(new THREE.PlaneGeometry(width,2.7),basic(0x310914,.99)),shieldBg=new THREE.Mesh(new THREE.PlaneGeometry(width,2.25),basic(0x071d38,.99)),fg=new THREE.Mesh(new THREE.PlaneGeometry(width-1.2,2.02),basic(0xff536d)),shieldFill=new THREE.Mesh(new THREE.PlaneGeometry(width-1.2,1.58),basic(0x49cfff));
         hullBg.position.set(0,-1.55,.04);shieldBg.position.set(0,1.55,.04);fg.position.set(0,-1.55,.08);shieldFill.position.set(0,1.55,.09);g.add(bg,hullBg,shieldBg,fg,shieldFill);[bg,hullBg,shieldBg,fg,shieldFill].forEach((mesh,i)=>{mesh.renderOrder=120+i;mesh.frustumCulled=false});g.renderOrder=120;g.scale.setScalar(1.08);return {group:g,bg,hullBg,shieldBg,fill:fg,shieldFill,width:width-1.2,shieldWidth:width-1.2};
       }
-      static enemyVitalLabel(width=28){
-        const canvas=document.createElement("canvas");canvas.width=512;canvas.height=128;const context=canvas.getContext("2d"),texture=new THREE.CanvasTexture(canvas);texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=false;const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false,side:THREE.DoubleSide}),mesh=new THREE.Mesh(new THREE.PlaneGeometry(width+9,10.2),material);mesh.position.set(0,0,.14);mesh.renderOrder=126;mesh.frustumCulled=false;return{canvas,context,texture,mesh,signature:"",hullPct:1,shieldPct:1,hasShield:false};
+      static enemyVitalLabel(width=28,i18n=null){
+        const canvas=document.createElement("canvas");canvas.width=512;canvas.height=128;const context=canvas.getContext("2d"),texture=new THREE.CanvasTexture(canvas);texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=false;const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false,side:THREE.DoubleSide}),mesh=new THREE.Mesh(new THREE.PlaneGeometry(width+9,10.2),material);mesh.position.set(0,0,.14);mesh.renderOrder=126;mesh.frustumCulled=false;return{canvas,context,texture,mesh,i18n,signature:"",hullPct:1,shieldPct:1,hasShield:false};
       }
       static updateEnemyVitalLabel(label,hullPct,shieldPct,hasShield){
-        if(!label)return;const safeHull=clamp(hullPct,0,1),safeShield=clamp(shieldPct,0,1),hull=Math.round(safeHull*100),shield=Math.round(safeShield*100),signature=`${hull}-${hasShield?shield:"x"}`;if(label.signature===signature)return;label.signature=signature;label.hullPct=safeHull;label.shieldPct=safeShield;label.hasShield=hasShield;const x=label.context,w=label.canvas.width,h=label.canvas.height;x.clearRect(0,0,w,h);
+        if(!label)return;const safeHull=clamp(hullPct,0,1),safeShield=clamp(shieldPct,0,1),hull=Math.round(safeHull*100),shield=Math.round(safeShield*100),language=label.i18n?.current||"en",signature=`${hull}-${hasShield?shield:"x"}`,renderSignature=`${language}-${signature}`;if(label.renderSignature===renderSignature)return;label.renderSignature=renderSignature;label.signature=signature;label.hullPct=safeHull;label.shieldPct=safeShield;label.hasShield=hasShield;const x=label.context,w=label.canvas.width,h=label.canvas.height,tr=value=>(label.i18n?.translateText?.(value,language)||value).toUpperCase();x.clearRect(0,0,w,h);
         const panelPath=()=>{if(x.beginPath){x.beginPath();if(x.roundRect)x.roundRect(3,4,w-6,h-8,16);else x.rect(3,4,w-6,h-8)}};
         panelPath();x.fillStyle="rgba(1,7,16,.92)";if(x.fill)x.fill();else x.fillRect(3,4,w-6,h-8);panelPath();x.strokeStyle="rgba(102,218,255,.72)";x.lineWidth=3;if(x.stroke)x.stroke();else if(x.strokeRect)x.strokeRect(3,4,w-6,h-8);
         if(!x.fillText){label.texture.needsUpdate=true;return}
         const left=25,right=w-25,barWidth=right-left,barHeight=15,hullY=49,shieldY=91;
-        x.textBaseline="middle";x.font='800 22px "Arial Narrow",Arial,sans-serif';x.shadowBlur=8;x.shadowColor="#ff496c";x.fillStyle="#ff91a2";x.textAlign="left";x.fillText("CASCO",left,27);x.textAlign="right";x.fillStyle="#ffffff";x.fillText(`${hull}%`,right,27);
+        x.textBaseline="middle";x.font='800 22px "Arial Narrow",Arial,sans-serif';x.shadowBlur=8;x.shadowColor="#ff496c";x.fillStyle="#ff91a2";x.textAlign="left";x.fillText(tr("Casco"),left,27);x.textAlign="right";x.fillStyle="#ffffff";x.fillText(`${hull}%`,right,27);
         x.shadowBlur=0;x.fillStyle="rgba(78,10,28,.92)";x.fillRect(left,hullY,barWidth,barHeight);x.fillStyle=safeHull<.25?"#ff244f":safeHull<.55?"#ff8747":"#ff536d";x.shadowBlur=12;x.shadowColor=x.fillStyle;x.fillRect(left,hullY,Math.max(2,barWidth*safeHull),barHeight);
-        x.shadowBlur=8;x.shadowColor="#42cfff";x.textAlign="left";x.fillStyle="#7ce2ff";x.fillText(hasShield?"ESCUDO":"SIN ESCUDO",left,76);x.textAlign="right";x.fillStyle=hasShield?"#ffffff":"#71879c";x.fillText(hasShield?`${shield}%`:"—",right,76);
+        x.shadowBlur=8;x.shadowColor="#42cfff";x.textAlign="left";x.fillStyle="#7ce2ff";x.fillText(tr(hasShield?"Escudo":"Sin escudo"),left,76);x.textAlign="right";x.fillStyle=hasShield?"#ffffff":"#71879c";x.fillText(hasShield?`${shield}%`:"—",right,76);
         x.shadowBlur=0;x.fillStyle="rgba(6,29,58,.92)";x.fillRect(left,shieldY,barWidth,barHeight);if(hasShield&&safeShield>0){x.fillStyle=safeShield<.25?"#3578ff":"#49cfff";x.shadowBlur=12;x.shadowColor=x.fillStyle;x.fillRect(left,shieldY,Math.max(2,barWidth*safeShield),barHeight)}x.shadowBlur=0;label.texture.needsUpdate=true;
       }
     }
@@ -2039,7 +2516,7 @@
         this.game=game;this.type=type;this.def=BOSSES[type]||ENEMIES[type];this.active=true;this.id=++game.ids.enemy;this.sector=sector;
         const d=game.difficulty;this.powerScale=data?.scale||scale;this.maxHp=this.def.hp*d.enemyHp*this.powerScale;this.hp=clamp(data?.hp??this.maxHp,0,this.maxHp);this.maxShield=(this.def.shield||0)*d.enemyHp*this.powerScale;this.shield=clamp(data?.shield??this.maxShield,0,this.maxShield);this.speed=this.def.speed*d.enemySpeed*(1+Math.min(game.wave,40)*.004);this.damage=this.def.damage*d.enemyDamage*this.powerScale;
         const activeHostiles=game.enemies.filter(e=>e.active).length,modelQuality=!this.def.boss&&!this.def.carrier&&activeHostiles>34?"low":game.world.quality;this.model=ModelFactory.enemy(type,this.def,modelQuality);this.root=this.model.root;this.visualScale=data?.visualScale||ENEMY_VISUAL_SCALE[type]||1;this.root.position.copy(pos);this.root.scale.setScalar(this.visualScale);this.root.traverse(o=>o.userData.entity=this);game.world.enemyLayer.add(this.root);
-        const vitalWidth=this.def.superBoss?72:this.def.boss?52:28;this.bar=ModelFactory.healthBar(vitalWidth);[this.bar.bg,this.bar.hullBg,this.bar.shieldBg,this.bar.fill,this.bar.shieldFill].forEach(mesh=>mesh.visible=false);this.bar.label=ModelFactory.enemyVitalLabel(vitalWidth);this.bar.group.add(this.bar.label.mesh);this.bar.group.userData.singleEnemyIndicator=true;this.bar.group.visible=false;game.world.enemyLayer.add(this.bar.group);
+        const vitalWidth=this.def.superBoss?72:this.def.boss?52:28;this.bar=ModelFactory.healthBar(vitalWidth);[this.bar.bg,this.bar.hullBg,this.bar.shieldBg,this.bar.fill,this.bar.shieldFill].forEach(mesh=>mesh.visible=false);this.bar.label=ModelFactory.enemyVitalLabel(vitalWidth,game.i18n);this.bar.group.add(this.bar.label.mesh);this.bar.group.userData.singleEnemyIndicator=true;this.bar.group.visible=false;game.world.enemyLayer.add(this.bar.group);
         this.radius=this.def.radius*(this.def.structure?this.visualScale:1);this.slow=0;this.slowStrength=0;this.stun=0;this.burn=0;this.burnDps=0;this.cooldown=rand(1.2,3.5);this.fleetCooldown=rand(.5,1.8);this.fleetScan=rand(0,.3);this.fleetTarget=null;this.fleetTacticState="approach";this.fleetTacticTimer=0;this.fleetTacticPoint=new THREE.Vector3();this.fleetPassShots=0;this.fleetPassCount=0;this.fleetTargetId=0;this.siegeTarget=null;this.siegeKind="earth";this.siegeScan=rand(0,.6);this.siegeCooldown=rand(.8,2.4);this.supportClock=rand(.5,2);this.abilityClock=rand(3,6);this.launchClock=rand(4.5,8);this.age=data?.age||0;this.phase=data?.phase||0;this.lastHit=0;this.shieldPulse=0;this.vitalsNear=false;this.jamRadius=this.type==="jammer"?145:this.def.superBoss?285:(this.type==="eclipse"||this.type==="sovereign")?205:0;this.engineRibbon=this.def.structure?null:game.world.vfx.createEngineRibbon(this,this.model.engine,this.def.superBoss?0xb7ff4a:0x4dff88,clamp(this.def.radius*1.3,6,28),modelQuality,this.def.boss?2.8:(this.type==="interceptor"||this.type==="swarm")?1.15:1.75);
         this.baseAxis=pos.clone().normalize();this.tangent=new THREE.Vector3(-this.baseAxis.z,.2,this.baseAxis.x).normalize();this.velocity=data?.velocity?new THREE.Vector3().fromArray(data.velocity):new THREE.Vector3();this.steerVelocity=this.def.structure?new THREE.Vector3():data?.steerVelocity?new THREE.Vector3().fromArray(data.steerVelocity):pos.clone().multiplyScalar(-1).normalize().multiplyScalar(this.speed*.7);this.fixedPosition=pos.clone();this.structureCooldown=rand(.6,1.8);this.trailClock=rand(0,.08);this.maneuverPhase=rand(0,TAU);this.root.lookAt(0,0,0);this.root.rotateY(Math.PI);this.floatClock=0;this.hyperspaceTimer=this.def.structure||data?0:(sector==="INTERNO"?0:.84);this.hyperspaceDuration=this.hyperspaceTimer;this.destroying=!!data?.destroying;this.destructionTimer=data?.destructionTimer||0;this.destructionReason=data?.destructionReason||"killed";this.destructionSource=null;this.crackClock=0;
         if(this.hyperspaceTimer>0){this.root.scale.set(.04*this.visualScale,.04*this.visualScale,4.8*this.visualScale);this.game.world.vfx.hyperspace(this.root.position,this.baseAxis,this.def.superBoss?0xb7ff4a:0x4dff88,clamp(this.radius*1.55,24,76));this.game.audio.hyperspace(true)}
@@ -2182,7 +2659,7 @@
       constructor(game,type,yard,data=null){
         this.game=game;this.type=type;this.def=FLEET_TYPES[type];this.hull=this.def.hull||type;this.active=true;this.id=++game.ids.ship;this.ownerRing=data?.ownerRing??yard?.ring??-1;this.ownerSlot=data?.ownerSlot??yard?.slot??-1;this.freeBuild=!!data?.freeBuild;this.maxHp=this.def.hp;this.hp=clamp(data?.hp??this.maxHp,1,this.maxHp);this.designShield=this.def.shield||0;this.maxShield=game.hasTech?.("shield_matrix")?this.designShield:0;this.shield=clamp(data?.shield??this.maxShield,0,this.maxShield);this.shieldDelay=0;this.shieldPulse=0;this.cooldown=rand(0,this.def.rate);this.scanClock=0;this.target=null;this.age=rand(0,TAU);this.orbitAngle=data?.orbitAngle??rand(0,TAU);this.damageType=this.def.damageType||"kinetic";
         this.model=ModelFactory.fleetShip(type,this.def,game.world.quality);this.root=this.model.root;this.visualScale=(ALLY_VISUAL_SCALE[this.hull]||1)*(this.def.visualScale||1);this.root.position.copy(data?.position?new THREE.Vector3().fromArray(data.position):yard?.root.position||new THREE.Vector3(0,0,(game.world.planetDefenseRadii?.[2]||202)+45));this.root.traverse(o=>o.userData.entity=this);game.world.defenseLayer.add(this.root);this.carrierParentId=data?.carrierParentId||0;this.wingClock=rand(5,10);
-        this.bar=ModelFactory.healthBar(this.hull==="destroyer"?38:26);[this.bar.bg,this.bar.hullBg,this.bar.shieldBg,this.bar.fill,this.bar.shieldFill].forEach(mesh=>mesh.visible=false);this.bar.label=ModelFactory.enemyVitalLabel(this.hull==="destroyer"?38:26);this.bar.group.add(this.bar.label.mesh);this.bar.group.userData.singleFleetIndicator=true;this.bar.group.visible=false;game.world.defenseLayer.add(this.bar.group);this.deploy=data?1:0;this.root.scale.setScalar((data?1:.05)*this.visualScale);this.velocity=data?.velocity?new THREE.Vector3().fromArray(data.velocity):new THREE.Vector3();this.engineRibbon=game.world.vfx.createEngineRibbon(this,this.model.engine,0x63eaff,clamp(this.def.radius*1.15,5,25),game.world.quality,this.hull==="destroyer"?2.8:this.hull==="frigate"?2.25:this.hull==="fighter"?1.2:1.65);this.maneuverPhase=rand(0,TAU);this.bank=0;this.trailClock=rand(0,.08);this.tacticState="approach";this.tacticTimer=0;this.tacticPoint=new THREE.Vector3();this.passShots=0;this.passCount=0;this.attackTargetId=0;this.egressSign=this.id%2?1:-1;this.serviceState=data?.serviceState||"combat";this.serviceClock=0;this.repairFx=0;this.vitalsNear=false;this.destroying=!!data?.destroying;this.destructionTimer=data?.destructionTimer||0;this.crackClock=0;this.hyperspaceTimer=data?.hyperspaceArrival?.88:0;this.hyperspaceDuration=this.hyperspaceTimer;if(this.hyperspaceTimer>0){this.root.scale.set(.05*this.visualScale,.05*this.visualScale,4.5*this.visualScale);this.game.world.vfx.hyperspace(this.root.position,this.root.position.clone().normalize(),0x63eaff,clamp(this.def.radius*1.8,24,52));this.game.audio.hyperspace(false)}if(!this.home()&&this.serviceState!=="combat")this.serviceState="combat";
+        this.bar=ModelFactory.healthBar(this.hull==="destroyer"?38:26);[this.bar.bg,this.bar.hullBg,this.bar.shieldBg,this.bar.fill,this.bar.shieldFill].forEach(mesh=>mesh.visible=false);this.bar.label=ModelFactory.enemyVitalLabel(this.hull==="destroyer"?38:26,game.i18n);this.bar.group.add(this.bar.label.mesh);this.bar.group.userData.singleFleetIndicator=true;this.bar.group.visible=false;game.world.defenseLayer.add(this.bar.group);this.deploy=data?1:0;this.root.scale.setScalar((data?1:.05)*this.visualScale);this.velocity=data?.velocity?new THREE.Vector3().fromArray(data.velocity):new THREE.Vector3();this.engineRibbon=game.world.vfx.createEngineRibbon(this,this.model.engine,0x63eaff,clamp(this.def.radius*1.15,5,25),game.world.quality,this.hull==="destroyer"?2.8:this.hull==="frigate"?2.25:this.hull==="fighter"?1.2:1.65);this.maneuverPhase=rand(0,TAU);this.bank=0;this.trailClock=rand(0,.08);this.tacticState="approach";this.tacticTimer=0;this.tacticPoint=new THREE.Vector3();this.passShots=0;this.passCount=0;this.attackTargetId=0;this.egressSign=this.id%2?1:-1;this.serviceState=data?.serviceState||"combat";this.serviceClock=0;this.repairFx=0;this.vitalsNear=false;this.destroying=!!data?.destroying;this.destructionTimer=data?.destructionTimer||0;this.crackClock=0;this.hyperspaceTimer=data?.hyperspaceArrival?.88:0;this.hyperspaceDuration=this.hyperspaceTimer;if(this.hyperspaceTimer>0){this.root.scale.set(.05*this.visualScale,.05*this.visualScale,4.5*this.visualScale);this.game.world.vfx.hyperspace(this.root.position,this.root.position.clone().normalize(),0x63eaff,clamp(this.def.radius*1.8,24,52));this.game.audio.hyperspace(false)}if(!this.home()&&this.serviceState!=="combat")this.serviceState="combat";
       }
       refreshShieldTechnology(activate=false){const previous=this.maxShield||0;this.maxShield=this.game.hasTech?.("shield_matrix")?this.designShield:0;if(!this.maxShield)this.shield=0;else if(activate&&this.maxShield>previous)this.shield=Math.max(this.shield||0,this.maxShield*.4);else this.shield=clamp(this.shield||0,0,this.maxShield);this.shieldPulse=activate&&this.maxShield>previous?1:this.shieldPulse;if(this.model?.shieldBubble&&!this.maxShield)this.model.shieldBubble.visible=false;return this.maxShield}
       home(){return this.game.towers.find(t=>t.active&&t.def.shipyard&&t.ring===this.ownerRing&&t.slot===this.ownerSlot)||null}
@@ -2501,6 +2978,9 @@
       constructor(game){
         this.game=game;this.pendingMode="campaign";this.selectedDifficulty="commander";this.lastHud=0;this.lastSelection=0;this.priorityEditing=false;this.activeYard=null;this.activeLab=null;this.secretTapCount=0;this.secretTapAt=0;this.scanMode="solar";this.scanHits=[];this.scanLast=0;this.scanWasPaused=false;this.contactLast=0;this.layoutRaf=0;this.layoutTimers=[];this.viewCycles={};this.bindMenu();this.bindHUD();this.bindSettings();this.refreshMenu();this.renderRecords();this.renderDifficulties();document.addEventListener("pointerdown",e=>{if(this.priorityEditing&&!e.target?.closest?.("#priority-select"))this.priorityEditing=false},true);document.addEventListener("keydown",e=>{if(this.priorityEditing&&["Escape","Tab"].includes(e.key))this.priorityEditing=false},true);document.addEventListener("fullscreenchange",()=>this.syncFullscreen());document.addEventListener("webkitfullscreenchange",()=>this.syncFullscreen());const relayout=()=>{this.scheduleHUDLayout();if(!this.contextDockMobileViewport())this.setContextDockCompact(false)};addEventListener("resize",relayout,{passive:true});addEventListener("orientationchange",relayout,{passive:true});window.visualViewport?.addEventListener("resize",relayout,{passive:true});window.visualViewport?.addEventListener("scroll",relayout,{passive:true});if(window.ResizeObserver){this.hudResizeObserver=new ResizeObserver(relayout);["#top-hud","#boss-wrap","#build-dock","#context-dock"].forEach(selector=>{const node=$(selector);if(node)this.hudResizeObserver.observe(node)})}this.syncFullscreen();setTimeout(()=>this.setContextDockCompact(this.contextDockMobileViewport()),40);
       }
+      tr(value,language=this.game.i18n.current){return this.game.i18n.translateText(value,language)}
+      number(value,options={}){return value.toLocaleString(this.game.i18n.locale(),options)}
+      refreshLocalizedCanvases(){for(const visual of this.solarMap3D?.visuals||[]){const label=visual.group.children.find(child=>child.userData?.solarLabel);if(label)this.paintSolarMapLabel(label,visual.profile)}this.scanLast=0;this.drawScanMap(performance.now(),true)}
       bindMenu(){
         $("#campaign-btn").onclick=()=>this.openMode("campaign");$("#endless-btn").onclick=()=>this.openMode("endless");$("#continue-btn").onclick=()=>this.game.resumeRun();$("#deploy-btn").onclick=()=>this.game.newRun(this.pendingMode,this.selectedDifficulty);
         $$("[data-screen]").forEach(b=>b.onclick=()=>this.openScreen(b.dataset.screen));$$("[data-close-screen]").forEach(b=>b.onclick=()=>this.closeScreen(b.closest(".screen").id));
@@ -2661,8 +3141,11 @@
         let engagementCount=0;for(const {entity} of entities){const target=entity.target?.active?entity.target:entity.fleetTarget?.active?entity.fleetTarget:null;if(!target||engagementCount>=128)continue;const a=this.theaterPosition(entity,scale),b=this.theaterPosition(target,scale),offset=engagementCount*6;map.engagementPositions[offset]=a.x;map.engagementPositions[offset+1]=a.y;map.engagementPositions[offset+2]=a.z;map.engagementPositions[offset+3]=b.x;map.engagementPositions[offset+4]=b.y;map.engagementPositions[offset+5]=b.z;engagementCount++}map.engagements.geometry.setDrawRange(0,engagementCount*2);map.engagements.geometry.attributes.position.needsUpdate=true;map.engagements.material.opacity=.24+.08*Math.sin(now*.006);map.camera.position.set(map.radius*Math.sin(map.phi)*Math.cos(map.theta),map.radius*Math.cos(map.phi),map.radius*Math.sin(map.phi)*Math.sin(map.theta));map.camera.lookAt(0,20,0);map.renderer.render(map.scene,map.camera);const moons=this.game.world.moonSystems.filter(system=>system.orbit.visible);$("#scan-hostiles").textContent=this.game.enemies.filter(entity=>entity.active).length;$("#scan-fleet").textContent=this.game.fleet.ships.filter(entity=>entity.active).length;$("#scan-towers").textContent=this.game.towers.filter(entity=>entity.active).length;$("#scan-lunar").textContent=moons.length;$("#scan-companion-label").textContent="Satélites";$("#scan-sector-label").textContent=`Teatro 3D en tiempo real · ${profile.name}`
       }
       pickTheaterMap3D(event){const map=this.theaterMap3D;if(!map)return;const rect=map.canvas.getBoundingClientRect();map.mouse.set((event.clientX-rect.left)/rect.width*2-1,-((event.clientY-rect.top)/rect.height)*2+1);map.raycaster.setFromCamera(map.mouse,map.camera);const hit=map.raycaster.intersectObjects(map.hitMeshes,false)[0],entity=hit?.object?.userData?.theaterEntity;if(!entity?.active)return;this.game.select(entity);if(entity instanceof Enemy)this.game.setFocusTarget(entity);this.game.focusCamera(entity);this.closeCommandMap()}
+      paintSolarMapLabel(sprite,profile){
+        const data=sprite?.userData?.solarLabel;if(!data||data.language===this.game.i18n.current)return;const {ctx,texture}=data;ctx.clearRect(0,0,320,80);ctx.textAlign="center";ctx.shadowColor="#000";ctx.shadowBlur=7;ctx.fillStyle="#eaffff";ctx.font='800 25px "Arial Narrow",Arial,sans-serif';ctx.fillText(this.tr(profile.name).toUpperCase(),160,31);ctx.fillStyle="#83bbca";ctx.font="600 15px system-ui";ctx.fillText(`${this.number(profile.au,{maximumFractionDigits:2})} ${this.tr("UA")} · ${this.tr("Escala").toUpperCase()} ×${this.number(profile.radiusRatio,{maximumFractionDigits:2})}`,160,57);texture.needsUpdate=true;data.language=this.game.i18n.current;
+      }
       solarMapLabel(profile){
-        const canvas=document.createElement("canvas");canvas.width=320;canvas.height=80;const ctx=canvas.getContext("2d");ctx.clearRect(0,0,320,80);ctx.textAlign="center";ctx.shadowColor="#000";ctx.shadowBlur=7;ctx.fillStyle="#eaffff";ctx.font='800 25px "Arial Narrow",Arial,sans-serif';ctx.fillText(profile.name.toUpperCase(),160,31);ctx.fillStyle="#83bbca";ctx.font="600 15px system-ui";ctx.fillText(`${profile.au.toLocaleString("es-ES",{maximumFractionDigits:2})} UA · ESCALA ×${profile.radiusRatio.toLocaleString("es-ES",{maximumFractionDigits:2})}`,160,57);const texture=new THREE.CanvasTexture(canvas);texture.encoding=THREE.sRGBEncoding;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false}));sprite.scale.set(92,23,1);return sprite
+        const canvas=document.createElement("canvas");canvas.width=320;canvas.height=80;const ctx=canvas.getContext("2d"),texture=new THREE.CanvasTexture(canvas);texture.encoding=THREE.sRGBEncoding;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false}));sprite.scale.set(92,23,1);sprite.userData.solarLabel={canvas,ctx,texture,language:""};this.paintSolarMapLabel(sprite,profile);return sprite
       }
       initSolarMap3D(){
         if(this.solarMap3D)return this.solarMap3D;const canvas=$("#solar-map-3d"),renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"});renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.26;const scene=new THREE.Scene();scene.background=new THREE.Color(0x01050d);scene.fog=new THREE.FogExp2(0x01050d,.00115);const camera=new THREE.PerspectiveCamera(46,1,1,2400),root=new THREE.Group();scene.add(root,new THREE.HemisphereLight(0x78caff,0x030713,.6));const sunLight=new THREE.PointLight(0xffd39a,3.8,1250,1.25);scene.add(sunLight);const sun=new THREE.Mesh(new THREE.SphereGeometry(17,32,24),new THREE.MeshBasicMaterial({color:0xffd06a})),sunGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:TextureFactory.glow(),color:0xff8a35,transparent:true,opacity:.88,blending:THREE.AdditiveBlending,depthWrite:false}));sunGlow.scale.setScalar(98);root.add(sun,sunGlow);
@@ -2677,6 +3160,7 @@
       }
       drawSolarMap(ctx,width,height,now){
         const game=this.game,compact=width<520,cx=width*.5,cy=height*.5,maxRadius=Math.max(105,Math.min(width*.44,height*.43)),ellipseY=compact?.66:.72,logMax=Math.log1p(PLANET_BY_KEY.neptune.au),sorted=[...SOLAR_PLANETS].sort((a,b)=>a.au-b.au),orbitFor=profile=>44+Math.log1p(profile.au)/logMax*(maxRadius-54),phases={mercury:4.72,venus:3.72,earth:2.85,mars:2.18,jupiter:1.32,saturn:.5,uranus:-.35,neptune:-1.18};
+        const originalFillText=ctx.fillText?.bind(ctx);if(originalFillText)ctx.fillText=(value,...args)=>originalFillText(this.tr(String(value)),...args);
         ctx.save();ctx.strokeStyle="rgba(109,213,238,.13)";ctx.lineWidth=1;for(const profile of sorted){const orbit=orbitFor(profile);ctx.beginPath();ctx.ellipse(cx,cy,orbit,orbit*ellipseY,0,0,TAU);ctx.stroke()}ctx.restore();
         const sunGlow=ctx.createRadialGradient(cx,cy,1,cx,cy,42);sunGlow.addColorStop(0,"rgba(255,255,239,1)");sunGlow.addColorStop(.12,"rgba(255,213,102,.98)");sunGlow.addColorStop(.42,"rgba(255,112,35,.42)");sunGlow.addColorStop(1,"rgba(255,98,24,0)");ctx.fillStyle=sunGlow;ctx.beginPath();ctx.arc(cx,cy,42,0,TAU);ctx.fill();ctx.fillStyle="#fff3bd";ctx.beginPath();ctx.arc(cx,cy,10,0,TAU);ctx.fill();if(ctx.fillText&&!compact){ctx.fillStyle="#ffd27a";ctx.font='700 9px "Arial Narrow",Arial,sans-serif';ctx.textAlign="center";ctx.fillText("SOL",cx,cy+58)}
         this.scanHits=[];
@@ -2686,7 +3170,7 @@
           if(occupied){ctx.strokeStyle="#b7ff4a";ctx.lineWidth=2.4;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(x,y,bodyRadius+9+Math.sin(now*.008)*2,0,TAU);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x-bodyRadius-5,y);ctx.lineTo(x+bodyRadius+5,y);ctx.moveTo(x,y-bodyRadius-5);ctx.lineTo(x,y+bodyRadius+5);ctx.stroke()}else if(active){ctx.strokeStyle="#6dffb2";ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(x,y,bodyRadius+8+Math.sin(now*.006)*1.5,0,TAU);ctx.stroke();ctx.setLineDash([])}else if(hostiles){ctx.strokeStyle="#ff496c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,bodyRadius+7,0,TAU);ctx.stroke()}if(!unlocked){ctx.strokeStyle="#ffc857";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-4,y-1);ctx.lineTo(x+4,y-1);ctx.lineTo(x+4,y+6);ctx.lineTo(x-4,y+6);ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(x,y-2,4,Math.PI,0);ctx.stroke()}
           if(ctx.fillText){const align=x>width*.72?"right":x<width*.28?"left":"center",offset=align==="right"?-bodyRadius-7:align==="left"?bodyRadius+7:0,status=!unlocked?`OLEADA ${profile.unlockWave}`:occupied?`BASE ENEMIGA NV.${state.occupation.level||1}`:active?"TEATRO ACTIVO":hostiles?`${hostiles} HOSTILES`:state?.breached?"LÍNEA ATRAVESADA":`${profile.au.toLocaleString("es-ES",{maximumFractionDigits:2})} UA · ×${profile.radiusRatio.toLocaleString("es-ES",{maximumFractionDigits:2})}`;ctx.textAlign=align;ctx.fillStyle=unlocked?"#e8fbff":"#8a99a4";ctx.font=`700 ${compact?9:10}px "Arial Narrow",Arial,sans-serif`;ctx.fillText(profile.name.toUpperCase(),x+offset,y-bodyRadius-8);if(!compact||active||hostiles||!unlocked||state?.breached||occupied){ctx.fillStyle=occupied?"#b7ff4a":hostiles?"#ff8ba2":active?"#6dffb2":"#86a9b9";ctx.font='600 8px system-ui';ctx.fillText(status,x+offset,y+bodyRadius+14)}}ctx.restore();this.scanHits.push({kind:"planet",profile,x,y,r:Math.max(18,bodyRadius+9),locked:!unlocked});
         }
-        const unlockedCount=SOLAR_PLANETS.filter(profile=>game.isPlanetUnlocked(profile)).length,states=game.planetStates||{},stored=Object.entries(states).filter(([key])=>key!==game.activePlanetKey),hostileTotal=SOLAR_PLANETS.reduce((sum,profile)=>sum+(game.isPlanetUnlocked(profile)?game.frontHostiles(profile.key):0),0),fleetTotal=game.fleet.ships.filter(ship=>ship.active).length+stored.reduce((sum,[,state])=>sum+(state.fleet||[]).filter(ship=>!ship.destroying).length,0),towerTotal=game.towers.filter(tower=>tower.active).length+stored.reduce((sum,[,state])=>sum+(state.towers||[]).length,0),moonTotal=SOLAR_PLANETS.filter(profile=>game.isPlanetUnlocked(profile)).reduce((sum,profile)=>sum+(profile.moons?.length||0),0);$("#scan-hostiles").textContent=hostileTotal;$("#scan-fleet").textContent=fleetTotal;$("#scan-towers").textContent=towerTotal;$("#scan-lunar").textContent=moonTotal;$("#scan-companion-label").textContent="Satélites";$("#scan-sector-label").textContent=`Atlas solar · ${unlockedCount}/8 planetas operativos`;
+        const unlockedCount=SOLAR_PLANETS.filter(profile=>game.isPlanetUnlocked(profile)).length,states=game.planetStates||{},stored=Object.entries(states).filter(([key])=>key!==game.activePlanetKey),hostileTotal=SOLAR_PLANETS.reduce((sum,profile)=>sum+(game.isPlanetUnlocked(profile)?game.frontHostiles(profile.key):0),0),fleetTotal=game.fleet.ships.filter(ship=>ship.active).length+stored.reduce((sum,[,state])=>sum+(state.fleet||[]).filter(ship=>!ship.destroying).length,0),towerTotal=game.towers.filter(tower=>tower.active).length+stored.reduce((sum,[,state])=>sum+(state.towers||[]).length,0),moonTotal=SOLAR_PLANETS.filter(profile=>game.isPlanetUnlocked(profile)).reduce((sum,profile)=>sum+(profile.moons?.length||0),0);$("#scan-hostiles").textContent=hostileTotal;$("#scan-fleet").textContent=fleetTotal;$("#scan-towers").textContent=towerTotal;$("#scan-lunar").textContent=moonTotal;$("#scan-companion-label").textContent="Satélites";$("#scan-sector-label").textContent=`Atlas solar · ${unlockedCount}/8 planetas operativos`;if(originalFillText)ctx.fillText=originalFillText;
       }
       drawScanMap(now=performance.now(),force=false){
         const canvas=$("#scan-canvas"),interval=this.scanMode==="theater"?32:70;if(!canvas||$("#command-map").classList.contains("hidden")||!force&&now-this.scanLast<interval)return;this.scanLast=now;const stage=canvas.closest(".scan-stage"),solar=this.scanMode==="solar",theater=this.scanMode==="theater";stage?.classList.toggle("solar-3d",solar);stage?.classList.toggle("theater-3d",theater);if(solar){this.drawSolarMap3D(now);return}if(theater){this.drawTheaterMap3D(now);return}const rect=canvas.getBoundingClientRect();if(rect.width<8||rect.height<8)return;const ratio=Math.min(devicePixelRatio||1,1.6),width=rect.width,height=rect.height,targetW=Math.round(width*ratio),targetH=Math.round(height*ratio);if(canvas.width!==targetW||canvas.height!==targetH){canvas.width=targetW;canvas.height=targetH}const ctx=canvas.getContext("2d");ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,width,height);
@@ -2694,6 +3178,7 @@
         ctx.fillStyle="#010812";ctx.fillRect(0,0,width,height);const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(width,height)*.62);glow.addColorStop(0,"rgba(17,71,94,.28)");glow.addColorStop(.62,"rgba(3,24,39,.16)");glow.addColorStop(1,"rgba(0,3,9,.9)");ctx.fillStyle=glow;ctx.fillRect(0,0,width,height);
         ctx.lineWidth=1;ctx.strokeStyle="rgba(73,180,205,.09)";const grid=Math.max(18,Math.max(50,span/12)*scale);for(let x=cx%grid;x<width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke()}for(let y=cy%grid;y<height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(0+width,y);ctx.stroke()}
         ctx.save();ctx.translate(cx,cy);ctx.strokeStyle="rgba(94,219,244,.12)";ctx.setLineDash([4,7]);const rangeStep=Math.max(100,Math.round(span/7/50)*50);for(let r=rangeStep;r<span;r+=rangeStep){ctx.beginPath();ctx.arc(0,0,r*scale,0,TAU);ctx.stroke()}ctx.setLineDash([]);const sweep=(now*.00034)%TAU,sweepGradient=ctx.createRadialGradient(0,0,0,0,0,Math.min(width,height)*.46);sweepGradient.addColorStop(0,"rgba(76,239,255,.16)");sweepGradient.addColorStop(1,"rgba(76,239,255,0)");ctx.fillStyle=sweepGradient;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,Math.min(width,height)*.52,sweep-.09,sweep+.09);ctx.closePath();ctx.fill();ctx.strokeStyle="rgba(100,242,255,.48)";ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(sweep)*Math.min(width,height)*.5,Math.sin(sweep)*Math.min(width,height)*.5);ctx.stroke();ctx.restore();
+        const originalFillText=ctx.fillText?.bind(ctx);if(originalFillText)ctx.fillText=(value,...args)=>originalFillText(this.tr(String(value)),...args);
         const circle=(point,radius,color,fill="transparent",dash=[])=>{const p=project(point);ctx.save();ctx.strokeStyle=color;ctx.fillStyle=fill;ctx.setLineDash(dash);ctx.beginPath();ctx.arc(p.x,p.y,Math.max(2,radius*scale),0,TAU);if(fill!=="transparent")ctx.fill();ctx.stroke();ctx.restore();return p};
         this.scanHits=[];const profile=this.game.planetProfile(),origin=new THREE.Vector3(),planetPoint=project(origin);this.game.rings.rings.filter(r=>!r.def.lunar).forEach(r=>circle(origin,r.radius,"rgba(73,213,239,.11)"));circle(origin,world.planetBodyRadius,"rgba(73,231,255,.9)","rgba(13,95,129,.42)");this.scanHits.push({kind:"earth",x:planetPoint.x,y:planetPoint.y,r:Math.max(18,world.planetBodyRadius*scale)});
         const visibleMoons=world.moonSystems.filter(system=>system.orbit.visible);visibleMoons.forEach((system,index)=>{const point=system.root.getWorldPosition(new THREE.Vector3()),orbitRadius=point.length(),p=project(point),body=Math.max(3,system.collisionRadius*scale),station=system.spec?.kind==="station";circle(origin,orbitRadius,index?"rgba(143,182,220,.14)":"rgba(143,182,220,.25)");this.game.rings.rings.filter(ring=>ring.def.lunar&&ring.def.moonIndex===system.index).forEach(ring=>circle(point,ring.radius,"rgba(200,229,255,.34)"));if(station){const s=Math.max(6,body);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/4);ctx.fillStyle="rgba(54,196,219,.28)";ctx.strokeStyle="#a5f5ff";ctx.shadowColor="#41e6ff";ctx.shadowBlur=9;ctx.lineWidth=1.5;ctx.fillRect(-s,-s,s*2,s*2);ctx.strokeRect(-s,-s,s*2,s*2);ctx.restore()}else circle(point,system.collisionRadius-2,"rgba(207,230,255,.88)","rgba(120,149,178,.38)");if(ctx.fillText&&body>=3){ctx.fillStyle=index?"rgba(185,215,228,.7)":"#dff7ff";ctx.font=`600 ${index?8:9}px system-ui`;ctx.textAlign="center";ctx.fillText(system.spec?.name||`Satélite ${index+1}`,p.x,p.y-body-7)}this.scanHits.push({kind:"moon",index,x:p.x,y:p.y,r:Math.max(16,body+7)})});
@@ -2702,7 +3187,7 @@
         };
         this.game.towers.filter(t=>t.active).forEach(t=>drawContact(t,RINGS[t.ring].lunar?"#c8e5ff":"#41e6ff","square",t.def.shipyard?6.5:4.5));this.game.fleet.ships.filter(s=>s.active).forEach(s=>drawContact(s,"#6dffb2","triangle",s.hull==="destroyer"?8:s.hull==="frigate"?6:s.hull==="strikefighter"?5.2:4.5));this.game.enemies.filter(e=>e.active).forEach(e=>drawContact(e,e.def.boss?"#ff2f65":"#ff6b68",e.def.boss?"diamond":"triangle",e.def.boss?11:clamp(e.radius*.48,4,8)));
         const selected=this.game.selection;if(selected?.active){const p=project(selected.root.position);if(inside(p)){ctx.strokeStyle="rgba(255,255,255,.75)";ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(p.x,p.y,18+Math.sin(now*.006)*3,0,TAU);ctx.stroke();ctx.setLineDash([])}}
-        $("#scan-hostiles").textContent=this.game.enemies.filter(e=>e.active).length;$("#scan-fleet").textContent=this.game.fleet.ships.filter(s=>s.active).length;$("#scan-towers").textContent=this.game.towers.filter(t=>t.active).length;$("#scan-lunar").textContent=visibleMoons.length;$("#scan-companion-label").textContent="Satélites";$("#scan-sector-label").textContent=this.scanMode==="planet"?`Defensas próximas · ${profile.name}`:this.scanMode==="satellites"?`${profile.name} · ${visibleMoons.map(system=>system.spec?.name).join(" · ")}`:`Teatro completo · ${profile.name}`;
+        $("#scan-hostiles").textContent=this.game.enemies.filter(e=>e.active).length;$("#scan-fleet").textContent=this.game.fleet.ships.filter(s=>s.active).length;$("#scan-towers").textContent=this.game.towers.filter(t=>t.active).length;$("#scan-lunar").textContent=visibleMoons.length;$("#scan-companion-label").textContent="Satélites";$("#scan-sector-label").textContent=this.scanMode==="planet"?`Defensas próximas · ${profile.name}`:this.scanMode==="satellites"?`${profile.name} · ${visibleMoons.map(system=>system.spec?.name).join(" · ")}`:`Teatro completo · ${profile.name}`;if(originalFillText)ctx.fillText=originalFillText;
       }
       pickScanContact(event){
         const canvas=$("#scan-canvas"),rect=canvas.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top,hit=this.scanHits.slice().sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y)).find(h=>Math.hypot(h.x-x,h.y-y)<=h.r+8);if(!hit)return;
@@ -2934,7 +3419,7 @@
         this.store=new Storage();this.i18n=new GameI18n(this.store);this.i18n.connect();this.solarPlanets=SOLAR_PLANETS;this.towerDefs=TOWERS;this.fleetTypes=FLEET_TYPES;this.state="menu";this.sessionActive=false;this.paused=false;this.pauseForOverlay=false;this.modalOpen=false;this.mode="campaign";this.difficultyKey="commander";this.difficulty=DIFFICULTIES.commander;
         this.wave=0;this.activePlanetKey="earth";this.planetStates={};this.hp=3000;this.maxHp=3000;this.populationInitial=PLANET_POPULATION;this.populationAlive=PLANET_POPULATION;this.credits=0;this.helium3=0;this.science=0;this.technologies={};this.miningSaveClock=0;this.researchSaveClock=0;this.energy=100;this.speed=1;this.prepTimer=15;this.shieldOvercharge=0;this.flashToken=0;this.buildKey=null;this.pendingSlot=null;this.targetingAbility=null;this.selection=null;this.focusTarget=null;this.battleCameraAuto=false;this.battleCameraClock=0;this.battleCameraTarget=null;this.systemTick=0;this.jumpActive=false;this.primaryFrontKey="earth";this.liberationActive=false;
         this.towers=[];this.enemies=[];this.ids={tower:0,enemy:0,ship:0};this.perks={damage:1,rate:1,range:1,reward:1,nano:0,energy:1};this.abilityCooldowns={ion:0,shield:0,bombard:0};this.tasks=[];this.stats={score:0,kills:0,damageDealt:0,damageTaken:0,towersBuilt:0,shipsBuilt:0,shipsLost:0,he3Sold:0,he3Bought:0,scienceBought:0,scienceSold:0,resourceTrades:0,tradeCredits:0,startTime:Date.now()};
-        this.audio=new AudioEngine(this.store);this.voice=new VoiceCommander(this.store);this.world=new WorldScene(this.store);this.rings=new RingSystem(this.world);this.projectiles=new ProjectileSystem(this);this.fleet=new FleetSystem(this);this.waveDirector=new WaveDirector(this);this.ui=new UIManager(this);this.tutorial=new Tutorial(this);this.input=new InputController(this);
+        this.audio=new AudioEngine(this.store);this.voice=new VoiceCommander(this.store,this.i18n);this.world=new WorldScene(this.store);this.rings=new RingSystem(this.world);this.projectiles=new ProjectileSystem(this);this.fleet=new FleetSystem(this);this.waveDirector=new WaveDirector(this);this.ui=new UIManager(this);this.tutorial=new Tutorial(this);this.input=new InputController(this);
         this.accumulator=0;this.lastFrame=performance.now();requestAnimationFrame(t=>this.frame(t));
       }
       isPlaying(){return this.sessionActive&&["prep","combat","reward"].includes(this.state)}
